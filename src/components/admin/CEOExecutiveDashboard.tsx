@@ -219,6 +219,12 @@ export function buildHoldingForInstitution(
                  institution.id === 'sec-empresas-ceo' ||
                  (typeof institution.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(institution.name));
 
+  const isTestCase = Boolean(
+    institution.isTestCase ||
+    institution.id === 'sch-test-case' ||
+    (typeof institution.name === 'string' && institution.name.toLowerCase().includes('laboratorio'))
+  );
+
   const allCampuses = campusesList || [];
   const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
   const schoolStudents = getSchoolStudents(detailedStudents || [], institution.id, schoolCampuses);
@@ -226,10 +232,22 @@ export function buildHoldingForInstitution(
 
   const mappedCampuses: CampusData[] = schoolCampuses.length > 0
     ? schoolCampuses.map((c, idx) => {
-        const campStudents = (detailedStudents || []).filter(s => s.campus_id === c.id);
-        const campTeachers = (teachersList || []).filter(t => t.campus_id === c.id);
-        const stCount = campStudents.length || Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || (isCorp ? 180 : 350);
-        const tcCount = campTeachers.length || Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || (isCorp ? 12 : 24);
+        const campStudents = schoolStudents.filter(s => s.campus_id === c.id);
+        const campTeachers = schoolTeachers.filter(t => t.campus_id === c.id);
+
+        const stCount = campStudents.length > 0
+          ? campStudents.length
+          : isTestCase
+            ? (Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || 12)
+            : (idx === 0 && schoolStudents.every(s => !schoolCampuses.some(sc => sc.id === s.campus_id)) ? schoolStudents.length : 0);
+
+        const tcCount = campTeachers.length > 0
+          ? campTeachers.length
+          : isTestCase
+            ? (Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || 2)
+            : (idx === 0 && schoolTeachers.every(t => !schoolCampuses.some(sc => sc.id === t.campus_id)) ? schoolTeachers.length : 0);
+
+        const hasActiveOperation = stCount > 0 || tcCount > 0 || isTestCase;
 
         return {
           id: c.id,
@@ -237,12 +255,12 @@ export function buildHoldingForInstitution(
           location: c.address || `${c.name} · ${isCorp ? 'Planta / Sede Corporativa' : 'Sede Oficial'}`,
           students: stCount,
           teachers: tcCount,
-          collectionRate: Math.max(88, 95 - (idx % 3)),
-          admissionsInProgress: Math.floor(8 + idx * 3),
-          academicHealth: Math.max(90, 96 - (idx % 2)),
-          focalIssues: idx === 1 ? 1 : 0,
-          curriculumCoverage: Math.min(98, 94 + (idx % 3)),
-          retentionRate: Math.min(98, 96 - (idx % 2))
+          collectionRate: stCount > 0 || isTestCase ? Math.max(88, 95 - (idx % 3)) : 0,
+          admissionsInProgress: isTestCase ? Math.floor(8 + idx * 3) : 0,
+          academicHealth: hasActiveOperation ? Math.max(90, 96 - (idx % 2)) : 0,
+          focalIssues: isTestCase && idx === 1 ? 1 : 0,
+          curriculumCoverage: hasActiveOperation ? Math.min(98, 94 + (idx % 3)) : 0,
+          retentionRate: stCount > 0 || isTestCase ? Math.min(98, 96 - (idx % 2)) : 0
         };
       })
     : [
@@ -250,14 +268,14 @@ export function buildHoldingForInstitution(
           id: `${institution.id}-matriz`,
           name: isCorp ? `${institution.name} · Sede Central & Corporativo` : `${institution.name} · Plantel Central`,
           location: institution.address || (isCorp ? 'Sede Corporativa Central' : 'Sede Central'),
-          students: schoolStudents.length || (isCorp ? 280 : 450),
-          teachers: schoolTeachers.length || (isCorp ? 16 : 28),
-          collectionRate: 95,
-          admissionsInProgress: 16,
-          academicHealth: 96,
+          students: schoolStudents.length > 0 ? schoolStudents.length : (isTestCase ? 450 : 0),
+          teachers: schoolTeachers.length > 0 ? schoolTeachers.length : (isTestCase ? 28 : 0),
+          collectionRate: schoolStudents.length > 0 || isTestCase ? 95 : 0,
+          admissionsInProgress: isTestCase ? 16 : 0,
+          academicHealth: schoolStudents.length > 0 || schoolTeachers.length > 0 || isTestCase ? 96 : 0,
           focalIssues: 0,
-          curriculumCoverage: 95,
-          retentionRate: 96
+          curriculumCoverage: schoolStudents.length > 0 || schoolTeachers.length > 0 || isTestCase ? 95 : 0,
+          retentionRate: schoolStudents.length > 0 || isTestCase ? 96 : 0
         }
       ];
 
@@ -998,6 +1016,20 @@ export default function CEOExecutiveDashboard({
     return false;
   }, [schoolId, holding, currentInstitution]);
 
+  // Detección exclusiva de Laboratorio Pedagógico & Test Cases (única cuenta con simuladores activos)
+  const isTestCaseSchool = useMemo(() => {
+    const instId = (schoolId || currentInstitution?.id || '').toLowerCase();
+    const instName = (currentInstitution?.name || holding?.name || '').toLowerCase();
+    const holdingSlug = (holding?.slug || '').toLowerCase();
+    return Boolean(
+      currentInstitution?.isTestCase ||
+      instId === 'sch-test-case' ||
+      holdingSlug === 'test-case' ||
+      instName.includes('laboratorio') ||
+      instName.includes('test case')
+    );
+  }, [schoolId, currentInstitution, holding]);
+
   const institutionalDisplayName = useMemo(() => {
     if (corporateTheme) return corporateTheme.displayName;
     if (isIbime) return 'Instituto Bilingüe IBIME';
@@ -1154,7 +1186,7 @@ export default function CEOExecutiveDashboard({
   // GESTIÓN DEL PIPELINE DE ADMISIONES & CAPTACIÓN (0 TOKENS)
   // -----------------------------------------------------------
   const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(() => {
-    if (!isCorporate) return INITIAL_PROSPECTS_DATA;
+    if (!isCorporate) return (isIbime || isTestCaseSchool) ? INITIAL_PROSPECTS_DATA : [];
     if (isRetail) return INITIAL_VENTAS_CANDIDATES;
     if (isTech) return INITIAL_TECH_CANDIDATES;
     return INITIAL_BMW_CANDIDATES;
@@ -1171,9 +1203,9 @@ export default function CEOExecutiveDashboard({
       }
       setActiveReportQuery(prev => prev.includes('Estudiantes') ? 'Colaboradores y áreas operativas con asignación de recursos y estatus' : prev);
     } else {
-      setProspectsList(INITIAL_PROSPECTS_DATA);
+      setProspectsList((isIbime || isTestCaseSchool) ? INITIAL_PROSPECTS_DATA : []);
     }
-  }, [isCorporate, isBmw, isRetail, isTech]);
+  }, [isCorporate, isBmw, isRetail, isTech, isIbime, isTestCaseSchool]);
 
   const [isAdmissionsPipelineOpen, setIsAdmissionsPipelineOpen] = useState<boolean>(false);
   const [isAddProspectModalOpen, setIsAddProspectModalOpen] = useState<boolean>(false);
@@ -1426,7 +1458,10 @@ export default function CEOExecutiveDashboard({
       sanluis: [16, 10, 6, 4, 2]
     };
 
-    const base = campusBase[selectedCampusId] || campusBase['all'];
+    const base: [number, number, number, number, number] =
+      (isIbime || isTestCaseSchool || isCorporate)
+        ? (campusBase[selectedCampusId] || campusBase['all'])
+        : [0, 0, 0, 0, 0];
 
     const extraInStage = (stageNum: number) => {
       return prospectsList.filter(p => {
@@ -1435,11 +1470,14 @@ export default function CEOExecutiveDashboard({
       }).length;
     };
 
-    const c1 = isCorporate ? (base[0] + extraInStage(1)) : (base[0] + extraInStage(1) + (livePipelineMetrics?.phases?.[0]?.candidateCount || 0));
-    const c2 = isCorporate ? (base[1] + extraInStage(2)) : (base[1] + extraInStage(2) + (livePipelineMetrics?.phases?.[1]?.candidateCount || 0));
-    const c3 = isCorporate ? (base[2] + extraInStage(3)) : (base[2] + extraInStage(3) + (livePipelineMetrics?.phases?.[2]?.candidateCount || 0));
-    const c4 = isCorporate ? (base[3] + extraInStage(4)) : (base[3] + extraInStage(4) + (livePipelineMetrics?.phases?.[3]?.candidateCount || 0));
-    const c5 = isCorporate ? (base[4] + extraInStage(5)) : (base[4] + extraInStage(5) + (livePipelineMetrics?.phases?.[4]?.candidateCount || 0));
+    const livePhaseCount = (idx: number) =>
+      (isIbime || isTestCaseSchool) ? (livePipelineMetrics?.phases?.[idx]?.candidateCount || 0) : 0;
+
+    const c1 = isCorporate ? (base[0] + extraInStage(1)) : (base[0] + extraInStage(1) + livePhaseCount(0));
+    const c2 = isCorporate ? (base[1] + extraInStage(2)) : (base[1] + extraInStage(2) + livePhaseCount(1));
+    const c3 = isCorporate ? (base[2] + extraInStage(3)) : (base[2] + extraInStage(3) + livePhaseCount(2));
+    const c4 = isCorporate ? (base[3] + extraInStage(4)) : (base[3] + extraInStage(4) + livePhaseCount(3));
+    const c5 = isCorporate ? (base[4] + extraInStage(5)) : (base[4] + extraInStage(5) + livePhaseCount(4));
 
     return [
       { 
@@ -1523,18 +1561,22 @@ export default function CEOExecutiveDashboard({
     if (isIbime) return 148500000;
     const totalStudents = holding.campuses.reduce((acc, c) => acc + c.students, 0);
     const perStudentRate = isCorporate ? 52000 : 39600;
-    return Math.max(12000000, totalStudents * perStudentRate);
-  }, [isIbime, isCorporate, holding.campuses]);
+    if (isTestCaseSchool) {
+      return Math.max(12000000, totalStudents * perStudentRate);
+    }
+    return totalStudents * perStudentRate;
+  }, [isIbime, isCorporate, isTestCaseSchool, holding.campuses]);
 
   // Cálculo del Simulador en Tiempo Real
   const simResults = useMemo(() => {
     const baseAnnualBilling = estimatedAnnualBilling;
-    const tuitionGain = baseAnnualBilling * (simTuitionIncrease / 100);
-    const debtGain = (baseAnnualBilling * 0.08) * (simDebtRecovery / 10);
-    const retentionGain = Math.max(0, (simRetentionBoost - 92)) * (baseAnnualBilling * 0.005);
+    const tuitionGain = isTestCaseSchool ? baseAnnualBilling * (simTuitionIncrease / 100) : 0;
+    const debtGain = isTestCaseSchool ? (baseAnnualBilling * 0.08) * (simDebtRecovery / 10) : 0;
+    const retentionGain = isTestCaseSchool ? Math.max(0, (simRetentionBoost - 92)) * (baseAnnualBilling * 0.005) : 0;
     const totalProjectedNetGain = tuitionGain + debtGain + retentionGain;
     const projectedEbitda = (baseAnnualBilling * 0.28) + (totalProjectedNetGain * 0.82);
-    const ebitdaMargin = ((projectedEbitda / (baseAnnualBilling + tuitionGain)) * 100).toFixed(1);
+    const denominator = baseAnnualBilling + tuitionGain;
+    const ebitdaMargin = denominator > 0 ? ((projectedEbitda / denominator) * 100).toFixed(1) : '0.0';
 
     return {
       tuitionGain,
@@ -1544,7 +1586,7 @@ export default function CEOExecutiveDashboard({
       projectedEbitda,
       ebitdaMargin
     };
-  }, [estimatedAnnualBilling, simTuitionIncrease, simDebtRecovery, simRetentionBoost]);
+  }, [estimatedAnnualBilling, isTestCaseSchool, simTuitionIncrease, simDebtRecovery, simRetentionBoost]);
 
   // -----------------------------------------------------------
   // MOTOR DE CÁLCULO DE KPIS EN TIEMPO REAL (0 TOKENS)
@@ -1561,8 +1603,8 @@ export default function CEOExecutiveDashboard({
     const totalTeachers = list.reduce((acc, c) => acc + c.teachers, 0);
     const totalAdmissions = list.reduce((acc, c) => acc + c.admissionsInProgress, 0);
     const avgCollection = Math.round(list.reduce((acc, c) => acc + c.collectionRate, 0) / (list.length || 1));
-    const avgCurriculum = Math.round(list.reduce((acc, c) => acc + (c.curriculumCoverage || 92), 0) / (list.length || 1));
-    const avgRetention = Math.round(list.reduce((acc, c) => acc + (c.retentionRate || 95), 0) / (list.length || 1));
+    const avgCurriculum = Math.round(list.reduce((acc, c) => acc + (c.curriculumCoverage ?? 0), 0) / (list.length || 1));
+    const avgRetention = Math.round(list.reduce((acc, c) => acc + (c.retentionRate ?? 0), 0) / (list.length || 1));
     const totalCampuses = list.length;
     const totalFocalIssues = list.reduce((acc, c) => acc + c.focalIssues, 0);
 
@@ -2003,7 +2045,7 @@ export default function CEOExecutiveDashboard({
       id: 'finanzas', 
       label: '4. Finanzas, EBITDA & SAT', 
       icon: DollarSign, 
-      desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : 'What-If, CFDI 4.0 & BI' 
+      desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : isTestCaseSchool ? 'What-If, CFDI 4.0 & BI' : 'EBITDA, CFDI 4.0 & BI' 
     },
     ...(!isCorporate ? [{
       id: 'portal_academico',
@@ -2735,7 +2777,9 @@ export default function CEOExecutiveDashboard({
                   </div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>Ledger inmutable SAT</span>
-                    <span className="text-amber-600 font-bold group-hover:underline">Simulador & SAT →</span>
+                    <span className="text-amber-600 font-bold group-hover:underline">
+                      {isTestCaseSchool ? 'Simulador & SAT →' : 'Finanzas & SAT →'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -2749,19 +2793,35 @@ export default function CEOExecutiveDashboard({
                     <div className="flex items-center justify-between mb-5">
                       <div className="flex items-center gap-2">
                         <h2 className="font-bold text-slate-900 text-base">Focos de atención</h2>
-                        <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-xs font-bold flex items-center justify-center">
-                          4
+                        <span className={`w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center ${
+                          (metrics.totalStudents > 0 || isIbime || isTestCaseSchool) ? 'bg-rose-500' : 'bg-emerald-500'
+                        }`}>
+                          {(metrics.totalStudents > 0 || isIbime || isTestCaseSchool) ? 4 : 0}
                         </span>
                       </div>
-                      <button 
-                        onClick={() => setIsAllFocalsOpen(true)}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        Ver todos <ChevronRight size={14} />
-                      </button>
+                      {(metrics.totalStudents > 0 || isIbime || isTestCaseSchool) && (
+                        <button 
+                          onClick={() => setIsAllFocalsOpen(true)}
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          Ver todos <ChevronRight size={14} />
+                        </button>
+                      )}
                     </div>
 
                     {(() => {
+                      if (metrics.totalStudents === 0 && !isIbime && !isTestCaseSchool) {
+                        return (
+                          <div className="py-10 px-4 rounded-xl bg-slate-50 border border-slate-100 text-center space-y-2">
+                            <CheckCircle2 size={28} className="text-emerald-500 mx-auto" />
+                            <div className="text-sm font-bold text-slate-800">Sin focos críticos registrados</div>
+                            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                              La institución se encuentra libre de datos simuladores. Los focos se activarán automáticamente al registrar matrícula o movimientos reales.
+                            </p>
+                          </div>
+                        );
+                      }
+
                       const lowCollectionCampuses = holding.campuses.filter(c => c.collectionRate < 95);
                       const lowCollectionNames = lowCollectionCampuses.length > 0 
                         ? lowCollectionCampuses.map(c => c.name) 
@@ -2984,7 +3044,7 @@ export default function CEOExecutiveDashboard({
                                   <span className="text-[10px] text-slate-400 font-mono">({campus.students.toLocaleString()} {isCorporate ? 'colaboradores' : 'alumnos'})</span>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                  <span className="text-[11px] text-slate-500">SEP NEM: <strong className="text-indigo-600 font-mono">{campus.curriculumCoverage || 94}%</strong></span>
+                                  <span className="text-[11px] text-slate-500">SEP NEM: <strong className="text-indigo-600 font-mono">{campus.curriculumCoverage ?? 0}%</strong></span>
                                   <span className={`font-mono font-bold ${isDanger ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'}`}>
                                     {campus.collectionRate}% cobranza
                                   </span>
@@ -3045,7 +3105,7 @@ export default function CEOExecutiveDashboard({
                                 <td className="py-2.5 text-right font-mono text-slate-600">{campus.students.toLocaleString()}</td>
                                 <td className="py-2.5 text-right font-mono text-slate-600">{campus.teachers}</td>
                                 <td className="py-2.5 text-right font-bold text-emerald-600">{campus.collectionRate}%</td>
-                                <td className="py-2.5 text-right font-semibold text-indigo-600">{campus.curriculumCoverage || 94}%</td>
+                                <td className="py-2.5 text-right font-semibold text-indigo-600">{campus.curriculumCoverage ?? 0}%</td>
                                 <td className="py-2.5 text-right">
                                   <button
                                     onClick={() => {
@@ -3137,7 +3197,7 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit">
                 {[
                   { id: 'todo', label: 'Vista Unificada (EBITDA + SAT)', icon: Layers },
-                  { id: 'ebitda', label: 'EBITDA & Simulador What-If', icon: Calculator },
+                  { id: 'ebitda', label: isTestCaseSchool ? 'EBITDA & Simulador What-If' : 'Estado de Resultados & EBITDA', icon: Calculator },
                   { id: 'sat', label: isCorporate ? 'Facturación B2B & SAT' : 'CFDI 4.0 & Complemento IEDU', icon: Receipt },
                   { id: 'operacion', label: 'Operación & Automatizaciones', icon: SlidersHorizontal },
                   { id: 'reportes', label: 'Reportes BI en Vivo', icon: BarChart3 },
@@ -3172,7 +3232,11 @@ export default function CEOExecutiveDashboard({
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
                     Visión Financiera Estratégica & Proyecciones Holding
                   </h2>
-                  <p className="text-xs text-slate-500">Métricas de rentabilidad, margen EBITDA y simulador de decisiones de directorio en tiempo real.</p>
+                  <p className="text-xs text-slate-500">
+                    {isTestCaseSchool
+                      ? 'Métricas de rentabilidad, margen EBITDA y simulador de decisiones de directorio en tiempo real.'
+                      : 'Métricas reales de rentabilidad, margen EBITDA y estados financieros consolidados del holding.'}
+                  </p>
                 </div>
                 <button
                   onClick={handleExportCSV}
@@ -3209,7 +3273,8 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* DIFERENCIADOR ÉLITE: SIMULADOR DE ESCENARIOS "WHAT-IF" */}
+              {/* DIFERENCIADOR ÉLITE: SIMULADOR DE ESCENARIOS "WHAT-IF" (EXCLUSIVO LABORATORIO PEDAGÓGICO & TEST CASES) */}
+              {isTestCaseSchool && (
               <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-7 rounded-3xl text-white shadow-xl border border-indigo-500/30 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-indigo-900/60 pb-4">
                   <div className="flex items-center gap-3">
@@ -3336,6 +3401,7 @@ export default function CEOExecutiveDashboard({
                   </button>
                 </div>
               </div>
+              )}
 
               {/* GRÁFICO DINÁMICO DE TRAYECTORIA Y RENDIMIENTO FINANCIERO TRIMESTRAL */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
@@ -3352,10 +3418,10 @@ export default function CEOExecutiveDashboard({
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {[
-                    { q: 'Q1 (Ago - Oct)', rev: 34.2, ebitda: 9.4, margin: '27.5%', status: 'Cerrado Auditado', color: 'bg-indigo-50/80 border-indigo-200 text-indigo-900' },
-                    { q: 'Q2 (Nov - Ene)', rev: 38.5, ebitda: 10.8, margin: '28.1%', status: 'Cerrado Auditado', color: 'bg-indigo-50/80 border-indigo-200 text-indigo-900' },
-                    { q: 'Q3 (Feb - Abr)', rev: 36.1, ebitda: 10.0, margin: '27.8%', status: 'En Curso', color: 'bg-emerald-50/80 border-emerald-300 text-emerald-900 ring-2 ring-emerald-400/30' },
-                    { q: 'Q4 (May - Jul)', rev: 39.7, ebitda: 11.0, margin: '28.6%', status: 'Proyección Simulador', color: 'bg-purple-50/80 border-purple-200 text-purple-900' },
+                    { q: 'Q1 (Ago - Oct)', rev: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.23) / 1000000).toFixed(1)) : 0, ebitda: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.063) / 1000000).toFixed(1)) : 0, margin: estimatedAnnualBilling > 0 ? '27.5%' : '0.0%', status: 'Cerrado Auditado', color: 'bg-indigo-50/80 border-indigo-200 text-indigo-900' },
+                    { q: 'Q2 (Nov - Ene)', rev: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.26) / 1000000).toFixed(1)) : 0, ebitda: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.073) / 1000000).toFixed(1)) : 0, margin: estimatedAnnualBilling > 0 ? '28.1%' : '0.0%', status: 'Cerrado Auditado', color: 'bg-indigo-50/80 border-indigo-200 text-indigo-900' },
+                    { q: 'Q3 (Feb - Abr)', rev: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.24) / 1000000).toFixed(1)) : 0, ebitda: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.067) / 1000000).toFixed(1)) : 0, margin: estimatedAnnualBilling > 0 ? '27.8%' : '0.0%', status: 'En Curso', color: 'bg-emerald-50/80 border-emerald-300 text-emerald-900 ring-2 ring-emerald-400/30' },
+                    { q: 'Q4 (May - Jul)', rev: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.27) / 1000000).toFixed(1)) : 0, ebitda: estimatedAnnualBilling > 0 ? Number(((estimatedAnnualBilling * 0.077) / 1000000).toFixed(1)) : 0, margin: estimatedAnnualBilling > 0 ? '28.6%' : '0.0%', status: isTestCaseSchool ? 'Proyección Simulador' : 'Cierre Programado', color: 'bg-purple-50/80 border-purple-200 text-purple-900' },
                   ].map((item, i) => (
                     <div key={i} className={`p-4 rounded-2xl border ${item.color} space-y-2`}>
                       <div className="flex justify-between items-center text-xs font-bold">
@@ -5167,6 +5233,7 @@ export default function CEOExecutiveDashboard({
                 collectionRate={metrics.avgCollection}
                 curriculumCoverage={metrics.avgCurriculum}
                 isCorporate={isCorporate}
+                isTestCase={isTestCaseSchool}
                 onTriggerToast={triggerToast}
                 onNavigateTab={handleNavClick}
               />

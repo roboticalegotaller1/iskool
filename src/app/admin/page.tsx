@@ -526,7 +526,7 @@ export default function SuperUserAdminPage() {
   const totalAITokens = useMemo(() => {
     const fromTeachers = (teachersList || []).reduce((acc, t) => acc + (t.ai_tokens_consumed || 0), 0);
     const fromInstitutions = (institutionsList || []).reduce((acc, i) => acc + (i.aiTokensConsumed || 0), 0);
-    return Math.max(fromTeachers, fromInstitutions, 345350);
+    return Math.max(fromTeachers, fromInstitutions);
   }, [teachersList, institutionsList]);
 
   // Colegio Activo (Aislamiento Estricto: para dueños siempre es su colegio asignado)
@@ -1736,7 +1736,7 @@ export default function SuperUserAdminPage() {
                   const instStudentsCount = instStudents.length;
                   const instTeachersCount = instTeachers.length;
                   const instCampusesCount = instCampuses.length;
-                  const instTokens = inst.aiTokensConsumed || (isIndependent ? 124500 : isTest ? 48200 : (inst.id === 'sch-jjrosseau' ? 345350 : 0));
+                  const instTokens = inst.aiTokensConsumed || (isTest ? 48200 : 0);
 
                   return (
                     <div
@@ -2666,14 +2666,14 @@ export default function SuperUserAdminPage() {
                   <div className="mt-3">
                     <div className="flex items-baseline justify-between">
                       <span className="text-3xl font-black text-purple-700">
-                        {((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))).toLocaleString()}
+                        {((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : 0))).toLocaleString()}
                       </span>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        ≈ ${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN
+                        ≈ ${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : 0))) * 0.000015).toFixed(2)} MXN
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Equiv. comercial: <strong className="text-slate-800">${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN</strong> ($0.80 USD/1M tokens)
+                      Equiv. comercial: <strong className="text-slate-800">${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : 0))) * 0.000015).toFixed(2)} MXN</strong> ($0.80 USD/1M tokens)
                     </p>
                   </div>
                 </div>

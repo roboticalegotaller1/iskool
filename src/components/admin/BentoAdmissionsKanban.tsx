@@ -299,14 +299,18 @@ export default function BentoAdmissionsKanban({
     return isCorporate ? 'emp-bmw' : 'sch-ibime';
   }, [corporateEnterpriseId, schoolId, isCorporate]);
 
-  // 1. Obtención de leads con fallback a semillas para cualquier colegio nuevo o en demostración
+  // 1. Obtención de leads reales de la institución (con fallback a semillas solo en IBIME o Laboratorio Pedagógico & Test Cases)
   const baseLeads = useMemo(() => {
     if (isCorporate) {
       const corp = leads.filter(l => l.school_id === effectiveSchoolId);
       return corp.length > 0 ? corp : leads.filter(l => l.school_id === 'emp-bmw');
     }
     const schoolMatches = leads.filter(l => l.school_id === effectiveSchoolId && !l.school_id?.startsWith('emp-'));
-    return schoolMatches.length > 0 ? schoolMatches : leads.filter(l => !l.school_id?.startsWith('emp-') && l.pipeline_type !== 'corporate_recruitment');
+    if (schoolMatches.length > 0) return schoolMatches;
+    if (effectiveSchoolId === 'sch-ibime' || effectiveSchoolId === 'sch-test-case') {
+      return leads.filter(l => !l.school_id?.startsWith('emp-') && l.pipeline_type !== 'corporate_recruitment');
+    }
+    return [];
   }, [leads, isCorporate, effectiveSchoolId]);
 
   // 2. Filtrado reactivo de leads por campus, prioridad, sección, fase y texto

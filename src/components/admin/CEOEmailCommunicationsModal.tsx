@@ -280,6 +280,16 @@ export function generateDefaultMattersForSchool(
   campuses: any[] = [],
   tenantId: string = 'sch-default'
 ): MatterItem[] {
+  const isTestTenant =
+    tenantId === 'sch-test-case' ||
+    tenantId.toLowerCase().includes('test') ||
+    schoolName.toLowerCase().includes('laboratorio') ||
+    schoolName.toLowerCase().includes('test case');
+
+  if (!isTestTenant) {
+    return [];
+  }
+
   const primaryCampus = (campuses && campuses[0]?.name) || `${schoolName} · Plantel Central`;
   const secondaryCampus = (campuses && (campuses[1]?.name || campuses[0]?.name)) || `${schoolName} · Campus Norte`;
   const slug = domain.split('.')[0] || 'colegio';
@@ -1279,6 +1289,12 @@ export function CEOEmailCommunicationsModal({
   // Resolución dinámica de metadatos del colegio y contexto multi-tenant
   const schoolName = holding?.name || (schoolId === 'sch-ibime' ? 'Instituto Bilingüe IBIME' : 'Colegio');
   const isIbime = schoolId === 'sch-ibime' || schoolName.toLowerCase().includes('ibime');
+  const isTestCaseSchool = Boolean(
+    schoolId === 'sch-test-case' ||
+    holding?.slug === 'test-case' ||
+    schoolName.toLowerCase().includes('laboratorio') ||
+    schoolName.toLowerCase().includes('test case')
+  );
   const schoolSlug = holding?.slug || schoolId?.replace(/^sch-/, '') || (isIbime ? 'ibime' : 'colegio');
   const schoolDomain = useMemo(() => getSchoolDomain(schoolName, schoolSlug, schoolId), [schoolName, schoolSlug, schoolId]);
   const currentTenantId = useMemo(() => getTenantId(schoolId, holding?.id, isIbime), [schoolId, holding?.id, isIbime]);
@@ -7485,26 +7501,28 @@ Comité de Seguridad y Protección Escolar`
                 }`} title={connectionStatus === 'connected_verified' ? 'Servidor Verificado' : 'Sin Verificar'} />
               </button>
 
-              {/* 5. Laboratorio de Ingesta & Test Cases */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('laboratorio');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'laboratorio')}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'laboratorio'
-                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <Zap 
-                  className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} 
-                  style={themeMode === 'custom' && activeTab === 'laboratorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                />
-                <span className="truncate">Laboratorio de Ingesta</span>
-              </button>
+              {/* 5. Laboratorio de Ingesta & Test Cases (Exclusivo para Laboratorio Pedagógico & Test Cases) */}
+              {isTestCaseSchool && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('laboratorio');
+                    setMobileSidebarOpen(false);
+                  }}
+                  style={getSidebarItemStyle(activeTab === 'laboratorio')}
+                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
+                    activeTab === 'laboratorio'
+                      ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
+                      : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                  }`}
+                >
+                  <Zap 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'laboratorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
+                  <span className="truncate">Laboratorio de Ingesta</span>
+                </button>
+              )}
 
               {/* 6. Directorio Oficial */}
               <button
@@ -8853,7 +8871,7 @@ Comité de Seguridad y Protección Escolar`
           {/* ------------------------------------------------------- */}
           {/* TAB 2: LABORATORIO DE INGESTA & PRUEBAS EN VIVO         */}
           {/* ------------------------------------------------------- */}
-          {activeTab === 'laboratorio' && (
+          {isTestCaseSchool && activeTab === 'laboratorio' && (
             <div className="space-y-5">
               <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">

@@ -279,27 +279,6 @@ function IbimePortalContent() {
               )}
 
               <button
-                onClick={async () => {
-                  await switchCanonicalStudent('std-ibime-montes-01');
-                  router.push('/student');
-                }}
-                className="h-7 px-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-amber-300 shrink-0 leading-none"
-                title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
-              >
-                <Sparkles className="w-3 h-3 text-amber-900 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Experiencia Alumno 360°</span>
-              </button>
-
-              <button
-                onClick={handleGoToParentExperience}
-                className="h-7 px-2.5 rounded-lg bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-blue-700 shrink-0 leading-none"
-                title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
-              >
-                <Heart className="w-3 h-3 text-rose-300 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Experiencia Familia</span>
-              </button>
-
-              <button
                 onClick={() => setViewMode('operational')}
                 className="h-7 px-2.5 rounded-lg bg-white text-[#E41B14] hover:bg-red-50 font-bold text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-red-200 shrink-0 leading-none"
                 title="Conmutar al Tablero Operativo Clásico"
@@ -398,30 +377,6 @@ function IbimePortalContent() {
                 <span className="sm:hidden">Colegios</span>
               </button>
             )}
-
-            {/* Acceso directo a Experiencias Alumno y Familia */}
-            <button
-              onClick={async () => {
-                await switchCanonicalStudent('std-ibime-montes-01');
-                router.push('/student');
-              }}
-              className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 shrink-0 leading-none"
-              title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-900 shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Experiencia Alumno 360°</span>
-              <span className="sm:hidden">Alumno</span>
-            </button>
-
-            <button
-              onClick={handleGoToParentExperience}
-              className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-700 shrink-0 leading-none"
-              title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
-            >
-              <Heart className="w-3.5 h-3.5 text-rose-300 shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Experiencia Familia</span>
-              <span className="sm:hidden">Familia</span>
-            </button>
 
             {/* Acceso directo a Visión CEO y Correo Institucional para Directores y Dueños */}
             {(isDirector || activeUser.role === 'owner') && (

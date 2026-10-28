@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useSchoolAdminStore, getSchoolStudents, getSchoolTeachers } from '@/store/useSchoolAdminStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { DetailedStudent, Campus, OrganizationHolding, PortfolioItem } from '@/types';
 import { IBIME_STUDENTS, IBIME_CAMPUSES, IBIME_TEACHERS } from '@/lib/curriculum/ibimeCatalogService';
@@ -141,7 +141,7 @@ export function AcademicPortalAdminModal({
     if (holding?.slug === 'ibime' || schoolId === 'sch-ibime') {
       list = [...IBIME_STUDENTS];
     } else {
-      list = detailedStudents.filter(s => !schoolId || s.school_id === schoolId);
+      list = getSchoolStudents(detailedStudents, schoolId, availableCampuses);
     }
 
     if (selectedCampusId !== 'all') {
@@ -151,7 +151,7 @@ export function AcademicPortalAdminModal({
       );
     }
     return list;
-  }, [holding, schoolId, detailedStudents, selectedCampusId]);
+  }, [holding, schoolId, detailedStudents, availableCampuses, selectedCampusId]);
 
   // Conteos de semáforo por cohorte
   const cohortCounts = useMemo(() => {
@@ -228,6 +228,10 @@ export function AcademicPortalAdminModal({
     );
 
     if (seedMatches.length > 0) return seedMatches;
+
+    if (schoolId !== 'sch-ibime' && schoolId !== 'sch-test-case' && holding?.slug !== 'ibime' && holding?.slug !== 'test-case') {
+      return [];
+    }
 
     return [
       {
@@ -397,7 +401,7 @@ export function AcademicPortalAdminModal({
   const currentTeachers = useMemo(() => {
     let list = (holding?.slug === 'ibime' || schoolId === 'sch-ibime')
       ? [...IBIME_TEACHERS]
-      : teachersList.filter(t => !schoolId || t.school_id === schoolId);
+      : getSchoolTeachers(teachersList, schoolId, availableCampuses);
 
     if (selectedCampusId !== 'all') {
       list = list.filter(t =>
@@ -406,7 +410,7 @@ export function AcademicPortalAdminModal({
       );
     }
     return list;
-  }, [holding, schoolId, teachersList, selectedCampusId]);
+  }, [holding, schoolId, teachersList, availableCampuses, selectedCampusId]);
 
   const [selectedMirrorTeacherId, setSelectedMirrorTeacherId] = useState<string>('');
   const [isLessonPlanViewerOpen, setIsLessonPlanViewerOpen] = useState<boolean>(false);

@@ -103,6 +103,7 @@ export interface OperationalEcosystemControlProps {
   collectionRate?: number;
   curriculumCoverage?: number;
   isCorporate?: boolean;
+  isTestCase?: boolean;
   onTriggerToast?: (message: string) => void;
   onNavigateTab?: (tab: string) => void;
 }
@@ -611,6 +612,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
   collectionRate = 94.2,
   curriculumCoverage = 94.2,
   isCorporate = false,
+  isTestCase = false,
   onTriggerToast,
   onNavigateTab
 }) => {
@@ -1043,15 +1045,17 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                     <span>Ver Trazabilidad ({flow.executedToday})</span>
                   </button>
 
-                  <button
-                    onClick={() => handleSimulateFlow(flow)}
-                    disabled={isSimulating || !isActive}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                    title="Simular ejecución del flujo en vivo"
-                  >
-                    <Play size={13} className={isSimulating ? 'animate-spin' : 'text-slate-600'} />
-                    <span>{isSimulating ? 'Probando...' : 'Probar Flujo'}</span>
-                  </button>
+                  {isTestCase && (
+                    <button
+                      onClick={() => handleSimulateFlow(flow)}
+                      disabled={isSimulating || !isActive}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                      title="Simular ejecución del flujo en vivo (Laboratorio Pedagógico)"
+                    >
+                      <Play size={13} className={isSimulating ? 'animate-spin' : 'text-slate-600'} />
+                      <span>{isSimulating ? 'Probando...' : 'Probar Flujo'}</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {

@@ -1112,7 +1112,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
           };
         } else {
           onNavigateTab('finanzas');
-          const spoken = 'Abriendo el módulo de Finanzas, Simulador EBITDA y Ledger Fiscal CFDI 4.0.';
+          const spoken = 'Abriendo el módulo de Finanzas, EBITDA y Ledger Fiscal CFDI 4.0.';
           sofiaTurn = {
             id: `sofia-${Date.now()}`,
             role: 'sofia',
@@ -1123,7 +1123,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
             spokenText: spoken,
             actions: [
               {
-                label: 'Ver Finanzas & Simulador',
+                label: 'Ver Finanzas & SAT',
                 variant: 'primary',
                 onExecute: () => onClose()
               }
