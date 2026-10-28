@@ -66,21 +66,18 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
   const getSafeBackUrl = useNavigationStore(state => state.getSafeBackUrl);
 
-  // Si el usuario ya cuenta con una sesión activa, NUNCA mostrar la ventana de login ante un retroceso
+  // Si el usuario ya cuenta con una sesión activa válida para el tenant actual, redirigir limpiamente
   React.useEffect(() => {
-    if (!authLoading && user) {
-      if (typeof window !== 'undefined') {
-        const searchParams = new URLSearchParams(window.location.search);
-        const redirectParam = searchParams.get('redirect');
-        if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
-          router.replace(redirectParam);
+    if (!authLoading && user && !isSubmitting) {
+      if (isIbimeMode) {
+        const isCurrentIbime = user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'));
+        if (!isCurrentIbime) {
           return;
         }
       }
-      const target = getSafeBackUrl(window.location.pathname, user.role);
-      router.replace(target);
+      routeUserByRole(user);
     }
-  }, [user, authLoading, router, getSafeBackUrl]);
+  }, [user, authLoading, isSubmitting, isIbimeMode]);
 
   // Forzar síncronamente el tenant correcto en cookies y DOM si es modo IBIME
   React.useEffect(() => {
@@ -192,11 +189,20 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       return;
     }
 
-    // 1. Si hay un parámetro de redirección explícito en la URL (ej: /teacher/idiomas), priorizarlo para roles regulares
+    // 1. Si hay un parámetro de redirección explícito en la URL (ej: /teacher/idiomas), priorizarlo cuando sea compatible con el rol
+    const role = userProfile?.role || 'student';
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get('redirect');
-      if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+      const isGenericIbimePortalRedirect = redirectParam === '/ibime/portal' || redirectParam === '/ibime/portal/';
+      if (
+        redirectParam &&
+        redirectParam.startsWith('/') &&
+        !redirectParam.startsWith('//') &&
+        !isGenericIbimePortalRedirect &&
+        !(role === 'student' && redirectParam.startsWith('/ibime/portal')) &&
+        !(role === 'parent' && redirectParam.startsWith('/ibime/portal'))
+      ) {
         router.replace(redirectParam);
         setTimeout(() => {
           if (typeof window !== 'undefined') {
@@ -207,7 +213,6 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       }
     }
 
-    const role = userProfile?.role || 'student';
     const studentId = userProfile?.id;
 
     if (role === 'student' && studentId) {

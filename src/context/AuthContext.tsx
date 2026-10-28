@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { signSessionToken } from '@/lib/sessionToken';
 
 interface AuthContextType {
   session: any | null;
@@ -624,7 +625,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // 2. Consulta al endpoint seguro de sesión perimetral con Cookie HttpOnly
         try {
-          const sessionRes = await fetch('/api/auth/session');
+          const sessionRes = await fetch('/api/auth/session', {
+            cache: 'no-store',
+            credentials: 'same-origin'
+          });
           if (sessionRes.ok) {
             const sessionData = await sessionRes.json();
             if (sessionData.authenticated && sessionData.user) {
@@ -640,7 +644,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         } catch (apiErr) {
-          // Si el endpoint no responde temporalmente, continuar con Supabase SDK
+          // Si el endpoint no responde temporalmente, continuar con respaldo de sesión activa
+        }
+
+        // 2.1 Respaldo inmediato en sessionStorage ante latencia o caché de CDN CloudFront
+        if (typeof window !== 'undefined') {
+          try {
+            const cachedSessionRaw = sessionStorage.getItem('iskool_active_session_v2');
+            if (cachedSessionRaw) {
+              const cachedUser = JSON.parse(cachedSessionRaw) as UserProfile;
+              if (cachedUser && cachedUser.id && cachedUser.role) {
+                setUser(cachedUser);
+                setSession({
+                  access_token: 'session-storage-verified',
+                  user: cachedUser
+                });
+                useSchoolAdminStore.getState().syncUserSchool(cachedUser);
+                setLoading(false);
+                return;
+              }
+            }
+          } catch {}
         }
 
         // 3. Verificación de sesión en Supabase SDK
@@ -890,16 +914,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('iskool_session_user');
       localStorage.removeItem('auth_current_user');
       try {
-        await fetch('/api/auth/session', {
+        sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(finalUser));
+      } catch {}
+
+      const isIbimeTenant = finalUser.school_id === 'sch-ibime' || (finalUser.email && finalUser.email.toLowerCase().includes('ibime'));
+      const resolvedTenant = isIbimeTenant ? 'ibime' : 'iskool';
+      const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
+      const opposingCookieName = resolvedTenant === 'ibime' ? 'iskool_session' : 'ibime_session';
+
+      let issuedToken: string | null = null;
+      try {
+        const res = await fetch('/api/auth/session', {
           method: 'POST',
+          cache: 'no-store',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             access_token: sessionObj?.access_token,
             user: finalUser
           })
         });
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data?.token) {
+            issuedToken = data.token;
+          }
+        }
       } catch {
         // No bloquear la interfaz ante latencia de red secundaria
+      }
+
+      if (!issuedToken) {
+        try {
+          issuedToken = await signSessionToken({
+            id: finalUser.id,
+            email: finalUser.email || undefined,
+            role: finalUser.role,
+            school_id: finalUser.school_id || (isIbimeTenant ? 'sch-ibime' : undefined),
+            tenant_id: resolvedTenant,
+            first_name: finalUser.first_name,
+            last_name: finalUser.last_name
+          });
+        } catch {}
+      }
+
+      if (issuedToken) {
+        const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `${cookieName}=${issuedToken}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+        document.cookie = `${opposingCookieName}=; path=/; max-age=0; SameSite=Lax${secureAttr}`;
+        document.cookie = `tenant-id=${resolvedTenant}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
       }
     }
     if (isPlatformSuperUser(finalUser)) {
@@ -926,6 +989,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem('iskool_session_user');
       localStorage.removeItem('auth_current_user');
       sessionStorage.removeItem('iskool_super_just_logged_in');
+      sessionStorage.removeItem('iskool_active_session_v2');
+      const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `iskool_session=; path=/; max-age=0; SameSite=Lax${secureAttr}`;
+      document.cookie = `ibime_session=; path=/; max-age=0; SameSite=Lax${secureAttr}`;
     }
     useSchoolAdminStore.getState().selectSchool(null as any);
     useSchoolAdminStore.getState().syncUserSchool(null);

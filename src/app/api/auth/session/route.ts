@@ -26,10 +26,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({
-      authenticated: true,
-      user: authResult.user
-    });
+    return NextResponse.json(
+      {
+        authenticated: true,
+        user: authResult.user
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate, max-age=0',
+          'Vary': 'Cookie, Authorization'
+        }
+      }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { authenticated: false, error: 'Error interno verificando sesión.' },
@@ -145,18 +153,27 @@ export async function POST(req: NextRequest) {
     });
 
     const isProduction = process.env.NODE_ENV === 'production';
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: authUser.id,
-        email: authUser.email,
-        role: authUser.role,
-        school_id: authUser.school_id || (isIbimeUser ? 'sch-ibime' : undefined),
-        first_name: authUser.first_name,
-        last_name: authUser.last_name,
-        tenant_id: resolvedTenant
+    const response = NextResponse.json(
+      {
+        success: true,
+        token: sessionToken,
+        user: {
+          id: authUser.id,
+          email: authUser.email,
+          role: authUser.role,
+          school_id: authUser.school_id || (isIbimeUser ? 'sch-ibime' : undefined),
+          first_name: authUser.first_name,
+          last_name: authUser.last_name,
+          tenant_id: resolvedTenant
+        }
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate, max-age=0',
+          'Vary': 'Cookie, Authorization'
+        }
       }
-    });
+    );
 
     // Inyectar Cookie Segura correspondiente al tenant: HttpOnly, Secure, SameSite=Lax
     const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
