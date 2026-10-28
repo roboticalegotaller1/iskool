@@ -42,22 +42,22 @@ export class SpanishPipeline implements ILanguagePipeline {
       .replace(/…/g, '.')
       .replace(/\s+/g, ' ');
 
-    // Separación de oraciones largas con punto seguido (pausa de respiro de 220ms)
-    clean = clean.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g, '$1 <break time="220ms"/> $2');
+    // Separación de oraciones largas con punto seguido (pausa de respiro natural de 200ms)
+    clean = clean.replace(/([.!?])\s+([A-ZÁÉÍÓÚÑ0-9])/g, '$1 <break time="200ms"/> $2');
 
-    // Pausas en oraciones subordinadas y coordinadas adversativas / explicativas (140ms)
+    // Pausas exclusivamente tras conectores discursivos compuestos cuando llevan coma (120ms)
+    // Se prohíbe insertar comas después de conjunciones simples (pero, aunque, mas, sino que) para no romper el sirrema
     const connectors = [
       'sin embargo', 'por lo tanto', 'en consecuencia', 'no obstante',
-      'es decir', 'por consiguiente', 'asimismo', 'ahora bien',
-      'pero', 'mas', 'aunque', 'sino que'
+      'es decir', 'por consiguiente', 'asimismo', 'ahora bien'
     ];
     for (const conn of connectors) {
-      const regex = new RegExp(`\\b(${conn}),?\\s+`, 'gi');
-      clean = clean.replace(regex, `$1, <break time="140ms"/> `);
+      const regex = new RegExp(`\\b(${conn}),\\s+`, 'gi');
+      clean = clean.replace(regex, `$1, <break time="120ms"/> `);
     }
 
-    // Comas naturales: pausa breve de 110ms
-    clean = clean.replace(/,\s*(?!<break)/g, ', <break time="110ms"/> ');
+    // Comas naturales: pausa breve de 100ms
+    clean = clean.replace(/,\s*(?!<break)/g, ', <break time="100ms"/> ');
 
     // Blindaje de enlaces acústicos: erradicar cortes entre preposiciones/artículos y sustantivos
     const protectedUnits = [

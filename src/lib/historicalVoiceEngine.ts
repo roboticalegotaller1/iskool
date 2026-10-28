@@ -87,54 +87,54 @@ export interface NarratorVoiceProfile {
 // =============================================================================
 export const HISTORICAL_VOICE_MATRIX: Record<HistoricalAgeCohort, [VoiceMatrixOption, VoiceMatrixOption, VoiceMatrixOption]> = {
   child_male: [
-    { id: 'es-MX-PelayoNeural', label: 'Pelayo (México) · Opción A', prosodyRate: '+4%', prosodyPitch: '+12%', description: 'Voz nativa de niño mexicano, vivaz e intrépido' },
-    { id: 'es-MX-MarinaNeural', label: 'Marina (Modulada) · Opción B', prosodyRate: '+3%', prosodyPitch: '+18%', description: 'Modulación infantil vivaz de timbre despierto' },
-    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Infantil) · Opción C', prosodyRate: '+6%', prosodyPitch: '+20%', description: 'Cadencia ágil infantil, curioso y despierto' }
+    { id: 'es-PE-AlexNeural', label: 'Alex (Joven Cadete) · Opción A', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Voz juvenil latinoamericana clara, vivaz y de excelente dicción' },
+    { id: 'es-US-AlonsoNeural', label: 'Alonso (Joven) · Opción B', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Timbre juvenil despierto y articulación nítida' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Cadencia clara, curiosa y bien vocalizada' }
   ],
   child_female: [
-    { id: 'es-MX-MarinaNeural', label: 'Marina (México) · Opción A', prosodyRate: '+3%', prosodyPitch: '+10%', description: 'Voz nativa de niña mexicana, dulce y vivaz' },
-    { id: 'es-MX-LarissaNeural', label: 'Larissa (México) · Opción B', prosodyRate: '+2%', prosodyPitch: '+12%', description: 'Timbre dulce infantil y reflexivo' },
-    { id: 'es-CO-SalomeNeural', label: 'Salomé (Curiosa) · Opción C', prosodyRate: '+5%', prosodyPitch: '+16%', description: 'Curiosa, expresiva, entusiasta y participativa' }
+    { id: 'es-PE-CamilaNeural', label: 'Camila (Joven) · Opción A', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Voz juvenil dulce, cristalina y natural' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven) · Opción B', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Timbre dulce, reflexivo y de dicción impecable' },
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Calidez mexicana juvenil, entusiasta y clara' }
   ],
   teen_male: [
-    { id: 'es-MX-CecilioNeural', label: 'Cecilio (México) · Opción A', prosodyRate: '+1%', prosodyPitch: '+4%', description: 'Joven cadete / prócer mexicano, enérgico y leal' },
-    { id: 'es-PE-AlexNeural', label: 'Alex (Perú) · Opción B', prosodyRate: '+0%', prosodyPitch: '+2%', description: 'Joven latino neutral, voz clara, limpia y fresca' },
-    { id: 'es-US-AlonsoNeural', label: 'Alonso (Latino) · Opción C', prosodyRate: '+2%', prosodyPitch: '+3%', description: 'Joven dinámico, timbre brillante y decidido' }
+    { id: 'es-PE-AlexNeural', label: 'Alex (Cadete Heroico) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven cadete / prócer heroico, enérgico, leal y de dicción limpia' },
+    { id: 'es-US-AlonsoNeural', label: 'Alonso (Joven Prócer) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven latino, voz clara, limpia y decidida' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Académico Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven elocuente, articulación culta y precisa' }
   ],
   teen_female: [
-    { id: 'es-MX-NuriaNeural', label: 'Nuria (México) · Opción A', prosodyRate: '+1%', prosodyPitch: '+3%', description: 'Joven mexicana, elocuente y brillante' },
-    { id: 'es-PE-CamilaNeural', label: 'Camila (Perú) · Opción B', prosodyRate: '+0%', prosodyPitch: '+2%', description: 'Joven neutral, dulce y reflexiva' },
-    { id: 'es-US-PalomaNeural', label: 'Paloma (Latina) · Opción C', prosodyRate: '+2%', prosodyPitch: '+4%', description: 'Joven expresiva, templada y decidida' }
+    { id: 'es-PE-CamilaNeural', label: 'Camila (Joven Heroína) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven heroína dulce, firme y elocuente' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven Ilustrada) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven culta, dicción poética y cristalina' },
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (Joven Mexicana) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven expresiva, cálida y decidida' }
   ],
   young_adult_male: [
-    { id: 'es-MX-LibertoNeural', label: 'Liberto (México) · Opción A', prosodyRate: '-3%', prosodyPitch: '-1Hz', description: 'Firme, ideal para caudillos y próceres insurgentes jóvenes' },
-    { id: 'es-MX-YagoNeural', label: 'Yago (México) · Opción B', prosodyRate: '-2%', prosodyPitch: '-1Hz', description: 'Voz templada, reflexiva y de convicción patriótica' },
-    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Colombia) · Opción C', prosodyRate: '-2%', prosodyPitch: '+0Hz', description: 'Latino neutro, dicción elegante y caballerosa' }
+    { id: 'es-PE-AlexNeural', label: 'Alex (Caudillo Joven) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Firme y nítido, ideal para tlatoanis y caudillos jóvenes' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Intelectual / Jurista) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción parlamentaria elegante, clara y fluida' },
+    { id: 'es-MX-JorgeNeural', label: 'Jorge (Caudillo Mexicano) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Timbre mexicano firme, fluido y de convicción patriótica' }
   ],
   young_adult_female: [
-    { id: 'es-MX-BeatrizNeural', label: 'Beatriz (México) · Opción A', prosodyRate: '-3%', prosodyPitch: '+0Hz', description: 'Apasionada, líder patriótica, timbre claro y firme' },
-    { id: 'es-MX-CandelaNeural', label: 'Candela (México) · Opción B', prosodyRate: '-3%', prosodyPitch: '+1Hz', description: 'Heroica, decidida, dicción pulcra y valiente' },
-    { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia) · Opción C', prosodyRate: '-2%', prosodyPitch: '+1Hz', description: 'Armónica, cercana, diplomática y culta' }
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Poetisa / Heroína) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, clara, culta y fluida' },
+    { id: 'es-PE-CamilaNeural', label: 'Camila (Insurgente) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Heroica, decidida, dicción pulcra y valiente' },
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (Líder Mexicana) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Apasionada, líder patriótica, timbre cálido y firme' }
   ],
   adult_male: [
-    { id: 'es-MX-JorgeNeural', label: 'Jorge (México) · Opción A', prosodyRate: '-5%', prosodyPitch: '-2Hz', description: 'Grave, oratoria militar o de estadista republicano' },
-    { id: 'es-MX-GerardoNeural', label: 'Gerardo (México) · Opción B', prosodyRate: '-4%', prosodyPitch: '-2Hz', description: 'Autoritaria, solemne, peso institucional y docto' },
-    { id: 'es-MX-LibertoNeural', label: 'Liberto (Maduro) · Opción C', prosodyRate: '-5%', prosodyPitch: '-3Hz', description: 'Madurez serena, temple patriótico inalterable' }
+    { id: 'es-MX-JorgeNeural', label: 'Jorge (México · Estadista) · Opción A', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Barítono mexicano fluido, oratoria de estadista o general con dicción nítida' },
+    { id: 'es-US-AlonsoNeural', label: 'Alonso (Militar / Humanista) · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Voz serena, cálida, caballerosa y de articulación cristalina' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Tribuno / Reformador) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Oratoria republicana culta, clara y precisa' }
   ],
   adult_female: [
-    { id: 'es-MX-DaliaNeural', label: 'Dalia (México) · Opción A', prosodyRate: '-5%', prosodyPitch: '-2Hz', description: 'Voz de adulto mujer matrona de la patria, dignificada, solemne y noble' },
-    { id: 'es-MX-RenataNeural', label: 'Renata (México) · Opción B', prosodyRate: '-4%', prosodyPitch: '-1Hz', description: 'Intelectual, analítica, líder histórica y estratega' },
-    { id: 'es-MX-CarlotaNeural', label: 'Carlota (México) · Opción C', prosodyRate: '-6%', prosodyPitch: '-2Hz', description: 'Matrona venerable, resonancia media, firmeza y calidez' }
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (México · Matrona Patria) · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Voz de mujer mexicana digna, cálida, fluida y de dicción impecable' },
+    { id: 'es-US-PalomaNeural', label: 'Paloma (Expresiva / Firme) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Intelectual, expresiva, líder histórica con timbre natural' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Clásica / Ilustrada) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Resonancia serena, dicción culta y calidez humana' }
   ],
   elder_male: [
-    { id: 'es-MX-CandidoNeural', label: 'Cándido (México) · Opción A', prosodyRate: '-7%', prosodyPitch: '-3Hz', description: 'Anciano sabio, venerable, pausado y honorable' },
-    { id: 'es-MX-LucianoNeural', label: 'Luciano (México) · Opción B', prosodyRate: '-8%', prosodyPitch: '-4Hz', description: 'Voz veterana, textura curtida, patriarca republicano' },
-    { id: 'es-MX-JorgeNeural', label: 'Jorge (Solemne) · Opción C', prosodyRate: '-8%', prosodyPitch: '-4Hz', description: 'Tempo solemne de padre de la patria y mentor' }
+    { id: 'es-MX-JorgeNeural', label: 'Jorge (Padre de la Patria) · Opción A', prosodyRate: '-1%', prosodyPitch: '-2Hz', description: 'Sabio, venerable y fluido, conservando dicción clara y natural' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Patriarca Ilustrado) · Opción B', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Oratoria serena y fluida de maestro y humanista' },
+    { id: 'es-US-AlonsoNeural', label: 'Alonso (Mentor Republicano) · Opción C', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Tempo equilibrado, cálido y humano' }
   ],
   elder_female: [
-    { id: 'es-MX-CarlotaNeural', label: 'Carlota (Venerable) · Opción A', prosodyRate: '-6%', prosodyPitch: '-2Hz', description: 'Voz de matriarca venerable, pausada, sabia y profunda' },
-    { id: 'es-MX-DaliaNeural', label: 'Dalia (Serena) · Opción B', prosodyRate: '-7%', prosodyPitch: '-3Hz', description: 'Estilo sereno, testimonio vivo y memoria venerable' },
-    { id: 'es-MX-RenataNeural', label: 'Renata (Consejera) · Opción C', prosodyRate: '-6%', prosodyPitch: '-2Hz', description: 'Tono reposado de consejera histórica ilustrada' }
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (Matriarca Venerable) · Opción A', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Voz de matriarca serena, fluida, sabia y de clara dicción' },
+    { id: 'es-US-PalomaNeural', label: 'Paloma (Testimonio Vivo) · Opción B', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Estilo sereno, cálido y reflexivo' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Consejera Ilustrada) · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Tono equilibrado de consejera histórica ilustrada' }
   ]
 };
 
@@ -146,9 +146,9 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
     id: 'epic_chronist',
     name: 'El Cronista Épico',
     voiceId: 'es-PE-AlexNeural',
-    prosodyRate: '+2%',
+    prosodyRate: '+3%',
     prosodyPitch: '+1Hz',
-    pauseMs: 220,
+    pauseMs: 180,
     description: 'Relato apasionado estilo cinemática o tráiler histórico de batallas y gloria',
     roleTag: 'Acción / Batallas / Momentos Clave'
   },
@@ -156,9 +156,9 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
     id: 'wisdom_guide',
     name: 'La Guía del Saber',
     voiceId: 'es-MX-DaliaNeural',
-    prosodyRate: '-2%',
+    prosodyRate: '+2%',
     prosodyPitch: '+0Hz',
-    pauseMs: 250,
+    pauseMs: 180,
     description: 'Retroalimentación de misiones, logros pedagógicos y explicaciones didácticas',
     roleTag: 'Misiones / Desafíos / Logros Gamificados'
   },
@@ -166,9 +166,9 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
     id: 'time_chrononaut',
     name: 'El Crononauta / Investigador del Tiempo',
     voiceId: 'es-CO-GonzaloNeural',
-    prosodyRate: '-2%',
+    prosodyRate: '+1%',
     prosodyPitch: '-1Hz',
-    pauseMs: 320,
+    pauseMs: 200,
     description: 'Misterio, enigmas y datos curiosos que despiertan la fascinación del alumno',
     roleTag: 'Misterio / Datos Curiosos / Archivos Secretos'
   }
@@ -254,6 +254,160 @@ export function inferCharacterAgeCohort(characterName: string, historicalAge?: n
 }
 
 /**
+ * Perfiles Acústicos de Autor Calibrados Individualmente por Personaje Histórico
+ * Garantiza máxima humanidad, timbre distintivo y dicción impecable para cada prócer.
+ */
+const CHARACTER_BESPOKE_VOICES: Array<{
+  match: string[];
+  options: [VoiceMatrixOption, VoiceMatrixOption, VoiceMatrixOption];
+}> = [
+  {
+    // Don Miguel Hidalgo y Costilla: Patriarca sabio, fluido y cálido
+    match: ['hidalgo', 'costilla', 'padre de la patria'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'Don Miguel Hidalgo (México) · Opción A', prosodyRate: '-1%', prosodyPitch: '-2Hz', description: 'Voz paternal, sabia y fluida con dicción mexicana impecable' },
+      { id: 'es-CO-GonzaloNeural', label: 'Don Miguel Hidalgo (Ilustrado) · Opción B', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Oratoria teológica e ilustrada de gran claridad' },
+      { id: 'es-US-AlonsoNeural', label: 'Don Miguel Hidalgo (Sereno) · Opción C', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Timbre cálido y reflexivo' }
+    ]
+  },
+  {
+    // Doña Josefa Ortiz de Domínguez: Matrona firme, decidida y fluida
+    match: ['josefa', 'corregidora', 'ortiz de dominguez'],
+    options: [
+      { id: 'es-MX-DaliaNeural', label: 'Doña Josefa Ortiz (México) · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Voz de matrona insurgente firme, digna, fluida y de dicción cristalina' },
+      { id: 'es-US-PalomaNeural', label: 'Doña Josefa Ortiz (Firme) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Carácter enérgico y temple patriótico' },
+      { id: 'es-CO-SalomeNeural', label: 'Doña Josefa Ortiz (Solemne) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Articulación clásica y fluida' }
+    ]
+  },
+  {
+    // José María Morelos y Pavón: Siervo de la Nación, voz de mando y estadista
+    match: ['morelos', 'siervo de la nacion', 'pavon'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'General Morelos (México) · Opción A', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Voz firme y fluida de estratega y legislador de Chilpancingo' },
+      { id: 'es-US-AlonsoNeural', label: 'General Morelos (Estadista) · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Dicción solemne y equilibrada' },
+      { id: 'es-CO-GonzaloNeural', label: 'General Morelos (Constitucional) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Oratoria jurídica de los Sentimientos de la Nación' }
+    ]
+  },
+  {
+    // Ignacio Allende: Capitán General Insurgente, marcial y ágil
+    match: ['allende', 'ignacio allende'],
+    options: [
+      { id: 'es-PE-AlexNeural', label: 'General Allende (Marcial) · Opción A', prosodyRate: '+2%', prosodyPitch: '+0Hz', description: 'Militar joven, enérgico, de dicción brillante y decidida' },
+      { id: 'es-US-AlonsoNeural', label: 'General Allende (Caballeroso) · Opción B', prosodyRate: '+2%', prosodyPitch: '+0Hz', description: 'Timbre claro y marcial' },
+      { id: 'es-MX-JorgeNeural', label: 'General Allende (México) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Firmeza insurgente mexicana' }
+    ]
+  },
+  {
+    // Cuauhtémoc: Último Tlatoani Mexica, joven guerrero digno y heroico
+    match: ['cuauhtemoc', 'cuauhtemotzin', 'tlatoani'],
+    options: [
+      { id: 'es-PE-AlexNeural', label: 'Tlatoani Cuauhtémoc · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Joven guerrero mexica de voz firme, digna, fluida y articulación nítida' },
+      { id: 'es-MX-JorgeNeural', label: 'Tlatoani Cuauhtémoc (Grave) · Opción B', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Resonancia heroica y solemne' },
+      { id: 'es-US-AlonsoNeural', label: 'Tlatoani Cuauhtémoc (Sereno) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Temple estoico y claro' }
+    ]
+  },
+  {
+    // Sor Juana Inés de la Cruz: Décima Musa, dicción poética y cristalina
+    match: ['sor juana', 'juana ines', 'asbaje', 'decima musa'],
+    options: [
+      { id: 'es-CO-SalomeNeural', label: 'Sor Juana Inés (Poética) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, culta, cristalina y fluida' },
+      { id: 'es-MX-DaliaNeural', label: 'Sor Juana Inés (México) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Calidez reflexiva y filosófica' },
+      { id: 'es-PE-CamilaNeural', label: 'Sor Juana Inés (Lírica) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Suavidad lírica y claridad silábica' }
+    ]
+  },
+  {
+    // Benito Juárez García: Benemérito de las Américas, sobrio y jurídico
+    match: ['juarez', 'benito juarez', 'benemerito', 'guelatao'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'Presidente Benito Juárez · Opción A', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Estadista republicano sobrio, fluido y de dicción jurídica impecable' },
+      { id: 'es-CO-GonzaloNeural', label: 'Benito Juárez (Jurista) · Opción B', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Oratoria constitucional cristalina' },
+      { id: 'es-US-AlonsoNeural', label: 'Benito Juárez (Sereno) · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Firmeza republicana templada' }
+    ]
+  },
+  {
+    // Francisco Villa: Centauro del Norte, voz enérgica, franca y humana
+    match: ['villa', 'doroteo', 'arango', 'centauro'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'General Francisco Villa · Opción A', prosodyRate: '+2%', prosodyPitch: '-1Hz', description: 'Voz norteña enérgica, franca, ágil y de dicción directa' },
+      { id: 'es-US-AlonsoNeural', label: 'Francisco Villa (Dinámico) · Opción B', prosodyRate: '+2%', prosodyPitch: '-1Hz', description: 'Cadencia ágil de comandante en campaña' },
+      { id: 'es-PE-AlexNeural', label: 'Francisco Villa (Brioso) · Opción C', prosodyRate: '+2%', prosodyPitch: '+0Hz', description: 'Timbre vibrante y decidido' }
+    ]
+  },
+  {
+    // Emiliano Zapata: Caudillo del Sur, templado y profundo
+    match: ['zapata', 'emiliano zapata', 'anenecuilco', 'caudillo del sur'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'General Emiliano Zapata · Opción A', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Voz sureña firme, templada, fluida y de gran claridad' },
+      { id: 'es-US-AlonsoNeural', label: 'Emiliano Zapata (Sereno) · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Convicción agrarista serena y nítida' },
+      { id: 'es-CO-GonzaloNeural', label: 'Emiliano Zapata (Manifiesto) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Dicción clara del Plan de Ayala' }
+    ]
+  },
+  {
+    // Francisco I. Madero: Apóstol de la Democracia, culto, amable y elocuente
+    match: ['madero', 'francisco i madero', 'apostol de la democracia'],
+    options: [
+      { id: 'es-CO-GonzaloNeural', label: 'Presidente Francisco I. Madero · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Idealista democrático, dicción culta, fluida y perfectamente articulada' },
+      { id: 'es-US-AlonsoNeural', label: 'Francisco I. Madero (Cálido) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Tono conciliador y humano' },
+      { id: 'es-MX-JorgeNeural', label: 'Francisco I. Madero (México) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Firmeza institucional mexicana' }
+    ]
+  },
+  {
+    // General Felipe Ángeles: Estratega humanista y académico
+    match: ['felipe angeles', 'general angeles'],
+    options: [
+      { id: 'es-US-AlonsoNeural', label: 'General Felipe Ángeles · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Militar académico y humanista, caballeroso y de dicción cristalina' },
+      { id: 'es-CO-GonzaloNeural', label: 'General Felipe Ángeles (Docto) · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Precisión intelectual y fluidez' },
+      { id: 'es-MX-JorgeNeural', label: 'General Felipe Ángeles (México) · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Temple leal y reflexivo' }
+    ]
+  },
+  {
+    // Carmen Serdán Alatriste y Leona Vicario: Heroínas jóvenes de dicción clara y valiente
+    match: ['carmen serdan', 'leona vicario', 'gertrudis bocanegra', 'malintzin', 'malinche'],
+    options: [
+      { id: 'es-PE-CamilaNeural', label: 'Heroína Patria (Joven) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven revolucionaria e insurgente, dulce, fluida y nítida' },
+      { id: 'es-MX-DaliaNeural', label: 'Heroína Patria (México) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Calidez mexicana y convicción patriótica' },
+      { id: 'es-CO-SalomeNeural', label: 'Heroína Patria (Ilustrada) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Articulación limpia y elocuente' }
+    ]
+  },
+  {
+    // Aquiles Serdán: Joven mártir revolucionario
+    match: ['aquiles serdan'],
+    options: [
+      { id: 'es-PE-AlexNeural', label: 'Aquiles Serdán · Opción A', prosodyRate: '+2%', prosodyPitch: '+0Hz', description: 'Joven revolucionario firme, apasionado y de dicción fluida' },
+      { id: 'es-US-AlonsoNeural', label: 'Aquiles Serdán (Firme) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Timbre decidido y limpio' },
+      { id: 'es-MX-JorgeNeural', label: 'Aquiles Serdán (México) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Resonancia patriótica' }
+    ]
+  },
+  {
+    // Andrés Quintana Roo, Belisario Domínguez y Ricardo Flores Magón: Tribunos, periodistas y juristas
+    match: ['quintana roo', 'belisario dominguez', 'belisario', 'flores magon', 'magon'],
+    options: [
+      { id: 'es-CO-GonzaloNeural', label: 'Tribuno / Jurista Patrio · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Dicción parlamentaria y periodística de máxima claridad y fluidez' },
+      { id: 'es-US-AlonsoNeural', label: 'Tribuno / Humanista · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Voz cálida, digna y fluida' },
+      { id: 'es-MX-JorgeNeural', label: 'Tribuno Mexicano · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Peso institucional y firmeza ética' }
+    ]
+  },
+  {
+    // Guadalupe Victoria y José Guadalupe Posada
+    match: ['guadalupe victoria', 'guadalupe posada', 'posada'],
+    options: [
+      { id: 'es-US-AlonsoNeural', label: 'Voz Republicana / Cronista · Opción A', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Voz cálida, cercana, humana y de articulación fluida' },
+      { id: 'es-MX-JorgeNeural', label: 'Voz Mexicana Clásica · Opción B', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Timbre mexicano tradicional y claro' },
+      { id: 'es-CO-GonzaloNeural', label: 'Voz Histórica Ilustrada · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción pulcra y fluida' }
+    ]
+  },
+  {
+    // Lázaro Cárdenas, Plutarco Elías Calles y Gustavo Díaz Ordaz: Presidentes del Siglo XX
+    match: ['lazaro cardenas', 'cardenas', 'plutarco elias calles', 'calles', 'gustavo diaz ordaz', 'diaz ordaz'],
+    options: [
+      { id: 'es-MX-JorgeNeural', label: 'Estadista Presidencial (México) · Opción A', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Oratoria de Estado mexicana, grave, fluida y de dicción perfecta' },
+      { id: 'es-CO-GonzaloNeural', label: 'Estadista Institucional · Opción B', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Articulación institucional clara y solemne' },
+      { id: 'es-US-AlonsoNeural', label: 'Estadista Republicano · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Tono firme y equilibrado' }
+    ]
+  }
+];
+
+/**
  * Función de Selección Inteligente de Voz por Personaje, Edad y Variante (A, B, C)
  */
 export function resolveCharacterVoice(
@@ -262,9 +416,17 @@ export function resolveCharacterVoice(
   variantIndex: 0 | 1 | 2 = 0,
   birthOrDeathDates?: string
 ): VoiceMatrixOption {
+  const norm = (characterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const idx = Math.min(2, Math.max(0, variantIndex)) as 0 | 1 | 2;
+
+  for (const entry of CHARACTER_BESPOKE_VOICES) {
+    if (entry.match.some(m => norm.includes(m))) {
+      return entry.options[idx];
+    }
+  }
+
   const cohort = inferCharacterAgeCohort(characterName, historicalAge, birthOrDeathDates);
   const cohortVoices = HISTORICAL_VOICE_MATRIX[cohort];
-  const idx = Math.min(2, Math.max(0, variantIndex));
   return cohortVoices[idx];
 }
 
@@ -641,8 +803,8 @@ export function generateHistoricalSSML(
   const expressive = getOratoricalExpressiveStyle(intention, profile.gender);
 
   const voiceName = overrides?.voiceId || profile.voiceId;
-  const finalRate = overrides?.voiceRate || expressive.rate || profile.prosodyRate;
-  const finalPitch = overrides?.voicePitch || expressive.pitch || profile.prosodyPitch;
+  const finalRate = overrides?.voiceRate || profile.prosodyRate || expressive.rate;
+  const finalPitch = overrides?.voicePitch || profile.prosodyPitch || expressive.pitch;
   const finalStyle = overrides?.style || expressive.style;
   const finalStyleDegree = overrides?.styleDegree || expressive.styleDegree;
 
@@ -840,10 +1002,10 @@ export interface UniversalVoicePlayOptions {
   characterName?: string;
   historicalAge?: number;
   variantIndex?: number;
-  role?: 'character' | 'narrator' | 'pedagogical';
+  role?: 'character' | 'narrator' | 'pedagogical' | 'mentor' | 'language_tutor';
   narratorMode?: NarratorMode;
   voiceId?: string;
-  language?: 'es' | 'en' | 'fr';
+  language?: 'es' | 'en' | 'fr' | string;
   gender?: 'female' | 'male';
   rate?: number;
   pitch?: number;
@@ -891,7 +1053,15 @@ export function stopAllIskoolAudio(): void {
  * 3. Si no hay conexión o falla la red, activa el fallback local con SpeechSynthesis aplicando
  *    el dialecto nativo (fr-FR para francés, en-US para inglés o es-MX con filtro anti-castellano para español).
  */
-export async function playUniversalIskoolVoice(options: UniversalVoicePlayOptions): Promise<UniversalAudioController> {
+export async function playUniversalIskoolVoice(
+  optionsOrText: UniversalVoicePlayOptions | string,
+  extraOptions?: Omit<UniversalVoicePlayOptions, 'text'>
+): Promise<UniversalAudioController> {
+  const options: UniversalVoicePlayOptions =
+    typeof optionsOrText === 'string'
+      ? { text: optionsOrText, ...(extraOptions || {}) }
+      : optionsOrText;
+
   const {
     text,
     characterName,
@@ -941,7 +1111,16 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
   }
 
   const effectiveGender = gender || (characterName ? getPersonaGender(characterName) : 'female');
-  const effectiveLang: 'es' | 'en' | 'fr' = language || (voiceId?.startsWith('fr-') ? 'fr' : (voiceId?.startsWith('en-') ? 'en' : 'es'));
+  const rawLang = (language || '').toLowerCase();
+  const effectiveLang: 'es' | 'en' | 'fr' = rawLang.startsWith('fr')
+    ? 'fr'
+    : rawLang.startsWith('en')
+    ? 'en'
+    : voiceId?.startsWith('fr-')
+    ? 'fr'
+    : voiceId?.startsWith('en-')
+    ? 'en'
+    : 'es';
   const cacheKey = `${voiceId || characterName || role}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
 
   // Intentar primero con el motor neural de alta fidelidad
@@ -980,7 +1159,9 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
 
     const audio = new Audio(audioUrl);
     globalActiveAudioElement = audio;
-    audio.playbackRate = rate;
+    // El archivo MP3 neural de 24kHz ya viene sintetizado con la prosodia humana exacta;
+    // mantener playbackRate en 1.0 evita artefactos metálicos por time-stretching del navegador.
+    audio.playbackRate = 1.0;
 
     audio.onplay = () => {
       if (isStopped) {
@@ -1872,8 +2053,8 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     language: 'en',
     gender: 'male',
     voiceId: 'en-GB-RyanNeural',
-    speechRate: 0.88,
-    speechPitch: 1.0,
+    speechRate: 0.97,
+    speechPitch: 0.99,
     era: 'Elizabethan Era (1564 - 1616)',
     country: 'England',
     avatarEmoji: '📜',
@@ -1891,8 +2072,8 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     language: 'en',
     gender: 'female',
     voiceId: 'en-GB-SoniaNeural',
-    speechRate: 0.90,
-    speechPitch: 1.05,
+    speechRate: 0.98,
+    speechPitch: 1.01,
     era: 'Victorian Scientific Era (1815 - 1852)',
     country: 'United Kingdom',
     avatarEmoji: '⚙️',
@@ -1909,9 +2090,9 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Abraham Lincoln',
     language: 'en',
     gender: 'male',
-    voiceId: 'en-US-GuyNeural',
-    speechRate: 0.84,
-    speechPitch: 0.95,
+    voiceId: 'en-US-AndrewMultilingualNeural',
+    speechRate: 0.96,
+    speechPitch: 0.98,
     era: 'American Civil War (1809 - 1865)',
     country: 'United States',
     avatarEmoji: '🏛️',
@@ -1928,9 +2109,9 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Napoléon Bonaparte',
     language: 'fr',
     gender: 'male',
-    voiceId: 'fr-FR-HenriNeural',
-    speechRate: 0.88,
-    speechPitch: 0.96,
+    voiceId: 'fr-FR-RemyMultilingualNeural',
+    speechRate: 0.98,
+    speechPitch: 0.99,
     era: 'Premier Empire Français (1769 - 1821)',
     country: 'France',
     avatarEmoji: '⚔️',
@@ -1948,8 +2129,8 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     language: 'fr',
     gender: 'female',
     voiceId: 'fr-FR-DeniseNeural',
-    speechRate: 0.90,
-    speechPitch: 1.02,
+    speechRate: 0.98,
+    speechPitch: 1.00,
     era: 'Révolution Scientifique (1867 - 1934)',
     country: 'France / Pologne',
     avatarEmoji: '🔬',
@@ -1967,7 +2148,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     language: 'fr',
     gender: 'male',
     voiceId: 'fr-FR-HenriNeural',
-    speechRate: 0.86,
+    speechRate: 0.97,
     speechPitch: 0.98,
     era: 'Romantisme & XIXe Siècle (1802 - 1885)',
     country: 'France',
@@ -1985,9 +2166,9 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Jeanne d\'Arc',
     language: 'fr',
     gender: 'female',
-    voiceId: 'fr-FR-EloiseNeural',
-    speechRate: 0.92,
-    speechPitch: 1.08,
+    voiceId: 'fr-FR-VivienneMultilingualNeural',
+    speechRate: 0.99,
+    speechPitch: 1.01,
     era: 'Guerre de Cent Ans (1412 - 1431)',
     country: 'France',
     avatarEmoji: '🛡️',

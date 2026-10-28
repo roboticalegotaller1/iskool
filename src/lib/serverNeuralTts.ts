@@ -1,4 +1,4 @@
-import { execFile } from 'child_process';
+import { execFile, spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -12,7 +12,111 @@ interface SynthesizeOptions {
 }
 
 const memoryAudioCache = new Map<string, Buffer>();
-const MAX_CACHE_ITEMS = 250;
+const MAX_CACHE_ITEMS = 300;
+
+interface PendingDaemonRequest {
+  resolve: (buf: Buffer) => void;
+  reject: (err: Error) => void;
+  timer: NodeJS.Timeout;
+}
+
+let daemonProcess: ChildProcessWithoutNullStreams | null = null;
+let daemonStdoutBuffer = '';
+let daemonSeq = 0;
+const pendingRequests = new Map<string, PendingDaemonRequest>();
+
+function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
+  if (daemonProcess && !daemonProcess.killed && daemonProcess.exitCode === null) {
+    return daemonProcess;
+  }
+
+  try {
+    const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
+    const child = spawn('python', ['-u', workerScript, '--daemon'], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' }
+    });
+
+    daemonStdoutBuffer = '';
+
+    child.stdout.setEncoding('utf-8');
+    child.stdout.on('data', (chunk: string) => {
+      daemonStdoutBuffer += chunk;
+      let newlineIdx = daemonStdoutBuffer.indexOf('\n');
+      while (newlineIdx !== -1) {
+        const line = daemonStdoutBuffer.slice(0, newlineIdx).trim();
+        daemonStdoutBuffer = daemonStdoutBuffer.slice(newlineIdx + 1);
+        if (line) {
+          try {
+            const msg = JSON.parse(line);
+            const pending = pendingRequests.get(msg.id);
+            if (pending) {
+              clearTimeout(pending.timer);
+              pendingRequests.delete(msg.id);
+              if (msg.ok && msg.b64) {
+                pending.resolve(Buffer.from(msg.b64, 'base64'));
+              } else {
+                pending.reject(new Error(msg.error || 'Error en worker daemon TTS'));
+              }
+            }
+          } catch {}
+        }
+        newlineIdx = daemonStdoutBuffer.indexOf('\n');
+      }
+    });
+
+    const cleanupAllPending = (err: Error) => {
+      for (const [, p] of pendingRequests) {
+        clearTimeout(p.timer);
+        p.reject(err);
+      }
+      pendingRequests.clear();
+      if (daemonProcess === child) {
+        daemonProcess = null;
+      }
+    };
+
+    child.on('error', (err) => cleanupAllPending(err));
+    child.on('exit', (code) => cleanupAllPending(new Error(`Daemon TTS finalizado (${code})`)));
+
+    daemonProcess = child;
+    return child;
+  } catch {
+    return null;
+  }
+}
+
+function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    const child = getOrStartNeuralDaemon();
+    if (!child || !child.stdin.writable) {
+      return reject(new Error('Daemon TTS no disponible'));
+    }
+
+    const reqId = `req_${++daemonSeq}_${Date.now()}`;
+    const timer = setTimeout(() => {
+      pendingRequests.delete(reqId);
+      reject(new Error('Timeout en daemon TTS'));
+    }, 12000);
+
+    pendingRequests.set(reqId, { resolve, reject, timer });
+
+    try {
+      const line = JSON.stringify({
+        id: reqId,
+        text: options.text,
+        voice: options.voice,
+        rate: options.rate,
+        pitch: options.pitch
+      }) + '\n';
+      child.stdin.write(line, 'utf-8');
+    } catch (writeErr: any) {
+      clearTimeout(timer);
+      pendingRequests.delete(reqId);
+      reject(writeErr);
+    }
+  });
+}
 
 /**
  * Genera audio MP3 neural de alta fidelidad sin costo de tokens,
@@ -59,7 +163,30 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     } catch {}
   }
 
-  // 3. Ejecutar síntesis mediante worker calibrado
+  // 3. Intento primario ultrarrápido en memoria mediante el Daemon Persistente (sin cold-start ni disco temporal)
+  try {
+    const daemonBuffer = await synthesizeViaWarmDaemon({
+      text: cleanText,
+      voice,
+      rate,
+      pitch
+    });
+    if (daemonBuffer && daemonBuffer.length > 0) {
+      try {
+        fs.writeFileSync(cachedFilePath, daemonBuffer);
+      } catch {}
+      if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
+        const firstKey = memoryAudioCache.keys().next().value;
+        if (firstKey) memoryAudioCache.delete(firstKey);
+      }
+      memoryAudioCache.set(cacheKey, daemonBuffer);
+      return daemonBuffer;
+    }
+  } catch {
+    // Si el daemon está reiniciando, continuar transparentemente al worker CLI por lote
+  }
+
+  // 4. Respaldo por proceso CLI individual
   const tempOutputFile = path.join(os.tmpdir(), `iskool_tts_${cacheKey}_${Date.now()}.mp3`);
   const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
 

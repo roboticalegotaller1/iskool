@@ -247,50 +247,34 @@ function IbimePortalContent() {
   if (viewMode === 'ceo') {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col">
-        {/* HEADER INSTITUCIONAL SOBERANO IBIME - VISIÓN EJECUTIVA CEO */}
-        <header className="sticky top-0 z-50 w-full bg-[#0F2744] text-white shadow-md border-b border-blue-900">
-          <div className="max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 min-w-0 shrink">
-              <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
-                <IbimeOfficialLogo size={40} showText={false} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                  <span className="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
-                    Instituto Bilingüe IBIME
-                  </span>
-                  <span 
-                    data-testid="institutional-badge" 
-                    style={{ color: '#047857' }}
-                    className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs whitespace-nowrap"
-                  >
-                    IBIME Bicultural Hub
-                  </span>
-                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 shadow-xs font-bold whitespace-nowrap">
-                    Visión Ejecutiva CEO
-                  </span>
-                  {isSuperUser && (
-                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white border border-indigo-400 shadow-xs whitespace-nowrap">
-                      Super Usuario
-                    </span>
-                  )}
-                </div>
-                <span className="text-[11px] text-blue-100 font-medium hidden 2xl:block truncate">
-                  Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
-                </span>
-              </div>
+        {/* CINTA EJECUTIVA COMPACTA (NANO BANANA 2.1 — SIN DOBLE HEADER SOBRE LA OMNI-BAR CEO) */}
+        <header className="w-full bg-[#0F2744] text-white border-b border-blue-900/80">
+          <div className="max-w-[1680px] w-full mx-auto px-3 sm:px-5 h-10 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 shrink">
+              <span className="text-xs font-extrabold tracking-tight text-white truncate">
+                Instituto Bilingüe IBIME
+              </span>
+              <span
+                data-testid="institutional-badge"
+                style={{ color: '#047857' }}
+                className="hidden md:inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 whitespace-nowrap"
+              >
+                IBIME Bicultural Hub
+              </span>
+              <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 whitespace-nowrap">
+                Bento Command OS v2.0
+              </span>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
+            <div className="flex items-center gap-1.5 shrink-0 flex-nowrap">
               {isSuperUser && (
                 <button
                   onClick={handleBackToDirectory}
-                  className="h-9 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-indigo-400 active:scale-98 shrink-0 leading-none"
+                  className="h-7 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-indigo-400 shrink-0 leading-none"
                   title="Volver al Directorio Institucional de Colegios (Acceso Superusuario)"
                 >
-                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                  <Building2 className="w-3 h-3 shrink-0" />
                   <span className="hidden sm:inline whitespace-nowrap">Directorio Colegios</span>
-                  <span className="sm:hidden">Colegios</span>
                 </button>
               )}
 
@@ -299,40 +283,38 @@ function IbimePortalContent() {
                   await switchCanonicalStudent('std-ibime-montes-01');
                   router.push('/student');
                 }}
-                className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 active:scale-98 shrink-0 leading-none"
+                className="h-7 px-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-amber-300 shrink-0 leading-none"
                 title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-900 shrink-0" />
+                <Sparkles className="w-3 h-3 text-amber-900 shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">Experiencia Alumno 360°</span>
-                <span className="sm:hidden">Alumno</span>
               </button>
 
               <button
                 onClick={handleGoToParentExperience}
-                className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98 shrink-0 leading-none"
+                className="h-7 px-2.5 rounded-lg bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-blue-700 shrink-0 leading-none"
                 title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
               >
-                <Heart className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+                <Heart className="w-3 h-3 text-rose-300 shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">Experiencia Familia</span>
-                <span className="sm:hidden">Familia</span>
               </button>
 
               <button
                 onClick={() => setViewMode('operational')}
-                className="h-9 px-3 rounded-xl bg-white text-[#E41B14] hover:bg-red-50 font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-200 active:scale-98 shrink-0 leading-none"
+                className="h-7 px-2.5 rounded-lg bg-white text-[#E41B14] hover:bg-red-50 font-bold text-[11px] transition-all inline-flex items-center justify-center gap-1 cursor-pointer border border-red-200 shrink-0 leading-none"
                 title="Conmutar al Tablero Operativo Clásico"
               >
-                <Layers className="w-4 h-4 text-[#C01D0C] shrink-0" />
+                <Layers className="w-3 h-3 text-[#C01D0C] shrink-0" />
                 <span className="hidden sm:inline whitespace-nowrap">Tablero Operativo</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="h-9 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs shrink-0 leading-none"
+                className="h-7 px-2.5 rounded-lg bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-[11px] transition-colors inline-flex items-center justify-center gap-1 cursor-pointer border border-blue-800 hover:border-rose-600 shrink-0 leading-none"
                 title="Cerrar sesión institucional y volver al portal"
               >
-                <LogOut className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Cerrar Sesión</span>
+                <LogOut className="w-3 h-3 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Salir</span>
               </button>
             </div>
           </div>

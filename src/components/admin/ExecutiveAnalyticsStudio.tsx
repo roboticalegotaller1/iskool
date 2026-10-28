@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import { 
   ArrowLeft, 
   Send, 
@@ -646,48 +647,38 @@ export default function ExecutiveAnalyticsStudio({
   };
 
   const toggleSpeakBriefing = (textToSpeak?: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      alert('Tu navegador no soporta síntesis de voz.');
-      return;
-    }
+    if (typeof window === 'undefined') return;
     if (isSpeakingBriefing) {
-      window.speechSynthesis.cancel();
+      stopAllIskoolAudio();
       setIsSpeakingBriefing(false);
       return;
     }
     const content = textToSpeak || currentReport?.directAnswer || currentReport?.explanation.summary;
     if (!content) return;
 
-    window.speechSynthesis.cancel();
+    stopAllIskoolAudio();
     const cleanText = content
       .replace(/[*#_~`\[\]]/g, '')
-      .replace(/•/g, '')
+      .replace(/•/g, ', ')
       .replace(/\|/g, ' ')
       .replace(/\n+/g, '. ');
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'es-MX';
-    utterance.rate = 1.05;
-    utterance.pitch = 0.98;
-
-    const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.startsWith('es-MX')) ||
-                    voices.find(v => v.lang.startsWith('es')) || null;
-    if (esVoice) utterance.voice = esVoice;
-
-    utterance.onend = () => setIsSpeakingBriefing(false);
-    utterance.onerror = () => setIsSpeakingBriefing(false);
-
     setIsSpeakingBriefing(true);
-    window.speechSynthesis.speak(utterance);
+    playUniversalIskoolVoice(cleanText, {
+      voiceId: 'es-MX-DaliaNeural',
+      role: 'mentor',
+      language: 'es-MX',
+      rate: 0.99,
+      pitch: 1.02,
+      onStart: () => setIsSpeakingBriefing(true),
+      onEnd: () => setIsSpeakingBriefing(false),
+    });
   };
 
   // Limpieza al desmontar
   useEffect(() => {
     return () => {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopAllIskoolAudio();
     };
   }, []);
 

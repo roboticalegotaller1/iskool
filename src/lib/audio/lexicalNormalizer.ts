@@ -191,6 +191,31 @@ export function normalizeMexicanSpanishText(text: string): string {
     .replace(/[*_#`~>]/g, '')
     .trim();
 
+  // 1.b Iniciales intermedias en nombres históricos (ej. "Francisco I. Madero", "Gustavo A. Madero", "John J. Pershing")
+  // Evita que el punto tras la inicial corte la oración o se lea como número romano "Primero"
+  result = result
+    .replace(/\bFrancisco\s+I\.\s*Madero\b/gi, 'Francisco I Madero')
+    .replace(/\bGustavo\s+A\.\s*Madero\b/gi, 'Gustavo A Madero')
+    .replace(/\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,})\s+([A-Z])\.\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]{2,})\b/g, '$1 $2 $3');
+
+  // 1.c Artículos constitucionales y números ordinales históricos (ej. "Artículo 3°", "Artículos 3°, 27 y 123")
+  result = result
+    .replace(/\b([Aa]rt[ií]culos?)\s+3\s*[°º]?\b/g, '$1 tercero')
+    .replace(/\b1\s*\.?\s*[°º]\b/g, 'primero')
+    .replace(/\b2\s*\.?\s*[°º]\b/g, 'segundo')
+    .replace(/\b3\s*\.?\s*[°º]\b/g, 'tercero')
+    .replace(/\b4\s*\.?\s*[°º]\b/g, 'cuarto')
+    .replace(/\b5\s*\.?\s*[°º]\b/g, 'quinto')
+    .replace(/\b6\s*\.?\s*[°º]\b/g, 'sexto')
+    .replace(/\b7\s*\.?\s*[°º]\b/g, 'séptimo')
+    .replace(/\b8\s*\.?\s*[°º]\b/g, 'octavo')
+    .replace(/\b9\s*\.?\s*[°º]\b/g, 'noveno')
+    .replace(/\b10\s*\.?\s*[°º]\b/g, 'décimo')
+    .replace(/\b1\s*\.?\s*ª\b/g, 'primera')
+    .replace(/\b2\s*\.?\s*ª\b/g, 'segunda')
+    .replace(/\b3\s*\.?\s*ª\b/g, 'tercera')
+    .replace(/\b4\s*\.?\s*ª\b/g, 'cuarta');
+
   // 2. Fechas compuestas en español: ej. "16 de septiembre de 1810", "1 de enero del 2024"
   const dateRegex = /\b(0?[1-9]|[12][0-9]|3[01])\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)(?:\s+de|\s+del)?\s+(\d{4})\b/gi;
   result = result.replace(dateRegex, (_match, dayStr, month, yearStr) => {
@@ -306,19 +331,32 @@ export function normalizeMexicanSpanishText(text: string): string {
     result = result.replace(item.regex, item.replace);
   }
 
-  // 8. Abreviaturas Históricas, Eclesiásticas y Militares
+  // 8. Abreviaturas Históricas, Eclesiásticas, Académicas y Militares
   const abbreviations: Array<{ regex: RegExp; replace: string }> = [
     { regex: /\bGral\./gi, replace: 'General' },
     { regex: /\bCnel\./gi, replace: 'Coronel' },
     { regex: /\bCap\./gi, replace: 'Capitán' },
     { regex: /\bTte\./gi, replace: 'Teniente' },
+    { regex: /\bSgto\./gi, replace: 'Sargento' },
     { regex: /\bLic\./gi, replace: 'Licenciado' },
     { regex: /\bDr\./gi, replace: 'Doctor' },
     { regex: /\bDra\./gi, replace: 'Doctora' },
+    { regex: /\bMtro\./gi, replace: 'Maestro' },
+    { regex: /\bMtra\./gi, replace: 'Maestra' },
+    { regex: /\bProfr\./gi, replace: 'Profesor' },
+    { regex: /\bProfra\./gi, replace: 'Profesora' },
+    { regex: /\bProf\./gi, replace: 'Profesor' },
+    { regex: /\bIng\./gi, replace: 'Ingeniero' },
+    { regex: /\bArq\./gi, replace: 'Arquitecto' },
     { regex: /\bDn\./gi, replace: 'Don' },
     { regex: /\bDña\./gi, replace: 'Doña' },
     { regex: /\bSta\./gi, replace: 'Santa' },
     { regex: /\bSto\./gi, replace: 'Santo' },
+    { regex: /\bSn\./gi, replace: 'San' },
+    { regex: /\bMons\./gi, replace: 'Monseñor' },
+    { regex: /\bArz\./gi, replace: 'Arzobispo' },
+    { regex: /\bGob\./gi, replace: 'Gobernador' },
+    { regex: /\bPres\./gi, replace: 'Presidente' },
     { regex: /\bFray\b/gi, replace: 'Fray' },
     { regex: /\ba\.\s*C\./gi, replace: 'antes de Cristo' },
     { regex: /\ba\.C\./gi, replace: 'antes de Cristo' },
@@ -328,6 +366,35 @@ export function normalizeMexicanSpanishText(text: string): string {
   for (const item of abbreviations) {
     result = result.replace(item.regex, item.replace);
   }
+
+  // 8.b Unidades con barra diagonal para lectura continua sin deletrear "diagonal" o "barra"
+  result = result
+    .replace(/\/mes\b/gi, ' al mes')
+    .replace(/\/a[ñn]o\b/gi, ' al año')
+    .replace(/\/d[ií]a\b/gi, ' al día')
+    .replace(/\/hora\b/gi, ' por hora')
+    .replace(/\s+\/\s+/g, ', ')
+    .replace(/\s*·\s*/g, ', ');
+
+  // 8.c Números decimales (ej. "9.9" -> "nueve punto nueve", "95.8" -> "noventa y cinco punto ocho", "4.0" -> "cuatro punto cero")
+  // Crítico para la fluidez: evita que el punto decimal sea interpretado como punto final de oración ("nueve. nueve")
+  result = result.replace(/\b(\d+)\.(\d+)\b/g, (_match, intPart, decPart) => {
+    const intVal = parseInt(intPart, 10);
+    const intWords = isNaN(intVal) ? intPart : numberToSpanishWords(intVal);
+    if (decPart === '0' || decPart === '00') {
+      return `${intWords} punto cero`;
+    }
+    if (decPart.startsWith('0')) {
+      const digits = decPart
+        .split('')
+        .map((d: string) => UNITS[parseInt(d, 10)] ?? d)
+        .join(' ');
+      return `${intWords} punto ${digits}`;
+    }
+    const decVal = parseInt(decPart, 10);
+    const decWords = isNaN(decVal) ? decPart : numberToSpanishWords(decVal);
+    return `${intWords} punto ${decWords}`;
+  });
 
   // 9. Cantidades y Números Cardinales Restantes en Contexto Histórico
   // Apócope contextual de "1" y "21" antes de sustantivos (ej. 1 soldado -> un soldado, 21 cañones -> veintiún cañones)

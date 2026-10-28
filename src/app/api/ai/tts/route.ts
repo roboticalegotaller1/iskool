@@ -349,18 +349,37 @@ export async function POST(req: NextRequest) {
       else if (preliminaryVoice.startsWith('es-')) explicitLang = 'es';
     }
 
+    let resolvedProsodyRate = '+0%';
+    let resolvedProsodyPitch = '+0Hz';
+
     // 1. Procesamiento de carga útil: SSML directo o generación por texto/personaje/narrador
     if (ssml && typeof ssml === 'string' && ssml.trim()) {
       const voiceMatch = /<voice\s+name="([^"]+)"/i.exec(ssml);
       if (voiceMatch && voiceMatch[1]) {
         preliminaryVoice = voiceMatch[1];
       }
+      if (characterName) {
+        const profile = getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates);
+        preliminaryVoice = voice || profile.voiceId || preliminaryVoice;
+        resolvedProsodyRate = profile.prosodyRate || '-2%';
+        resolvedProsodyPitch = profile.prosodyPitch || '+0Hz';
+      }
       const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterGender);
       targetSSML = sanitizeSSMLForNeuralEngine(ssml.trim(), resolved.voice, resolved.locale);
       preliminaryVoice = resolved.voice;
-      rawNormalizedText = resolved.lang === 'es' 
-        ? normalizeLatinHistoricalPhonetics(ssml.replace(/<[^>]+>/g, ' '))
-        : ssml.replace(/<[^>]+>/g, ' ').trim();
+      const pipeline = getLanguagePipeline(resolved.locale || preliminaryVoice || resolved.lang);
+      if (text && typeof text === 'string' && text.trim()) {
+        cleanText = text
+          .replace(/!\[.*?\]\(.*?\)/g, '')
+          .replace(/\[\[(.*?)\]\]/g, '$1')
+          .replace(/[*_#`~>]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        rawNormalizedText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
+      } else {
+        // Extraer desde targetSSML ya sanitizado (donde <sub alias="..."> ya fue expandido a su fonética nativa)
+        rawNormalizedText = targetSSML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      }
     } else if (text && typeof text === 'string' && text.trim()) {
       // Limpieza inicial de markdown preservando ortografía del idioma
       cleanText = text
@@ -374,44 +393,61 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No hay texto audible tras limpieza' }, { status: 400 });
       }
 
-      // Resolver voz y locale
-      const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterGender);
+      // Si se especificó un personaje histórico y no se forzó una voz explícita, obtener la voz calibrada del personaje primero
+      const characterProfile = characterName
+        ? getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates)
+        : null;
+      if (characterProfile && !voice) {
+        preliminaryVoice = characterProfile.voiceId;
+      }
+
+      // Resolver voz y locale certificados
+      const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterProfile?.gender || characterGender);
       preliminaryVoice = resolved.voice;
       const targetLocale = resolved.locale;
       const pipeline = getLanguagePipeline(targetLocale || preliminaryVoice || resolved.lang);
 
       rawNormalizedText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
 
-      if (role === 'narrator' && resolved.lang === 'es') {
+      if (role === 'narrator' && resolved.lang === 'es' && !characterName) {
         // Narradores Gamificados en Español
         const validMode: NarratorMode = ['epic_chronist', 'wisdom_guide', 'time_chrononaut'].includes(narratorMode)
           ? narratorMode 
           : 'wisdom_guide';
         const rawNarratorSSML = generateNarratorSSML(cleanText, validMode);
-        preliminaryVoice = preliminaryVoice || (validMode === 'wisdom_guide' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural');
+        preliminaryVoice = voice || (validMode === 'wisdom_guide' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural');
         const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', validMode === 'wisdom_guide' ? 'female' : 'male');
         targetSSML = sanitizeSSMLForNeuralEngine(rawNarratorSSML, certified.voice, certified.locale);
         preliminaryVoice = certified.voice;
-      } else if (characterName && resolved.lang === 'es') {
-        // Próceres Históricos Mexicanos
-        const profile = getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates);
-        preliminaryVoice = preliminaryVoice || profile.voiceId;
-        const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', profile.gender);
-        const rawHistoricalSSML = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, { birthOrDeathDates: birthDeathDates });
+        resolvedProsodyRate = validMode === 'wisdom_guide' ? '-2%' : '+0%';
+        resolvedProsodyPitch = validMode === 'wisdom_guide' ? '+0Hz' : '-1Hz';
+      } else if (characterProfile && resolved.lang === 'es') {
+        // Próceres Históricos Mexicanos y Latinoamericanos con Calibración de Autor
+        const certified = resolveCertifiedPlatformVoice(voice || characterProfile.voiceId, 'es', characterProfile.gender);
+        const rawHistoricalSSML = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, {
+          voiceId: certified.voice,
+          birthOrDeathDates: birthDeathDates
+        });
         targetSSML = sanitizeSSMLForNeuralEngine(rawHistoricalSSML, certified.voice, certified.locale);
         preliminaryVoice = certified.voice;
+        resolvedProsodyRate = characterProfile.prosodyRate || '-2%';
+        resolvedProsodyPitch = characterProfile.prosodyPitch || '+0Hz';
       } else {
-        // Canalización Multilingüe Automatizada (en-US, en-GB, fr-FR, fr-CA o es-MX didáctico)
-        const ratePercent = Math.round((rate - 1.0) * 100);
-        const prosodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
-        const pitchHz = Math.round((pitch - 1.0) * 100);
-        const prosodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
+        // Canalización Multilingüe Automatizada (incluye Próceres en Francés e Inglés)
+        const ratePercent = characterProfile
+          ? parseInt(characterProfile.prosodyRate, 10) || 0
+          : Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
+        resolvedProsodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
+        const pitchHz = characterProfile
+          ? parseInt(characterProfile.prosodyPitch, 10) || 0
+          : Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
+        resolvedProsodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
 
         const directSSML = pipeline.buildSSML({
           voice: preliminaryVoice,
           text: cleanText,
-          rate: prosodyRate,
-          pitch: prosodyPitch,
+          rate: resolvedProsodyRate,
+          pitch: resolvedProsodyPitch,
           locale: pipeline.locale,
           language: pipeline.language,
           intention: detectOratoricalIntention(cleanText)
@@ -452,16 +488,19 @@ export async function POST(req: NextRequest) {
     // 3. Síntesis neuronal de audio de alta fidelidad (24kHz / 96kbps MP3)
     let audioBuffer: Buffer;
     try {
-      const ratePercent = Math.round((rate - 1.0) * 100);
-      const prosodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
-      const pitchHz = Math.round((pitch - 1.0) * 100);
-      const prosodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
+      const fallbackRatePercent = Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
+      const fallbackRate = fallbackRatePercent >= 0 ? `+${fallbackRatePercent}%` : `${fallbackRatePercent}%`;
+      const fallbackPitchHz = Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
+      const fallbackPitch = fallbackPitchHz >= 0 ? `+${fallbackPitchHz}Hz` : `${fallbackPitchHz}Hz`;
+
+      const finalRate = resolvedProsodyRate !== '+0%' ? resolvedProsodyRate : fallbackRate;
+      const finalPitch = resolvedProsodyPitch !== '+0Hz' ? resolvedProsodyPitch : fallbackPitch;
 
       audioBuffer = await synthesizeNeuralAudio({
         text: rawNormalizedText || cleanText || text || targetSSML.replace(/<[^>]+>/g, ' '),
         voice: targetVoice,
-        rate: prosodyRate,
-        pitch: prosodyPitch
+        rate: finalRate,
+        pitch: finalPitch
       });
     } catch (neuralErr) {
       console.warn('[TTS] Motor neuronal primario reportó incidencia, intentando canal secundario:', neuralErr);

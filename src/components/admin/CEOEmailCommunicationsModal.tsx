@@ -142,6 +142,16 @@ import { WorkOsBoard } from './workOs/WorkOsBoard';
 import { SeedAccountsConfigPanel } from './workOs/SeedAccountsConfigPanel';
 import { isPlatformSuperUser } from '@/types';
 
+export interface IMailInitialDraftPayload {
+  recipientName?: string;
+  recipientEmail?: string;
+  recipientGroup?: string;
+  subject: string;
+  body: string;
+  studentName?: string;
+  campusName?: string;
+}
+
 interface CEOEmailCommunicationsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -149,6 +159,11 @@ interface CEOEmailCommunicationsModalProps {
   schoolId?: string;
   selectedCampusId?: string;
   onTriggerToast?: (msg: string) => void;
+  embeddedBento?: boolean;
+  boardroomPrivacyMode?: boolean;
+  initialDraftPayload?: IMailInitialDraftPayload | null;
+  onClearInitialDraft?: () => void;
+  onOpenStudentInAcademicPortal?: (studentId: string, campusId?: string) => void;
 }
 
 export interface MatterItem {
@@ -1252,7 +1267,12 @@ export function CEOEmailCommunicationsModal({
   holding,
   schoolId = 'sch-ibime',
   selectedCampusId = 'all',
-  onTriggerToast = () => {}
+  onTriggerToast = () => {},
+  embeddedBento = false,
+  boardroomPrivacyMode = false,
+  initialDraftPayload = null,
+  onClearInitialDraft,
+  onOpenStudentInAcademicPortal
 }: CEOEmailCommunicationsModalProps) {
   const { user } = useAuth();
 
@@ -3533,36 +3553,116 @@ ${schoolName}`
     }
   }, [activeTab]);
 
-  // Historial de correos despachados
-  const [logs, setLogs] = useState<OutgoingEmailLog[]>([
-    {
-      id: 'log-1',
-      timestamp: getRecentCdmxTimeStr(55),
-      subject: `Circular No. 2026-08: Convocatoria a Sesión de Consejo Directivo y Directores de Plantel`,
-      recipientGroup: 'Directores de Campus & Coordinación',
-      targetCount: campuses.length || 4,
-      status: 'Entregado (100%)',
-      sender: connectedEmail
-    },
-    {
-      id: 'log-2',
-      timestamp: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
-      subject: `Aviso de Facturación CFDI 4.0 con Complemento IEDU - Ciclo 2026-2027`,
-      recipientGroup: `Comunidad de Padres de Familia (${campuses.length} Sedes)`,
-      targetCount: 3740,
-      status: 'Entregado (100%)',
-      sender: `cobranza@${schoolDomain}`
-    },
-    {
-      id: 'log-3',
-      timestamp: formatCdmxRelative(new Date(Date.now() - 5 * 24 * 3600 * 1000)),
-      subject: 'Boletín Trimestral de Logros Pedagógicos y Evaluación Continua',
-      recipientGroup: 'Cuerpo Docente & Académico',
-      targetCount: 200,
-      status: 'Entregado (100%)',
-      sender: `academico@${schoolDomain}`
+  // Recepción reactiva de comunicados pre-cargados desde Portal Académico 360° o Finanzas SAT (Bus Contextual 1-Clic)
+  useEffect(() => {
+    if (initialDraftPayload && isOpen) {
+      setSubject(initialDraftPayload.subject);
+      setContent(initialDraftPayload.body);
+      setSelectedRecipient('parents');
+      setActiveTab('redactar');
+      triggerInModalToast(
+        `✉️ Comunicado oficial pre-cargado para ${initialDraftPayload.recipientName}. Listo para despacho en 1-Clic.`,
+        'info'
+      );
+      onClearInitialDraft?.();
     }
-  ]);
+  }, [initialDraftPayload, isOpen]);
+
+  // Historial de correos despachados (hidratado con persistencia local e integrado con el Copiloto Sofía)
+  const [logs, setLogs] = useState<OutgoingEmailLog[]>(() => {
+    const defaultSeed: OutgoingEmailLog[] = [
+      {
+        id: 'log-1',
+        timestamp: getRecentCdmxTimeStr(55),
+        subject: `Circular No. 2026-08: Convocatoria a Sesión de Consejo Directivo y Directores de Plantel`,
+        recipientGroup: 'Directores de Campus & Coordinación',
+        targetCount: campuses.length || 4,
+        status: 'Entregado (100%)',
+        sender: connectedEmail
+      },
+      {
+        id: 'log-2',
+        timestamp: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
+        subject: `Aviso de Facturación CFDI 4.0 con Complemento IEDU - Ciclo 2026-2027`,
+        recipientGroup: `Comunidad de Padres de Familia (${campuses.length} Sedes)`,
+        targetCount: 3740,
+        status: 'Entregado (100%)',
+        sender: `cobranza@${schoolDomain}`
+      },
+      {
+        id: 'log-3',
+        timestamp: formatCdmxRelative(new Date(Date.now() - 5 * 24 * 3600 * 1000)),
+        subject: 'Boletín Trimestral de Logros Pedagógicos y Evaluación Continua',
+        recipientGroup: 'Cuerpo Docente & Académico',
+        targetCount: 200,
+        status: 'Entregado (100%)',
+        sender: `academico@${schoolDomain}`
+      }
+    ];
+    if (typeof window !== 'undefined') {
+      try {
+        const savedLogs = localStorage.getItem(logsStorageKey);
+        if (savedLogs) {
+          const parsed = JSON.parse(savedLogs);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return defaultSeed;
+  });
+
+  // Escuchar despachos autónomos ejecutados por voz/texto desde Sofía (Copiloto Ejecutivo del Segundo Cerebro)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleSofiaMailDispatched = (ev: Event) => {
+      const customEv = ev as CustomEvent<{
+        logEntry?: OutgoingEmailLog;
+        matterEntry?: MatterItem;
+        rawEmailEntry?: RawGmailItem;
+      }>;
+      const detail = customEv.detail;
+      if (!detail) return;
+
+      if (detail.logEntry) {
+        setLogs(prev => {
+          const filtered = prev.filter(l => l.id !== detail.logEntry!.id);
+          const next = [detail.logEntry!, ...filtered];
+          try {
+            localStorage.setItem(logsStorageKey, JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+      }
+
+      if (detail.matterEntry) {
+        setMattersList(prev => {
+          const filtered = prev.filter(m => m.id !== detail.matterEntry!.id);
+          const next = [detail.matterEntry!, ...filtered];
+          try {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+        setSelectedMatter(detail.matterEntry);
+      }
+
+      if (detail.rawEmailEntry) {
+        setRawEmailsList(prev => {
+          const filtered = prev.filter(e => e.id !== detail.rawEmailEntry!.id);
+          const next = [detail.rawEmailEntry!, ...filtered];
+          try {
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(next));
+          } catch {}
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener('iskool-sofia-mail-dispatched', handleSofiaMailDispatched);
+    return () => window.removeEventListener('iskool-sofia-mail-dispatched', handleSofiaMailDispatched);
+  }, [logsStorageKey, mattersStorageKey, rawEmailsStorageKey]);
 
   // Filtro canónico absoluto para erradicar falsos positivos comerciales o spam de la Bandeja Inteligente
   const isSpamOrCommercialMatter = (item: any): boolean => {
@@ -6638,9 +6738,13 @@ Comité de Seguridad y Protección Escolar`
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2 md:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
+    <div className={embeddedBento ? "w-full animate-in fade-in select-none" : "fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2 md:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none"}>
       <div 
-        className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-none sm:rounded-2xl lg:rounded-3xl shadow-2xl border-0 sm:border w-full max-w-[100vw] sm:max-w-[98vw] 2xl:max-w-[1980px] h-[100dvh] sm:h-[95vh] max-h-[100dvh] sm:max-h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative`}
+        className={`${currentTheme.modalBg} ${currentTheme.modalBorder} ${
+          embeddedBento
+            ? 'rounded-2xl shadow-sm border w-full min-h-[820px] flex flex-col overflow-hidden relative'
+            : 'rounded-none sm:rounded-2xl lg:rounded-3xl shadow-2xl border-0 sm:border w-full max-w-[100vw] sm:max-w-[98vw] 2xl:max-w-[1980px] h-[100dvh] sm:h-[95vh] max-h-[100dvh] sm:max-h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative'
+        }`}
         style={themeMode === 'custom' ? {
           backgroundColor: customTheme.backgroundColor,
           borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.backgroundColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'),
@@ -6962,13 +7066,110 @@ Comité de Seguridad y Protección Escolar`
             </button>
 
             {/* Cerrar modal */}
+            {!embeddedBento && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                aria-label="Cerrar modal"
+              >
+                <X className="h-5 w-5 shrink-0" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* BARRA CONSOLIDADA NANO BANANA 2.1: 4 VISTAS MAESTRAS DE iMAIL & TRIAGE */}
+        <div className="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap shrink-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
-              aria-label="Cerrar modal"
+              onClick={() => {
+                setActiveTab('inbox');
+                setInboxFilter('USABLE');
+                setUsableSubFilter('ALL');
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
+                  ? 'bg-[#E41B14] text-white shadow-sm'
+                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
             >
-              <X className="h-5 w-5 shrink-0" />
+              <Inbox className="h-3.5 w-3.5" />
+              <span>1. Triage Ejecutivo & Decision Dock ({intelligentMatters.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('inbox');
+                setInboxFilter('USABLE');
+                setUsableSubFilter('DELEGADOS');
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') || activeTab === 'work_os'
+                  ? 'bg-amber-500 text-slate-950 shadow-sm'
+                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5" />
+              <span>2. Radar SLA & Work OS ({delegatedMattersList.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('calendario')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'calendario' || activeTab === 'redactar'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Calendar className="h-3.5 w-3.5" />
+              <span>3. Agenda & Circulares ({calendarEvents.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('google')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'google' || activeTab === 'ajustes' || activeTab === 'roi'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>4. Conexión Soberana & Reglas VIP</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('redactar')}
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                activeTab === 'redactar'
+                  ? 'bg-blue-600 text-white border-blue-500'
+                  : 'bg-slate-800 text-blue-300 border-blue-500/30 hover:bg-slate-700'
+              }`}
+            >
+              <Send className="h-3 w-3" />
+              <span>📣 Redactar Circular / Comunicado</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('raw_inbox');
+                setSelectedRawEmailId(null);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                activeTab === 'raw_inbox'
+                  ? 'bg-white text-slate-900 border-white'
+                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'
+              }`}
+            >
+              <Mail className="h-3 w-3" />
+              <span>Buzón General ({rawEmailsList.length})</span>
             </button>
           </div>
         </div>
@@ -8313,6 +8514,59 @@ Comité de Seguridad y Protección Escolar`
                           <p className={`text-xs leading-relaxed font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                             {selectedMatter.summary}
                           </p>
+                        </div>
+
+                        {/* TARJETA EXPEDIENTE 360° EN VIVO (BUS CONTEXTUAL iMAIL ↔ PORTAL ACADÉMICO ↔ FINANZAS) */}
+                        <div className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                          currentTheme.isDark
+                            ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-100'
+                            : 'bg-emerald-50/70 border-emerald-200/90 text-slate-900'
+                        }`}>
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-300 flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Expediente 360° en Vivo · Bus Contextual iSkool
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (onOpenStudentInAcademicPortal) {
+                                  onOpenStudentInAcademicPortal('std-ibime-1');
+                                } else {
+                                  onTriggerToast('Abriendo expediente del alumno en Portal Académico 360°...');
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                            >
+                              <span>🎓 Ver Portafolio en Portal Académico 360° →</span>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
+                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Alumno / Familia</span>
+                              <span className="font-black block truncate">
+                                {selectedMatter.sender_name?.includes('Mendoza')
+                                  ? 'Mateo Mendoza (5º B)'
+                                  : selectedMatter.sender_name?.includes('SEP')
+                                  ? 'Zona Escolar 14 SEP'
+                                  : 'Sofía Hernández (CCH)'}
+                              </span>
+                            </div>
+                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
+                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Promedio & Asistencia</span>
+                              <span className="font-black text-emerald-600 dark:text-emerald-400 block">9.6 · 98.5% Asist.</span>
+                            </div>
+                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
+                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Avance en La Aldea</span>
+                              <span className="font-black text-indigo-600 dark:text-indigo-400 block">Nivel 14 (3,420 XP)</span>
+                            </div>
+                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
+                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Estatus SAT CFDI 4.0</span>
+                              <span className={`font-black text-emerald-700 dark:text-emerald-300 block ${boardroomPrivacyMode ? 'blur-xs select-none' : ''}`}>
+                                Al Corriente (0 Adeudos)
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Fundamentación Normativa en Bóveda Curricular (Correo/[tenant]/...) */}
@@ -13176,17 +13430,19 @@ Comité de Seguridad y Protección Escolar`
               <span>Bitácora Inmutable de Entrada y Salida</span>
             </span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer shrink-0 ml-2 ${
-              currentTheme.isDark
-                ? 'bg-white/10 hover:bg-white/20 text-white'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-            }`}
-          >
-            Cerrar Consola
-          </button>
+          {!embeddedBento && (
+            <button
+              type="button"
+              onClick={onClose}
+              className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer shrink-0 ml-2 ${
+                currentTheme.isDark
+                  ? 'bg-white/10 hover:bg-white/20 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+              }`}
+            >
+              Cerrar Consola
+            </button>
+          )}
         </div>
 
       </div>

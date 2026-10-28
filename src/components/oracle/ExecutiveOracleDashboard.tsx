@@ -23,7 +23,7 @@ import {
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
-import { normalizeLatinHistoricalPhonetics } from '@/lib/historicalVoiceEngine';
+import { normalizeLatinHistoricalPhonetics, playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 
 // ----------------------------------------------------------------------------
 // TIPOS DE ESTADO Y TELEMETRÍA
@@ -130,50 +130,39 @@ export const ExecutiveOracleDashboard: React.FC = () => {
   }, []);
 
   // --------------------------------------------------------------------------
-  // SÍNTESIS DE VOZ EJECUTIVA (TTS FLUIDA)
+  // SÍNTESIS DE VOZ EJECUTIVA (VOZ HUMANA NEURONAL 24KHZ FLUIDA)
   // --------------------------------------------------------------------------
   const speakVoicePayload = (text: string) => {
-    if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (isMuted || typeof window === 'undefined') {
       return;
     }
 
-    window.speechSynthesis.cancel();
-
+    stopAllIskoolAudio();
     const normalizedText = normalizeLatinHistoricalPhonetics(text);
-    const utterance = new SpeechSynthesisUtterance(normalizedText);
-    utterance.lang = 'es-MX';
-    utterance.rate = 1.05; // Cadencia ejecutiva rápida
-    utterance.pitch = 0.98;
 
-    // Seleccionar voz en español de calidad si está disponible
-    const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.includes('es') && (v.name.includes('Mexico') || v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Sabina')));
-    if (esVoice) {
-      utterance.voice = esVoice;
-    }
+    setIsSpeaking(true);
+    setProcessState('streaming_voice');
 
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-      setProcessState('streaming_voice');
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setProcessState('completed');
-    };
-
-    utterance.onerror = () => {
-      setIsSpeaking(false);
-      setProcessState('completed');
-    };
-
-    synthesisRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    playUniversalIskoolVoice(normalizedText, {
+      voiceId: 'es-MX-DaliaNeural',
+      role: 'mentor',
+      language: 'es-MX',
+      rate: 0.99,
+      pitch: 1.02,
+      onStart: () => {
+        setIsSpeaking(true);
+        setProcessState('streaming_voice');
+      },
+      onEnd: () => {
+        setIsSpeaking(false);
+        setProcessState('completed');
+      },
+    });
   };
 
   const toggleMute = () => {
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopAllIskoolAudio();
       setIsSpeaking(false);
     }
     setIsMuted(prev => !prev);
@@ -189,9 +178,7 @@ export const ExecutiveOracleDashboard: React.FC = () => {
     }
 
     // Cancelar voz anterior
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopAllIskoolAudio();
 
     setErrorMessage(null);
     setProcessState('searching_cache');

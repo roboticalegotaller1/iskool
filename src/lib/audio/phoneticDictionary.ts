@@ -132,76 +132,70 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
     ipa: 'mitʃwaˈkan',
     description: 'Lugar de pescadores'
   },
-  hidalgo: {
-    term: 'Hidalgo',
-    alias: 'Idalgo',
-    ipa: 'iˈdalɣo',
-    description: 'Don Miguel Hidalgo y Costilla, Padre de la Patria'
+  cuauhtemotzin: {
+    term: 'Cuauhtemotzin',
+    alias: 'cuautemótsin',
+    ipa: 'kwawteˈmotsin',
+    description: 'Nombre reverencial náhuatl de Cuauhtémoc'
   },
-  allende: {
-    term: 'Allende',
-    alias: 'Ayende',
-    ipa: 'aˈʝende',
-    description: 'Ignacio Allende, Capitán General insurgente'
+  xocoyotzin: {
+    term: 'Xocoyotzin',
+    alias: 'shocoyótsin',
+    ipa: 'ʃokoˈʝotsin',
+    description: 'Epíteto náhuatl de Moctezuma Xocoyotzin'
   },
-  morelos: {
-    term: 'Morelos',
-    alias: 'Morelos',
-    ipa: 'moˈrelos',
-    description: 'José María Morelos y Pavón, Siervo de la Nación'
+  chichen_itza: {
+    term: 'Chichén Itzá',
+    alias: 'chichén itsá',
+    ipa: 'tʃiˈtʃen iˈtsa',
+    description: 'Ciudad sagrada maya en Yucatán'
   },
-  iturbide: {
-    term: 'Iturbide',
-    alias: 'Iturbide',
-    ipa: 'iturˈbiðe',
-    description: 'Agustín de Iturbide, consumador del Plan de Iguala'
+  apatzingan: {
+    term: 'Apatzingán',
+    alias: 'apatsingán',
+    ipa: 'apatsiŋˈgan',
+    description: 'Sede del Decreto Constitucional para la Libertad de la América Mexicana (1814)'
   },
-  benito_juarez: {
-    term: 'Benito Juárez',
-    alias: 'Benito Juárez',
-    ipa: 'beˈnito ˈxwaɾes',
-    description: 'Benemérito de las Américas'
+  culhuacan: {
+    term: 'Culhuacán',
+    alias: 'culguacán',
+    ipa: 'kulwaˈkan',
+    description: 'Señorío ancestral del Valle de México'
   },
-  pais: {
-    term: 'país',
-    alias: 'pa-ís',
-    ipa: 'pa.ˈis',
-    description: 'Modulación fonética natural del hiato acentual en la vocal cerrada tónica (pa-ís)'
+  chimalhuacan: {
+    term: 'Chimalhuacán',
+    alias: 'chimalguacán',
+    ipa: 'tʃimalwaˈkan',
+    description: 'Topónimo mexica'
   },
-  paises: {
-    term: 'países',
-    alias: 'pa-íses',
-    ipa: 'pa.ˈi.ses',
-    description: 'Modulación fonética natural del plural con hiato acentual silábico (pa-íses)'
+  habsburgo: {
+    term: 'Habsburgo',
+    alias: 'Jabsburgo',
+    ipa: 'xabsˈβuɾɣo',
+    description: 'Casa de Habsburgo (Maximiliano de Habsburgo)'
   },
-  patria: {
-    term: 'patria',
-    alias: 'pátria',
-    ipa: 'ˈpa.tɾja',
-    description: 'Modulación fonética natural con acento prosódico primario en primera sílaba [ˈpa] y diptongo átono fluido [tɾja] para erradicar hiatos robóticos'
+  lorencez: {
+    term: 'Lorencez',
+    alias: 'Lorensé',
+    ipa: 'loɾenˈse',
+    description: 'Conde de Lorencez, comandante francés en la Batalla de Puebla'
   },
-  patrias: {
-    term: 'patrias',
-    alias: 'pátrias',
-    ipa: 'ˈpa.tɾjas',
-    description: 'Modulación fonética natural plural de patria [ˈpa.tɾjas]'
+  bazaine: {
+    term: 'Bazaine',
+    alias: 'Basén',
+    ipa: 'baˈsen',
+    description: 'Mariscal francés Achille Bazaine'
   },
-  patrio: {
-    term: 'patrio',
-    alias: 'pátrio',
-    ipa: 'ˈpa.tɾjo',
-    description: 'Modulación fonética natural masculina de patrio [ˈpa.tɾjo]'
-  },
-  patrios: {
-    term: 'patrios',
-    alias: 'pátrios',
-    ipa: 'ˈpa.tɾjos',
-    description: 'Modulación fonética natural masculina plural de patrios [ˈpa.tɾjos]'
+  poinsett: {
+    term: 'Poinsett',
+    alias: 'Póinset',
+    ipa: 'ˈpɔɪnsɛt',
+    description: 'Joel R. Poinsett, primer ministro plenipotenciario de EE. UU. en México'
   },
   // Nombres y Términos Históricos Anglosajones con Pronunciación Auténtica
   john_pershing: {
     term: 'John J. Pershing',
-    alias: 'Jon Pérshin',
+    alias: 'Yon Pérshin',
     ipa: 'dʒɒn ˈpɜːrʃɪŋ',
     description: 'General John J. Pershing, comandante de la Expedición Punitiva'
   },
@@ -249,7 +243,7 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
   },
   zachary_taylor: {
     term: 'Zachary Taylor',
-    alias: 'Zácari Téilor',
+    alias: 'Sácari Téilor',
     ipa: 'ˈzækəri ˈteɪlər',
     description: 'General Zachary Taylor'
   },
@@ -267,7 +261,7 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
   },
   abraham_lincoln: {
     term: 'Abraham Lincoln',
-    alias: 'Éibraham Líncoln',
+    alias: 'Éibrajam Líncoln',
     ipa: 'ˈeɪbrəhæm ˈlɪŋkən',
     description: 'Presidente Abraham Lincoln'
   },
@@ -288,6 +282,18 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
     alias: 'Aisenjáuer',
     ipa: 'ˈaɪzənhaʊər',
     description: 'Presidente Dwight Eisenhower'
+  },
+  sam_houston: {
+    term: 'Sam Houston',
+    alias: 'Sam Jiúston',
+    ipa: 'sæm ˈhjuːstən',
+    description: 'Sam Houston'
+  },
+  stephen_austin: {
+    term: 'Stephen F. Austin',
+    alias: 'Estíven Óstin',
+    ipa: 'ˈstiːvən ˈɔːstɪn',
+    description: 'Stephen F. Austin'
   }
 };
 
@@ -316,8 +322,9 @@ export function applyPhoneticSubstitutions(
 
   // Lista de patrones ordenados por longitud descendente para evitar colisiones
   const patterns: Array<{ regex: RegExp; entry: PhoneticEntry }> = [
-    { regex: /\bBenito\s+Ju[aá]rez\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.benito_juarez },
+    { regex: /\bCuauhtemotzin\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.cuauhtemotzin },
     { regex: /\bCuauht[eé]moc\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.cuauhtemoc },
+    { regex: /\bXocoyotzin\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.xocoyotzin },
     { regex: /\bNezahualc[oó]yotl\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.nezahualcoyotl },
     { regex: /\bTenochtitl[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.tenochtitlan },
     { regex: /\bTlaxcala\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.tlaxcala },
@@ -334,29 +341,25 @@ export function applyPhoneticSubstitutions(
     { regex: /\bMalintzin\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.malintzin },
     { regex: /\bHuitzilopochtli\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.huitzilopochtli },
     { regex: /\bTzintzuntzan\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.tzintzuntzan },
+    { regex: /\bChich[eé]n\s+Itz[aá]\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.chichen_itza },
+    { regex: /\bApatzing[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.apatzingan },
     { regex: /\bAn[aá]huac\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.anahuac },
     { regex: /\bAcolhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.acolhuacan },
+    { regex: /\bCulhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.culhuacan },
+    { regex: /\bChimalhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.chimalhuacan },
     { regex: /\bMichoac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.michoacan },
-    { regex: /\bHidalgo\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.hidalgo },
-    { regex: /\bAllende\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.allende },
-    { regex: /\bMorelos\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.morelos },
-    { regex: /\bIturbide\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.iturbide },
-    // Modulación fonética prioritaria para el hiato acentual en "país" / "países"
-    { regex: /\bpa[ií]ses\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.paises },
-    { regex: /\bpa[ií]s\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pais },
-    // Modulación fonética de alta fidelidad humana para "patria" / "patrias" / "patrio" / "patrios"
-    { regex: /\bpatrias\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrias },
-    { regex: /\bpatria\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patria },
-    { regex: /\bpatrios\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrios },
-    { regex: /\bpatrio\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrio },
+    { regex: /\bHabsburgo\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.habsburgo },
+    { regex: /\bLorencez\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.lorencez },
+    { regex: /\bBazaine\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.bazaine },
+    { regex: /\bPoinsett\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.poinsett },
     // Figuras y Nombres Anglosajones en Contexto Histórico
-    { regex: /\bJohn\s+J\.\s+Pershing\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.john_pershing },
+    { regex: /\bJohn\s+J\.?\s+Pershing\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.john_pershing },
     { regex: /\bPershing\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pershing },
     { regex: /\bColumbus\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.columbus },
     { regex: /\bWoodrow\s+Wilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.woodrow_wilson },
     { regex: /\bHenry\s+Lane\s+Wilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.henry_lane_wilson },
     { regex: /\bWilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.wilson },
-    { regex: /\bJames\s+K\.\s+Polk\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.james_polk },
+    { regex: /\bJames\s+K\.?\s+Polk\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.james_polk },
     { regex: /\bWinfield\s+Scott\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.winfield_scott },
     { regex: /\bZachary\s+Taylor\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.zachary_taylor },
     { regex: /\bGeorge\s+Washington\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.george_washington },
@@ -364,7 +367,9 @@ export function applyPhoneticSubstitutions(
     { regex: /\bAbraham\s+Lincoln\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.abraham_lincoln },
     { regex: /\bLincoln\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.lincoln },
     { regex: /\bRoosevelt\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.roosevelt },
-    { regex: /\bEisenhower\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.eisenhower }
+    { regex: /\bEisenhower\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.eisenhower },
+    { regex: /\bSam\s+Houston\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.sam_houston },
+    { regex: /\bStephen\s+F\.?\s+Austin\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.stephen_austin }
   ];
 
   for (const { regex, entry } of patterns) {

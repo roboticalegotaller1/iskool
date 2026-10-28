@@ -418,40 +418,14 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     setChestLift(false);
   }, []);
 
-  // Fallback de síntesis de voz en navegador con bloqueo anti-castellano
+  // Fallback de síntesis de voz: prioriza SIEMPRE el motor neuronal 24kHz antes de tocar síntesis de navegador
   const fallbackSpeechSynthesis = useCallback((cleanText: string, onPlaybackStart?: () => void) => {
     if (typeof window === 'undefined') return;
 
     const normalizedText = normalizeLatinHistoricalPhonetics(cleanText);
-
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(normalizedText);
-      const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
-
-      if (isConfiguredLatin) {
-        utterance.onstart = () => {
-          onPlaybackStart?.();
-          startLipSyncAnimation();
-        };
-        utterance.onend = () => {
-          stopLipSyncAnimation();
-        };
-        utterance.onerror = () => {
-          onPlaybackStart?.();
-          stopLipSyncAnimation();
-        };
-
-        speechSynthRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
-        return;
-      }
-    }
-
-    // PILAR 1: Si no hay voces latinas locales en el navegador (o solo existen voces de España),
-    // se aplica el filtro de rechazo y se utiliza el fallback HTTP directo hacia el servidor.
     const profile = getPersonaProfile(characterName, effectiveAge, variantIndex, birthDeathDates);
     const resolvedVoiceId = voiceId || profile.voiceId;
+
     fetch('/api/ai/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -486,11 +460,32 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             currentAudioRef.current = null;
           };
           await audio.play();
-        } else {
-          onPlaybackStart?.();
+          return;
         }
+        throw new Error('Neural TTS fallback non-200');
       })
       .catch(() => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(normalizedText);
+          const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
+          if (isConfiguredLatin) {
+            utterance.onstart = () => {
+              onPlaybackStart?.();
+              startLipSyncAnimation();
+            };
+            utterance.onend = () => {
+              stopLipSyncAnimation();
+            };
+            utterance.onerror = () => {
+              onPlaybackStart?.();
+              stopLipSyncAnimation();
+            };
+            speechSynthRef.current = utterance;
+            window.speechSynthesis.speak(utterance);
+            return;
+          }
+        }
         onPlaybackStart?.();
         stopLipSyncAnimation();
       });
@@ -575,28 +570,28 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             // CADENA DE MASTERIZACIÓN DSP CON WEB AUDIO API
             // =========================================================================
 
-            // 1. Compensación de Resonancia Torácica (Warmth EQ): Peaking 180Hz, Q 1.2, +2.5dB
+            // 1. Compensación de Resonancia Torácica (Warmth EQ Transparente): Peaking 180Hz, Q 1.0, +1.2dB
             const warmthFilter = ctx.createBiquadFilter();
             warmthFilter.type = 'peaking';
             warmthFilter.frequency.value = 180;
-            warmthFilter.Q.value = 1.2;
-            warmthFilter.gain.value = 2.5;
+            warmthFilter.Q.value = 1.0;
+            warmthFilter.gain.value = 1.2;
 
-            // 2. Atenuador de Sibilancias (De-Esser Dinámico Pasivo): Highshelf 6500Hz, -1.8dB
+            // 2. Atenuador de Sibilancias (De-Esser Dinámico Suave): Highshelf 7000Hz, -1.2dB
             const deEsserFilter = ctx.createBiquadFilter();
             deEsserFilter.type = 'highshelf';
-            deEsserFilter.frequency.value = 6500;
-            deEsserFilter.gain.value = -1.8;
+            deEsserFilter.frequency.value = 7000;
+            deEsserFilter.gain.value = -1.2;
 
-            // 3. Convolución Ambiental Conmutable (Reverb de Sala Histórica RT60 ~0.42s)
+            // 3. Convolución Ambiental Sutil (Presencia íntima de estudio RT60 ~0.28s)
             const convolver = ctx.createConvolver();
-            convolver.buffer = createHistoricRoomReverbBuffer(ctx, 0.42, 3.8);
+            convolver.buffer = createHistoricRoomReverbBuffer(ctx, 0.28, 4.5);
 
             const dryGain = ctx.createGain();
-            dryGain.gain.value = 0.90; // 90% señal directa
+            dryGain.gain.value = 0.97; // 97% señal directa cristalina de 24kHz
 
             const wetGain = ctx.createGain();
-            wetGain.gain.value = 0.10; // 10% señal reverberada
+            wetGain.gain.value = 0.03; // 3% aire acústico natural sin efecto metálico
 
             // Conexión en serie de ecualización y de-essing
             src.connect(warmthFilter);

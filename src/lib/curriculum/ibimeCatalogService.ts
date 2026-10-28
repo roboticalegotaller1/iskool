@@ -84,11 +84,34 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'primaria',
     grade: '5º Primaria Bilingüe',
     email: 'iker.morales@ibime.edu.mx',
+    phone: '55-4440-1009',
     tutor_name: 'Ing. Santiago Morales Domínguez',
+    emergency_contact_name: 'Lucía Peña Aguilar',
+    emergency_contact_phone: '55-4440-1009',
+    blood_type: 'O+',
+    medical_notes: 'Sin alergias médicas reportadas. Esquema de vacunación completo.',
+    academic_notes: 'Excelente desempeño en Matemáticas y Robótica STEAM IBIME. Certificación Cambridge Starters aprobada con mérito.',
     scholarship_percentage: 40,
     scholarship_type: 'academica',
     average_grade: 9.8,
     status: 'activo',
+    pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Saberes y Pensamiento Científico (Matemáticas)', grade: 9.9 },
+      { subject_name: 'Robótica STEAM y Presión Hidráulica', grade: 10.0 },
+      { subject_name: 'Cambridge English Bicultural (Flyers)', grade: 9.8 },
+      { subject_name: 'Proyecto Comunitario Sustentable NEM', grade: 9.5 }
+    ],
+    teacher_notes: [
+      {
+        id: 'tn-ibime-1',
+        date: '2026-06-02',
+        teacher_name: 'Prof. Patricia Sandoval Morales',
+        note: 'Iker ha demostrado un dominio sobresaliente en el diseño del brazo hidráulico y la formulación del principio de Pascal. Felicitaciones por su liderazgo en el equipo de robótica STEAM de Campus Montes.',
+        parent_reply: 'Muchas gracias Profesora Patricia, en casa estamos reforzando los modelos tridimensionales con Iker y está muy motivado.',
+        replied_at: '2026-06-03T09:30:00.000Z'
+      }
+    ]
   },
   {
     id: 'std-ibime-montes-02',
@@ -104,9 +127,24 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'primaria',
     grade: '1º Primaria Bilingüe',
     email: 'camila.herrera@ibime.edu.mx',
+    phone: '55-4440-1012',
     tutor_name: 'Dra. Sophia Cruz Alarcón',
+    emergency_contact_name: 'Rodrigo Herrera Galindo',
+    emergency_contact_phone: '55-4440-1012',
+    blood_type: 'A+',
+    medical_notes: 'Sin alergias ni restricciones físicas.',
+    academic_notes: 'Excelente adaptación al primer grado de Primaria Bilingüe IBIME y desarrollo lector.',
+    scholarship_percentage: 10,
+    scholarship_type: 'academica',
     average_grade: 9.5,
     status: 'activo',
+    pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Lectoescritura y Lenguajes NEM', grade: 9.6 },
+      { subject_name: 'Pensamiento Matemático Inicial', grade: 9.4 },
+      { subject_name: 'Phonics & English Immersion', grade: 9.6 },
+      { subject_name: 'De lo Humano y lo Comunitario', grade: 9.4 }
+    ]
   },
   {
     id: 'std-ibime-lagos-01',
@@ -122,11 +160,24 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'primaria',
     grade: '3º Primaria Bilingüe',
     email: 'ximena.castillo@ibime.edu.mx',
+    phone: '55-4440-1018',
     tutor_name: 'Lic. Valentina Ruiz Gómez',
+    emergency_contact_name: 'Arturo Castillo Gómez',
+    emergency_contact_phone: '55-4440-1018',
+    blood_type: 'A+',
+    medical_notes: 'Alergia estacional leve al polen primaveral controlada con antihistamínico.',
+    academic_notes: 'Destacada participación en el Programa Bilingüe y proyectos comunitarios NEM.',
     scholarship_percentage: 30,
     scholarship_type: 'academica',
     average_grade: 9.7,
     status: 'activo',
+    pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Lenguajes y Comunicación Bilingüe', grade: 9.8 },
+      { subject_name: 'Saberes y Pensamiento Científico', grade: 9.6 },
+      { subject_name: 'Cambridge English Movers', grade: 9.8 },
+      { subject_name: 'Ética, Naturaleza y Sociedades', grade: 9.6 }
+    ]
   },
   {
     id: 'std-ibime-san-01',
@@ -142,9 +193,24 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'secundaria',
     grade: '2º Secundaria Tecnológica',
     email: 'mateo.navas@ibime.edu.mx',
+    phone: '55-4440-1025',
     tutor_name: 'Arq. Emiliano Navas Pacheco',
+    emergency_contact_name: 'Mariana Mendoza Vaca',
+    emergency_contact_phone: '55-4440-1025',
+    blood_type: 'B+',
+    medical_notes: 'Sin antecedentes clínicos de riesgo.',
+    academic_notes: 'Capitán de debate bilingüe y candidato a Certificación Cambridge KET.',
+    scholarship_percentage: 20,
+    scholarship_type: 'academica',
     average_grade: 9.4,
     status: 'activo',
+    pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Ciencias II (Física y Robótica)', grade: 9.5 },
+      { subject_name: 'Matemáticas Secundaria', grade: 9.3 },
+      { subject_name: 'Cambridge English KET', grade: 9.6 },
+      { subject_name: 'Historia y Debate Bicultural', grade: 9.2 }
+    ]
   },
   {
     id: 'std-ibime-coac-01',
@@ -160,11 +226,24 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'preparatoria',
     grade: '4º Semestre CCH UNAM',
     email: 'regina.albarran@ibime.edu.mx',
+    phone: '55-4440-1033',
     tutor_name: 'Mtro. Héctor Albarrán Morales',
+    emergency_contact_name: 'Sofía Cruz Del Moral',
+    emergency_contact_phone: '55-4440-1033',
+    blood_type: 'O+',
+    medical_notes: 'Sin alergias médicas reportadas.',
+    academic_notes: 'Alumna #1 en promedio general en Bachillerato Incorporado CCH-UNAM. Excelencia en Ciencias Experimentales e Inglés FCE.',
     scholarship_percentage: 50,
     scholarship_type: 'academica',
     average_grade: 9.9,
     status: 'activo',
+    pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Cálculo y Física Experimental CCH-UNAM', grade: 10.0 },
+      { subject_name: 'Química y Biología Molecular CCH', grade: 9.9 },
+      { subject_name: 'Cambridge English First (FCE B2)', grade: 10.0 },
+      { subject_name: 'Taller de Lectura y Análisis Histórico', grade: 9.7 }
+    ]
   },
   {
     id: 'std-ibime-coac-02',
@@ -180,9 +259,24 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     level: 'secundaria',
     grade: '1º Secundaria Bicultural',
     email: 'leonardo.varela@ibime.edu.mx',
+    phone: '55-4440-1041',
     tutor_name: 'Lic. Daniel Varela Vega',
+    emergency_contact_name: 'Karla Fuentes Romero',
+    emergency_contact_phone: '55-4440-1041',
+    blood_type: 'O+',
+    medical_notes: 'Alergia alimentaria leve a los frutos secos (nueces y cacahuates).',
+    academic_notes: 'Buen desempeño en Taller de Robótica STEAM IBIME.',
+    scholarship_percentage: 0,
+    scholarship_type: 'ninguna',
     average_grade: 9.3,
     status: 'activo',
+    pending_payments: ['Colegiatura de Agosto 2026 (Extemporánea) - $4,680.00 MXN (Vencida)'],
+    subject_grades: [
+      { subject_name: 'Taller de Robótica STEAM IBIME', grade: 9.6 },
+      { subject_name: 'Matemáticas I Secundaria', grade: 9.1 },
+      { subject_name: 'Inglés Bicultural PET', grade: 9.3 },
+      { subject_name: 'Biología y Sustentabilidad NEM', grade: 9.2 }
+    ]
   }
 ];
 

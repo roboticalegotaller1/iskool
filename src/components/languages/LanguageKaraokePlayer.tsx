@@ -644,17 +644,19 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
   }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx, detectedSpeechText]);
 
-  // Reproductor de muestras de entonación (Québec vs Francia)
+  // Reproductor de muestras de entonación con voz humana neuronal (Québec vs Francia)
   const playIntonationSample = useCallback((dialect: 'fr-CA' | 'fr-FR', word: string = 'né') => {
     if (typeof window === 'undefined') return;
     try {
-      window.speechSynthesis?.cancel();
+      stopAllIskoolAudio();
       const textToSpeak = word === 'né' ? (dialect === 'fr-CA' ? 'né à Ajaccio' : 'né') : word;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = dialect;
-      utterance.rate = dialect === 'fr-CA' ? 0.85 : 0.9;
-      utterance.pitch = dialect === 'fr-CA' ? 0.95 : 1.15; // Curva plana F0 canadiense vs curva ascendente parisina
-      window.speechSynthesis?.speak(utterance);
+      playUniversalIskoolVoice(textToSpeak, {
+        voiceId: dialect === 'fr-CA' ? 'fr-CA-SylvieNeural' : 'fr-FR-VivienneMultilingualNeural',
+        role: 'language_tutor',
+        language: dialect,
+        rate: dialect === 'fr-CA' ? 0.95 : 0.98,
+        pitch: dialect === 'fr-CA' ? 1.0 : 1.02,
+      });
     } catch (e) {
       console.warn('Speech synthesis error:', e);
     }

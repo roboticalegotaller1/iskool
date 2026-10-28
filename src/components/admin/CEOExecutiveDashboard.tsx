@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import {
   Building2,
   Users,
@@ -67,9 +68,13 @@ import {
   Phone,
   MapPin,
   Eye,
+  EyeOff,
+  Volume2,
+  VolumeX,
   ClipboardList,
   Menu,
-  Mail
+  Mail,
+  Mic
 } from 'lucide-react';
 import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution, isCorporateInstitution } from '@/types';
 import { 
@@ -97,7 +102,8 @@ import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
-import { CEOEmailCommunicationsModal } from './CEOEmailCommunicationsModal';
+import { CEOEmailCommunicationsModal, IMailInitialDraftPayload } from './CEOEmailCommunicationsModal';
+import { SofiaCopilotConsole } from './SofiaCopilotConsole';
 import { useAdmissionsPipeline } from '@/hooks/useAdmissionsPipeline';
 import BentoAdmissionsKanban from './BentoAdmissionsKanban';
 import { useCrmStore } from '@/store/useCrmStore';
@@ -1004,13 +1010,20 @@ export default function CEOExecutiveDashboard({
   const [selectedCampusId, setSelectedCampusId] = useState<string>('all');
   const [timeFilter, setTimeFilter] = useState<'semana' | 'mes' | 'bimestre' | 'ciclo'>('semana');
   const [activeTab, setActiveTab] = useState<string>('inicio');
-  const [financeSubTab, setFinanceSubTab] = useState<'ebitda' | 'sat' | 'operacion' | 'reportes'>('ebitda');
-  const [academicSubTab, setAcademicSubTab] = useState<'radar' | 'comunidad' | 'gamificacion'>('radar');
+  const [financeSubTab, setFinanceSubTab] = useState<'todo' | 'ebitda' | 'sat' | 'operacion' | 'reportes'>('todo');
+  const [academicSubTab, setAcademicSubTab] = useState<'todo' | 'radar' | 'comunidad' | 'gamificacion'>('todo');
   const [admissionsViewMode, setAdmissionsViewMode] = useState<'bento_kanban' | 'crm_studio'>('bento_kanban');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResult, setSearchResult] = useState<Array<{ title: string; category: string; target: string }>>([]);
+
+  // Estados Nano Banana 2.1 (Bento Command OS v2.0): Modo Junta, Briefing 60s y Bus Contextual Cruzado
+  const [boardroomPrivacyMode, setBoardroomPrivacyMode] = useState<boolean>(false);
+  const [isPlayingOmniBriefing, setIsPlayingOmniBriefing] = useState<boolean>(false);
+  const [selectedPortalStudentId, setSelectedPortalStudentId] = useState<string | undefined>(undefined);
+  const [imailDraftPayload, setImailDraftPayload] = useState<IMailInitialDraftPayload | null>(null);
+  const [isLicenseBannerExpanded, setIsLicenseBannerExpanded] = useState<boolean>(false);
   
   // Vista detallada de avance por colegio (Barras vs Matriz Comparativa)
   const [isComparativeMatrixOpen, setIsComparativeMatrixOpen] = useState<boolean>(false);
@@ -1089,6 +1102,7 @@ export default function CEOExecutiveDashboard({
   // Modal de Acceso a Portales Académicos por Colegio y Correo Institucional
   const [isAcademicPortalModalOpen, setIsAcademicPortalModalOpen] = useState<boolean>(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState<boolean>(false);
+  const [sofiaAutoListen, setSofiaAutoListen] = useState<boolean>(false);
 
   // Estado del generador de reportes analíticos instantáneos (0 Tokens)
   const [activeReportQuery, setActiveReportQuery] = useState<string>('Estudiantes con adeudo activo por nivel y monto pendiente');
@@ -1942,71 +1956,119 @@ export default function CEOExecutiveDashboard({
     setIsAcademicPortalModalOpen(false);
   };
 
-  const navMenuItems: Array<{ id: string; label: string; icon: any; desc: string; highlight?: boolean }> = [
+  // Briefing de Voz Ejecutivo de 60 Segundos desde el Omni-Bar (Voz Humana Neuronal 24kHz · 0 Tokens)
+  const handleToggleOmniBriefing = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (isPlayingOmniBriefing) {
+      stopAllIskoolAudio();
+      setIsPlayingOmniBriefing(false);
+      triggerToast('Briefing de voz pausado.');
+      return;
+    }
+    stopAllIskoolAudio();
+    const speechText = `Resumen Ejecutivo de 60 segundos para ${institutionalDisplayName}. Matrícula activa consolidada: ${metrics.totalStudents} ${isCorporate ? 'colaboradores' : 'alumnos'} en ${metrics.totalCampuses} ${isCorporate ? 'plantas' : 'sedes'}, con ${metrics.avgCollection} por ciento de cobranza efectiva y ${metrics.avgCurriculum} por ciento de cobertura curricular. En iMail y Triage tienes 3 asuntos críticos pendientes de firma en el Decision Dock: autorización de beca de retención en Campus Coacalco, dictamen de mantenimiento preventivo y conciliación fiscal CFDI 4.0. Todos los sistemas operan a cero tokens.`;
+    setIsPlayingOmniBriefing(true);
+    triggerToast('▶ Reproduciendo Briefing Ejecutivo con Voz Humana (Sofía · 0 Tokens)...');
+    playUniversalIskoolVoice(speechText, {
+      voiceId: 'es-MX-DaliaNeural',
+      role: 'mentor',
+      language: 'es-MX',
+      rate: 0.99,
+      pitch: 1.02,
+      onStart: () => setIsPlayingOmniBriefing(true),
+      onEnd: () => setIsPlayingOmniBriefing(false),
+    });
+  }, [isPlayingOmniBriefing, institutionalDisplayName, metrics, isCorporate, triggerToast]);
+
+  const navMenuItems: Array<{ id: string; label: string; icon: any; desc: string; highlight?: boolean; badge?: string }> = [
     { 
       id: 'inicio', 
-      label: '1. Síntesis & Holding', 
+      label: isCorporate ? '1. Síntesis & Holding' : '1. Holding & Sedes', 
       icon: Building2, 
-      desc: isCorporate ? 'Consolidado & Benchmark' : 'Telemetría & Benchmark' 
+      desc: isCorporate ? 'Consolidado & Benchmark' : 'Cockpit & Focos 1-Clic' 
     },
     { 
       id: 'admisiones', 
-      label: isCorporate ? '2. Reclutamiento & Talento' : '2. Admisiones & Crecimiento', 
+      label: isCorporate ? '2. Reclutamiento & Talento' : '2. Admisiones 360°', 
       icon: UserCheck, 
-      desc: isCorporate ? 'Pipeline B2B & Conversión' : 'Embudo 360° & Matrícula' 
+      desc: isCorporate ? 'Pipeline B2B & Conversión' : 'Kanban & CRM Escolar' 
     },
     { 
       id: 'academico', 
-      label: isCorporate ? '3. Competencias & Capital' : '3. Calidad Académica & Talento', 
+      label: isCorporate ? '3. Competencias & Capital' : '3. Calidad NEM & Aldea', 
       icon: GraduationCap, 
-      desc: isCorporate ? 'Ejes STPS & Capacitación' : 'SEP NEM 2024 & Docentes' 
+      desc: isCorporate ? 'Ejes STPS & Capacitación' : 'Radar SEP & Gamificación XP' 
     },
     { 
       id: 'finanzas', 
-      label: '4. Finanzas & Operación', 
+      label: '4. Finanzas, EBITDA & SAT', 
       icon: DollarSign, 
-      desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : 'Simulador, SAT & Operación' 
+      desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : 'What-If, CFDI 4.0 & BI' 
     },
+    ...(!isCorporate ? [{
+      id: 'portal_academico',
+      label: '5. Portal Académico',
+      icon: Home,
+      desc: 'Alumnos 360° & Espejo Aula',
+      highlight: true
+    }] : []),
+    {
+      id: 'imail_triage',
+      label: isCorporate ? '5. iMail & Triage' : '6. iMail & Triage',
+      icon: Mail,
+      desc: 'Decision Dock & Radar SLA',
+      highlight: true,
+      badge: '3'
+    }
   ];
+
+  const seatOccupancyPercent = Math.min(
+    100,
+    Math.round(
+      ((metrics.totalStudents) /
+        (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200)))) *
+        1000
+    ) / 10
+  );
 
   return (
     <div className="flex h-screen bg-[#f8f9fa] text-slate-800 font-sans antialiased overflow-hidden select-none print:h-auto print:min-h-0 print:overflow-visible print:bg-white print:block">
       
       {/* ========================================================= */}
-      {/* 1. BARRA LATERAL DESKTOP (VISIBLE EN PANTALLAS GRANDES)   */}
+      {/* 1. BARRA LATERAL DESKTOP (6 MÓDULOS BENTO COMMAND OS)     */}
       {/* ========================================================= */}
       <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between z-20 shrink-0 select-none print:hidden no-print">
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {/* Brand Logo Header */}
-          <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
+          <div className="h-14 flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
             {corporateTheme ? (
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
-                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} size={32} variant="emblem_only" />
+                <div className="h-9 w-9 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
+                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} size={28} variant="emblem_only" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-sm font-black tracking-tight text-slate-900 block truncate">
                     {isBmw ? 'BMW Group SLP' : isRetail ? 'Vanguardia Retail' : 'Innovasoft AI'}
                   </span>
                   <span className="text-[10px] font-bold text-slate-500 block truncate">
-                    Suite CEO B2B
+                    Bento Command OS · B2B
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
                   i
                 </div>
                 <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
                 <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                  CEO
+                  CEO OS
                 </span>
               </div>
             )}
           </div>
 
-          {/* Menú de Navegación Principal */}
+          {/* Menú de Navegación Principal (6 Módulos Bento Command OS) */}
           <nav className="p-3 space-y-1.5 overflow-y-auto flex-1 custom-scrollbar">
             {navMenuItems.map((item) => {
               const Icon = item.icon;
@@ -2017,9 +2079,9 @@ export default function CEOExecutiveDashboard({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer active:scale-98 group ${
                     isActive
-                      ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white font-bold shadow-md shadow-blue-600/30 border border-blue-400/40')
+                      ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 text-white font-bold shadow-md shadow-indigo-600/25 border border-indigo-400/40')
                       : item.highlight
-                      ? 'text-blue-950 bg-blue-50/90 hover:bg-blue-100 font-bold border border-blue-200/80 shadow-2xs'
+                      ? 'text-indigo-950 bg-indigo-50/70 hover:bg-indigo-100/80 font-bold border border-indigo-200/80 shadow-2xs'
                       : 'text-slate-700 bg-slate-50/80 hover:bg-blue-50/70 hover:text-blue-700 border border-slate-200/70 hover:border-blue-200/90 shadow-2xs hover:shadow-xs'
                   }`}
                 >
@@ -2028,56 +2090,33 @@ export default function CEOExecutiveDashboard({
                       isActive
                         ? 'bg-white/20 border border-white/30 shadow-xs'
                         : item.highlight
-                        ? 'bg-blue-100 border border-blue-200 text-blue-700'
+                        ? 'bg-indigo-100 border border-indigo-200 text-indigo-700'
                         : 'bg-white border border-slate-200 text-slate-500 group-hover:text-blue-600 group-hover:border-blue-200 group-hover:bg-blue-50'
                     }`}>
-                      <Icon size={17} className={isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]' : ''} />
+                      <Icon size={16} className={isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]' : ''} />
                     </div>
-                    <span className="tracking-tight font-semibold text-xs leading-snug text-left">{item.label}</span>
+                    <div className="text-left min-w-0">
+                      <span className="tracking-tight font-bold text-xs leading-snug block truncate">{item.label}</span>
+                      <span className={`text-[10px] block truncate ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{item.desc}</span>
+                    </div>
                   </div>
-                  {isActive ? (
-                    <ChevronRight size={16} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                  ) : (
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100 shrink-0" />
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {item.badge && (
+                      <span className={`px-1.5 py-0.5 text-[10px] font-black rounded-full ${
+                        isActive ? 'bg-rose-500 text-white' : 'bg-rose-100 text-rose-700 border border-rose-200'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive ? (
+                      <ChevronRight size={15} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    ) : (
+                      <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100 shrink-0" />
+                    )}
+                  </div>
                 </button>
               );
             })}
-
-            {/* Botón de Acceso a Portales Académicos por Colegio y Email Institucional */}
-            <div className="pt-2 px-0.5 space-y-2">
-              {!isCorporate && (
-                <button
-                  type="button"
-                  onClick={() => setIsAcademicPortalModalOpen(true)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 hover:from-blue-600 hover:via-blue-500 hover:to-blue-400 text-white font-extrabold text-sm shadow-md shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-blue-400/40 group"
-                  title="Acceder a los portales académicos de cada uno de los colegios"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-1.5 rounded-lg bg-white/20 border border-white/30 shadow-xs flex items-center justify-center shrink-0">
-                      <Home size={17} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]" />
-                    </div>
-                    <span className="font-extrabold tracking-tight text-white drop-shadow-xs">Portal Académico</span>
-                  </div>
-                  <ChevronRight size={18} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsEmailModalOpen(true)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-600 hover:from-blue-700 hover:via-indigo-500 hover:to-blue-500 text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
-                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="p-1.5 rounded-lg bg-white/20 border border-white/30 shadow-xs flex items-center justify-center shrink-0">
-                    <Mail size={17} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]" />
-                  </div>
-                  <span className="font-extrabold tracking-tight text-white drop-shadow-xs">Email & Triage</span>
-                </div>
-                <ChevronRight size={18} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-              </button>
-            </div>
           </nav>
         </div>
 
@@ -2107,22 +2146,14 @@ export default function CEOExecutiveDashboard({
             </button>
           )}
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-[11px] space-y-1">
+          <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200/60 text-[11px] space-y-1">
             <div className="flex items-center justify-between text-slate-500">
               <span>Motor Determinista</span>
-              <span className="font-mono font-bold text-emerald-600">0 Tokens</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-500">
-              <span>Latencia Motor</span>
-              <span className="font-mono text-slate-700 font-semibold">{engineLatencyMs} ms</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-500">
-              <span>Ciclo Autónomo</span>
-              <span className="font-mono text-indigo-600 font-semibold">#{autonomousCycle}</span>
+              <span className="font-mono font-bold text-emerald-600">0 Tokens · {engineLatencyMs}ms</span>
             </div>
             <div className="flex items-center justify-between text-slate-500">
               <span>Aislamiento RLS</span>
-              <span className="font-semibold text-slate-800 truncate max-w-[100px]">{holding.slug}</span>
+              <span className="font-semibold text-slate-800 truncate max-w-[110px]">{holding.slug} · #{autonomousCycle}</span>
             </div>
           </div>
         </div>
@@ -2143,7 +2174,7 @@ export default function CEOExecutiveDashboard({
           <aside className="relative w-72 max-w-[85vw] bg-white h-full flex flex-col justify-between z-10 shadow-2xl animate-in slide-in-from-left duration-200">
             <div>
               {/* Header del Drawer Móvil */}
-              <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
+              <div className="h-14 flex items-center justify-between px-5 border-b border-slate-100">
                 {corporateTheme ? (
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="h-9 w-9 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
@@ -2165,7 +2196,7 @@ export default function CEOExecutiveDashboard({
                     </div>
                     <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
                     <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                      CEO
+                      CEO OS
                     </span>
                   </div>
                 )}
@@ -2178,7 +2209,7 @@ export default function CEOExecutiveDashboard({
                 </button>
               </div>
 
-              {/* Lista de Navegación Móvil */}
+              {/* Lista de Navegación Móvil (6 Módulos Bento Command OS) */}
               <nav className="p-3 space-y-1.5 overflow-y-auto max-h-[calc(100vh-210px)]">
                 {navMenuItems.map((item) => {
                   const Icon = item.icon;
@@ -2189,9 +2220,9 @@ export default function CEOExecutiveDashboard({
                       onClick={() => handleNavClick(item.id)}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer active:scale-98 group ${
                         isActive
-                          ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white font-bold shadow-md shadow-blue-600/30 border border-blue-400/40')
+                          ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 text-white font-bold shadow-md shadow-indigo-600/30 border border-indigo-400/40')
                           : item.highlight
-                          ? 'text-blue-950 bg-blue-50 font-bold border border-blue-200/80 shadow-2xs'
+                          ? 'text-indigo-950 bg-indigo-50 font-bold border border-indigo-200/80 shadow-2xs'
                           : 'text-slate-700 bg-slate-50/80 hover:bg-blue-50/70 hover:text-blue-700 border border-slate-200/70 hover:border-blue-200/90 shadow-2xs'
                       }`}
                     >
@@ -2200,7 +2231,7 @@ export default function CEOExecutiveDashboard({
                           isActive
                             ? 'bg-white/20 border border-white/30 shadow-xs'
                             : item.highlight
-                            ? 'bg-blue-100 border border-blue-200 text-blue-700'
+                            ? 'bg-indigo-100 border border-indigo-200 text-indigo-700'
                             : 'bg-white border border-slate-200 text-slate-500 group-hover:text-blue-600 group-hover:border-blue-200 group-hover:bg-blue-50'
                         }`}>
                           <Icon size={18} className={isActive ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]' : ''} />
@@ -2210,55 +2241,17 @@ export default function CEOExecutiveDashboard({
                           <div className={`text-[10px] ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{item.desc}</div>
                         </div>
                       </div>
-                      {isActive ? (
-                        <ChevronRight size={16} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                      ) : (
-                        <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100 shrink-0" />
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {item.badge && (
+                          <span className="px-1.5 py-0.5 text-[10px] font-black rounded-full bg-rose-500 text-white">
+                            {item.badge}
+                          </span>
+                        )}
+                        <ChevronRight size={15} className={isActive ? 'text-blue-100' : 'text-slate-300'} />
+                      </div>
                     </button>
                   );
                 })}
-
-                {/* Botón de Acceso a Portales Académicos por Colegio y Email Institucional (Móvil) */}
-                <div className="pt-2 px-0.5 space-y-2">
-                  {!isCorporate && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsAcademicPortalModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 hover:from-blue-600 hover:via-blue-500 hover:to-blue-400 text-white font-extrabold text-sm shadow-md shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-blue-400/40 group"
-                      title="Acceder a los portales académicos de cada uno de los colegios"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="p-1.5 rounded-lg bg-white/20 border border-white/30 shadow-xs flex items-center justify-center shrink-0">
-                          <Home size={17} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]" />
-                        </div>
-                        <span className="font-extrabold tracking-tight text-white drop-shadow-xs">Portal Académico</span>
-                      </div>
-                      <ChevronRight size={18} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsEmailModalOpen(true);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-600 hover:from-blue-700 hover:via-indigo-500 hover:to-blue-500 text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
-                    title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="p-1.5 rounded-lg bg-white/20 border border-white/30 shadow-xs flex items-center justify-center shrink-0">
-                        <Mail size={17} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]" />
-                      </div>
-                      <span className="font-extrabold tracking-tight text-white drop-shadow-xs">Email & Triage</span>
-                    </div>
-                    <ChevronRight size={18} className="text-blue-100 group-hover:translate-x-0.5 transition-transform shrink-0" />
-                  </button>
-                </div>
               </nav>
             </div>
 
@@ -2302,41 +2295,40 @@ export default function CEOExecutiveDashboard({
       )}
 
       {/* ========================================================= */}
-      {/* 2. ÁREA PRINCIPAL (HEADER + CONSOLA MODULAR ACTIVA)       */}
+      {/* 2. ÁREA PRINCIPAL (OMNI-BAR 56PX + BENTO WORKSPACE)       */}
       {/* ========================================================= */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:block">
         
-        {/* Top Header Ejecutivo Responsivo (Móvil, Tablet y Desktop) */}
-        <header className="min-h-16 bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-2 z-10 shrink-0 print:hidden no-print">
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-            {/* Botón Menú Hamburguesa para Móvil y Tablet */}
+        {/* BARRA SUPERIOR UNIFICADA OMNI-BAR (56PX · NANO BANANA 2.1) */}
+        <header className="h-14 bg-white border-b border-slate-200 px-3 sm:px-5 lg:px-6 flex items-center justify-between gap-2 sm:gap-3 z-10 shrink-0 print:hidden no-print">
+          {/* Izquierda: Identidad + Selector de Sede + SuperUsuario */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 cursor-pointer active:scale-95 shrink-0"
+              className="lg:hidden p-1.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 cursor-pointer active:scale-95 shrink-0"
               aria-label="Abrir menú de navegación"
             >
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
 
-            {/* Identidad del Holding / Corporativo Oficial */}
-            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               {corporateTheme ? (
-                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-1">
-                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={22} variant="emblem_only" />
+                <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
+                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={20} variant="emblem_only" />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
+                <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
                   <SchoolOfficialLogo
                     schoolId={currentInstitution?.id || schoolId}
                     name={currentInstitution?.name || holding.name}
                     logoUrl={currentInstitution?.logoUrl}
                     themeColors={currentInstitution?.settings?.themeColors}
-                    size={24}
+                    size={22}
                     variant="shield_only"
                   />
                 </div>
               )}
-              <h1 className="text-xs sm:text-sm lg:text-base font-black text-slate-900 tracking-tight whitespace-nowrap shrink-0">
+              <h1 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight whitespace-nowrap truncate max-w-[140px] sm:max-w-[200px]">
                 {corporateTheme ? corporateTheme.name : (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))}
               </h1>
             </div>
@@ -2349,7 +2341,7 @@ export default function CEOExecutiveDashboard({
                   setSelectedCampusId(e.target.value);
                   triggerToast(e.target.value === 'all' ? (isCorporate ? 'Mostrando datos consolidados de plantas' : 'Mostrando datos consolidados') : `Filtrando a: ${holding.campuses.find(c => c.id === e.target.value)?.name}`);
                 }}
-                className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-[11px] sm:text-xs font-semibold rounded-lg pl-2 sm:pl-3 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer transition-colors max-w-[125px] sm:max-w-[165px] truncate"
+                className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold rounded-lg pl-2.5 pr-6 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors max-w-[130px] sm:max-w-[160px] truncate"
               >
                 <option value="all">{isCorporate ? `Consolidado (${holding.campuses.length} Plantas)` : `Consolidado (${holding.campuses.length} Sedes)`}</option>
                 {holding.campuses.map(campus => (
@@ -2358,15 +2350,12 @@ export default function CEOExecutiveDashboard({
                   </option>
                 ))}
               </select>
-              <ChevronDown size={13} className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+              <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
             </div>
-          </div>
 
-          {/* Acciones Rápidas del Header */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Selector Rápido de Colegios (Exclusivo Super Usuario) */}
             {isSuperUser && institutionsList.length > 0 && (
-              <div className="relative inline-flex items-center">
+              <div className="relative hidden xl:inline-flex items-center">
                 <select
                   value={schoolId || activeSchoolId || ''}
                   onChange={(e) => {
@@ -2387,7 +2376,7 @@ export default function CEOExecutiveDashboard({
                       }
                     }
                   }}
-                  className="appearance-none bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-[11px] sm:text-xs font-bold rounded-lg pl-2 sm:pl-2.5 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors max-w-[130px] sm:max-w-[170px] truncate"
+                  className="appearance-none bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-[11px] font-bold rounded-lg pl-2 pr-6 py-1 focus:outline-none cursor-pointer transition-colors max-w-[150px] truncate"
                   title="Conmutar de Colegio o Empresa (Super Usuario)"
                 >
                   <option value="">🏢 Todos los Colegios</option>
@@ -2397,68 +2386,151 @@ export default function CEOExecutiveDashboard({
                     </option>
                   ))}
                 </select>
-                <ChevronDown size={13} className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-indigo-500 pointer-events-none" />
+                <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-indigo-500 pointer-events-none" />
               </div>
             )}
+          </div>
 
-            {/* Botón Volver al Directorio de Colegios (Exclusivo Super Usuario) */}
-            {onBackToDirectory && (
-              <button
-                onClick={onBackToDirectory}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-200 shadow-xs transition-all cursor-pointer active:scale-95"
-                title={isCorporate ? "Volver a la consola global de empresas ISkool" : "Volver a la consola global de colegios ISkool"}
-              >
-                <ChevronLeft size={14} className="text-indigo-600" />
-                <span className="hidden sm:inline">{isCorporate ? 'Directorio Empresas' : 'Directorio Colegios'}</span>
-              </button>
-            )}
-
-            {/* Buscador Rápido (Cmd+K) en Desktop, icono en Móvil */}
-            <button 
-              onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-1.5 text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 p-2 sm:px-3 sm:py-1.5 rounded-lg border border-slate-200 transition-colors cursor-pointer active:scale-95"
-              title={isCorporate ? "Buscar en el consorcio empresarial (⌘K)" : "Buscar en la red escolar (⌘K)"}
+          {/* Centro: Barra Conversacional y de Voz de SOFÍA (Copiloto del Segundo Cerebro ⌘K) */}
+          <div className="hidden md:flex flex-1 max-w-lg items-center justify-between gap-1.5 pl-3 pr-1.5 py-1 bg-slate-50 hover:bg-indigo-50/40 text-slate-600 rounded-xl border border-slate-200/90 hover:border-indigo-300 transition-all shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setSofiaAutoListen(false);
+                setIsSearchOpen(true);
+              }}
+              className="flex-1 flex items-center gap-2 truncate text-left cursor-pointer group"
+              title="Abrir a Sofía · Copiloto Ejecutivo del Segundo Cerebro (⌘K)"
             >
-              <Search size={14} />
-              <span className="hidden md:inline">Buscar...</span>
-              <kbd className="hidden lg:inline bg-white border border-slate-300 text-[10px] font-mono px-1.5 py-0.2 rounded text-slate-400">⌘K</kbd>
+              <Sparkles size={14} className="text-indigo-600 shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900 truncate">
+                {isCorporate
+                  ? 'Preguntar a Sofía (Segundo Cerebro), pedir reporte o dictar orden...'
+                  : 'Preguntar a Sofía (Segundo Cerebro), pedir informe o dictar orden...'}
+              </span>
+            </button>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setSofiaAutoListen(true);
+                  setIsSearchOpen(true);
+                }}
+                className="px-2 py-1 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-[10px] font-black flex items-center gap-1 cursor-pointer shadow-2xs transition-all active:scale-95"
+                title="Hablar directamente con Sofía por Voz (Control Total del Sistema)"
+              >
+                <Mic size={11} />
+                <span>Voz Sofía</span>
+              </button>
+              <kbd
+                onClick={() => {
+                  setSofiaAutoListen(false);
+                  setIsSearchOpen(true);
+                }}
+                className="bg-white border border-slate-200 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded text-slate-500 cursor-pointer"
+              >
+                ⌘K
+              </kbd>
+            </div>
+          </div>
+
+          {/* Derecha: Píldora iMail + Briefing 60s + Píldora Salud/Licencia + Modo Junta + CSV */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Botón Sofía compacto en móvil */}
+            <button
+              onClick={() => {
+                setSofiaAutoListen(true);
+                setIsSearchOpen(true);
+              }}
+              className="md:hidden px-2 py-1 rounded-lg bg-indigo-600 text-white text-[10px] font-black flex items-center gap-1 cursor-pointer"
+              title="Hablar con Sofía (⌘K)"
+            >
+              <Mic size={13} />
+              <span>Sofía</span>
+            </button>
+
+            {/* Píldora Ubicua iMail & Triage + Audio Briefing 60s */}
+            <div className="flex items-center bg-indigo-50/90 border border-indigo-200/90 rounded-xl p-0.5 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => handleNavClick('imail_triage')}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white text-indigo-950 text-[11px] font-extrabold transition-all cursor-pointer"
+                title="Abrir iMail & Triage Ejecutivo (3 asuntos críticos)"
+              >
+                <Mail size={13} className="text-indigo-600 shrink-0" />
+                <span className="hidden sm:inline">iMail:</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black">
+                  3 Críticos
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleOmniBriefing}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                  isPlayingOmniBriefing
+                    ? 'bg-rose-600 text-white animate-pulse'
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                }`}
+                title="Escuchar Briefing Ejecutivo de Voz de 60 segundos (0 Tokens)"
+              >
+                {isPlayingOmniBriefing ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                <span className="hidden xl:inline">{isPlayingOmniBriefing ? 'Detener' : 'Briefing 60s'}</span>
+              </button>
+            </div>
+
+            {/* Píldora Unificada de Salud Operativa, Licencia & CFDI 4.0 */}
+            <button
+              type="button"
+              onClick={() => setIsLicenseBannerExpanded(prev => !prev)}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50/90 hover:bg-emerald-100/80 border border-emerald-200 text-emerald-900 text-[11px] font-bold transition-all cursor-pointer"
+              title="Clic para inspeccionar detalles de Licencia SaaS, Telemetría y Pulso Autónomo"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              <span className="font-mono font-extrabold">{seatOccupancyPercent}%</span>
+              <span className="text-emerald-700 hidden xl:inline">Ocupación</span>
+              <span className="text-emerald-300">·</span>
+              <span className="text-emerald-800">CFDI 4.0</span>
+              <span className="text-emerald-300">·</span>
+              <span className="font-mono font-extrabold text-emerald-700">0 Tokens</span>
+            </button>
+
+            {/* Botón Modo Junta (Boardroom Privacy Mode) */}
+            <button
+              type="button"
+              onClick={() => {
+                setBoardroomPrivacyMode(prev => {
+                  const next = !prev;
+                  triggerToast(next ? '🔒 Modo Junta Activado: Montos financieros sensibles ocultos para proyección en sala.' : '🔓 Modo Junta Desactivado: Cifras financieras visibles.');
+                  return next;
+                });
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer active:scale-95 ${
+                boardroomPrivacyMode
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300/80'
+              }`}
+              title="Modo Junta Directiva: Desenfoca montos financieros sensibles ($ MXN) al proyectar en sala"
+            >
+              {boardroomPrivacyMode ? <EyeOff size={13} /> : <Eye size={13} />}
+              <span className="hidden sm:inline">{boardroomPrivacyMode ? 'Modo Junta ON' : 'Modo Junta'}</span>
             </button>
 
             {/* Exportar Consolidado CSV */}
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-300/80 transition-colors cursor-pointer active:scale-95"
+              className="flex items-center gap-1 p-1.5 sm:px-2.5 sm:py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold rounded-xl border border-slate-300/80 transition-colors cursor-pointer active:scale-95"
               title="Descargar reporte consolidado CSV"
             >
-              <Download size={14} />
-              <span className="hidden sm:inline">Exportar CSV</span>
-            </button>
-
-            {/* Botón Email Institucional & Triage */}
-            <button
-              onClick={() => setIsEmailModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer active:scale-95"
-              title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
-            >
-              <Mail size={14} className="text-white" />
-              <span className="hidden sm:inline">Email & Triage</span>
-              <span className="sm:hidden">Email</span>
-            </button>
-
-            {/* Botón Explorar Cerebro */}
-            <button
-              onClick={() => setIsBrainModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer active:scale-95"
-            >
-              <Sparkles size={14} className="text-amber-300" />
-              <span className="text-xs">Cerebro</span>
+              <Download size={13} />
+              <span className="hidden 2xl:inline">CSV</span>
             </button>
           </div>
         </header>
 
         {/* TOAST FLOTANTE */}
         {toastMessage && (
-          <div className="fixed top-20 right-4 sm:right-8 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-100 max-w-[90vw] print:hidden no-print">
+          <div className="fixed top-16 right-4 sm:right-8 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-100 max-w-[90vw] print:hidden no-print">
             <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
           </div>
@@ -2467,150 +2539,53 @@ export default function CEOExecutiveDashboard({
         {/* ========================================================= */}
         {/* CUERPO PRINCIPAL MODULAR CON TRANSICIÓN INSTANTÁNEA       */}
         {/* ========================================================= */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'reportes' || activeTab === 'cerebro' ? 'p-2 sm:p-3 md:p-4 pb-4 space-y-2' : 'p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 space-y-4 sm:space-y-6'} print:h-auto print:overflow-visible print:p-0 print:m-0 print:space-y-0 print:block`}>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'reportes' || activeTab === 'cerebro' || activeTab === 'portal_academico' || activeTab === 'imail_triage' ? 'p-2 sm:p-3 md:p-4 pb-4 space-y-2' : 'p-3 sm:p-5 lg:p-6 pb-24 lg:pb-8 space-y-4 sm:space-y-5'} print:h-auto print:overflow-visible print:p-0 print:m-0 print:space-y-0 print:block`}>
           
-          {/* BARRA DE MONITOREO, LICENCIA Y DIFERENCIADORES (SOLO EN PESTAÑAS OPERATIVAS / GENERALES) */}
-          {activeTab !== 'reportes' && activeTab !== 'cerebro' && (
-            <>
-              {/* BARRA DE MONITOREO AUTÓNOMO EN VIVO (0 TOKENS) */}
-              <div className={`p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border text-xs print:hidden no-print ${
-                corporateTheme
-                  ? `bg-gradient-to-r ${corporateTheme.activeHeroGrad} text-white border-white/10`
-                  : 'bg-slate-900 text-white border-slate-800'
-              }`}>
-                <div className="flex items-center gap-3">
-                  <div className="relative flex h-3 w-3 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                  </div>
-                  <div>
-                    <span className="font-bold text-white">
-                      {isCorporate ? 'Telemetría de Planta & Auditoría B2B en Vivo' : 'Motor Autónomo de Análisis en Vivo'}
+          {/* PANEL DESPLEGABLE DE AUDITORÍA DE LICENCIA Y TELEMETRÍA (BAJO DEMANDA DESDE LA PÍLDORA DEL OMNI-BAR) */}
+          {isLicenseBannerExpanded && activeTab !== 'reportes' && activeTab !== 'cerebro' && (
+            <div className="p-4 rounded-2xl bg-white border border-indigo-200 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-150 print:hidden no-print">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 text-emerald-700 font-black text-xs">
+                  {seatOccupancyPercent}%
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-xs font-black text-slate-900">
+                      {corporateTheme?.displayName || (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))}
+                    </h3>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      {corporateTheme?.planName || currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Enterprise Multi-Plantel (4 Sedes)' : 'Licencia SaaS Enterprise Activa')}
                     </span>
-                    <span className="text-slate-300/80 ml-1.5 font-mono text-[11px] block sm:inline">
-                      • 0 Tokens • Evaluación #{autonomousCycle} ({lastEvaluationTime}) • {metrics.totalCampuses} {isCorporate ? 'Plantas / Sedes' : 'Sedes Auditadas'}
+                    <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                      Evaluación #{autonomousCycle} ({lastEvaluationTime}) · 0 Tokens
                     </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 self-end sm:self-auto">
-                  <button
-                    onClick={() => {
-                      setAutonomousCycle(c => c + 1);
-                      const now = new Date();
-                      setLastEvaluationTime(formatCdmxTime(now, true) + ' (CDMX)');
-                      triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border active:scale-95 ${
-                      corporateTheme
-                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/20'
-                        : 'bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border-slate-700'
-                    }`}
-                  >
-                    <RefreshCw size={12} />
-                    <span>Forzar Pulso Analítico</span>
-                  </button>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Asientos activos: <strong>{metrics.totalStudents.toLocaleString()}</strong> de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200))).toLocaleString()} contratados • Timbrado CFDI 4.0 / IEDU Activo
+                  </p>
                 </div>
               </div>
-
-              {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR / CORPORATIVO (IMAGEN 2 FIX) */}
-              <div className={`p-4 rounded-2xl border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print ${
-                corporateTheme ? 'bg-white border-slate-200' : 'bg-white border-indigo-100'
-              }`}>
-                <div className="flex items-center gap-3">
-                  {corporateTheme ? (
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1.5">
-                      <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={46} variant="emblem_only" />
-                    </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1">
-                      <SchoolOfficialLogo
-                        schoolId={currentInstitution?.id || schoolId}
-                        name={currentInstitution?.name || holding.name}
-                        logoUrl={currentInstitution?.logoUrl}
-                        themeColors={currentInstitution?.settings?.themeColors}
-                        size={46}
-                        variant="shield_only"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-bold text-slate-900">
-                        {corporateTheme?.displayName || (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))}
-                      </h3>
-                      <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
-                        corporateTheme 
-                          ? corporateTheme.badgeBg
-                          : (isIbime 
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : (currentInstitution?.isTestCase 
-                                  ? 'bg-purple-100 text-purple-800 border-purple-300' 
-                                  : 'bg-emerald-100 text-emerald-800 border-emerald-300'))
-                      }`}>
-                        {corporateTheme?.planName || currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : (currentInstitution?.isTestCase ? 'Licencia Sandbox & Testbed Multi-Plantel' : 'Licencia SaaS Enterprise Activa'))}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                        ID: {currentInstitution?.licensing?.licenseKey || (isBmw ? 'ISK-LIC-2026-BMW-CORP-SLP' : isRetail ? 'ISK-LIC-2026-VANG-RETAIL' : `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`)}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      <span className="font-semibold text-slate-700">Licenciatario:</span> {corporateTheme?.name || (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className={`${corporateTheme ? 'text-slate-700 font-medium' : 'text-indigo-600 font-medium'}`}>Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200))).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200)))) * 1000) / 10)}% ocupación)</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
-                  <div className="text-right hidden sm:block">
-                    <div className="text-[11px] font-bold text-slate-700">Vigencia Anual: 2026-2027</div>
-                    <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
-                  </div>
-                  <button
-                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200))).toLocaleString()} asientos autorizados para ${institutionalDisplayName}`)}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
-                  >
-                    <FileCheck2 size={14} />
-                    <span>Auditoría de Licencia</span>
-                  </button>
-                </div>
+              <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+                <button
+                  onClick={() => {
+                    setAutonomousCycle(c => c + 1);
+                    const now = new Date();
+                    setLastEvaluationTime(formatCdmxTime(now, true) + ' (CDMX)');
+                    triggerToast(`✓ Pulso analítico ejecutado: ${metrics.totalCampuses} sedes auditadas a 0 tokens`);
+                  }}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw size={12} />
+                  <span>Forzar Pulso</span>
+                </button>
+                <button
+                  onClick={() => setIsLicenseBannerExpanded(false)}
+                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 cursor-pointer"
+                >
+                  <X size={15} />
+                </button>
               </div>
-
-              {/* BARRA DE DIFERENCIADORES ESTRATÉGICOS ISKOOL */}
-              <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print ${
-                corporateTheme 
-                  ? `bg-gradient-to-r ${corporateTheme.activeHeroGrad} border-white/10` 
-                  : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <Sparkles size={16} className="text-amber-400" />
-                  <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">
-                    {isCorporate ? 'Diferenciadores Clave Suite Corporativa:' : 'Diferenciadores Clave iSkool Élite:'}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {(isCorporate ? [
-                    { label: 'Simulador "What-If" EBITDA & OPEX', tab: 'vision', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
-                    { label: 'Matriz de Competencias Técnicas', tab: 'academico', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
-                    { label: 'Onboarding & Retención de Talento', tab: 'admisiones', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
-                    { label: 'Facturación CFDI 4.0 B2B', tab: 'finanzas', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
-                    { label: `Cerebro ${corporateTheme?.name || 'Empresarial'}`, tab: 'cerebro', color: 'bg-amber-500/20 text-amber-200 border-amber-400/40 hover:bg-amber-500/30' },
-                  ] : [
-                    { label: 'Simulador "What-If" EBITDA', tab: 'vision', color: 'bg-indigo-600/40 text-indigo-200 border-indigo-400/40 hover:bg-indigo-600/60' },
-                    { label: 'Alineación Oficial SEP NEM 2024', tab: 'academico', color: 'bg-emerald-600/40 text-emerald-200 border-emerald-400/40 hover:bg-emerald-600/60' },
-                    { label: 'Gamificación & Lienzo Digital', tab: 'academico', color: 'bg-purple-600/40 text-purple-200 border-purple-400/40 hover:bg-purple-600/60' },
-                    { label: 'CFDI 4.0 Complemento IEDU SAT', tab: 'finanzas', color: 'bg-amber-600/40 text-amber-200 border-amber-400/40 hover:bg-amber-600/60' },
-                    { label: 'Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
-                  ]).map((diff, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleNavClick(diff.tab)}
-                      className={`px-3 py-1.5 rounded-xl border font-bold hover:scale-103 transition-all cursor-pointer text-xs ${diff.color}`}
-                    >
-                      {diff.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           {/* ======================================================= */}
@@ -2805,22 +2780,37 @@ export default function CEOExecutiveDashboard({
                               campusAffected: lowCollectionNames,
                               actionType: 'cobranza'
                             })}
-                            className="p-3.5 rounded-xl border border-slate-100 hover:border-rose-300 hover:bg-rose-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
+                            className="p-3.5 rounded-xl border border-slate-100 hover:border-rose-300 hover:bg-rose-50/30 transition-all cursor-pointer flex items-center justify-between gap-2 group active:scale-98"
                           >
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
                               <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 mt-0.5">
                                 <AlertTriangle size={17} />
                               </div>
-                              <div>
+                              <div className="min-w-0">
                                 <div className="text-sm font-semibold text-slate-800 group-hover:text-rose-700 transition-colors">
-                                  {isCorporate ? 'Cobranza B2B' : 'Cobranza'}
+                                  {isCorporate ? 'Cobranza B2B' : 'Cobranza & Mora >30d'}
                                 </div>
-                                <div className="text-xs text-slate-500 mt-0.5">
+                                <div className="text-xs text-slate-500 mt-0.5 truncate">
                                   {`${lowCollectionNames.length} ${isCorporate ? 'sedes' : 'planteles'} en seguimiento`}
                                 </div>
                               </div>
                             </div>
-                            <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-rose-600 transition-all" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImailDraftPayload({
+                                  subject: `Recordatorio Preventivo CFDI 4.0 / SPEI — ${lowCollectionNames.join(', ')}`,
+                                  body: `Estimada Dirección Administrativa y Tesorería:\n\nPor instrucción de Dirección General, se activa la campaña preventiva de conciliación SPEI y recordatorio de colegiaturas con complemento IEDU para los planteles: ${lowCollectionNames.join(', ')}.\n\nAtentamente,\nDirección General — ${institutionalDisplayName}`,
+                                  recipientGroup: 'administrativos'
+                                });
+                                handleNavClick('imail_triage');
+                                triggerToast('⚡ Recordatorio SAT precargado en iMail & Triage');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200 text-[10px] font-extrabold transition-all shrink-0 cursor-pointer"
+                            >
+                              ⚡ Recordatorio SAT
+                            </button>
                           </div>
 
                           <div 
@@ -2833,22 +2823,32 @@ export default function CEOExecutiveDashboard({
                               campusAffected: sampleCampusNames,
                               actionType: isCorporate ? 'retencion' : 'reinscripcion'
                             })}
-                            className="p-3.5 rounded-xl border border-slate-100 hover:border-amber-300 hover:bg-amber-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
+                            className="p-3.5 rounded-xl border border-slate-100 hover:border-amber-300 hover:bg-amber-50/30 transition-all cursor-pointer flex items-center justify-between gap-2 group active:scale-98"
                           >
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
                               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <UserCheck size={17} />
                               </div>
-                              <div>
+                              <div className="min-w-0">
                                 <div className="text-sm font-semibold text-slate-800 group-hover:text-amber-700 transition-colors">
-                                  {isCorporate ? 'Retención & Desempeño' : 'Reinscripciones'}
+                                  {isCorporate ? 'Retención & Desempeño' : 'Reinscripciones 2026-2027'}
                                 </div>
-                                <div className="text-xs text-slate-500 mt-0.5">
+                                <div className="text-xs text-slate-500 mt-0.5 truncate">
                                   {isCorporate ? `Iniciar evaluación formal en ${sampleCampusNames.length} plantas` : `Iniciar campaña formal en ${sampleCampusNames.length} planteles`}
                                 </div>
                               </div>
                             </div>
-                            <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-amber-600 transition-all" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNavClick('admisiones');
+                                triggerToast('⚡ Abriendo Embudo de Admisiones & Reinscripciones 360°');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-600 text-amber-800 hover:text-white border border-amber-200 text-[10px] font-extrabold transition-all shrink-0 cursor-pointer"
+                            >
+                              ⚡ Activar Campaña
+                            </button>
                           </div>
 
                           <div 
@@ -2859,50 +2859,70 @@ export default function CEOExecutiveDashboard({
                               campusAffected: sampleCampusNames,
                               actionType: 'academico'
                             })}
-                            className="p-3.5 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
+                            className="p-3.5 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-between gap-2 group active:scale-98"
                           >
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-3 min-w-0">
                               <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
                                 <BarChart3 size={17} />
                               </div>
-                              <div>
+                              <div className="min-w-0">
                                 <div className="text-sm font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">
-                                  Desempeño académico
+                                  Desempeño académico & Evidencias
                                 </div>
-                                <div className="text-xs text-slate-500 mt-0.5">
+                                <div className="text-xs text-slate-500 mt-0.5 truncate">
                                   {`Revisar resultados pedagógicos en ${sampleCampusNames.length} planteles`}
                                 </div>
                               </div>
                             </div>
-                            <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-blue-600 transition-all" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNavClick(isCorporate ? 'academico' : 'portal_academico');
+                                triggerToast('⚡ Abriendo Portal Académico 360° para firma de lote');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 text-[10px] font-extrabold transition-all shrink-0 cursor-pointer"
+                            >
+                              ⚡ Firmar Lote
+                            </button>
                           </div>
 
                           <div 
                             onClick={() => setActiveFocalModal({
                               isOpen: true,
-                              title: isCorporate ? 'Alerta Temprana de Rotación de Instructores' : 'Alerta Temprana de Rotación Docente',
+                              title: isCorporate ? 'Alerta Temprana de Rotación de Instructores' : 'Asuntos Críticos en iMail Decision Dock',
                               description: isCorporate
                                 ? `Se han procesado requerimientos de instructores técnicos en ${sampleCampusNames.join(' y ')}. Cartera de talento activada.`
-                                : `Seguimiento de plantilla y reemplazos activos en ${sampleCampusNames.join(' y ')}. Bóveda de reemplazo activada.`,
+                                : `3 expedientes urgentes (Beca de Retención, Dictamen Legal y Conciliación SAT) listos para firma en 1 clic.`,
                               campusAffected: sampleCampusNames,
                               actionType: 'docentes'
                             })}
-                            className="p-3.5 rounded-xl border border-slate-100 hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
+                            className="p-3.5 rounded-xl border border-slate-100 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all cursor-pointer flex items-center justify-between gap-2 group active:scale-98"
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
-                                <UserMinus size={17} />
+                            <div className="flex items-start gap-3 min-w-0">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <Mail size={17} />
                               </div>
-                              <div>
-                                <div className="text-sm font-semibold text-slate-800 group-hover:text-purple-700 transition-colors">
-                                  {isCorporate ? 'Rotación de instructores' : 'Rotación docente'}
+                              <div className="min-w-0">
+                                <div className="text-sm font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors">
+                                  {isCorporate ? 'Rotación & Triage B2B' : 'iMail & Triage (3 Críticos)'}
                                 </div>
-                                <div className="text-xs text-slate-500 mt-0.5">
-                                  {isCorporate ? 'Bajas técnicas en proceso de reemplazo' : 'Seguimiento de plantilla en tiempo real'}
+                                <div className="text-xs text-slate-500 mt-0.5 truncate">
+                                  {isCorporate ? 'Bajas técnicas en proceso de reemplazo' : 'Beca retención y dictámenes listos en Decision Dock'}
                                 </div>
                               </div>
                             </div>
-                            <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 group-hover:text-purple-600 transition-all" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNavClick('imail_triage');
+                                triggerToast('⚡ Abriendo Decision Dock en iMail & Triage');
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-[10px] font-extrabold transition-all shrink-0 cursor-pointer"
+                            >
+                              ⚡ Decision Dock
+                            </button>
                           </div>
                         </div>
                       );
@@ -3111,11 +3131,12 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 2: VISIÓN EJECUTIVA (EBITDA & SIMULADOR WHAT-IF) */}
           {/* ======================================================= */}
-          {(activeTab === 'vision' || (activeTab === 'finanzas' && financeSubTab === 'ebitda')) && (
+          {(activeTab === 'vision' || (activeTab === 'finanzas' && (financeSubTab === 'todo' || financeSubTab === 'ebitda'))) && (
             <div className="space-y-6 animate-in fade-in duration-100">
-              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
+              {/* Segmented Sub-Cabina Controller (Unificada / EBITDA / SAT / Operación / Reportes) */}
               <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit">
                 {[
+                  { id: 'todo', label: 'Vista Unificada (EBITDA + SAT)', icon: Layers },
                   { id: 'ebitda', label: 'EBITDA & Simulador What-If', icon: Calculator },
                   { id: 'sat', label: isCorporate ? 'Facturación B2B & SAT' : 'CFDI 4.0 & Complemento IEDU', icon: Receipt },
                   { id: 'operacion', label: 'Operación & Automatizaciones', icon: SlidersHorizontal },
@@ -3166,24 +3187,24 @@ export default function CEOExecutiveDashboard({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Facturación Anual Proyectada</span>
-                  <div className="text-2xl font-black text-slate-900 mt-1 font-mono">${(estimatedAnnualBilling / 1000000).toFixed(1)}M MXN</div>
+                  <div className={`text-2xl font-black text-slate-900 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${(estimatedAnnualBilling / 1000000).toFixed(1)}M MXN</div>
                   <span className="text-xs text-emerald-600 font-semibold mt-1 block">↑ 8.4% vs ciclo anterior</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">EBITDA Estimado Holding</span>
-                  <div className="text-2xl font-black text-indigo-600 mt-1 font-mono">${(simResults.projectedEbitda / 1000000).toFixed(1)}M MXN</div>
+                  <div className={`text-2xl font-black text-indigo-600 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${(simResults.projectedEbitda / 1000000).toFixed(1)}M MXN</div>
                   <span className="text-xs text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-bold mt-1 inline-block">
                     Margen {simResults.ebitdaMargin}%
                   </span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Flujo Operativo Neto</span>
-                  <div className="text-2xl font-black text-slate-900 mt-1 font-mono">${((estimatedAnnualBilling * 0.20) / 1000000).toFixed(2)}M MXN</div>
+                  <div className={`text-2xl font-black text-slate-900 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${((estimatedAnnualBilling * 0.20) / 1000000).toFixed(2)}M MXN</div>
                   <span className="text-xs text-slate-500 mt-1 block">Caja disponible para reinversión</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">{isCorporate ? 'Inversión por Colaborador Activo' : 'Valoración por Alumno Activo'}</span>
-                  <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">${Math.round(estimatedAnnualBilling / Math.max(1, metrics.totalStudents)).toLocaleString()} MXN / ciclo</div>
+                  <div className={`text-2xl font-black text-emerald-600 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${Math.round(estimatedAnnualBilling / Math.max(1, metrics.totalStudents)).toLocaleString()} MXN / ciclo</div>
                   <span className="text-xs text-slate-500 mt-1 block">Ticket promedio consolidado</span>
                 </div>
               </div>
@@ -3647,9 +3668,10 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {(activeTab === 'academico' && academicSubTab !== 'comunidad') && (
             <div className="space-y-6 animate-in fade-in duration-100">
-              {/* Segmented Sub-Cabina Controller (Radar / Talento & Comunidad / Gamificación) */}
+              {/* Segmented Sub-Cabina Controller (Unificada / Radar / Talento & Comunidad / Gamificación) */}
               <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
                 {[
+                  { id: 'todo', label: isCorporate ? 'Vista Unificada (Competencias + Productividad)' : 'Vista Unificada (Radar NEM + La Aldea)', icon: Layers },
                   { id: 'radar', label: isCorporate ? '1. Radar STPS & Competencias' : '1. Radar SEP NEM 2024 & Fases', icon: Target },
                   { id: 'comunidad', label: isCorporate ? '2. Fuerza Laboral & Expediente 360' : '2. Talento Docente & Expediente 360', icon: Users },
                   { id: 'gamificacion', label: isCorporate ? '3. Productividad & Acreditación' : '3. Gamificación & Maestría (XP)', icon: Gamepad2 }
@@ -3683,25 +3705,36 @@ export default function CEOExecutiveDashboard({
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
                     {academicSubTab === 'gamificacion' 
                       ? (isCorporate ? 'Métricas de Capacitación & Productividad' : 'Diferenciador Pedagógico Gamificado & XP')
-                      : (isCorporate ? 'Matriz de Competencias Laborales & Certificaciones Técnicas' : 'Auditoría Curricular NEM 2024 & Radar Diamante')}
+                      : (isCorporate ? 'Matriz de Competencias Laborales & Certificaciones Técnicas' : 'Auditoría Curricular NEM 2024, Radar Diamante & La Aldea')}
                   </h2>
                   <p className="text-xs text-slate-500">
                     {isCorporate 
                       ? 'Alineación a estándares técnicos, planes de formación y métricas de desempeño del colaborador.' 
-                      : 'Alineación a Fases SEP, planeaciones cronometradas de aula y métricas de XP estudiantil.'}
+                      : 'Alineación a Fases SEP, planeaciones cronometradas de aula y métricas de XP estudiantil en un solo lienzo.'}
                   </p>
                 </div>
-                <button
-                  onClick={() => setIsBrainModalOpen(true)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <Network size={14} />
-                  <span>{isCorporate ? 'Consultar Bóveda Corporativa' : 'Consultar Bóveda Curricular'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {!isCorporate && (
+                    <button
+                      onClick={() => handleNavClick('portal_academico')}
+                      className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
+                    >
+                      <Home size={14} />
+                      <span>Abrir Portal Académico 360°</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsBrainModalOpen(true)}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Network size={14} />
+                    <span>{isCorporate ? 'Consultar Bóveda Corporativa' : 'Consultar Bóveda Curricular'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* COBERTURA POR FASES NEM 2024 / NIVELES DE COMPETENCIA TÉCNICA */}
-              {academicSubTab === 'radar' && (
+              {(academicSubTab === 'todo' || academicSubTab === 'radar') && (
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
@@ -3767,7 +3800,7 @@ export default function CEOExecutiveDashboard({
               )}
 
               {/* DIFERENCIADOR DE GAMIFICACIÓN / CAPACITACIÓN B2B */}
-              {academicSubTab === 'gamificacion' && (
+              {(academicSubTab === 'todo' || academicSubTab === 'gamificacion') && (
               <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-lg border border-purple-500/30 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-purple-600/40 text-purple-300 flex items-center justify-center border border-purple-500/40">
@@ -3775,7 +3808,7 @@ export default function CEOExecutiveDashboard({
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-white">
-                      {isCorporate ? 'Métricas de Capacitación & Acreditación de Habilidades' : 'Métricas de Gamificación & Engagement Estudiantil'}
+                      {isCorporate ? 'Métricas de Capacitación & Acreditación de Habilidades' : 'Métricas de Gamificación & Engagement Estudiantil (La Aldea)'}
                     </h3>
                     <p className="text-xs text-purple-200">
                       {isCorporate 
@@ -3863,7 +3896,7 @@ export default function CEOExecutiveDashboard({
               )}
 
               {/* LOS 4 CAMPOS FORMATIVOS OFICIALES DE LA SEP NEM 2024: RADAR DIAMANTE & DIALES DE ARCO */}
-              {academicSubTab === 'radar' && (
+              {(academicSubTab === 'todo' || academicSubTab === 'radar') && (
               <div className="space-y-4">
                 {/* HEADER DE CONTROL DEL MÓDULO */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -4901,36 +4934,39 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 7: FINANZAS (CFDI 4.0 IEDU SAT & AGING BUCKETS)   */}
           {/* ======================================================= */}
-          {(activeTab === 'sat' || (activeTab === 'finanzas' && financeSubTab === 'sat')) && (
+          {(activeTab === 'sat' || (activeTab === 'finanzas' && (financeSubTab === 'todo' || financeSubTab === 'sat'))) && (
             <div className="space-y-6 animate-in fade-in duration-100">
-              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
-              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
-                {[
-                  { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
-                  { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
-                  { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
-                  { id: 'reportes', label: '4. Reportes & Auditoría C-Suite', icon: FileText }
-                ].map((sub) => {
-                  const isCurrent = (activeTab as string === 'finanzas' && financeSubTab === sub.id) || (activeTab as string === sub.id) || (activeTab as string === 'vision' && sub.id === 'ebitda');
-                  return (
-                    <button
-                      key={sub.id}
-                      onClick={() => {
-                        setActiveTab('finanzas');
-                        setFinanceSubTab(sub.id as any);
-                      }}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        isCurrent
-                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-                      }`}
-                    >
-                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
-                      <span>{sub.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Segmented Sub-Cabina Controller (Solo cuando no está en vista unificada para no duplicar barra) */}
+              {financeSubTab !== 'todo' && (
+                <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                  {[
+                    { id: 'todo', label: 'Vista Unificada (EBITDA + SAT)', icon: Layers },
+                    { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
+                    { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
+                    { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
+                    { id: 'reportes', label: '4. Reportes & Auditoría C-Suite', icon: FileText }
+                  ].map((sub) => {
+                    const isCurrent = (activeTab as string === 'finanzas' && financeSubTab === sub.id) || (activeTab as string === sub.id) || (activeTab as string === 'vision' && sub.id === 'ebitda');
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => {
+                          setActiveTab('finanzas');
+                          setFinanceSubTab(sub.id as any);
+                        }}
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          isCurrent
+                            ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                        }`}
+                      >
+                        <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                        <span>{sub.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded inline-block">
@@ -4958,19 +4994,19 @@ export default function CEOExecutiveDashboard({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Facturación Mensual Total</span>
-                  <div className="text-2xl font-black text-slate-900 mt-1 font-mono">${((estimatedAnnualBilling / 12) / 1000000).toFixed(2)}M MXN</div>
+                  <div className={`text-2xl font-black text-slate-900 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${((estimatedAnnualBilling / 12) / 1000000).toFixed(2)}M MXN</div>
                   <span className="text-xs text-slate-500 mt-1 block">{isCorporate ? `${holding.campuses?.length || 1} Plantas / Empresas consolidadas` : `${holding.campuses?.length || 1} Sedes consolidadas`}</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Cobranza Efectiva Recuperada</span>
-                  <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">${(((estimatedAnnualBilling / 12) * (metrics.avgCollection / 100)) / 1000000).toFixed(2)}M MXN</div>
+                  <div className={`text-2xl font-black text-emerald-600 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${(((estimatedAnnualBilling / 12) * (metrics.avgCollection / 100)) / 1000000).toFixed(2)}M MXN</div>
                   <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold mt-1 inline-block">
                     {metrics.avgCollection}% de efectividad
                   </span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Cartera Vencida en Gestión</span>
-                  <div className="text-2xl font-black text-rose-600 mt-1 font-mono">${(((estimatedAnnualBilling / 12) * ((100 - metrics.avgCollection) / 100)) / 1000000).toFixed(2)}M MXN</div>
+                  <div className={`text-2xl font-black text-rose-600 mt-1 font-mono transition-all ${boardroomPrivacyMode ? 'blur-[6px] select-none' : ''}`}>${(((estimatedAnnualBilling / 12) * ((100 - metrics.avgCollection) / 100)) / 1000000).toFixed(2)}M MXN</div>
                   <span className="text-xs text-rose-700 bg-rose-50 px-2 py-0.5 rounded font-bold mt-1 inline-block">
                     {100 - metrics.avgCollection}% en proceso de cobro
                   </span>
@@ -4979,28 +5015,48 @@ export default function CEOExecutiveDashboard({
 
               {/* ANTIGÜEDAD DE SALDOS (AGING BUCKETS) */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                <h3 className="text-base font-black text-slate-900">
-                  {isCorporate ? 'Antigüedad de Saldos Corporativos B2B (Aging Buckets)' : 'Antigüedad de Saldos de Colegiaturas (Aging Buckets)'}
-                </h3>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h3 className="text-base font-black text-slate-900">
+                    {isCorporate ? 'Antigüedad de Saldos Corporativos B2B (Aging Buckets)' : 'Antigüedad de Saldos de Colegiaturas (Aging Buckets)'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImailDraftPayload({
+                        subject: isCorporate
+                          ? `Recordatorio de Conciliación CFDI 4.0 B2B — Cartera >30 Días`
+                          : `Recordatorio Preventivo de Colegiatura & Complemento Fiscal IEDU`,
+                        body: `Estimadas Familias y Tutores:\n\nLes recordamos que se encuentra habilitada la ventanilla digital SPEI con timbrado automático CFDI 4.0 y Complemento Educativo IEDU deducible de ISR.\n\nAtentamente,\nTesorería Institucional — ${institutionalDisplayName}`,
+                        recipientGroup: 'familias'
+                      });
+                      handleNavClick('imail_triage');
+                      triggerToast('⚡ Campaña de recordatorio SPEI precargada en iMail & Triage');
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                  >
+                    <Mail size={13} />
+                    <span>⚡ Ejecutar Recordatorio Automático vía iMail & EducApp</span>
+                  </button>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
                   <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                     <span className="font-bold text-emerald-800 block">Al Corriente (0 días)</span>
-                    <div className="text-xl font-black text-emerald-900 font-mono mt-1">${(((estimatedAnnualBilling / 12) * 0.920) / 1000000).toFixed(2)}M MXN</div>
+                    <div className={`text-xl font-black text-emerald-900 font-mono mt-1 transition-all ${boardroomPrivacyMode ? 'blur-[5px] select-none' : ''}`}>${(((estimatedAnnualBilling / 12) * 0.920) / 1000000).toFixed(2)}M MXN</div>
                     <span className="text-[11px] text-emerald-700 mt-1 block">92.0% del total</span>
                   </div>
                   <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
                     <span className="font-bold text-amber-800 block">1 a 30 Días de Mora</span>
-                    <div className="text-xl font-black text-amber-900 font-mono mt-1">${Math.round(((estimatedAnnualBilling / 12) * 0.052)).toLocaleString()} MXN</div>
+                    <div className={`text-xl font-black text-amber-900 font-mono mt-1 transition-all ${boardroomPrivacyMode ? 'blur-[5px] select-none' : ''}`}>${Math.round(((estimatedAnnualBilling / 12) * 0.052)).toLocaleString()} MXN</div>
                     <span className="text-[11px] text-amber-700 mt-1 block">5.2% del total</span>
                   </div>
                   <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
                     <span className="font-bold text-orange-800 block">31 a 60 Días de Mora</span>
-                    <div className="text-xl font-black text-orange-900 font-mono mt-1">${Math.round(((estimatedAnnualBilling / 12) * 0.021)).toLocaleString()} MXN</div>
+                    <div className={`text-xl font-black text-orange-900 font-mono mt-1 transition-all ${boardroomPrivacyMode ? 'blur-[5px] select-none' : ''}`}>${Math.round(((estimatedAnnualBilling / 12) * 0.021)).toLocaleString()} MXN</div>
                     <span className="text-[11px] text-orange-700 mt-1 block">2.1% del total</span>
                   </div>
                   <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
                     <span className="font-bold text-rose-800 block">Más de 60 Días</span>
-                    <div className="text-xl font-black text-rose-900 font-mono mt-1">${Math.round(((estimatedAnnualBilling / 12) * 0.007)).toLocaleString()} MXN</div>
+                    <div className={`text-xl font-black text-rose-900 font-mono mt-1 transition-all ${boardroomPrivacyMode ? 'blur-[5px] select-none' : ''}`}>${Math.round(((estimatedAnnualBilling / 12) * 0.007)).toLocaleString()} MXN</div>
                     <span className="text-[11px] text-rose-700 mt-1 block">0.7% del total</span>
                   </div>
                 </div>
@@ -5077,6 +5133,7 @@ export default function CEOExecutiveDashboard({
               {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
               <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
                 {[
+                  { id: 'todo', label: 'Vista Unificada (EBITDA + SAT)', icon: Layers },
                   { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
                   { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
                   { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
@@ -5124,6 +5181,7 @@ export default function CEOExecutiveDashboard({
               {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
               <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
                 {[
+                  { id: 'todo', label: 'Vista Unificada (EBITDA + SAT)', icon: Layers },
                   { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
                   { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
                   { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
@@ -5173,6 +5231,55 @@ export default function CEOExecutiveDashboard({
                 initialQuery={ragQuery}
                 onNavigateTab={handleNavClick}
                 isEmbeddedView={true}
+              />
+            </div>
+          )}
+
+          {/* ======================================================= */}
+          {/* MÓDULO 11: 5. PORTAL ACADÉMICO 360° (BENTO WORKSPACE)    */}
+          {/* ======================================================= */}
+          {activeTab === 'portal_academico' && (
+            <div className="animate-in fade-in duration-100">
+              <AcademicPortalAdminModal
+                isOpen={true}
+                embeddedBento={true}
+                onClose={() => handleNavClick('inicio')}
+                holding={holding}
+                schoolId={schoolId || currentInstitution?.id || holding?.id || (holding?.slug ? `sch-${holding.slug}` : (isIbime ? 'sch-ibime' : 'sch-default'))}
+                initialCampusId={selectedCampusId}
+                initialStudentId={selectedPortalStudentId}
+                boardroomPrivacyMode={boardroomPrivacyMode}
+                onDispatchToIMail={(payload) => {
+                  setImailDraftPayload(payload);
+                  handleNavClick('imail_triage');
+                  triggerToast('✓ Caso académico transferido a iMail & Triage con contexto precargado');
+                }}
+              />
+            </div>
+          )}
+
+          {/* ======================================================= */}
+          {/* MÓDULO 12: 6. IMAIL & TRIAGE EJECUTIVO (BENTO WORKSPACE) */}
+          {/* ======================================================= */}
+          {activeTab === 'imail_triage' && (
+            <div className="animate-in fade-in duration-100">
+              <CEOEmailCommunicationsModal
+                key={`bento-imail-${schoolId || currentInstitution?.id || holding?.id || 'sch-default'}`}
+                isOpen={true}
+                embeddedBento={true}
+                onClose={() => handleNavClick('inicio')}
+                holding={holding}
+                schoolId={schoolId || currentInstitution?.id || holding?.id || (holding?.slug ? `sch-${holding.slug}` : (isIbime ? 'sch-ibime' : 'sch-default'))}
+                selectedCampusId={selectedCampusId}
+                onTriggerToast={triggerToast}
+                boardroomPrivacyMode={boardroomPrivacyMode}
+                initialDraftPayload={imailDraftPayload}
+                onClearInitialDraft={() => setImailDraftPayload(null)}
+                onOpenStudentInAcademicPortal={(studentId) => {
+                  setSelectedPortalStudentId(studentId);
+                  handleNavClick('portal_academico');
+                  triggerToast('✓ Abriendo Expediente 360° en Portal Académico');
+                }}
               />
             </div>
           )}
@@ -5594,65 +5701,38 @@ export default function CEOExecutiveDashboard({
         </div>
       )}
 
-      {/* SEARCH CMD+K */}
-      {isSearchOpen && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs flex items-start justify-center pt-24 p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in duration-100">
-            <div className="p-4 border-b border-slate-100 flex items-center gap-3">
-              <Search size={18} className="text-slate-400" />
-              <input
-                autoFocus
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isCorporate ? "Escribe el nombre de un colaborador, instructor, sede o proceso corporativo..." : "Escribe el nombre de un alumno, maestro, sede o proceso..."}
-                className="flex-1 bg-transparent border-none text-sm text-slate-900 focus:outline-none placeholder-slate-400"
-              />
-              <button onClick={() => setIsSearchOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="max-h-80 overflow-y-auto p-2">
-              {searchResult.length > 0 ? (
-                searchResult.map((res, i) => (
-                  <div
-                    key={i}
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      triggerToast(`Navegando a: ${res.title}`);
-                    }}
-                    className="p-2.5 rounded-xl hover:bg-slate-50 flex items-center justify-between cursor-pointer group transition-colors"
-                  >
-                    <div>
-                      <div className="text-xs font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
-                        {res.title}
-                      </div>
-                      <div className="text-[10px] text-slate-400">{res.category}</div>
-                    </div>
-                    <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-600 transition-colors" />
-                  </div>
-                ))
-              ) : searchQuery.trim() ? (
-                <div className="p-8 text-center text-xs text-slate-400">
-                  No se encontraron coincidencias para "{searchQuery}".
-                </div>
-              ) : (
-                <div className="p-6 text-center text-xs text-slate-400">
-                  {isCorporate 
-                    ? "Busca entre más de 6,800 colaboradores, 480 instructores, 5 plantas/empresas y procesos corporativos." 
-                    : "Busca entre más de 6,800 alumnos, 480 docentes, 5 planteles y protocolos institucionales."}
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>Navega con <kbd className="bg-white border px-1 rounded">↑</kbd> <kbd className="bg-white border px-1 rounded">↓</kbd> y selecciona con <kbd className="bg-white border px-1 rounded">Enter</kbd></span>
-              <span className="font-mono text-emerald-600 font-semibold">0 Tokens</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* SOFÍA — COPILOTO EJECUTIVO MULTIMODAL (VOZ Y TEXTO) DEL SEGUNDO CEREBRO (0 TOKENS · SIN CARDS) */}
+      <SofiaCopilotConsole
+        isOpen={isSearchOpen}
+        onClose={() => {
+          setIsSearchOpen(false);
+          setSofiaAutoListen(false);
+        }}
+        autoStartListening={sofiaAutoListen}
+        initialQuery={searchQuery}
+        holding={holding}
+        selectedCampusId={selectedCampusId}
+        onSelectCampus={(campusId) => setSelectedCampusId(campusId)}
+        activeTab={activeTab}
+        onNavigateTab={(tabId) => handleNavClick(tabId)}
+        boardroomPrivacyMode={boardroomPrivacyMode}
+        onToggleBoardroomPrivacy={() => setBoardroomPrivacyMode(prev => !prev)}
+        onExportCSV={handleExportCSV}
+        onOpenStudentInPortal={(studentId, campusId) => {
+          if (campusId) setSelectedCampusId(campusId);
+          setSelectedPortalStudentId(studentId);
+          setActiveTab('portal_academico');
+          triggerToast('Abriendo Expediente 360° en Portal Académico...');
+        }}
+        onDispatchIMail={(payload, openIMailTab) => {
+          setImailDraftPayload(payload);
+          if (openIMailTab) {
+            setActiveTab('imail_triage');
+          }
+          triggerToast(`Sofía despachó el requerimiento a ${payload.recipientName || payload.recipientEmail}`);
+        }}
+        onTriggerToast={triggerToast}
+      />
 
       {/* ======================================================= */}
       {/* MODAL 1: DIRECTORIO DEL PIPELINE DE ADMISIONES          */}
@@ -6116,7 +6196,7 @@ export default function CEOExecutiveDashboard({
 
       {/* ========================================================= */}
       {/* MODAL DE PORTAL ACADÉMICO INTEGRAL PARA ADMINISTRADOR     */}
-      {/* (VISTA PROFESOR, VISTA ALUMNOS CON SELECTOR Y AUDITORÍA) */}
+      {/* (RESPALDO MODAL CUANDO SE INVOCA FUERA DE LA PESTAÑA 5)   */}
       {/* ========================================================= */}
       {isAcademicPortalModalOpen && (
         <AcademicPortalAdminModal
@@ -6125,11 +6205,20 @@ export default function CEOExecutiveDashboard({
           holding={holding}
           schoolId={schoolId || currentInstitution?.id || holding?.id || (holding?.slug ? `sch-${holding.slug}` : (isIbime ? 'sch-ibime' : 'sch-default'))}
           initialCampusId={selectedCampusId}
+          initialStudentId={selectedPortalStudentId}
+          boardroomPrivacyMode={boardroomPrivacyMode}
+          onDispatchToIMail={(payload) => {
+            setIsAcademicPortalModalOpen(false);
+            setImailDraftPayload(payload);
+            setActiveTab('imail_triage');
+            triggerToast(`Dictamen enviado a iMail & Triage (${payload.studentName})`);
+          }}
         />
       )}
 
       {/* ========================================================= */}
       {/* MODAL DE CORREO INSTITUCIONAL Y COMUNICADOS CEO           */}
+      {/* (RESPALDO MODAL CUANDO SE INVOCA FUERA DE LA PESTAÑA 6)   */}
       {/* ========================================================= */}
       {isEmailModalOpen && (
         <CEOEmailCommunicationsModal
@@ -6140,19 +6229,30 @@ export default function CEOExecutiveDashboard({
           schoolId={schoolId || currentInstitution?.id || holding?.id || (holding?.slug ? `sch-${holding.slug}` : (isIbime ? 'sch-ibime' : 'sch-default'))}
           selectedCampusId={selectedCampusId}
           onTriggerToast={triggerToast}
+          boardroomPrivacyMode={boardroomPrivacyMode}
+          initialDraftPayload={imailDraftPayload}
+          onClearInitialDraft={() => setImailDraftPayload(null)}
+          onOpenStudentInAcademicPortal={(studentId, campusId) => {
+            setIsEmailModalOpen(false);
+            if (campusId) setSelectedCampusId(campusId);
+            setSelectedPortalStudentId(studentId);
+            setActiveTab('portal_academico');
+            triggerToast('Abriendo Expediente 360° en Portal Académico...');
+          }}
         />
       )}
 
       {/* ========================================================= */}
-      {/* 4. BARRA DE NAVEGACIÓN INFERIOR PARA MÓVIL (APP NATIVA)   */}
+      {/* 4. BARRA DE NAVEGACIÓN INFERIOR PARA MÓVIL (6 MÓDULOS)    */}
       {/* ========================================================= */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 flex items-center justify-around lg:hidden shadow-lg">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-1.5 py-1.5 flex items-center justify-around lg:hidden shadow-lg">
         {[
-          { id: 'inicio', label: 'Inicio', icon: Building2 },
-          { id: 'vision', label: 'Visión', icon: TrendingUp },
-          { id: 'academico', label: isCorporate ? 'Competencias' : 'NEM', icon: isCorporate ? Award : GraduationCap },
+          { id: 'inicio', label: 'Holding', icon: Building2 },
           { id: 'admisiones', label: isCorporate ? 'Talento' : 'Admisiones', icon: UserCheck },
+          { id: 'academico', label: isCorporate ? 'ISO' : 'NEM', icon: isCorporate ? Award : GraduationCap },
           { id: 'finanzas', label: 'Finanzas', icon: DollarSign },
+          { id: 'portal_academico', label: 'Portal', icon: Sparkles },
+          { id: 'imail_triage', label: 'iMail', icon: Mail },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -6160,28 +6260,20 @@ export default function CEOExecutiveDashboard({
             <button
               key={tab.id}
               onClick={() => handleNavClick(tab.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              className={`relative flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer active:scale-95 ${
                 isActive 
                   ? 'text-indigo-600 font-black' 
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Icon size={18} className={isActive ? 'text-indigo-600 scale-110' : 'text-slate-500'} />
+              <Icon size={17} className={isActive ? 'text-indigo-600 scale-110' : 'text-slate-500'} />
               <span className="text-[10px] mt-0.5 tracking-tight">{tab.label}</span>
+              {tab.id === 'imail_triage' && (
+                <span className="absolute top-0.5 right-1 w-2 h-2 rounded-full bg-rose-500" />
+              )}
             </button>
           );
         })}
-        {/* Botón Más / Menú Completo */}
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer active:scale-95 ${
-            isMobileMenuOpen ? 'text-indigo-600 font-black' : 'text-slate-500 hover:text-slate-800'
-          }`}
-          aria-label="Abrir menú completo"
-        >
-          <Menu size={18} className="text-slate-500" />
-          <span className="text-[10px] mt-0.5 tracking-tight">Más</span>
-        </button>
       </nav>
 
     </div>

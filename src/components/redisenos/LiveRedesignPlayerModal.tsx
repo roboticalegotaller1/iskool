@@ -31,6 +31,7 @@ import {
   formatCoins
 } from '@/lib/redisenosSandboxData';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 
 interface Props {
   isOpen: boolean;
@@ -163,16 +164,17 @@ export function LiveRedesignPlayerModal({
     setFloatingDamage(null);
   };
 
-  // Reproducir voz simulada amigable para preescolar
+  // Reproducir voz humana cálida y dulce para preescolar / primaria
   const handlePlayVoice = (text: string) => {
     gamificationAudio.playLevelUpSound();
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      utter.rate = 0.9;
-      window.speechSynthesis.speak(utter);
-    }
+    stopAllIskoolAudio();
+    playUniversalIskoolVoice(text, {
+      voiceId: 'es-MX-DaliaNeural',
+      role: 'mentor',
+      language: 'es-MX',
+      rate: 0.96,
+      pitch: 1.03,
+    });
   };
 
   return (
