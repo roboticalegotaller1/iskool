@@ -1393,10 +1393,17 @@ export async function playUniversalIskoolVoice(
 export interface CharacterAnatomicalMouth {
   x1: number;         // Comisura izquierda en espacio 1024
   y1: number;
-  cx: number;         // Centro anatómico
+  cx: number;         // Centro anatómico en espacio 1024
   cy: number;
   x2: number;         // Comisura derecha en espacio 1024
   y2: number;
+  chinY?: number;     // Borde inferior del mentón/mandíbula en espacio 1024
+  eyeY?: number;      // Altura de párpados en espacio 1024
+  leftEyeX?: number;  // Centro ojo izquierdo en espacio 1024
+  rightEyeX?: number; // Centro ojo derecho en espacio 1024
+  eyeRadius?: number; // Radio ocular en espacio 1024
+  baseOpen?: number;  // Apertura labial base en el render original (0 = cerrado, 0.35 = sonrisa abierta)
+  bustCrop?: { focusX: number; focusY: number; zoom: number }; // Encuadre inteligente para retratos de cuerpo medio
   maxOpening: number; // Apertura vertical máxima en px
   cavityDarkColor: string;
   cavityMidColor: string;
@@ -1408,623 +1415,391 @@ export interface CharacterAnatomicalMouth {
 
 export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalMouth {
   const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  
-  // 1. NAPOLÉON BONAPARTE (3D: public/images/languages/3d/napoleon_3d.webp)
-  // Labios 3D exactos verificados: cx = 520, cy = 278, x1: 474, x2: 566
+  const is2DPortrait = norm.includes('2d') || norm.includes('.jpg');
+
+  // 1. NAPOLÉON BONAPARTE (3D: /images/languages/3d/napoleon_3d.webp | 2D: /images/languages/historical/napoleon.jpg)
   if (norm.includes('napoleon') || norm.includes('bonaparte')) {
+    if (is2DPortrait) {
+      return {
+        x1: 468, y1: 380, cx: 498, cy: 380, x2: 528, y2: 380,
+        chinY: 428, eyeY: 282, leftEyeX: 454, rightEyeX: 542, eyeRadius: 18, baseOpen: 0,
+        maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
+        lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
+      };
+    }
     return {
-      x1: 474,
-      y1: 278,
-      cx: 520,
-      cy: 278,
-      x2: 566,
-      y2: 278,
-      maxOpening: 14,
-      cavityDarkColor: '#180407',
-      cavityMidColor: '#330a10',
-      cavityRimColor: '#58141d',
-      lowerLipRimColor: 'rgba(185, 88, 82, 0.92)',
-      teethColor: '#eee3d6'
+      x1: 486, y1: 264, cx: 512, cy: 266, x2: 538, y2: 264,
+      chinY: 304, eyeY: 196, leftEyeX: 480, rightEyeX: 544, eyeRadius: 16, baseOpen: 0.18,
+      maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
+      lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
     };
   }
 
-  // 2. WILLIAM SHAKESPEARE (3D: public/images/languages/3d/shakespeare_3d.webp)
-  // Labios 3D exactos bajo bigote verificados: cx = 510, cy = 324, x1: 464, x2: 556
+  // 2. WILLIAM SHAKESPEARE (3D: /images/languages/3d/shakespeare_3d.webp | 2D: /images/languages/historical/shakespeare.jpg)
   if (norm.includes('shakespeare')) {
+    if (is2DPortrait) {
+      return {
+        x1: 446, y1: 478, cx: 480, cy: 478, x2: 514, y2: 478,
+        chinY: 554, eyeY: 342, leftEyeX: 438, rightEyeX: 534, eyeRadius: 20, baseOpen: 0,
+        maxOpening: 14, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
+        lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
+      };
+    }
     return {
-      x1: 464,
-      y1: 324,
-      cx: 510,
-      cy: 324,
-      x2: 556,
-      y2: 324,
-      maxOpening: 14,
-      cavityDarkColor: '#140507',
-      cavityMidColor: '#2e0d11',
-      cavityRimColor: '#4e171e',
-      lowerLipRimColor: 'rgba(180, 85, 78, 0.92)',
-      teethColor: '#f0e5d8',
-      mustacheCover: true
+      x1: 474, y1: 318, cx: 510, cy: 320, x2: 546, y2: 318,
+      chinY: 382, eyeY: 232, leftEyeX: 462, rightEyeX: 554, eyeRadius: 24, baseOpen: 0.32,
+      maxOpening: 15, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
+      lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
     };
   }
 
-  // 3. ABRAHAM LINCOLN (3D: public/images/languages/3d/abraham_lincoln_3d.webp)
-  // Labios 3D exactos verificados: cx = 512, cy = 272, x1: 468, x2: 556
+  // 3. ABRAHAM LINCOLN (3D: /images/languages/3d/abraham_lincoln_3d.webp | 2D: /images/languages/historical/abraham_lincoln.jpg)
   if (norm.includes('lincoln') || norm.includes('abraham')) {
+    if (is2DPortrait) {
+      return {
+        x1: 476, y1: 462, cx: 518, cy: 462, x2: 560, y2: 462,
+        chinY: 575, eyeY: 320, leftEyeX: 462, rightEyeX: 570, eyeRadius: 20, baseOpen: 0,
+        maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
+        lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
+      };
+    }
     return {
-      x1: 468,
-      y1: 272,
-      cx: 512,
-      cy: 272,
-      x2: 556,
-      y2: 272,
-      maxOpening: 13,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#2b0b0e',
-      cavityRimColor: '#4a1419',
-      lowerLipRimColor: 'rgba(170, 80, 75, 0.90)',
-      teethColor: '#ebe0d2'
+      x1: 490, y1: 263, cx: 524, cy: 264, x2: 558, y2: 263,
+      chinY: 348, eyeY: 188, leftEyeX: 482, rightEyeX: 564, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
+      lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
     };
   }
 
-  // 4. ADA LOVELACE (3D: public/images/languages/3d/ada_lovelace_3d.webp)
-  // Labios 3D exactos verificados: cx = 501, cy = 395, x1: 451, x2: 551
+  // 4. ADA LOVELACE (3D: /images/languages/3d/ada_lovelace_3d.webp | 2D: /images/languages/historical/ada_lovelace.jpg)
   if (norm.includes('ada') || norm.includes('lovelace')) {
+    if (is2DPortrait) {
+      return {
+        x1: 504, y1: 344, cx: 530, cy: 344, x2: 556, y2: 344,
+        chinY: 392, eyeY: 248, leftEyeX: 484, rightEyeX: 570, eyeRadius: 18, baseOpen: 0,
+        maxOpening: 14, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
+        lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
+      };
+    }
     return {
-      x1: 451,
-      y1: 395,
-      cx: 501,
-      cy: 395,
-      x2: 551,
-      y2: 395,
-      maxOpening: 16,
-      cavityDarkColor: '#1a0408',
-      cavityMidColor: '#380a12',
-      cavityRimColor: '#5e121e',
-      lowerLipRimColor: 'rgba(210, 90, 105, 0.94)',
-      teethColor: '#fff6ed'
+      x1: 472, y1: 388, cx: 512, cy: 390, x2: 552, y2: 388,
+      chinY: 438, eyeY: 288, leftEyeX: 452, rightEyeX: 570, eyeRadius: 30, baseOpen: 0.35,
+      maxOpening: 16, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
+      lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
     };
   }
 
-  // 5. MARIE CURIE (3D: public/images/languages/3d/marie_curie_3d.webp)
-  // Labios 3D exactos verificados: cx = 525, cy = 246, x1: 480, x2: 570
+  // 5. MARIE CURIE (3D: /images/languages/3d/marie_curie_3d.webp | 2D: /images/languages/historical/marie_curie.jpg)
   if (norm.includes('curie') || norm.includes('marie')) {
+    if (is2DPortrait) {
+      return {
+        x1: 472, y1: 460, cx: 504, cy: 460, x2: 536, y2: 460,
+        chinY: 522, eyeY: 332, leftEyeX: 454, rightEyeX: 558, eyeRadius: 18, baseOpen: 0,
+        maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
+        lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
+      };
+    }
     return {
-      x1: 480,
-      y1: 246,
-      cx: 525,
-      cy: 246,
-      x2: 570,
-      y2: 246,
-      maxOpening: 13,
-      cavityDarkColor: '#1c050a',
-      cavityMidColor: '#3a0e16',
-      cavityRimColor: '#601924',
-      lowerLipRimColor: 'rgba(195, 92, 100, 0.92)',
-      teethColor: '#f6efe6'
+      x1: 492, y1: 242, cx: 518, cy: 244, x2: 544, y2: 242,
+      chinY: 280, eyeY: 176, leftEyeX: 480, rightEyeX: 552, eyeRadius: 20, baseOpen: 0.28,
+      maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
+      lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
     };
   }
 
-  // 6. VICTOR HUGO
+  // 6. VICTOR HUGO (3D: /images/languages/3d/victor_hugo_3d.webp | 2D: /images/languages/historical/victor_hugo.jpg)
   if (norm.includes('victor') || norm.includes('hugo')) {
+    if (is2DPortrait) {
+      return {
+        x1: 484, y1: 402, cx: 520, cy: 402, x2: 556, y2: 402,
+        chinY: 486, eyeY: 292, leftEyeX: 468, rightEyeX: 572, eyeRadius: 18, baseOpen: 0,
+        maxOpening: 13, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
+        lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
+      };
+    }
     return {
-      x1: 476,
-      y1: 394,
-      cx: 504,
-      cy: 394,
-      x2: 534,
-      y2: 394,
-      maxOpening: 12,
-      cavityDarkColor: '#0c0203',
-      cavityMidColor: '#240407',
-      cavityRimColor: '#400e12',
-      lowerLipRimColor: 'rgba(155, 78, 72, 0.90)',
-      teethColor: '#eae1d2',
-      mustacheCover: true
+      x1: 474, y1: 455, cx: 510, cy: 455, x2: 546, y2: 455,
+      chinY: 576, eyeY: 308, leftEyeX: 446, rightEyeX: 570, eyeRadius: 22, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
+      lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
     };
   }
 
-  // 7. JEANNE D'ARC
+  // 7. JEANNE D'ARC (3D: /images/languages/3d/jeanne_darc_3d.webp | 2D: /images/languages/historical/jeanne_darc.jpg)
   if (norm.includes('jeanne') || norm.includes('darc') || norm.includes('arc')) {
+    if (is2DPortrait) {
+      return {
+        x1: 488, y1: 390, cx: 516, cy: 390, x2: 544, y2: 390,
+        chinY: 438, eyeY: 286, leftEyeX: 464, rightEyeX: 568, eyeRadius: 18, baseOpen: 0,
+        maxOpening: 13, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
+        lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
+      };
+    }
     return {
-      x1: 472,
-      y1: 382,
-      cx: 500,
-      cy: 382,
-      x2: 528,
-      y2: 382,
-      maxOpening: 12,
-      cavityDarkColor: '#120305',
-      cavityMidColor: '#2a060b',
-      cavityRimColor: '#461117',
-      lowerLipRimColor: 'rgba(185, 90, 90, 0.92)',
-      teethColor: '#f2ebe0'
+      x1: 478, y1: 436, cx: 514, cy: 437, x2: 550, y2: 436,
+      chinY: 498, eyeY: 314, leftEyeX: 444, rightEyeX: 580, eyeRadius: 28, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
     };
   }
 
-  // 8. MENTOR FEMENINO 3D (public/images/languages/3d/mentor_female_3d.webp)
-  // Labios 3D exactos verificados: cx = 525, cy = 385, x1: 475, x2: 575
+  // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
   if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem') || norm.includes('mme') || norm.includes('mentor_female')) {
     return {
-      x1: 475,
-      y1: 385,
-      cx: 525,
-      cy: 385,
-      x2: 575,
-      y2: 385,
-      maxOpening: 16,
-      cavityDarkColor: '#1e0409',
-      cavityMidColor: '#3e0c15',
-      cavityRimColor: '#681622',
-      lowerLipRimColor: 'rgba(215, 92, 105, 0.94)',
-      teethColor: '#fff7f0'
+      x1: 464, y1: 370, cx: 516, cy: 374, x2: 568, y2: 370,
+      chinY: 424, eyeY: 256, leftEyeX: 444, rightEyeX: 588, eyeRadius: 34, baseOpen: 0.38,
+      maxOpening: 16, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',
+      lowerLipRimColor: 'rgba(215, 92, 105, 0.94)', teethColor: '#fff7f0'
     };
   }
 
-  // 9. MENTOR MASCULINO 3D (public/images/languages/3d/mentor_male_3d.webp)
-  // Labios 3D exactos verificados: cx = 445, cy = 302, x1: 405, x2: 485, y1/y2: 298
+  // 9. MENTOR MASCULINO 3D (/images/languages/3d/mentor_male_3d_v2.webp)
   if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri') || norm.includes('prof') || norm.includes('mentor_male')) {
     return {
-      x1: 405,
-      y1: 298,
-      cx: 445,
-      cy: 302,
-      x2: 485,
-      y2: 298,
-      maxOpening: 14,
-      cavityDarkColor: '#160406',
-      cavityMidColor: '#300a0e',
-      cavityRimColor: '#521319',
-      lowerLipRimColor: 'rgba(178, 82, 75, 0.90)',
-      teethColor: '#eee4d6'
+      x1: 448, y1: 292, cx: 486, cy: 294, x2: 524, y2: 292,
+      chinY: 350, eyeY: 196, leftEyeX: 442, rightEyeX: 534, eyeRadius: 24, baseOpen: 0.30,
+      maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#300a0e', cavityRimColor: '#521319',
+      lowerLipRimColor: 'rgba(178, 82, 75, 0.90)', teethColor: '#eee4d6', mustacheCover: true
     };
   }
 
   // =========================================================================
-  // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS E HISPANOS (CALIBRACIÓN MILIMÉTRICA)
+  // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS (CALIBRACIÓN SUB-PÍXEL VERIFICADA)
   // =========================================================================
 
-  // 10. EMILIANO ZAPATA (public/images/history/emiliano_zapata_avatar.png)
-  // Bigote revolucionario pronunciado: comisuras x1: 478, x2: 546, stoma cy: 372
+  // 10. EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
   if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
     return {
-      x1: 478,
-      y1: 372,
-      cx: 512,
-      cy: 372,
-      x2: 546,
-      y2: 372,
-      maxOpening: 12,
-      cavityDarkColor: '#0e0204',
-      cavityMidColor: '#26050a',
-      cavityRimColor: '#440d14',
-      lowerLipRimColor: 'rgba(152, 62, 54, 0.92)',
-      teethColor: '#ede4d6',
-      mustacheCover: true
+      x1: 516, y1: 562, cx: 566, cy: 560, x2: 616, y2: 562,
+      chinY: 648, eyeY: 422, leftEyeX: 500, rightEyeX: 626, eyeRadius: 22, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#0e0204', cavityMidColor: '#26050a', cavityRimColor: '#440d14',
+      lowerLipRimColor: 'rgba(152, 62, 54, 0.92)', teethColor: '#ede4d6', mustacheCover: true
     };
   }
 
-  // 11. BENITO JUÁREZ (public/images/history/benito_juarez_avatar.png)
-  // Mandíbula y labio republicano: cx: 502, cy: 344, x1: 468, x2: 536
+  // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.png)
   if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
     return {
-      x1: 468,
-      y1: 344,
-      cx: 502,
-      cy: 344,
-      x2: 536,
-      y2: 344,
-      maxOpening: 12,
-      cavityDarkColor: '#160406',
-      cavityMidColor: '#320a10',
-      cavityRimColor: '#52131a',
-      lowerLipRimColor: 'rgba(168, 76, 70, 0.90)',
-      teethColor: '#eee4d8'
+      x1: 462, y1: 355, cx: 500, cy: 353, x2: 538, y2: 355,
+      chinY: 420, eyeY: 252, leftEyeX: 452, rightEyeX: 552, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#320a10', cavityRimColor: '#52131a',
+      lowerLipRimColor: 'rgba(168, 76, 70, 0.90)', teethColor: '#eee4d8'
     };
   }
 
-  // 12. SOR JUANA INÉS DE LA CRUZ (public/images/history/sor_juana_avatar.png)
-  // Fisonomía virreinal con toca: cx: 506, cy: 366, x1: 472, x2: 540
+  // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
-      x1: 472,
-      y1: 366,
-      cx: 506,
-      cy: 366,
-      x2: 540,
-      y2: 366,
-      maxOpening: 13,
-      cavityDarkColor: '#1c0409',
-      cavityMidColor: '#3e0c16',
-      cavityRimColor: '#641624',
-      lowerLipRimColor: 'rgba(202, 88, 98, 0.94)',
-      teethColor: '#fff5ec'
+      x1: 486, y1: 331, cx: 511, cy: 332, x2: 536, y2: 331,
+      chinY: 382, eyeY: 256, leftEyeX: 472, rightEyeX: 548, eyeRadius: 16, baseOpen: 0,
+      maxOpening: 13, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
+      lowerLipRimColor: 'rgba(202, 88, 98, 0.94)', teethColor: '#fff5ec'
     };
   }
 
-  // 13. JOSÉ MARÍA MORELOS Y PAVÓN (public/images/history/morelos_avatar.png)
-  // Con paliacate insurgente: cx: 504, cy: 333, x1: 470, x2: 538
+  // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
-      x1: 470,
-      y1: 333,
-      cx: 504,
-      cy: 333,
-      x2: 538,
-      y2: 333,
-      maxOpening: 13,
-      cavityDarkColor: '#100305',
-      cavityMidColor: '#2a070c',
-      cavityRimColor: '#480e14',
-      lowerLipRimColor: 'rgba(160, 70, 65, 0.90)',
-      teethColor: '#ede4d6'
+      x1: 482, y1: 314, cx: 510, cy: 314, x2: 538, y2: 314,
+      chinY: 374, eyeY: 232, leftEyeX: 468, rightEyeX: 552, eyeRadius: 16, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
+      lowerLipRimColor: 'rgba(160, 70, 65, 0.90)', teethColor: '#ede4d6'
     };
   }
 
-  // 14. CUAUHTÉMOC (public/images/history/cuauhtemoc_avatar.png)
-  // Guerrero y tlatoani mexica con penacho: cx: 500, cy: 340, x1: 466, x2: 534
+  // 14. CUAUHTÉMOC (/images/history/cuauhtemoc_avatar.png)
   if (norm.includes('cuauhtemoc') || norm.includes('cuauhtemotzin') || norm.includes('tlatoani') || norm.includes('joven abuelo')) {
     return {
-      x1: 466,
-      y1: 340,
-      cx: 500,
-      cy: 340,
-      x2: 534,
-      y2: 340,
-      maxOpening: 14,
-      cavityDarkColor: '#140305',
-      cavityMidColor: '#30080e',
-      cavityRimColor: '#501117',
-      lowerLipRimColor: 'rgba(172, 78, 68, 0.92)',
-      teethColor: '#f2eae0'
+      x1: 474, y1: 446, cx: 510, cy: 446, x2: 546, y2: 446,
+      chinY: 506, eyeY: 336, leftEyeX: 460, rightEyeX: 560, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#140305', cavityMidColor: '#30080e', cavityRimColor: '#501117',
+      lowerLipRimColor: 'rgba(172, 78, 68, 0.92)', teethColor: '#f2eae0'
     };
   }
 
-  // 15. IGNACIO ALLENDE (public/images/history/ignacio_allende_avatar.png)
-  // Uniforme de dragones insurgente: cx: 510, cy: 338, x1: 476, x2: 544
+  // 15. IGNACIO ALLENDE (/images/history/ignacio_allende_avatar.png)
   if (norm.includes('allende') || norm.includes('ignacio allende') || norm.includes('san miguel')) {
     return {
-      x1: 476,
-      y1: 338,
-      cx: 510,
-      cy: 338,
-      x2: 544,
-      y2: 338,
-      maxOpening: 13,
-      cavityDarkColor: '#140407',
-      cavityMidColor: '#2e0910',
-      cavityRimColor: '#4c1219',
-      lowerLipRimColor: 'rgba(175, 78, 75, 0.90)',
-      teethColor: '#f0e6da'
+      x1: 480, y1: 330, cx: 508, cy: 330, x2: 536, y2: 330,
+      chinY: 386, eyeY: 244, leftEyeX: 466, rightEyeX: 552, eyeRadius: 16, baseOpen: 0,
+      maxOpening: 13, cavityDarkColor: '#140407', cavityMidColor: '#2e0910', cavityRimColor: '#4c1219',
+      lowerLipRimColor: 'rgba(175, 78, 75, 0.90)', teethColor: '#f0e6da', mustacheCover: true
     };
   }
 
-  // 16. CARMEN SERDÁN ALATRISTE (public/images/history/carmen_serdan_avatar.png)
-  // Heroína de Puebla: cx: 504, cy: 372, x1: 470, x2: 538
+  // 16. CARMEN SERDÁN ALATRISTE (/images/history/carmen_serdan_avatar.png)
   if (norm.includes('carmen serdan') || (norm.includes('serdan') && (norm.includes('carmen') || norm.includes('alatriste')))) {
     return {
-      x1: 470,
-      y1: 372,
-      cx: 504,
-      cy: 372,
-      x2: 538,
-      y2: 372,
-      maxOpening: 12,
-      cavityDarkColor: '#1a0408',
-      cavityMidColor: '#380a14',
-      cavityRimColor: '#5e1420',
-      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)',
-      teethColor: '#fdf3ea'
+      x1: 506, y1: 226, cx: 524, cy: 226, x2: 542, y2: 226,
+      chinY: 256, eyeY: 172, leftEyeX: 498, rightEyeX: 548, eyeRadius: 12, baseOpen: 0,
+      bustCrop: { focusX: 524, focusY: 220, zoom: 1.55 },
+      maxOpening: 11, cavityDarkColor: '#1a0408', cavityMidColor: '#380a14', cavityRimColor: '#5e1420',
+      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)', teethColor: '#fdf3ea'
     };
   }
 
-  // 17. AQUILES SERDÁN (public/images/history/aquiles_serdan_avatar.png)
-  // Mártir de Santa Clara con bigote: cx: 508, cy: 370, x1: 474, x2: 542
+  // 17. AQUILES SERDÁN (/images/history/aquiles_serdan_avatar.png)
   if (norm.includes('aquiles serdan') || norm.includes('aquiles')) {
     return {
-      x1: 474,
-      y1: 370,
-      cx: 508,
-      cy: 370,
-      x2: 542,
-      y2: 370,
-      maxOpening: 12,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#28080d',
-      cavityRimColor: '#461016',
-      lowerLipRimColor: 'rgba(165, 72, 68, 0.90)',
-      teethColor: '#ede4d8',
-      mustacheCover: true
+      x1: 488, y1: 240, cx: 511, cy: 240, x2: 534, y2: 240,
+      chinY: 282, eyeY: 176, leftEyeX: 478, rightEyeX: 544, eyeRadius: 14, baseOpen: 0,
+      bustCrop: { focusX: 511, focusY: 235, zoom: 1.35 },
+      maxOpening: 12, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
+      lowerLipRimColor: 'rgba(165, 72, 68, 0.90)', teethColor: '#ede4d8', mustacheCover: true
     };
   }
 
-  // 18. FRANCISCO I. MADERO (public/images/history/madero_avatar.png)
-  // Apóstol de la Democracia con barba/bigote: cx: 506, cy: 338, x1: 472, x2: 540
+  // 18. FRANCISCO I. MADERO (/images/history/madero_avatar.png)
   if (norm.includes('madero') || norm.includes('francisco i madero') || norm.includes('apostol')) {
     return {
-      x1: 472,
-      y1: 338,
-      cx: 506,
-      cy: 338,
-      x2: 540,
-      y2: 338,
-      maxOpening: 12,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#28080d',
-      cavityRimColor: '#461016',
-      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
-      teethColor: '#ede4d8',
-      mustacheCover: true
+      x1: 477, y1: 332, cx: 511, cy: 332, x2: 545, y2: 332,
+      chinY: 425, eyeY: 238, leftEyeX: 466, rightEyeX: 558, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d8', mustacheCover: true
     };
   }
 
-  // 19. LÁZARO CÁRDENAS DEL RÍO (public/images/history/lazaro_cardenas_avatar.png)
-  // Estadista patriótico: cx: 508, cy: 362, x1: 474, x2: 542
+  // 19. LÁZARO CÁRDENAS DEL RÍO (/images/history/lazaro_cardenas_avatar.png)
   if (norm.includes('cardenas') || norm.includes('lazaro') || norm.includes('expropiacion')) {
     return {
-      x1: 474,
-      y1: 362,
-      cx: 508,
-      cy: 362,
-      x2: 542,
-      y2: 362,
-      maxOpening: 13,
-      cavityDarkColor: '#140407',
-      cavityMidColor: '#2e0a10',
-      cavityRimColor: '#4c131a',
-      lowerLipRimColor: 'rgba(170, 76, 72, 0.90)',
-      teethColor: '#eee5d8'
+      x1: 480, y1: 360, cx: 518, cy: 360, x2: 556, y2: 360,
+      chinY: 452, eyeY: 258, leftEyeX: 460, rightEyeX: 570, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
+      lowerLipRimColor: 'rgba(170, 76, 72, 0.90)', teethColor: '#eee5d8'
     };
   }
 
-  // 20. PLUTARCO ELÍAS CALLES (public/images/history/plutarco_elias_calles_avatar.png)
-  // Bigote sobrio institucional: cx: 508, cy: 360, x1: 474, x2: 542
+  // 20. PLUTARCO ELÍAS CALLES (/images/history/plutarco_elias_calles_avatar.png)
   if (norm.includes('calles') || norm.includes('plutarco')) {
     return {
-      x1: 474,
-      y1: 360,
-      cx: 508,
-      cy: 360,
-      x2: 542,
-      y2: 360,
-      maxOpening: 12,
-      cavityDarkColor: '#100305',
-      cavityMidColor: '#26070b',
-      cavityRimColor: '#420e14',
-      lowerLipRimColor: 'rgba(158, 68, 62, 0.90)',
-      teethColor: '#ece2d4',
-      mustacheCover: true
+      x1: 484, y1: 258, cx: 511, cy: 258, x2: 538, y2: 258,
+      chinY: 306, eyeY: 186, leftEyeX: 476, rightEyeX: 546, eyeRadius: 14, baseOpen: 0,
+      bustCrop: { focusX: 511, focusY: 250, zoom: 1.32 },
+      maxOpening: 12, cavityDarkColor: '#100305', cavityMidColor: '#26070b', cavityRimColor: '#420e14',
+      lowerLipRimColor: 'rgba(158, 68, 62, 0.90)', teethColor: '#ece2d4', mustacheCover: true
     };
   }
 
-  // 21. RICARDO FLORES MAGÓN (public/images/history/ricardo_flores_magon_avatar.png)
-  // Bigote y anteojos precursores: cx: 508, cy: 368, x1: 474, x2: 542
+  // 21. RICARDO FLORES MAGÓN (/images/history/ricardo_flores_magon_avatar.png)
   if (norm.includes('magon') || norm.includes('flores magon') || norm.includes('regeneracion')) {
     return {
-      x1: 474,
-      y1: 368,
-      cx: 508,
-      cy: 368,
-      x2: 542,
-      y2: 368,
-      maxOpening: 12,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#2a090e',
-      cavityRimColor: '#481218',
-      lowerLipRimColor: 'rgba(162, 72, 68, 0.90)',
-      teethColor: '#eee4d6',
-      mustacheCover: true
+      x1: 506, y1: 374, cx: 536, cy: 374, x2: 566, y2: 374,
+      chinY: 432, eyeY: 274, leftEyeX: 490, rightEyeX: 580, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2a090e', cavityRimColor: '#481218',
+      lowerLipRimColor: 'rgba(162, 72, 68, 0.90)', teethColor: '#eee4d6'
     };
   }
 
-  // 22. GUADALUPE VICTORIA (public/images/history/guadalupe_victoria_avatar.png)
-  // Primer Presidente de México: cx: 502, cy: 318, x1: 468, x2: 536
+  // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.png)
   if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !norm.includes('victor'))) {
     return {
-      x1: 468,
-      y1: 318,
-      cx: 502,
-      cy: 318,
-      x2: 536,
-      y2: 318,
-      maxOpening: 13,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#2a080d',
-      cavityRimColor: '#461117',
-      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
-      teethColor: '#ede4d6'
+      x1: 484, y1: 298, cx: 507, cy: 298, x2: 530, y2: 298,
+      chinY: 346, eyeY: 222, leftEyeX: 474, rightEyeX: 542, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 507, focusY: 280, zoom: 1.25 },
+      maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d6'
     };
   }
 
-  // 23. ANDRÉS QUINTANA ROO (public/images/history/andres_quintana_roo_avatar.png)
-  // Prócer jurista insurgente: cx: 506, cy: 358, x1: 472, x2: 540
+  // 23. ANDRÉS QUINTANA ROO (/images/history/andres_quintana_roo_avatar.png)
   if (norm.includes('quintana roo') || norm.includes('andres quintana')) {
     return {
-      x1: 472,
-      y1: 358,
-      cx: 506,
-      cy: 358,
-      x2: 540,
-      y2: 358,
-      maxOpening: 13,
-      cavityDarkColor: '#140407',
-      cavityMidColor: '#2c090f',
-      cavityRimColor: '#4a1218',
-      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
-      teethColor: '#ede5d8'
+      x1: 532, y1: 362, cx: 560, cy: 362, x2: 588, y2: 362,
+      chinY: 420, eyeY: 268, leftEyeX: 514, rightEyeX: 596, eyeRadius: 17, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#140407', cavityMidColor: '#2c090f', cavityRimColor: '#4a1218',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede5d8'
     };
   }
 
-  // 24. BELISARIO DOMÍNGUEZ (public/images/history/belisario_dominguez_avatar.png)
-  // Senador mártir de la libertad de expresión: cx: 506, cy: 344, x1: 472, x2: 540
+  // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.png)
   if (norm.includes('belisario') || norm.includes('dominguez')) {
     return {
-      x1: 472,
-      y1: 344,
-      cx: 506,
-      cy: 344,
-      x2: 540,
-      y2: 344,
-      maxOpening: 12,
-      cavityDarkColor: '#100305',
-      cavityMidColor: '#26070b',
-      cavityRimColor: '#420e14',
-      lowerLipRimColor: 'rgba(156, 68, 62, 0.90)',
-      teethColor: '#eae1d2',
-      mustacheCover: true
+      x1: 484, y1: 295, cx: 511, cy: 295, x2: 538, y2: 295,
+      chinY: 348, eyeY: 216, leftEyeX: 474, rightEyeX: 548, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 511, focusY: 280, zoom: 1.22 },
+      maxOpening: 13, cavityDarkColor: '#100305', cavityMidColor: '#26070b', cavityRimColor: '#420e14',
+      lowerLipRimColor: 'rgba(156, 68, 62, 0.90)', teethColor: '#eae1d2', mustacheCover: true
     };
   }
 
-  // 25. GENERAL FELIPE ÁNGELES (public/images/history/felipe_angeles_avatar.png)
-  // Militar leal humanista con bigote: cx: 506, cy: 360, x1: 472, x2: 540
+  // 25. GENERAL FELIPE ÁNGELES (/images/history/felipe_angeles_avatar.png)
   if (norm.includes('angeles') || norm.includes('felipe angeles')) {
     return {
-      x1: 472,
-      y1: 360,
-      cx: 506,
-      cy: 360,
-      x2: 540,
-      y2: 360,
-      maxOpening: 12,
-      cavityDarkColor: '#120406',
-      cavityMidColor: '#2a080d',
-      cavityRimColor: '#461117',
-      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)',
-      teethColor: '#eee5d8',
-      mustacheCover: true
+      x1: 470, y1: 306, cx: 496, cy: 306, x2: 522, y2: 306,
+      chinY: 356, eyeY: 232, leftEyeX: 462, rightEyeX: 534, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 496, focusY: 290, zoom: 1.22 },
+      maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8', mustacheCover: true
     };
   }
 
-  // 26. GUSTAVO DÍAZ ORDAZ (public/images/history/gustavo_diaz_ordaz_avatar.png)
-  // Mandíbula y labio característico: cx: 506, cy: 350, x1: 472, x2: 540
+  // 26. GUSTAVO DÍAZ ORDAZ (/images/history/gustavo_diaz_ordaz_avatar.png)
   if (norm.includes('diaz ordaz') || norm.includes('ordaz')) {
     return {
-      x1: 472,
-      y1: 350,
-      cx: 506,
-      cy: 350,
-      x2: 540,
-      y2: 350,
-      maxOpening: 14,
-      cavityDarkColor: '#140407',
-      cavityMidColor: '#2e0a10',
-      cavityRimColor: '#4c131a',
-      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)',
-      teethColor: '#eee5d8'
+      x1: 470, y1: 456, cx: 513, cy: 456, x2: 556, y2: 456,
+      chinY: 538, eyeY: 334, leftEyeX: 458, rightEyeX: 568, eyeRadius: 20, baseOpen: 0,
+      maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
+      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8'
     };
   }
 
-  // 27. JOSÉ GUADALUPE POSADA (public/images/history/jose_guadalupe_posada_avatar.png)
-  // Grabador y creador de la Calavera Garbancera con bigote: cx: 510, cy: 326, x1: 476, x2: 544
+  // 27. JOSÉ GUADALUPE POSADA (/images/history/jose_guadalupe_posada_avatar.png)
   if (norm.includes('posada') || norm.includes('guadalupe posada')) {
     return {
-      x1: 476,
-      y1: 326,
-      cx: 510,
-      cy: 326,
-      x2: 544,
-      y2: 326,
-      maxOpening: 13,
-      cavityDarkColor: '#0e0204',
-      cavityMidColor: '#240509',
-      cavityRimColor: '#400c12',
-      lowerLipRimColor: 'rgba(152, 64, 58, 0.90)',
-      teethColor: '#ede4d6',
-      mustacheCover: true
+      x1: 552, y1: 332, cx: 584, cy: 332, x2: 616, y2: 332,
+      chinY: 392, eyeY: 238, leftEyeX: 538, rightEyeX: 624, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#0e0204', cavityMidColor: '#240509', cavityRimColor: '#400c12',
+      lowerLipRimColor: 'rgba(152, 64, 58, 0.90)', teethColor: '#ede4d6', mustacheCover: true
     };
   }
 
-  // 28. FRANCISCO VILLA (public/images/history/francisco_villa_avatar.png)
-  // Centauro del Norte con bigote ancho: cx: 516, cy: 342, x1: 490, x2: 542
+  // 28. FRANCISCO VILLA (/images/history/francisco_villa_avatar.png)
   if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
     return {
-      x1: 490,
-      y1: 342,
-      cx: 516,
-      cy: 342,
-      x2: 542,
-      y2: 342,
-      maxOpening: 11,
-      cavityDarkColor: '#080102',
-      cavityMidColor: '#1f0306',
-      cavityRimColor: '#3d0b11',
-      lowerLipRimColor: 'rgba(145, 60, 50, 0.92)',
-      teethColor: '#ede5d8',
-      mustacheCover: true
+      x1: 490, y1: 340, cx: 516, cy: 340, x2: 542, y2: 340,
+      chinY: 388, eyeY: 274, leftEyeX: 482, rightEyeX: 550, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 516, focusY: 320, zoom: 1.32 },
+      maxOpening: 13, cavityDarkColor: '#080102', cavityMidColor: '#1f0306', cavityRimColor: '#3d0b11',
+      lowerLipRimColor: 'rgba(145, 60, 50, 0.92)', teethColor: '#ede5d8', mustacheCover: true
     };
   }
 
-  // 29. JOSEFA ORTIZ DE DOMÍNGUEZ (public/images/history/josefa_ortiz_avatar.png)
-  // Perfil insurgente y tocado virreinal: cx: 491, cy: 372, x1: 457, x2: 525
+  // 29. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png)
   if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
     return {
-      x1: 457,
-      y1: 372,
-      cx: 491,
-      cy: 372,
-      x2: 525,
-      y2: 372,
-      maxOpening: 12.5,
-      cavityDarkColor: '#0a0102',
-      cavityMidColor: '#240407',
-      cavityRimColor: '#450d13',
-      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)',
-      teethColor: '#f2ede4'
+      x1: 478, y1: 358, cx: 506, cy: 358, x2: 534, y2: 358,
+      chinY: 416, eyeY: 266, leftEyeX: 464, rightEyeX: 550, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 13.5, cavityDarkColor: '#0a0102', cavityMidColor: '#240407', cavityRimColor: '#450d13',
+      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)', teethColor: '#f2ede4'
     };
   }
 
-  // 30. DON MIGUEL HIDALGO Y COSTILLA (public/images/history/hidalgo_avatar.png)
-  // Padre de la Patria: cx: 500, cy: 356, x1: 466, x2: 534
+  // 30. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
   if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
     return {
-      x1: 466,
-      y1: 356,
-      cx: 500,
-      cy: 356,
-      x2: 534,
-      y2: 356,
-      maxOpening: 13.5,
-      cavityDarkColor: '#090203',
-      cavityMidColor: '#210508',
-      cavityRimColor: '#3c0f14',
-      lowerLipRimColor: 'rgba(165, 80, 75, 0.88)',
-      teethColor: '#eee6da'
+      x1: 472, y1: 344, cx: 506, cy: 344, x2: 540, y2: 344,
+      chinY: 405, eyeY: 248, leftEyeX: 458, rightEyeX: 554, eyeRadius: 18, baseOpen: 0,
+      maxOpening: 14, cavityDarkColor: '#090203', cavityMidColor: '#210508', cavityRimColor: '#3c0f14',
+      lowerLipRimColor: 'rgba(165, 80, 75, 0.88)', teethColor: '#eee6da'
     };
   }
 
-  // 31. LEONA VICARIO
-  // Benemérita y Dulcísima Madre de la Patria: cx: 504, cy: 368, x1: 470, x2: 538
+  // 31. LEONA VICARIO / PERSONAJE GENÉRICO (/images/history/personaje_generico_avatar.png)
   if (norm.includes('leona') || norm.includes('vicario')) {
     return {
-      x1: 470,
-      y1: 368,
-      cx: 504,
-      cy: 368,
-      x2: 538,
-      y2: 368,
-      maxOpening: 12,
-      cavityDarkColor: '#160408',
-      cavityMidColor: '#340810',
-      cavityRimColor: '#54101a',
-      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)',
-      teethColor: '#fcf3eb'
+      x1: 486, y1: 331, cx: 511, cy: 332, x2: 536, y2: 331,
+      chinY: 382, eyeY: 256, leftEyeX: 472, rightEyeX: 548, eyeRadius: 16, baseOpen: 0,
+      maxOpening: 12, cavityDarkColor: '#160408', cavityMidColor: '#340810', cavityRimColor: '#54101a',
+      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)', teethColor: '#fcf3eb'
     };
   }
 
-  // Fallback seguro centrado adaptado a proporciones 3D y retratos históricos canónicos
+  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (520, 336)
   return {
-    x1: 466,
-    y1: 360,
-    cx: 500,
-    cy: 360,
-    x2: 534,
-    y2: 360,
-    maxOpening: 13,
-    cavityDarkColor: '#140306',
-    cavityMidColor: '#2d0910',
-    cavityRimColor: '#50121a',
-    lowerLipRimColor: 'rgba(180, 76, 78, 0.90)',
-    teethColor: '#f2eae0'
+    x1: 490, y1: 336, cx: 520, cy: 336, x2: 550, y2: 336,
+    chinY: 418, eyeY: 242, leftEyeX: 474, rightEyeX: 566, eyeRadius: 18, baseOpen: 0,
+    maxOpening: 13, cavityDarkColor: '#140306', cavityMidColor: '#2d0910', cavityRimColor: '#50121a',
+    lowerLipRimColor: 'rgba(180, 76, 78, 0.90)', teethColor: '#f2eae0', mustacheCover: true
   };
 }
 
@@ -2153,11 +1928,11 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Romantisme & XIXe Siècle (1802 - 1885)',
     country: 'France',
     avatarEmoji: '📖',
-    avatarImage: '/images/languages/historical/victor_hugo.jpg',
+    avatarImage: '/images/languages/3d/victor_hugo_3d.webp',
     canonicalIntro: 'Je suis Victor Hugo. J\'ai écrit Les Misérables et Notre-Dame de Paris pour donner une voix aux humbles et défendre la dignité humaine contre toute forme d\'oppression.',
     pdaRelevance: 'Riqueza estilística, narrativa emotiva y estructuras sintácticas compuestas del francés literario.',
     sampleQuestions: [
-      'Pourquoi avez-vous créé le personaje de Jean Valjean?',
+      'Pourquoi avez-vous créé le personnage de Jean Valjean?',
       'Que ressentiez-vous pendant vos années d\'exil à Guernesey?'
     ]
   },
@@ -2172,7 +1947,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Guerre de Cent Ans (1412 - 1431)',
     country: 'France',
     avatarEmoji: '🛡️',
-    avatarImage: '/images/languages/historical/jeanne_darc.jpg',
+    avatarImage: '/images/languages/3d/jeanne_darc_3d.webp',
     canonicalIntro: 'Je suis Jeanne d\'Arc, la Pucelle d\'Orléans. À dix-sept ans, guidée par ma foi et mes voix, j\'ai levé le siège d\'Orléans et conduit le dauphin Charles à son sacre à Reims.',
     pdaRelevance: 'Léxico medieval heroico, oraciones afirmativas directas y entonación de convicción en francés.',
     sampleQuestions: [

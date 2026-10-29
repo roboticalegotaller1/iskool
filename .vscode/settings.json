@@ -2,5 +2,6 @@
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 500,
   "window.confirmBeforeClose": "never",
-  "files.hotExit": "onExitAndWindowClose"
+  "files.hotExit": "onExitAndWindowClose",
+  "python.defaultInterpreterPath": "C:\\Python314\\python.exe"
 }

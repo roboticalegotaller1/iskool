@@ -33,6 +33,7 @@ import {
   getHistoricalMouthConfig,
   CharacterAnatomicalMouth
 } from '@/lib/historicalVoiceEngine';
+import { NanoBananaLipSyncCanvas } from '@/components/common/NanoBananaLipSyncCanvas';
 
 
 /**
@@ -1129,108 +1130,16 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             animate={getAvatarTransform()}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
-            <img 
-              src={avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
-              alt={characterName} 
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (!target.src.includes('josefa_ortiz_avatar.png')) {
-                  target.src = '/images/history/josefa_ortiz_avatar.png';
-                }
-              }}
-              className="w-full h-full object-cover select-none pointer-events-none filter contrast-105 brightness-95"
+            {/* Motor Quirúrgico Nano Banana 2.1 a 60 FPS con Deformación Mandibular y Sincronización Labial Anatómica */}
+            <NanoBananaLipSyncCanvas
+              imageSrc={avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}
+              characterId={slug || characterName}
+              isSpeaking={isSpeaking}
+              mouthConfig={mouthCfg}
+              fallbackImageSrc="/images/history/josefa_ortiz_avatar.png"
+              enableSmartBustCrop={true}
+              className="filter contrast-105 brightness-95"
             />
-
-            {/* Capa de Párpados / Pestañeo Realista */}
-            <motion.div 
-              className="absolute inset-0 bg-amber-950/80 mix-blend-multiply pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isBlinking ? 0.95 : 0 }}
-              transition={{ duration: 0.12 }}
-            />
-
-            {/* Capa de Movimiento Mandibular / Boca (Lip-sync anatómico de precisión con SVG en espacio 1024) */}
-            <svg 
-              viewBox="0 0 1024 1024" 
-              className="absolute inset-0 w-full h-full pointer-events-none select-none"
-            >
-              <defs>
-                <filter 
-                  id={`avatarFeather_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} 
-                  x="-20%" 
-                  y="-20%" 
-                  width="140%" 
-                  height="140%"
-                >
-                  <feGaussianBlur stdDeviation="0.9" />
-                </filter>
-                <radialGradient id={`avatarCavity_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} cx="48%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor={mouthCfg.cavityDarkColor} />
-                  <stop offset="55%" stopColor={mouthCfg.cavityMidColor} />
-                  <stop offset="100%" stopColor={mouthCfg.cavityRimColor} />
-                </radialGradient>
-                <linearGradient id={`avatarTeeth_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.96" />
-                  <stop offset="70%" stopColor="#ded4c3" stopOpacity="0.88" />
-                  <stop offset="100%" stopColor="#aa9680" stopOpacity="0.10" />
-                </linearGradient>
-                <linearGradient id={`avatarLowerLip_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={mouthCfg.lowerLipRimColor} />
-                  <stop offset="60%" stopColor="rgba(185, 78, 80, 0.70)" />
-                  <stop offset="100%" stopColor="rgba(210, 110, 105, 0.15)" />
-                </linearGradient>
-              </defs>
-
-              {isSpeaking && mouthOpenRatio > 0.04 && (() => {
-                // Cálculo dinámico bifactorial F1/F2 (Apertura vertical + Extensión de comisuras)
-                const widthOffset = (mouthWidthRatio - 0.5) * 6;
-                const effX1 = mouthCfg.x1 - widthOffset;
-                const effX2 = mouthCfg.x2 + widthOffset;
-                const verticalDrop = mouthOpenRatio * mouthCfg.maxOpening;
-                const halfMouthWidth = (effX2 - effX1) / 2;
-                const teethHalfWidth = halfMouthWidth * 0.62;
-                const teethHeight = Math.min(verticalDrop * 0.45, 5.0);
-                const lipThickness = Math.min(4.0, 2.0 + verticalDrop * 0.2);
-                const upperArchY = mouthCfg.mustacheCover 
-                  ? mouthCfg.cy 
-                  : mouthCfg.cy - mouthOpenRatio * 1.5;
-
-                return (
-                  <g filter={`url(#avatarFeather_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`}>
-                    {/* 1. Cavidad bucal anatómica profunda */}
-                    <path 
-                      d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${upperArchY} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
-                      fill={`url(#avatarCavity_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
-                    />
-                    
-                    {/* 2. Fila superior de dientes naturales nacarados con ajuste anatómico */}
-                    <path 
-                      d={`M ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8} Q ${mouthCfg.cx} ${mouthCfg.cy - 1.8} ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 1.0} Q ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Q ${mouthCfg.cx} ${mouthCfg.cy + teethHeight} ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Z`} 
-                      fill={`url(#avatarTeeth_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
-                    />
-                    
-                    {/* 3. Sombra de lengua / fondo bucal para fonemas abiertos */}
-                    {mouthOpenRatio > 0.35 && (
-                      <ellipse 
-                        cx={mouthCfg.cx} 
-                        cy={mouthCfg.cy + verticalDrop * 0.70} 
-                        rx={halfMouthWidth * 0.46} 
-                        ry={Math.min(verticalDrop * 0.35, 3.2)} 
-                        fill="#3d0a10" 
-                        opacity={0.88} 
-                      />
-                    )}
-                    
-                    {/* 4. Reborde carnoso y textura del labio inferior descendiendo con la mandíbula */}
-                    <path 
-                      d={`M ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX2 - 1.2} ${mouthCfg.y2 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop + lipThickness} ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Z`} 
-                      fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
-                      opacity={0.92} 
-                    />
-                  </g>
-                );
-              })()}
-            </svg>
 
             {/* Sombra de época y velo dramático */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />

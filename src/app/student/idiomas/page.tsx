@@ -8,6 +8,7 @@ import {
 } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from '@/components/languages/HumanGesticulatingAvatar';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
+import MethodologyCommandCenter from '@/components/languages/MethodologyCommandCenter';
 import { BackButton } from '@/components/navigation/BackButton';
 import { 
   Languages, 
@@ -155,6 +156,25 @@ export default function StudentIdiomasPage() {
             ========================================================================= */}
         {currentMode === 'hub' && (
           <div className="space-y-6">
+            {/* MODELO CONTINUO CEFR 5E DEL ALUMNO */}
+            <MethodologyCommandCenter
+              activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
+              currentCefrLevel={activeLesson.level}
+              currentCenniBand="CENNI Progresión Continua"
+              currentPhaseLabel="Ruta Personalizada 5E"
+              activeWeekNumber={1}
+              isLightMode={isLightMode}
+              compactBannerOnly={true}
+              onNavigateToTool={(tool) => {
+                if (tool === 'writing') {
+                  window.location.href = '/student/idiomas/writing';
+                } else if (tool === 'karaoke') {
+                  setCurrentMode('karaoke');
+                } else if (tool === 'editor') {
+                  setCurrentMode('dialogue');
+                }
+              }}
+            />
             {/* BANNER DESTACADO: WRITING STUDIO AUTÓNOMO */}
             <div className={`p-6 rounded-3xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
               isLightMode

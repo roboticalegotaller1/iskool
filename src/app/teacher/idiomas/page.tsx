@@ -14,6 +14,7 @@ import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePla
 import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester';
 import { LanguageAnalyticsCharts } from '@/components/languages/LanguageAnalyticsCharts';
 import { Curriculum12PhasesExplorer } from '@/components/languages/Curriculum12PhasesExplorer';
+import MethodologyCommandCenter from '@/components/languages/MethodologyCommandCenter';
 import { BackButton } from '@/components/navigation/BackButton';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
@@ -247,7 +248,7 @@ export default function TeacherIdiomasPage() {
   };
 
   // Pestañas del Centro de Idiomas
-  const [activeTab, setActiveTab] = useState<'editor' | 'analytics' | 'curriculum' | 'hardware' | 'reports'>('editor');
+  const [activeTab, setActiveTab] = useState<'editor' | 'methodology' | 'analytics' | 'curriculum' | 'hardware' | 'reports'>('editor');
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
   const [selectedKaraokeIndex, setSelectedKaraokeIndex] = useState<number>(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'unreviewed'>('all');
@@ -328,7 +329,7 @@ export default function TeacherIdiomasPage() {
   const resolvedAvatar3dSrc = useMemo(() => {
     // 1. Si está activo el modo prócer histórico o la lección tiene historicalFigureId
     if (useHistoricalFigure || activeLesson.historicalFigureId) {
-      const histId = selectedHistoricalId || activeLesson.historicalFigureId;
+      const histId = useHistoricalFigure ? selectedHistoricalId : activeLesson.historicalFigureId;
       const histFig = MULTILINGUAL_HISTORICAL_FIGURES.find(f => f.id === histId || f.name === activeLesson.avatarName);
       if (histFig?.avatarImage && histFig.avatarImage.includes('/3d/')) {
         return histFig.avatarImage;
@@ -338,6 +339,8 @@ export default function TeacherIdiomasPage() {
       if (histId === 'abraham_lincoln') return '/images/languages/3d/abraham_lincoln_3d.webp';
       if (histId === 'marie_curie') return '/images/languages/3d/marie_curie_3d.webp';
       if (histId === 'napoleon') return '/images/languages/3d/napoleon_3d.webp';
+      if (histId === 'victor_hugo') return '/images/languages/3d/victor_hugo_3d.webp';
+      if (histId === 'jeanne_darc') return '/images/languages/3d/jeanne_darc_3d.webp';
     }
 
     // 2. Si la lección ya tiene una ruta 3D explícita válida
@@ -1043,6 +1046,19 @@ export default function TeacherIdiomasPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab('methodology')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'methodology'
+                ? 'bg-gradient-to-r from-indigo-700 via-violet-700 to-indigo-800 text-white shadow-lg ring-2 ring-indigo-400/50'
+                : (isLightMode ? 'bg-indigo-50 text-indigo-900 hover:bg-indigo-100 border border-indigo-200 shadow-2xs' : 'bg-indigo-950/60 text-indigo-300 hover:text-white border border-indigo-700/50')
+            }`}
+          >
+            <Award className="w-4 h-4 text-amber-400" />
+            <span>Metodología CEFR 5E & Auditoría Global</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'analytics'
@@ -1116,21 +1132,25 @@ export default function TeacherIdiomasPage() {
                 : 'bg-slate-900/60 border-slate-800')
         }`}>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black">
-              <GraduationCap className="w-4 h-4 text-amber-400" />
+            <div className={`flex items-center gap-2 px-3 py-1 rounded-xl border font-black ${
+              isLightMode
+                ? 'bg-red-600 text-white border-red-700 shadow-xs'
+                : 'bg-red-600/20 border border-red-500/40 text-red-300'
+            }`}>
+              <GraduationCap className="w-4 h-4 text-amber-300" />
               <span>Nivel CEFR: {activeLesson.level}</span>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 text-slate-300 font-medium">
-              <span className="font-bold text-white">
+            <div className={`flex flex-wrap items-center gap-2 font-medium ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
+              <span className={`font-black ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                 {activeLesson.language === 'en' ? activeCertification.cambridge : activeCertification.french}
               </span>
-              <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="text-amber-400 font-mono font-semibold">
+              <span className="text-slate-400 hidden sm:inline">|</span>
+              <span className={`font-mono font-bold ${isLightMode ? 'text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200' : 'text-amber-400'}`}>
                 {activeCertification.cenni}
               </span>
-              <span className="text-slate-600 hidden md:inline">|</span>
-              <span className="text-cyan-300 font-semibold hidden md:inline">
+              <span className="text-slate-400 hidden md:inline">|</span>
+              <span className={`font-bold hidden md:inline ${isLightMode ? 'text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200' : 'text-cyan-300'}`}>
                 {activeCertification.unamNote}
               </span>
             </div>
@@ -1147,6 +1167,56 @@ export default function TeacherIdiomasPage() {
             </span>
           </div>
         </div>
+
+        {/* =========================================================================
+            MODELO CONTINUO CEFR 5E (RIBBON SIEMPRE VISIBLE + PESTAÑA DEDICADA)
+            ========================================================================= */}
+        {activeTab !== 'methodology' && (
+          <MethodologyCommandCenter
+            activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
+            currentCefrLevel={activeLesson.level}
+            currentCenniBand={activeCertification.cenni}
+            currentPhaseLabel={activeCertification.unamNote}
+            activeWeekNumber={expandedWeekNumber || 1}
+            isLightMode={isLightMode}
+            compactBannerOnly={true}
+            onNavigateToTool={(tool) => {
+              if (tool === 'writing') {
+                window.location.href = '/teacher/idiomas/writing';
+              } else if (tool === 'karaoke') {
+                setActiveTab('editor');
+                setIsPreviewMode(true);
+              } else {
+                setActiveTab(tool as any);
+              }
+            }}
+          />
+        )}
+
+        {activeTab === 'methodology' && (
+          <MethodologyCommandCenter
+            activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
+            currentCefrLevel={activeLesson.level}
+            currentCenniBand={activeCertification.cenni}
+            currentPhaseLabel={activeCertification.unamNote}
+            activeWeekNumber={expandedWeekNumber || 1}
+            isLightMode={isLightMode}
+            compactBannerOnly={false}
+            onSelectWeekFromBlueprint={(weekNum) => {
+              setExpandedWeekNumber(weekNum);
+            }}
+            onNavigateToTool={(tool) => {
+              if (tool === 'writing') {
+                window.location.href = '/teacher/idiomas/writing';
+              } else if (tool === 'karaoke') {
+                setActiveTab('editor');
+                setIsPreviewMode(true);
+              } else {
+                setActiveTab(tool as any);
+              }
+            }}
+          />
+        )}
 
         {/* =========================================================================
             PESTAÑA 1: TALLER DE DIÁLOGO, AVATARES Y VOCES HISTÓRICAS
@@ -1512,7 +1582,7 @@ export default function TeacherIdiomasPage() {
                           language={activeLesson.language}
                           voiceId={activeLesson.avatarVoice}
                           avatarImage={resolvedAvatar3dSrc}
-                          historicalFigureId={selectedHistoricalId || activeLesson.historicalFigureId}
+                          historicalFigureId={useHistoricalFigure ? selectedHistoricalId : activeLesson.historicalFigureId}
                           isPlaying={isPlayingPreview || Boolean(activePlayingLineId)}
                           speechRate={activeLesson.defaultSpeed}
                           isLightMode={isLightMode}

@@ -14,6 +14,7 @@ import {
   stopAllIskoolAudio,
   MULTILINGUAL_HISTORICAL_FIGURES
 } from '@/lib/historicalVoiceEngine';
+import { NanoBananaLipSyncCanvas } from '@/components/common/NanoBananaLipSyncCanvas';
 
 interface Props {
   gender: AvatarGender;
@@ -47,13 +48,13 @@ interface Character3DRig {
 }
 
 // =========================================================================
-// REGISTRO DE MINIPELÍCULAS Y FRAMES 3D INTERPOLADOS A 24 FPS
+// REGISTRO DE AVATARES 3D Y PELÍCULAS QUIRÚRGICAS NANO BANANA 2.1 A 60 FPS
 // =========================================================================
 const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   claire: {
     id: 'claire',
     idle: '/images/languages/3d/mentor_female_3d.webp',
-    talkMovie: '/images/languages/3d/movies/mentor_female_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/mentor_female_3d_talk.mp4',
     talkFrames: [
       '/images/languages/3d/mentor_female_3d_talk_a.webp',
       '/images/languages/3d/mentor_female_3d_talk_b.webp',
@@ -63,55 +64,81 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   arthur: {
     id: 'arthur',
     idle: '/images/languages/3d/mentor_male_3d_v2.webp',
-    talkMovie: '/images/languages/3d/movies/mentor_male_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/mentor_male_3d_talk_a.webp',
-      '/images/languages/3d/mentor_male_3d_talk_b.webp',
-      '/images/languages/3d/mentor_male_3d_talk_c.webp'
+      '/images/languages/3d/mentor_male_3d_v2_talk_a.webp',
+      '/images/languages/3d/mentor_male_3d_v2_talk_b.webp',
+      '/images/languages/3d/mentor_male_3d_v2_talk_c.webp'
     ]
   },
   shakespeare: {
     id: 'shakespeare',
     idle: '/images/languages/3d/shakespeare_3d.webp',
-    talkMovie: '/images/languages/3d/movies/shakespeare_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/shakespeare_3d_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/shakespeare_3d_talk.webp',
-      '/images/languages/3d/shakespeare_3d_talk_b.webp'
+      '/images/languages/3d/shakespeare_3d_talk_a.webp',
+      '/images/languages/3d/shakespeare_3d_talk_b.webp',
+      '/images/languages/3d/shakespeare_3d_talk_c.webp'
     ]
   },
   ada_lovelace: {
     id: 'ada_lovelace',
     idle: '/images/languages/3d/ada_lovelace_3d.webp',
-    talkMovie: '/images/languages/3d/movies/ada_lovelace_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/ada_lovelace_3d_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/ada_lovelace_3d_talk.webp',
-      '/images/languages/3d/ada_lovelace_3d_talk_b.webp'
+      '/images/languages/3d/ada_lovelace_3d_talk_a.webp',
+      '/images/languages/3d/ada_lovelace_3d_talk_b.webp',
+      '/images/languages/3d/ada_lovelace_3d_talk_c.webp'
     ]
   },
   abraham_lincoln: {
     id: 'abraham_lincoln',
     idle: '/images/languages/3d/abraham_lincoln_3d.webp',
-    talkMovie: '/images/languages/3d/movies/abraham_lincoln_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/abraham_lincoln_3d_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/abraham_lincoln_3d_talk.webp',
-      '/images/languages/3d/abraham_lincoln_3d_talk_b.webp'
+      '/images/languages/3d/abraham_lincoln_3d_talk_a.webp',
+      '/images/languages/3d/abraham_lincoln_3d_talk_b.webp',
+      '/images/languages/3d/abraham_lincoln_3d_talk_c.webp'
     ]
   },
   napoleon: {
     id: 'napoleon',
     idle: '/images/languages/3d/napoleon_3d.webp',
-    talkMovie: '/images/languages/3d/movies/napoleon_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/napoleon_3d_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/napoleon_3d_talk.webp',
-      '/images/languages/3d/napoleon_3d_talk_b.webp'
+      '/images/languages/3d/napoleon_3d_talk_a.webp',
+      '/images/languages/3d/napoleon_3d_talk_b.webp',
+      '/images/languages/3d/napoleon_3d_talk_c.webp'
     ]
   },
   marie_curie: {
     id: 'marie_curie',
     idle: '/images/languages/3d/marie_curie_3d.webp',
-    talkMovie: '/images/languages/3d/movies/marie_curie_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/marie_curie_3d_talk.mp4',
     talkFrames: [
-      '/images/languages/3d/marie_curie_3d_talk.webp'
+      '/images/languages/3d/marie_curie_3d_talk_a.webp',
+      '/images/languages/3d/marie_curie_3d_talk_b.webp',
+      '/images/languages/3d/marie_curie_3d_talk_c.webp'
+    ]
+  },
+  victor_hugo: {
+    id: 'victor_hugo',
+    idle: '/images/languages/3d/victor_hugo_3d.webp',
+    talkMovie: '/images/languages/3d/movies/victor_hugo_3d_talk.mp4',
+    talkFrames: [
+      '/images/languages/3d/victor_hugo_3d_talk_a.webp',
+      '/images/languages/3d/victor_hugo_3d_talk_b.webp',
+      '/images/languages/3d/victor_hugo_3d_talk_c.webp'
+    ]
+  },
+  jeanne_darc: {
+    id: 'jeanne_darc',
+    idle: '/images/languages/3d/jeanne_darc_3d.webp',
+    talkMovie: '/images/languages/3d/movies/jeanne_darc_3d_talk.mp4',
+    talkFrames: [
+      '/images/languages/3d/jeanne_darc_3d_talk_a.webp',
+      '/images/languages/3d/jeanne_darc_3d_talk_b.webp',
+      '/images/languages/3d/jeanne_darc_3d_talk_c.webp'
     ]
   }
 };
@@ -129,6 +156,8 @@ function resolveCharacter3DRig(
   if (normKey.includes('lincoln') || normKey.includes('abraham')) return CHARACTER_3D_RIGS.abraham_lincoln;
   if (normKey.includes('napoleon')) return CHARACTER_3D_RIGS.napoleon;
   if (normKey.includes('curie') || normKey.includes('marie')) return CHARACTER_3D_RIGS.marie_curie;
+  if (normKey.includes('victor') || normKey.includes('hugo')) return CHARACTER_3D_RIGS.victor_hugo;
+  if (normKey.includes('jeanne') || normKey.includes('darc') || normKey.includes('orleans')) return CHARACTER_3D_RIGS.jeanne_darc;
 
   if (normKey.includes('arthur') || normKey.includes('henri') || (normKey.includes('male') && !normKey.includes('female'))) {
     return CHARACTER_3D_RIGS.arthur;
@@ -382,75 +411,22 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const breathY = Math.sin(breathPhase) * 1.5;
   const breathScale = 1.0 + Math.sin(breathPhase) * 0.003;
 
-  // Renderizador del Personaje 3D con Minipelícula de Movimiento Fluido a 24 FPS
+  // Renderizador Quirúrgico del Personaje 3D / Histórico con Sincronización Labial Anatómica a 60 FPS (Nano Banana 2.1)
   const renderLivingPuppet = () => {
+    const canonicalSrc = characterRig.idle || avatarImage || '/images/languages/3d/mentor_female_3d.webp';
+    const charKey = matchedFigure?.id || historicalFigureId || characterRig.id || name;
+
     return (
       <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
-        {/* 1. Capa Base de Reposo: Imagen 3D estática de alta fidelidad con micro-respiración */}
-        <div 
-          className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-300 ease-in-out ${
-            isPlaying && !videoError ? 'opacity-0 z-0' : 'opacity-100 z-10'
-          }`}
-          style={{
-            transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
-            transformOrigin: '50% 90%'
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={characterRig.idle}
-            alt={avatarDisplayTitle}
-            className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
-          />
-        </div>
-
-        {/* 2. Capa Minipelícula 3D Cinematográfica: Interpolación a 24 FPS de fotogramas intermedios */}
-        {!videoError && characterRig.talkMovie && (
-          <div
-            className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-300 ease-in-out ${
-              isPlaying ? 'opacity-100 z-20' : 'opacity-0 z-0'
-            }`}
-            style={{
-              transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
-              transformOrigin: '50% 90%'
-            }}
-          >
-            <video
-              ref={videoRef}
-              src={characterRig.talkMovie}
-              autoPlay
-              loop
-              muted
-              playsInline
-              onError={() => setVideoError(true)}
-              className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
-            />
-          </div>
-        )}
-
-        {/* 3. Fallback de fotogramas si el navegador bloquease reproducción de video */}
-        {videoError && isPlaying && allFrames.map((frameSrc, idx) => {
-          const isActive = idx === activeFrameIndex;
-          return (
-            <div
-              key={frameSrc}
-              className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-240 ease-in-out ${
-                isActive ? 'opacity-100 z-20' : 'opacity-0 z-0'
-              }`}
-              style={{
-                transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
-                transformOrigin: '50% 90%'
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={frameSrc}
-                alt=""
-                className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
-              />
-            </div>
-          );
-        })}
+        <NanoBananaLipSyncCanvas
+          imageSrc={canonicalSrc}
+          characterId={charKey}
+          isSpeaking={isPlaying}
+          spokenText={currentText}
+          fallbackImageSrc="/images/languages/3d/mentor_female_3d.webp"
+          enableSmartBustCrop={false}
+          className="w-full h-full object-contain object-bottom drop-shadow-2xl"
+        />
       </div>
     );
   };
