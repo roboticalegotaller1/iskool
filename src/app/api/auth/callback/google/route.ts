@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
         <html lang="es">
           <head>
             <meta charset="utf-8" />
-            <title>Autorización de Google - Alternativa con Token de 16 Dígitos</title>
+            <title>Autorización OAuth 2.0 No Completada - ISkool</title>
             <style>
               body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #0f172a; padding: 20px; }
               .card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
@@ -37,11 +37,11 @@ export async function GET(req: NextRequest) {
           </head>
           <body>
             <div class="card">
-              <div class="icon">🔑</div>
-              <div class="badge">Alternativa sin Auditoría CASA Tier</div>
-              <h2>Enlace por Token de 16 Dígitos</h2>
-              <p>Google OAuth devolvió: <em>${safeError}</em>.<br />Puedes conectar tu buzón de forma inmediata y 100% exenta de auditorías CASA usando tu <strong>Contraseña de Aplicación de 16 caracteres</strong>.</p>
-              <button class="btn" onclick="sendFallbackAndClose()">Continuar con Token de 16 Dígitos en ISkool ➔</button>
+              <div class="icon">ℹ️</div>
+              <div class="badge">OAuth 2.0 · Flujo Cancelado</div>
+              <h2>Autorización No Completada</h2>
+              <p>El servidor OAuth devolvió: <em>${safeError}</em>.<br />No se otorgaron permisos ni se realizaron cambios en tu cuenta.</p>
+              <button class="btn" onclick="window.close()">Volver a ISkool ➔</button>
             </div>
             <script>
               function sendFallbackAndClose() {

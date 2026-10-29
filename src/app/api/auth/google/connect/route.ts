@@ -14,16 +14,17 @@ export async function GET(req: NextRequest) {
   try {
     const origin = req.nextUrl.origin || 'http://localhost:3000';
     const tenantId = req.nextUrl.searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
-    const email = req.nextUrl.searchParams.get('email') || undefined;
+    const rawEmail = req.nextUrl.searchParams.get('email') || undefined;
+    const forceHint = req.nextUrl.searchParams.get('forceHint') === 'true';
+    const email = forceHint ? rawEmail : undefined;
     const rawRedirect = req.nextUrl.searchParams.get('redirect') || '';
     const safeRedirect = sanitizeInternalRedirectUrl(rawRedirect, '');
-    const isWorkspaceInternal = process.env.GOOGLE_OAUTH_WORKSPACE_INTERNAL === 'true';
-    const includeReadonly = req.nextUrl.searchParams.get('includeReadonly') === 'true' || isWorkspaceInternal;
+    const includeReadonly = req.nextUrl.searchParams.get('includeReadonly') === 'true';
 
     const statePayload = signOAuthState({
       flow: 'workspace_connect',
       tenantId,
-      email: email || '',
+      email: rawEmail || '',
       redirect: safeRedirect
     });
 

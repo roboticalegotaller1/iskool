@@ -736,18 +736,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     checkSession();
 
-    // Subscribe to auth state updates
+    // Subscribe to auth state updates (preserve active seed/cookie session when Supabase SDK has no session)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ? {
-        id: currentSession.user.id,
-        first_name: currentSession.user.user_metadata?.first_name || 'Usuario',
-        last_name: currentSession.user.user_metadata?.last_name || '',
-        role: (currentSession.user.user_metadata?.role || 'student') as any,
-        email: currentSession.user.email || '',
-        created_at: currentSession.user.created_at,
-        updated_at: new Date().toISOString()
-      } : null);
+      if (currentSession?.user) {
+        setSession(currentSession);
+        setUser({
+          id: currentSession.user.id,
+          first_name: currentSession.user.user_metadata?.first_name || 'Usuario',
+          last_name: currentSession.user.user_metadata?.last_name || '',
+          role: (currentSession.user.user_metadata?.role || 'student') as any,
+          email: currentSession.user.email || '',
+          created_at: currentSession.user.created_at,
+          updated_at: new Date().toISOString()
+        });
+      }
     });
 
     // Sincronización automática reactiva de escuela según el usuario autenticado
@@ -858,52 +860,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let finalUser: UserProfile | null = null;
     let sessionObj: any = null;
 
-    // 1. Intentar autenticación criptográfica con Supabase Auth si se proporcionaron credenciales
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: effectivePass
-      });
-
-      if (!error && data?.user && data?.session) {
-        const userObj = data.user;
-        sessionObj = data.session;
-        finalUser = {
-          id: userObj.id,
-          first_name: userObj.user_metadata?.first_name || resolvedUser.first_name,
-          last_name: userObj.user_metadata?.last_name || resolvedUser.last_name,
-          role: (userObj.user_metadata?.role || resolvedUser.role) as any,
-          email: userObj.email || resolvedUser.email,
-          school_id: userObj.user_metadata?.school_id || resolvedUser.school_id,
-          created_at: userObj.created_at || new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-      }
-    } catch {
-      // Continuar con soporte para cuentas preestablecidas de presentación
+    // 1. Soporte prioritario e instantáneo para cuentas institucionales semilla (IBIME e ISkool)
+    if (isMatchingSeedPassword(resolvedUser, effectivePass)) {
+      finalUser = {
+        ...resolvedUser,
+        updated_at: new Date().toISOString()
+      };
+      sessionObj = {
+        access_token: `seed-session-${resolvedUser.id}-${Date.now()}`,
+        user: finalUser
+      };
     }
 
-    // 2. Soporte para cuentas preestablecidas de demostración / presentación (IBIME e ISkool)
+    // 2. Intentar autenticación criptográfica con Supabase Auth si no coincidió con semilla local
     if (!finalUser) {
-      const pass = effectivePass;
-      const isMatch = isMatchingSeedPassword(resolvedUser, pass);
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: effectivePass
+        });
 
-      if (isMatch) {
-        finalUser = {
-          ...resolvedUser,
-          updated_at: new Date().toISOString()
-        };
-        sessionObj = {
-          access_token: `seed-session-${resolvedUser.id}-${Date.now()}`,
-          user: finalUser
-        };
-      } else {
-        setLoading(false);
-        return {
-          success: false,
-          error: 'Credenciales incorrectas o clave no asignada para esta cuenta.'
-        };
+        if (!error && data?.user && data?.session) {
+          const userObj = data.user;
+          sessionObj = data.session;
+          finalUser = {
+            id: userObj.id,
+            first_name: userObj.user_metadata?.first_name || resolvedUser.first_name,
+            last_name: userObj.user_metadata?.last_name || resolvedUser.last_name,
+            role: (userObj.user_metadata?.role || resolvedUser.role) as any,
+            email: userObj.email || resolvedUser.email,
+            school_id: userObj.user_metadata?.school_id || resolvedUser.school_id,
+            created_at: userObj.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+        }
+      } catch {
+        // Error de red o credenciales no encontradas
       }
+    }
+
+    if (!finalUser) {
+      setLoading(false);
+      return {
+        success: false,
+        error: 'Credenciales incorrectas o clave no asignada para esta cuenta.'
+      };
     }
 
     setSession(sessionObj);

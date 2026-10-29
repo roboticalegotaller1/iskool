@@ -4941,12 +4941,10 @@ ${schoolName}`
         }
       }
 
-      // Recepción de mensaje de fallback cuando Google OAuth es cancelado, denegado o no se desea usar
+      // Recepción de mensaje cuando el flujo OAuth es cancelado por el usuario
       if (event.data?.type === 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD') {
-        setShowAppPasswordHelper(true);
-        setIsEditingServerConfig(true);
         setActiveTab('google');
-        onTriggerToast('🔑 Acceso OAuth no completado. Activando el asistente de Token de 16 Dígitos (Contraseña de Aplicación) para conectar sin auditoría CASA Tier.');
+        onTriggerToast('ℹ️ Autorización OAuth 2.0 cancelada. Puedes volver a abrir la ventana oficial de autorización de Google cuando lo desees.');
       }
     };
 
@@ -7155,11 +7153,20 @@ Comité de Seguridad y Protección Escolar`
               }`}
             >
               <ShieldCheck className="h-3.5 w-3.5" />
-              <span>4. Conexión Soberana & Reglas VIP</span>
+              <span>4. Conectar Google OAuth</span>
             </button>
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleOpenProviderOAuth('google')}
+              className="px-3 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer bg-white hover:bg-blue-50 text-slate-900 border border-blue-200 shadow-xs"
+              title="Iniciar flujo de consentimiento OAuth 2.0 (gmail.send & calendar.events)"
+            >
+              <GoogleOfficialLogo size={13} />
+              <span>Sign in with Google</span>
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab('redactar')}
@@ -7491,7 +7498,7 @@ Comité de Seguridad y Protección Escolar`
                     className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-500' : 'text-slate-400'}`} 
                     style={themeMode === 'custom' && activeTab === 'google' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
                   />
-                  <span className="truncate">Conexión POP / IMAP</span>
+                  <span className="truncate">Conectar Google OAuth</span>
                 </div>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${
                   connectionStatus === 'connected_verified' ? 'bg-emerald-500' :
@@ -9173,20 +9180,16 @@ Comité de Seguridad y Protección Escolar`
                         </div>
                       </div>
 
-                      {/* Botones de Gestión de Cuenta: Configurar (Desplegable) y Salir de la Cuenta */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      {/* Botones de Gestión de Cuenta: Conectar OAuth 2.0, Configurar y Salir */}
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap">
                         <button
                           type="button"
-                          onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
-                          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${
-                            showAppPasswordHelper
-                              ? 'bg-amber-600 text-white border-amber-600 shadow-amber-100'
-                              : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
-                          }`}
-                          title="Conectar o cambiar a Token de 16 dígitos de Google para saltar la auditoría CASA Tier"
+                          onClick={() => handleOpenProviderOAuth('google')}
+                          className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                          title="Abrir pantalla de consentimiento oficial de Google OAuth 2.0 (gmail.send y calendar.events)"
                         >
-                          <Key className="h-3.5 w-3.5 text-amber-600" />
-                          <span>{showAppPasswordHelper ? 'Ocultar Token 16 Letras' : 'Token 16 Dígitos (Saltar CASA)'}</span>
+                          <ExternalLink className="h-3.5 w-3.5 text-white" />
+                          <span>Conectar con Google OAuth 2.0 ↗</span>
                         </button>
 
                         <button
@@ -9327,11 +9330,11 @@ Comité de Seguridad y Protección Escolar`
                         <button
                           type="button"
                           onClick={() => setShowAppPasswordHelper(true)}
-                          className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                          title="Usar Token de 16 Dígitos para saltar la verificación de Google y CASA Tier"
+                          className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                          title="Configuración IMAP / SMTP avanzada"
                         >
-                          <Key className="h-3.5 w-3.5 text-white" />
-                          <span>Token 16 Dígitos</span>
+                          <Key className="h-3.5 w-3.5 text-slate-600" />
+                          <span>Credenciales SMTP</span>
                         </button>
 
                         <button
@@ -9383,16 +9386,6 @@ Comité de Seguridad y Protección Escolar`
                           <ExternalLink className="h-4 w-4" />
                           <span>Abrir Ventana Oficial de Google (Autorizar Correo y Calendario)</span>
                         </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setShowAppPasswordHelper(true)}
-                          className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
-                          title="Usar Token de 16 Dígitos para saltar la verificación de Google y la auditoría CASA Tier"
-                        >
-                          <Key className="h-4 w-4" />
-                          <span>Saltar CASA con Token de 16 Dígitos</span>
-                        </button>
                       </div>
                     </div>
 
@@ -9440,18 +9433,8 @@ Comité de Seguridad y Protección Escolar`
                         onClick={() => handleOpenProviderOAuth('google')}
                         className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95"
                       >
-                        <Smartphone className="h-4 w-4 text-white" />
-                        <span>Vincular Google con 2FA al Celular (Número en Pantalla)</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowAppPasswordHelper(true)}
-                        className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95"
-                        title="Vincular mediante Token de 16 Dígitos de Google para saltar la auditoría CASA Tier"
-                      >
-                        <Key className="h-4 w-4 text-white" />
-                        <span>Token 16 Dígitos (Saltar CASA Tier)</span>
+                        <ExternalLink className="h-4 w-4 text-white" />
+                        <span>Sign in with Google / Conectar con Google OAuth 2.0</span>
                       </button>
 
                       <button
@@ -9465,10 +9448,46 @@ Comité de Seguridad y Protección Escolar`
                     </div>
                   </div>
                 )}
+
+                {/* Panel de Permisos de Menor Privilegio (Google OAuth 2.0 Verified Scopes) */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0" />
+                      <span className="text-xs font-black text-slate-900">
+                        Permisos OAuth 2.0 de Mínimo Privilegio (Google API Services User Data Policy)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenProviderOAuth('google')}
+                      className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 font-black text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5 self-start sm:self-auto"
+                    >
+                      <GoogleOfficialLogo size={14} />
+                      <span>Sign in with Google (Revisar Consentimiento OAuth 2.0) ↗</span>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px]">
+                    <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-start gap-2">
+                      <Send className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
+                      <div>
+                        <code className="font-mono font-bold text-blue-700 text-[10px] block">https://www.googleapis.com/auth/gmail.send</code>
+                        <span className="text-slate-600">Despacho de comunicados oficiales y circulares desde la pestaña <strong>Redactar Comunicado</strong> reflejados en la carpeta <em>Enviados (Sent)</em> de Gmail.</span>
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-start gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                      <div>
+                        <code className="font-mono font-bold text-indigo-700 text-[10px] block">https://www.googleapis.com/auth/calendar.events</code>
+                        <span className="text-slate-600">Creación y reprogramación bidireccional de citas escolares y sesiones CTE desde <strong>Calendario Escolar</strong> reflejadas en Google Calendar.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* ======================================================== */}
-              {/* ASISTENTE OFICIAL: TOKEN DE 16 DÍGITOS (SALTAR CASA TIER) */}
+              {/* ASISTENTE DE CREDENCIALES SMTP / IMAP INSTITUCIONAL      */}
               {/* ======================================================== */}
               {showAppPasswordHelper && (
                 <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-50/95 via-orange-50/40 to-white border-2 border-amber-400 shadow-md space-y-4 animate-in fade-in duration-200">
@@ -9480,14 +9499,14 @@ Comité de Seguridad y Protección Escolar`
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-                            Enlace con Token de 16 Dígitos (Contraseña de Aplicación)
+                            Configuración de Contraseña de Aplicación (SMTP / IMAP)
                           </h4>
                           <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wide border border-emerald-300">
-                            ⚡ 100% Exento de Auditoría CASA Tier 2/3
+                            TLS 1.3 Estándar
                           </span>
                         </div>
                         <p className="text-xs text-slate-600 font-medium mt-0.5">
-                          Omite las pantallas de advertencia de Google y conecta tu buzón directamente por IMAP 993 (SSL) / SMTP 587.
+                          Conecta un buzón institucional mediante protocolo estándar IMAP 993 (SSL) / SMTP 587.
                         </p>
                       </div>
                     </div>
@@ -10237,7 +10256,7 @@ Comité de Seguridad y Protección Escolar`
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Google Calendar API (TLS 1.3)</span>
+                    <span className="font-mono text-[11px]">Scope: https://www.googleapis.com/auth/calendar.events</span>
                   </div>
 
                   {/* Botón Calendario: inmediatamente ANTES de + Agendar Nueva Cita / Evento */}
@@ -10464,18 +10483,18 @@ Comité de Seguridad y Protección Escolar`
 
               {/* Formulario de Redacción */}
               <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 shadow-xs text-xs">
-                {/* Banner informativo de edición de borrador */}
-                {content && content.length > 30 && (
-                  <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-900 dark:text-indigo-200 flex items-center justify-between animate-in fade-in">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span>Borrador institucional listo. Puedes modificar cualquier sección antes de su envío.</span>
-                    </div>
-                    <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
-                      Edición Habilitada
+                {/* Banner informativo de Scope OAuth 2.0 Gmail Send */}
+                <div className="p-3 rounded-xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span>
+                      <strong>Gmail API Activa:</strong> Envío directo desde <code className="font-mono font-bold text-emerald-800">{connectedEmail || 'roboticalegotaller1@gmail.com'}</code> reflejado en la carpeta <em>Enviados (Sent)</em> de la cuenta origen.
                     </span>
                   </div>
-                )}
+                  <span className="text-[10px] font-bold font-mono px-2.5 py-1 rounded-md bg-white border border-emerald-300 text-emerald-800 shrink-0">
+                    Scope: https://www.googleapis.com/auth/gmail.send
+                  </span>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
