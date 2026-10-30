@@ -161,8 +161,8 @@ export default function PrivacyPolicyPage() {
           <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1">
             <p><strong>Titular del Servicio:</strong> ISkool Tecnologías Educativas</p>
             <p><strong>Sitio Web Oficial:</strong> https://iskool.mx</p>
+            <p><strong>Contacto Oficial y Soporte Institucional:</strong> <a href="mailto:contacto@iskool.mx" className="text-indigo-600 font-bold underline">contacto@iskool.mx</a></p>
             <p><strong>Correo Oficial de Privacidad y Derechos ARCO:</strong> <a href="mailto:privacidad@iskool.mx" className="text-indigo-600 font-bold underline">privacidad@iskool.mx</a></p>
-            <p><strong>Soporte Institucional:</strong> <a href="mailto:soporte@iskool.mx" className="text-indigo-600 font-bold underline">soporte@iskool.mx</a></p>
             <p><strong>Ubicación:</strong> Ciudad de México, México</p>
           </div>
         </section>
@@ -473,7 +473,8 @@ export default function PrivacyPolicyPage() {
           </p>
           <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs space-y-1.5">
             <p><strong>Departamento de Privacidad y Cumplimiento:</strong> ISkool Legal</p>
-            <p><strong>Correo Electrónico Directo:</strong> <a href="mailto:privacidad@iskool.mx" className="text-indigo-600 font-bold underline">privacidad@iskool.mx</a></p>
+            <p><strong>Contacto Oficial del Desarrollador:</strong> <a href="mailto:contacto@iskool.mx" className="text-indigo-600 font-bold underline">contacto@iskool.mx</a></p>
+            <p><strong>Correo Electrónico de Privacidad:</strong> <a href="mailto:privacidad@iskool.mx" className="text-indigo-600 font-bold underline">privacidad@iskool.mx</a></p>
             <p><strong>Portal Web Público:</strong> <a href="https://iskool.mx" className="text-indigo-600 font-bold underline">https://iskool.mx</a></p>
             <p><strong>Condiciones del Servicio:</strong> <Link href="/terminos" className="text-indigo-600 font-bold underline">https://iskool.mx/terminos</Link></p>
           </div>

@@ -80,7 +80,7 @@ export default function TermsOfServicePage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-3xl">
-            Bienvenido a ISkool. Al acceder, registrarte o utilizar nuestra plataforma web y móvil en <strong>https://iskool.mx</strong>, aceptas de forma libre e informada sujetarte a las presentes Condiciones del Servicio, diseñadas para salvaguardar la convivencia escolar, la seguridad académica y la integridad tecnológica.
+            Bienvenido a ISkool. Al acceder, registrarte o utilizar nuestra plataforma web en <strong>https://iskool.mx</strong>, aceptas de forma libre e informada sujetarte a las presentes Condiciones del Servicio, diseñadas para salvaguardar la convivencia escolar, la seguridad académica y la integridad tecnológica.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-400 font-mono">
@@ -188,7 +188,7 @@ export default function TermsOfServicePage() {
               <ul className="list-disc list-inside space-y-1 text-xs">
                 <li>Proporcionar información fidedigna y mantener actualizada su dirección de correo electrónico institucional o personal.</li>
                 <li>Preservar la confidencialidad de sus credenciales de acceso y dispositivos autorizados.</li>
-                <li>Notificar de inmediato a la dirección de su colegio o a <strong>soporte@iskool.mx</strong> ante cualquier sospecha de acceso no autorizado.</li>
+                <li>Notificar de inmediato a la dirección de su colegio o a <strong>contacto@iskool.mx</strong> ante cualquier sospecha de acceso no autorizado.</li>
                 <li>Queda estrictamente prohibida la cesión, venta o préstamo de cuentas escolares a terceros ajenos a la institución educativa.</li>
               </ul>
             </div>
@@ -294,9 +294,9 @@ export default function TermsOfServicePage() {
             Para aclaraciones sobre estas condiciones o asistencia con tu cuenta institucional, por favor contáctanos:
           </p>
           <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 text-xs space-y-1.5">
-            <p><strong>Departamento Legal:</strong> ISkool Tecnologías Educativas</p>
+            <p><strong>Departamento Legal y Desarrollo:</strong> ISkool Tecnologías Educativas</p>
+            <p><strong>Correo Oficial de Contacto y Soporte:</strong> <a href="mailto:contacto@iskool.mx" className="text-indigo-600 font-bold underline">contacto@iskool.mx</a></p>
             <p><strong>Correo Electrónico Legal:</strong> <a href="mailto:legal@iskool.mx" className="text-indigo-600 font-bold underline">legal@iskool.mx</a></p>
-            <p><strong>Atención y Soporte Escolar:</strong> <a href="mailto:soporte@iskool.mx" className="text-indigo-600 font-bold underline">soporte@iskool.mx</a></p>
             <p><strong>Sitio Web Oficial:</strong> <a href="https://iskool.mx" className="text-indigo-600 font-bold underline">https://iskool.mx</a></p>
           </div>
         </section>
