@@ -9,6 +9,7 @@ import {
 import { HumanGesticulatingAvatar } from '@/components/languages/HumanGesticulatingAvatar';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
 import MethodologyCommandCenter from '@/components/languages/MethodologyCommandCenter';
+import { BloomBktGamifiedCockpit } from '@/components/languages/BloomBktGamifiedCockpit';
 import { BackButton } from '@/components/navigation/BackButton';
 import { 
   Languages, 
@@ -156,6 +157,16 @@ export default function StudentIdiomasPage() {
             ========================================================================= */}
         {currentMode === 'hub' && (
           <div className="space-y-6">
+            {/* CABINA MAESTRA REDISEÑO 1 (NANO BANANA 2.1 · FONDO BLANCO GAMIFICADO) */}
+            <BloomBktGamifiedCockpit
+              role="student"
+              activeLanguage={activeLesson.language}
+              onLanguageChange={(lang) => {
+                const match = lessons.find(l => l.language === lang);
+                if (match) setActiveLessonId(match.id);
+              }}
+            />
+
             {/* MODELO CONTINUO CEFR 5E DEL ALUMNO */}
             <MethodologyCommandCenter
               activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}

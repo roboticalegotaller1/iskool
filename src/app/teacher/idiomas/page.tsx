@@ -15,6 +15,7 @@ import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester'
 import { LanguageAnalyticsCharts } from '@/components/languages/LanguageAnalyticsCharts';
 import { Curriculum12PhasesExplorer } from '@/components/languages/Curriculum12PhasesExplorer';
 import MethodologyCommandCenter from '@/components/languages/MethodologyCommandCenter';
+import { BloomBktGamifiedCockpit } from '@/components/languages/BloomBktGamifiedCockpit';
 import { BackButton } from '@/components/navigation/BackButton';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
@@ -1167,6 +1168,27 @@ export default function TeacherIdiomasPage() {
             </span>
           </div>
         </div>
+
+        {/* =========================================================================
+            CABINA MAESTRA REDISEÑO 1: BLOOM-BKT & MATRIZ EN ESPIRAL 40 SEMANAS
+            ========================================================================= */}
+        <BloomBktGamifiedCockpit
+          role="teacher"
+          activeLanguage={activeLesson.language}
+          onLanguageChange={(lang) => {
+            const newVoice = activeLesson.avatarGender === 'female'
+              ? (lang === 'fr' ? 'fr-FR-DeniseNeural' : 'en-US-JennyNeural')
+              : (lang === 'fr' ? 'fr-FR-HenriNeural' : 'en-US-GuyNeural');
+            updateLesson(activeLesson.id, {
+              language: lang,
+              avatarVoice: newVoice,
+              avatarName: activeLesson.avatarGender === 'female'
+                ? (lang === 'fr' ? 'Sophie' : 'Claire')
+                : (lang === 'fr' ? 'Henri' : 'Arthur')
+            });
+          }}
+          onLoadWeekLessonToWorkshop={handleLoadSingleLessonIntoWorkshop}
+        />
 
         {/* =========================================================================
             MODELO CONTINUO CEFR 5E (RIBBON SIEMPRE VISIBLE + PESTAÑA DEDICADA)
