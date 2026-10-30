@@ -446,9 +446,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   // MODO 2: TARJETA COMPLETA GAMIFICADA (variant === 'card')
   // =========================================================================
   return (
-    <div className={`relative flex flex-col items-center select-none ${className}`}>
+    <div className={`relative w-full max-w-full flex flex-col items-center select-none ${className}`}>
       {/* Marco Principal Gamificado del Avatar (Totalmente Fijo, sin oscilación de tarjeta) */}
-      <div className={`relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl border-4 ${
+      <div className={`relative w-64 h-64 min-[380px]:w-72 min-[380px]:h-72 sm:w-80 sm:h-80 max-w-full aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 ${
         isHistorical ? 'border-amber-500/50 shadow-amber-500/20' : 'border-indigo-500/40 shadow-indigo-500/20'
       } bg-gradient-to-b from-slate-900 via-slate-950 to-black group`}>
         
@@ -536,7 +536,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
       </div>
 
       {/* Barra de Control de Velocidad y Accesibilidad Didáctica */}
-      <div className={`mt-3.5 w-full max-w-sm flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border shadow-md text-xs transition-colors ${
+      <div className={`mt-3.5 w-full max-w-sm flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-between gap-2 px-3 py-2 rounded-2xl border shadow-md text-xs transition-colors ${
         isLightMode 
           ? 'bg-white border-slate-200 text-slate-800' 
           : 'bg-slate-900/90 border-slate-700/60 text-slate-200'

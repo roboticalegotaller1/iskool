@@ -859,7 +859,7 @@ export default function TeacherIdiomasPage() {
                 id="campus-select"
                 value={selectedCampusId}
                 onChange={(e) => setSelectedCampusId(e.target.value)}
-                className={`bg-transparent font-bold focus:outline-hidden cursor-pointer ${
+                className={`bg-transparent font-bold focus:outline-hidden cursor-pointer max-w-[165px] sm:max-w-none truncate ${
                   isLightMode ? 'text-slate-800' : 'text-slate-200'
                 }`}
               >
@@ -1193,28 +1193,6 @@ export default function TeacherIdiomasPage() {
         {/* =========================================================================
             MODELO CONTINUO CEFR 5E (RIBBON SIEMPRE VISIBLE + PESTAÑA DEDICADA)
             ========================================================================= */}
-        {activeTab !== 'methodology' && (
-          <MethodologyCommandCenter
-            activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
-            currentCefrLevel={activeLesson.level}
-            currentCenniBand={activeCertification.cenni}
-            currentPhaseLabel={activeCertification.unamNote}
-            activeWeekNumber={expandedWeekNumber || 1}
-            isLightMode={isLightMode}
-            compactBannerOnly={true}
-            onNavigateToTool={(tool) => {
-              if (tool === 'writing') {
-                window.location.href = '/teacher/idiomas/writing';
-              } else if (tool === 'karaoke') {
-                setActiveTab('editor');
-                setIsPreviewMode(true);
-              } else {
-                setActiveTab(tool as any);
-              }
-            }}
-          />
-        )}
-
         {activeTab === 'methodology' && (
           <MethodologyCommandCenter
             activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
@@ -1589,14 +1567,26 @@ export default function TeacherIdiomasPage() {
                     isLightMode ? 'bg-white border-slate-200/90 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
                   }`}>
                     
-                    {/* Escenario del Avatar 3D con Burbujas de Diálogo Flotantes (Exacto a Imagen 1) */}
-                    <div className={`relative rounded-2xl overflow-hidden border min-h-[380px] flex items-end justify-between p-4 transition-all ${
+                    {/* Escenario Nano Banana 2.1 del Avatar 3D Centrado (0% Superposición sobre el Rostro) */}
+                    <div className={`relative rounded-2xl overflow-hidden border h-[330px] flex items-end justify-center p-3 transition-all ${
                       isLightMode 
                         ? 'bg-gradient-to-b from-[#F1F5F9] via-[#F8FAFC] to-[#FFFFFF] border-slate-200/80 shadow-inner' 
                         : 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800 shadow-inner'
                     }`}>
-                      {/* Personaje 3D Articulado con Gesticulación Natural y Movimiento de Manos y Cabeza */}
-                      <div className="relative w-[65%] max-w-[320px] h-[360px] flex items-end justify-start pointer-events-none -ml-2">
+                      {/* Badge Superior Izquierdo con Emblema Nano Banana 2.1 */}
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200 shadow-xs">
+                        <img
+                          src="/images/languages/nanobanana-gamified/nb_holodeck_avatar_stage.webp"
+                          alt="Escenario 60 FPS"
+                          className="w-5 h-5 object-contain"
+                        />
+                        <span className="text-[10px] font-black text-slate-800">
+                          {activeLesson.avatarName} · 60 FPS
+                        </span>
+                      </div>
+
+                      {/* Personaje 3D Articulado Centrado sin obstrucción */}
+                      <div className="relative w-full max-w-[300px] h-[310px] flex items-end justify-center pointer-events-none">
                         <HumanGesticulatingAvatar
                           variant="stage"
                           gender={activeLesson.avatarGender}
@@ -1611,22 +1601,30 @@ export default function TeacherIdiomasPage() {
                           className="w-full h-full"
                         />
                       </div>
+                    </div>
 
-                      {/* Burbuja de Diálogo Principal Flotante en la esquina superior derecha */}
-                      <div className="absolute top-4 right-3 max-w-[210px] sm:max-w-[230px] pointer-events-auto z-10">
-                        <div className={`relative p-3.5 rounded-2xl border shadow-md text-xs font-semibold leading-relaxed transition-all ${
-                          isLightMode 
-                            ? 'bg-white text-slate-800 border-slate-200/90 shadow-slate-200/60' 
-                            : 'bg-slate-900/95 text-slate-100 border-slate-700 shadow-black/50'
-                        }`}>
-                          <div className={`absolute -left-2 top-5 w-0 h-0 border-y-6 border-y-transparent border-r-8 ${
-                            isLightMode ? 'border-r-white' : 'border-r-slate-900'
-                          }`} />
-                          <p className="line-clamp-4">
-                            {activeLesson.dialogue[0]?.text || "Lis a sophisticated gesticulating pedagogical mentor avatar."}
-                          </p>
-                        </div>
+                    {/* Tarjeta de Diálogo Activo en Idioma Meta (Debajo del Escenario, 100% Legible sin tapar al Avatar) */}
+                    <div className={`p-3.5 rounded-2xl border shadow-2xs text-xs font-semibold leading-relaxed transition-all flex items-start justify-between gap-3 ${
+                      isLightMode 
+                        ? 'bg-slate-50/90 text-slate-900 border-slate-200/90' 
+                        : 'bg-slate-950/90 text-slate-100 border-slate-800'
+                    }`}>
+                      <div className="space-y-0.5 min-w-0">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 block">
+                          Locución en Idioma Meta ({activeLesson.language === 'fr' ? 'Français' : 'English'}):
+                        </span>
+                        <p className="text-xs sm:text-sm font-bold leading-snug">
+                          &ldquo;{activeLesson.dialogue[0]?.text || 'Welcome to our interactive language session.'}&rdquo;
+                        </p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handlePlayAudioSample()}
+                        className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black shrink-0 cursor-pointer flex items-center gap-1 shadow-2xs"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Voz</span>
+                      </button>
                     </div>
 
                     {/* Cinta Dedicada de Subtítulo en Español y Guía Fonética (Colocada FUERA del avatar para 100% de legibilidad) */}

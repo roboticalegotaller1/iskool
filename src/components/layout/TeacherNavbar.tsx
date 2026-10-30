@@ -146,7 +146,7 @@ export function TeacherNavbar() {
         </div>
 
         {/* Navegación Principal Horizontal (Sin menús laterales invasivos) */}
-        <nav className="hidden md:flex items-center gap-1.5 shrink-0 flex-nowrap">
+        <nav className="hidden xl:flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full">
           {navLinks.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -277,7 +277,7 @@ export function TeacherNavbar() {
           {/* Botón Menú Móvil */}
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className={`md:hidden h-9 w-9 rounded-xl inline-flex items-center justify-center transition-colors shrink-0 ${
+            className={`xl:hidden h-9 w-9 rounded-xl inline-flex items-center justify-center transition-colors shrink-0 ${
               isIbime
                 ? 'text-white hover:bg-white/10'
                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -289,9 +289,33 @@ export function TeacherNavbar() {
         </div>
       </div>
 
+      {/* Barra Táctil Rápida para Celular, Tableta y Laptop Compacta (< 1280px) */}
+      <div className={`xl:hidden border-t px-3 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar smooth-touch-scroll ${
+        isIbime ? 'bg-[#0B1E36]/95 border-blue-900/80' : 'bg-slate-50/95 dark:bg-slate-900/95 border-slate-200/80 dark:border-slate-800'
+      }`}>
+        {navLinks.map((item) => {
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
+                isIbime
+                  ? (isActive ? 'bg-[#E41B14] text-white shadow-xs' : 'bg-[#17426D]/80 text-blue-100 hover:text-white')
+                  : (isActive ? 'bg-blue-600 text-white shadow-xs' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700')
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Menú Desplegable Móvil */}
       {isMobileOpen && (
-        <div className={`md:hidden border-t px-4 py-3 space-y-1.5 animate-fade-in shadow-lg ${
+        <div className={`xl:hidden border-t px-4 py-3 space-y-1.5 animate-fade-in shadow-lg ${
           isIbime
             ? 'bg-[#0F2744] border-blue-900 text-white'
             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'

@@ -64,7 +64,7 @@ export default function StudentIdiomasPage() {
         isLightMode ? 'text-slate-900' : 'text-slate-100'
       }`}
     >
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-5 sm:space-y-6 overflow-x-hidden">
         
         {/* Control de Retorno Inteligente y Selector de Ambiente Claro */}
         <div className="flex items-center justify-between">
@@ -98,62 +98,8 @@ export default function StudentIdiomasPage() {
           </button>
         </div>
 
-        {/* BARRA SUPERIOR GAMIFICADA DEL ALUMNO */}
-        <div className={`flex flex-wrap items-center justify-between gap-4 p-5 rounded-3xl border transition-all ${
-          isLightMode 
-            ? 'bg-white border-slate-200 shadow-sm' 
-            : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/40 shadow-2xl'
-        }`}>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-teal-400 p-0.5 shadow-lg shadow-cyan-500/20 flex items-center justify-center">
-              <div className={`w-full h-full rounded-2xl flex items-center justify-center ${isLightMode ? 'bg-white' : 'bg-slate-950'}`}>
-                <Languages className="w-6 h-6 text-teal-600" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
-                  isLightMode ? 'bg-teal-50 text-teal-800 border-teal-200' : 'bg-teal-500/20 text-teal-300 border-teal-500/40'
-                }`}>
-                  Academia Lingüística ISkool
-                </span>
-                <span className="text-xs text-amber-500 font-bold flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                  Racha: {fluencyStreak} Días
-                </span>
-              </div>
-              <h1 className={`text-xl sm:text-2xl font-black ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
-                Módulo de Idiomas: Inglés & Francés
-              </h1>
-            </div>
-          </div>
-
-          {/* Recompensas & Recursos Gamificados */}
-          <div className="flex items-center gap-3">
-            <div className={`px-3.5 py-1.5 rounded-2xl border flex items-center gap-2 ${
-              isLightMode ? 'bg-amber-50/70 border-amber-200' : 'bg-indigo-950/80 border-indigo-700/60'
-            }`}>
-              <Zap className="w-4 h-4 text-amber-500" />
-              <div>
-                <span className={`text-[9px] uppercase font-bold block leading-none ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>XP Total</span>
-                <span className={`text-sm font-black font-mono ${isLightMode ? 'text-amber-800' : 'text-amber-300'}`}>{xpEarned} XP</span>
-              </div>
-            </div>
-
-            <div className={`px-3.5 py-1.5 rounded-2xl border flex items-center gap-2 ${
-              isLightMode ? 'bg-teal-50/70 border-teal-200' : 'bg-indigo-950/80 border-indigo-700/60'
-            }`}>
-              <Trophy className="w-4 h-4 text-teal-600" />
-              <div>
-                <span className={`text-[9px] uppercase font-bold block leading-none ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>Monedas</span>
-                <span className={`text-sm font-black font-mono ${isLightMode ? 'text-teal-800' : 'text-cyan-300'}`}>{coinsEarned} 🪙</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* =========================================================================
-            VISTA 1: HUB PRINCIPAL DE LECCIONES Y MISIONES DE IDIOMA
+            VISTA 1: CABINA MAESTRA NANO BANANA 2.1 (PROTAGONISTA INMEDIATO SIN DUPLICADOS)
             ========================================================================= */}
         {currentMode === 'hub' && (
           <div className="space-y-6">
@@ -167,25 +113,6 @@ export default function StudentIdiomasPage() {
               }}
             />
 
-            {/* MODELO CONTINUO CEFR 5E DEL ALUMNO */}
-            <MethodologyCommandCenter
-              activeLanguage={activeLesson.language === 'fr' ? 'fr-FR' : 'en-US'}
-              currentCefrLevel={activeLesson.level}
-              currentCenniBand="CENNI Progresión Continua"
-              currentPhaseLabel="Ruta Personalizada 5E"
-              activeWeekNumber={1}
-              isLightMode={isLightMode}
-              compactBannerOnly={true}
-              onNavigateToTool={(tool) => {
-                if (tool === 'writing') {
-                  window.location.href = '/student/idiomas/writing';
-                } else if (tool === 'karaoke') {
-                  setCurrentMode('karaoke');
-                } else if (tool === 'editor') {
-                  setCurrentMode('dialogue');
-                }
-              }}
-            />
             {/* BANNER DESTACADO: WRITING STUDIO AUTÓNOMO */}
             <div className={`p-6 rounded-3xl border shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
               isLightMode

@@ -144,7 +144,7 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
         if (canvas) {
           const canvasCtx = canvas.getContext('2d');
           if (canvasCtx) {
-            canvasCtx.fillStyle = '#0f172a';
+            canvasCtx.fillStyle = isLightMode ? '#f8fafc' : '#0f172a';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
             const barWidth = (canvas.width / bufferLength) * 2.5;

@@ -58,35 +58,35 @@ export default function MethodologyCommandCenter({
     // ------------------------------------------------------------------------
     if (compactBannerOnly) {
         return (
-            <div className={`rounded-3xl p-4 sm:p-5 border transition-all shadow-sm ${
+            <div className={`rounded-3xl p-4 sm:p-5 border-2 transition-all shadow-sm ${
                 isLightMode
-                    ? 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/30 shadow-indigo-950/10'
+                    ? 'bg-gradient-to-r from-white via-indigo-50/40 to-emerald-50/30 text-slate-900 border-slate-200'
                     : 'bg-gradient-to-r from-[#0B1120] via-[#111827] to-[#0B1120] text-white border-indigo-500/30'
             }`}>
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3.5">
                     <div className="flex items-center gap-3">
-                        <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black uppercase tracking-widest">
+                        <span className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black uppercase tracking-widest">
                             {isFrench ? 'MODÈLE CONTINU CECR 5E · DELF/DALF' : 'MODELO CONTINUO CEFR 5E · CAMBRIDGE/CENNI'}
                         </span>
-                        <h3 className="text-xs sm:text-sm font-black tracking-tight text-white">
+                        <h3 className={`text-xs sm:text-sm font-black tracking-tight ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
                             {isFrench
                                 ? 'Architecture Neuro-Communicative & Approche Actionnelle Intégrée'
                                 : 'Arquitectura Neuro-Comunicativa & Ciclo Metodológico Continuo'}
                         </h3>
-                        <span className="hidden md:inline-block text-[11px] text-indigo-200/80 font-medium">
+                        <span className={`hidden md:inline-block text-[11px] font-medium ${isLightMode ? 'text-slate-500' : 'text-indigo-200/80'}`}>
                             ({currentCefrLevel} · {currentCenniBand} · Semana {activeWeekNumber}/40)
                         </span>
                     </div>
                     <div className="flex items-center gap-2.5">
-                        <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/15">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-200">
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${isLightMode ? 'bg-slate-100 border-slate-200' : 'bg-white/10 border-white/15'}`}>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isLightMode ? 'text-slate-600' : 'text-indigo-200'}`}>
                                 Progreso del Ciclo:
                             </span>
-                            <span className="text-xs font-black text-emerald-400">{continuousCompletionPct}%</span>
+                            <span className="text-xs font-black text-emerald-600">{continuousCompletionPct}%</span>
                         </div>
                         <button
                             onClick={() => onNavigateToTool('methodology')}
-                            className="px-3 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-black text-[11px] uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-wider transition-all shadow-sm cursor-pointer"
                         >
                             ⚡ {isFrench ? 'Ouvrir Matrice Méthodologique' : 'Ver Auditoría & Metodología CEFR'}
                         </button>
@@ -104,28 +104,32 @@ export default function MethodologyCommandCenter({
                                     onNavigateToTool(stage.primaryToolTab);
                                 }}
                                 className={`group relative rounded-2xl p-2.5 border transition-all cursor-pointer flex flex-col justify-between ${
-                                    isDone
-                                        ? 'bg-white/10 border-emerald-400/40 hover:bg-white/15'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    isLightMode
+                                        ? isDone
+                                            ? 'bg-emerald-50/60 border-emerald-200 hover:border-emerald-300'
+                                            : 'bg-white border-slate-200 hover:border-indigo-300'
+                                        : isDone
+                                            ? 'bg-white/10 border-emerald-400/40 hover:bg-white/15'
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
                                 }`}
                             >
                                 <div className="flex items-center justify-between gap-1 mb-1">
                                     <span
-                                        className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded"
-                                        style={{ backgroundColor: `${stage.colorHex}33`, color: '#e0e7ff' }}
+                                        className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded text-white"
+                                        style={{ backgroundColor: stage.colorHex }}
                                     >
                                         {stage.code}
                                     </span>
-                                    <span className={`text-[10px] font-black ${isDone ? 'text-emerald-400' : 'text-slate-400'}`}>
+                                    <span className={`text-[10px] font-black ${isDone ? 'text-emerald-600' : 'text-slate-500'}`}>
                                         {isDone ? '✓ Activo' : `${stage.weightInContinuousScore}%`}
                                     </span>
                                 </div>
-                                <div className="text-[11px] font-extrabold text-white leading-snug mb-1 group-hover:text-indigo-200 transition-colors">
+                                <div className={`text-[11px] font-extrabold leading-snug mb-1 transition-colors ${isLightMode ? 'text-slate-900 group-hover:text-indigo-700' : 'text-white group-hover:text-indigo-200'}`}>
                                     {stage.titleTarget[activeLanguage]}
                                 </div>
-                                <div className="flex items-center justify-between text-[9px] text-indigo-200/75 font-semibold pt-1 border-t border-white/10">
+                                <div className={`flex items-center justify-between text-[9px] font-semibold pt-1 border-t ${isLightMode ? 'text-slate-500 border-slate-100' : 'text-indigo-200/75 border-white/10'}`}>
                                     <span className="truncate">{stage.primaryToolLabel}</span>
-                                    <span className="text-indigo-300 font-black ml-1">→</span>
+                                    <span className="text-indigo-600 font-black ml-1">→</span>
                                 </div>
                             </div>
                         );
@@ -140,23 +144,37 @@ export default function MethodologyCommandCenter({
     // ------------------------------------------------------------------------
     return (
         <div className="space-y-6">
-            {/* Hero Executive Header */}
-            <div className="rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-500/30 shadow-xl relative overflow-hidden">
-                <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+            {/* Hero Executive Header (Nano Banana 2.1 White/Pearl Mode) */}
+            <div className={`rounded-3xl p-6 sm:p-8 border-2 shadow-sm relative overflow-hidden ${
+                isLightMode
+                    ? 'bg-gradient-to-br from-white via-indigo-50/40 to-emerald-50/30 text-slate-900 border-slate-200'
+                    : 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/30'
+            }`}>
                 <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="space-y-2.5 max-w-3xl">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black uppercase tracking-widest">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                isLightMode ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                            }`}>
                                 NANO BANANA 2.1 · ARQUITECTURA METODOLÓGICA GLOBAL
                             </span>
-                            <span className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-200 text-[10px] font-black uppercase tracking-widest">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                isLightMode ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-indigo-500/20 border-indigo-400/40 text-indigo-200'
+                            }`}>
                                 {currentCefrLevel} · {currentCenniBand} · {currentPhaseLabel}
                             </span>
                         </div>
-                        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                            {programArch.programTitle}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-indigo-100/85 leading-relaxed">
+                        <div className="flex items-center gap-3">
+                            <img
+                                src="/images/languages/nanobanana-gamified/nb_bloom_crown_mastery.webp"
+                                alt="Metodología Global"
+                                className="w-12 h-12 rounded-2xl object-contain bg-white border border-slate-200 p-1 shadow-xs shrink-0"
+                            />
+                            <h2 className={`text-2xl sm:text-3xl font-black tracking-tight ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
+                                {programArch.programTitle}
+                            </h2>
+                        </div>
+                        <p className={`text-xs sm:text-sm leading-relaxed ${isLightMode ? 'text-slate-600' : 'text-indigo-100/85'}`}>
                             {isFrench
                                 ? 'Synthèse chirurgicale des meilleures pratiques mondiales (Alliance Française / FEI DELF-DALF, Cambridge One, Berlitz Direct Method, Quick Learning Phonetic DSP et CECR Volume Complémentaire) intégrée dans un modèle continu de 40 semaines (160 séances) avec avatars historiques à 60 FPS.'
                                 : 'Síntesis quirúrgica de las mejores prácticas internacionales (Cambridge One, The Anglo CELTA/DELTA, Berlitz Direct Immersion, Quick Learning Phonetic DSP y CEFR Companion Volume) integrada en un modelo continuo de 40 semanas (160 lecciones) con avatares históricos a 60 FPS.'}
@@ -165,7 +183,9 @@ export default function MethodologyCommandCenter({
                             {programArch.officialStandards.map((std, i) => (
                                 <span
                                     key={i}
-                                    className="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-indigo-100"
+                                    className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
+                                        isLightMode ? 'bg-white border-slate-200 text-slate-700 shadow-2xs' : 'bg-white/10 border-white/15 text-indigo-100'
+                                    }`}
                                 >
                                     ✓ {std}
                                 </span>
@@ -174,33 +194,35 @@ export default function MethodologyCommandCenter({
                     </div>
 
                     {/* Global KPI Summary Card */}
-                    <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 sm:p-5 min-w-[270px] space-y-3">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-indigo-300">
+                    <div className={`rounded-2xl p-4 sm:p-5 min-w-[270px] space-y-3 border ${
+                        isLightMode ? 'bg-white border-slate-200 shadow-sm' : 'bg-white/10 backdrop-blur-md border-white/15'
+                    }`}>
+                        <div className={`text-[10px] font-black uppercase tracking-widest ${isLightMode ? 'text-indigo-700' : 'text-indigo-300'}`}>
                             Índice de Cohesión Metodológica
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-slate-900/60 p-3 rounded-xl border border-white/10">
-                                <div className="text-xl font-black text-emerald-400">6 Macro</div>
-                                <div className="text-[10px] text-slate-300 font-semibold">36 Micro-Habilidades CEFR</div>
+                            <div className={`p-3 rounded-xl border ${isLightMode ? 'bg-emerald-50/60 border-emerald-200' : 'bg-slate-900/60 border-white/10'}`}>
+                                <div className={`text-xl font-black ${isLightMode ? 'text-emerald-700' : 'text-emerald-400'}`}>6 Macro</div>
+                                <div className={`text-[10px] font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>36 Micro-Habilidades CEFR</div>
                             </div>
-                            <div className="bg-slate-900/60 p-3 rounded-xl border border-white/10">
-                                <div className="text-xl font-black text-sky-400">60 FPS</div>
-                                <div className="text-[10px] text-slate-300 font-semibold">Cinemática Labial/Mandibular</div>
+                            <div className={`p-3 rounded-xl border ${isLightMode ? 'bg-sky-50/60 border-sky-200' : 'bg-slate-900/60 border-white/10'}`}>
+                                <div className={`text-xl font-black ${isLightMode ? 'text-sky-700' : 'text-sky-400'}`}>60 FPS</div>
+                                <div className={`text-[10px] font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>Cinemática Labial/Mandibular</div>
                             </div>
-                            <div className="bg-slate-900/60 p-3 rounded-xl border border-white/10">
-                                <div className="text-xl font-black text-amber-400">40 Sem.</div>
-                                <div className="text-[10px] text-slate-300 font-semibold">160 Lecciones Continuas</div>
+                            <div className={`p-3 rounded-xl border ${isLightMode ? 'bg-amber-50/60 border-amber-200' : 'bg-slate-900/60 border-white/10'}`}>
+                                <div className={`text-xl font-black ${isLightMode ? 'text-amber-700' : 'text-amber-400'}`}>40 Sem.</div>
+                                <div className={`text-[10px] font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>160 Lecciones Continuas</div>
                             </div>
-                            <div className="bg-slate-900/60 p-3 rounded-xl border border-white/10">
-                                <div className="text-xl font-black text-purple-400">6 Inst.</div>
-                                <div className="text-[10px] text-slate-300 font-semibold">Benchmarks Auditados</div>
+                            <div className={`p-3 rounded-xl border ${isLightMode ? 'bg-indigo-50/60 border-indigo-200' : 'bg-slate-900/60 border-white/10'}`}>
+                                <div className={`text-xl font-black ${isLightMode ? 'text-indigo-700' : 'text-purple-400'}`}>6 Inst.</div>
+                                <div className={`text-[10px] font-semibold ${isLightMode ? 'text-slate-600' : 'text-slate-300'}`}>Benchmarks Auditados</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Sub-Navigation Pills */}
-                <div className="relative z-10 flex flex-wrap gap-2 mt-6 pt-5 border-t border-white/15">
+                <div className={`relative z-10 flex flex-wrap gap-2 mt-6 pt-5 border-t ${isLightMode ? 'border-slate-200' : 'border-white/15'}`}>
                     {[
                         { id: 'cycle', label: isFrench ? '🔄 1. Modèle Continu en 5 Étapes (5E)' : '🔄 1. Modelo Continuo de 5 Etapas (Ciclo 5E)' },
                         { id: 'skills', label: isFrench ? '🎯 2. Compétences Identifiables (6 Macro / 36 Micro)' : '🎯 2. Habilidades Identificables (6 Macro / 36 Micro)' },
@@ -212,8 +234,12 @@ export default function MethodologyCommandCenter({
                             onClick={() => setSelectedSubView(tab.id as 'cycle' | 'skills' | 'audit' | 'blueprint')}
                             className={`px-4 py-2.5 rounded-xl font-black text-xs transition-all cursor-pointer ${
                                 selectedSubView === tab.id
-                                    ? 'bg-white text-slate-900 shadow-lg'
-                                    : 'bg-white/10 text-indigo-100 hover:bg-white/20 border border-white/10'
+                                    ? isLightMode
+                                        ? 'bg-indigo-600 text-white shadow-sm'
+                                        : 'bg-white text-slate-900 shadow-lg'
+                                    : isLightMode
+                                        ? 'bg-white text-slate-700 hover:bg-indigo-50 border border-slate-200'
+                                        : 'bg-white/10 text-indigo-100 hover:bg-white/20 border border-white/10'
                             }`}
                         >
                             {tab.label}
@@ -235,11 +261,13 @@ export default function MethodologyCommandCenter({
                                 <div
                                     key={stage.id}
                                     onClick={() => setActiveStageIndex(idx)}
-                                    className={`rounded-2xl p-4 border transition-all cursor-pointer flex flex-col justify-between ${
+                                    className={`rounded-2xl p-4 border-2 transition-all cursor-pointer flex flex-col justify-between ${
                                         isSelected
-                                            ? 'bg-indigo-950 text-white border-indigo-500 shadow-xl ring-2 ring-indigo-500/40'
+                                            ? isLightMode
+                                                ? 'bg-indigo-50/70 text-slate-900 border-indigo-600 shadow-md ring-2 ring-indigo-500/20'
+                                                : 'bg-indigo-950 text-white border-indigo-500 shadow-xl ring-2 ring-indigo-500/40'
                                             : isLightMode
-                                            ? 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 shadow-sm'
+                                            ? 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 shadow-xs'
                                             : 'bg-slate-900/90 text-slate-100 border-slate-800 hover:border-indigo-500/40'
                                     }`}
                                 >
@@ -255,8 +283,8 @@ export default function MethodologyCommandCenter({
                                                 onClick={(e) => toggleStageComplete(stage.id, e)}
                                                 className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                                                     isDone
-                                                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                                        : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                        : 'bg-slate-100 text-slate-600 border-slate-200'
                                                 }`}
                                             >
                                                 {isDone ? '✓ Completada' : 'Marcar'}
@@ -265,13 +293,13 @@ export default function MethodologyCommandCenter({
                                         <h4 className="text-sm font-black leading-snug mb-1.5">
                                             {stage.titleTarget[activeLanguage]}
                                         </h4>
-                                        <p className={`text-[11px] leading-relaxed mb-3 ${isSelected ? 'text-indigo-200' : 'text-slate-500'}`}>
+                                        <p className={`text-[11px] leading-relaxed mb-3 ${isSelected && !isLightMode ? 'text-indigo-200' : 'text-slate-600'}`}>
                                             {stage.subtitleEs}
                                         </p>
                                     </div>
-                                    <div className="pt-2.5 border-t border-slate-500/20 flex items-center justify-between text-[10px] font-bold">
+                                    <div className="pt-2.5 border-t border-slate-200 flex items-center justify-between text-[10px] font-bold">
                                         <span>⏱ {stage.durationMinutesPerSession} min/sesión</span>
-                                        <span className="font-black text-indigo-400">Peso: {stage.weightInContinuousScore}%</span>
+                                        <span className="font-black text-indigo-600">Peso: {stage.weightInContinuousScore}%</span>
                                     </div>
                                 </div>
                             );

@@ -525,8 +525,8 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
     },
     {
       id: 'p3_dsp',
-      shortLabel: 'P3 · Lab Voz DSP & Karaoke',
-      title: 'Rayos X Sagital 60 FPS (F1/F2/F3) & Karaoke >80%',
+      shortLabel: 'P3 · Estudio Karaoke & Voz 60 FPS',
+      title: 'Karaoke Neuromuscular >80% · Avatar 60 FPS & Guía Vocal',
       badge: 'COMBO DSP',
       emblem: '/images/languages/nanobanana-gamified/nb_dsp_acoustic_shield.webp',
     },
@@ -561,10 +561,10 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
   ];
 
   return (
-    <div className="w-full bg-[#FFFFFF] text-slate-900 rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden space-y-6 p-4 sm:p-6 lg:p-8">
+    <div className="w-full bg-[#FFFFFF] text-slate-900 rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden space-y-5 sm:space-y-6 p-3 sm:p-5 lg:p-7">
       {/* Notificación Flotante de Recompensa / Evidencia BKT */}
       {toastBanner && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-md bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-amber-400/50 flex items-center gap-3 animate-bounce">
+        <div className="fixed bottom-4 left-3 right-3 sm:left-auto sm:right-6 z-50 sm:max-w-md bg-slate-900 text-white px-4 sm:px-5 py-3.5 rounded-2xl shadow-2xl border border-amber-400/50 flex items-center gap-3 animate-bounce">
           <img
             src="/images/languages/nanobanana-gamified/nb_bloom_crown_mastery.webp"
             alt="Emblema Bloom"
@@ -678,167 +678,167 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
         </div>
 
         {/* ===================================================================
-            6 TARJETAS DE EMBLEMAS 3D NANO BANANA 2.1 (MÉTRICAS EN TIEMPO REAL)
+            6 TARJETAS DE EMBLEMAS 3D NANO BANANA 2.1 (SIN CORTE NI SALTO DE LÍNEA)
             =================================================================== */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
           {/* 1. Nivel Cognitivo Bloom */}
           <div
             onClick={() => setActiveScreen('master')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-indigo-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-indigo-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_bloom_crown_mastery.webp"
-              alt="Corona Bloom"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
                 Escalón Bloom
               </span>
-              <span className="text-xs font-black text-indigo-900 block truncate">
-                {activeBloomSpec.nameEs}
-              </span>
-              <span className="text-[10px] font-extrabold text-amber-600">
-                Multiplicador x{activeBloomSpec.xpMultiplier} XP
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_bloom_crown_mastery.webp"
+                alt="Corona Bloom"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-indigo-950 truncate">
+              {activeBloomSpec.level}. {activeBloomSpec.nameEs}
+            </div>
+            <div className="text-[10px] font-extrabold text-amber-600 truncate mt-0.5">
+              Multiplicador x{activeBloomSpec.xpMultiplier} XP
             </div>
           </div>
 
           {/* 2. XP Acumulado & Monedas Socráticas */}
           <div
             onClick={() => setActiveScreen('p5_writing')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-amber-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-amber-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_socratic_gold_coin.webp"
-              alt="Moneda Socrática"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
                 Tesoro Socrático
               </span>
-              <span className="text-xs font-black text-slate-900 font-mono block">
-                {xpTotal.toLocaleString()} XP
-              </span>
-              <span className="text-[10px] font-extrabold text-amber-700">
-                {socraticCoinsBalance} Monedas 0% IA
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_socratic_gold_coin.webp"
+                alt="Moneda Socrática"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-slate-900 font-mono truncate">
+              {xpTotal.toLocaleString()} XP
+            </div>
+            <div className="text-[10px] font-extrabold text-amber-700 truncate mt-0.5">
+              {socraticCoinsBalance} Monedas 0% IA
             </div>
           </div>
 
           {/* 3. Cofres & Malla 40 Semanas */}
           <div
             onClick={() => setActiveScreen('p2_matrix')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-blue-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-blue-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_spiral_treasure_chest.webp"
-              alt="Cofre 40 Semanas"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
                 Malla en Espiral
               </span>
-              <span className="text-xs font-black text-slate-900 block">
-                Sem {selectedWeekNumber} / 40
-              </span>
-              <span className="text-[10px] font-extrabold text-blue-700">
-                {completedWeeks.length * 4} / 160 Lecciones
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_spiral_treasure_chest.webp"
+                alt="Cofre 40 Semanas"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-slate-900 truncate">
+              Semana {selectedWeekNumber} / 40
+            </div>
+            <div className="text-[10px] font-extrabold text-blue-700 truncate mt-0.5">
+              {completedWeeks.length * 4} / 160 Lecciones
             </div>
           </div>
 
           {/* 4. Escudo Acústico DSP >80% */}
           <div
             onClick={() => setActiveScreen('p3_dsp')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-emerald-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-emerald-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_dsp_acoustic_shield.webp"
-              alt="Escudo DSP"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
-                Precisión DSP
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
+                Combo Acústico
               </span>
-              <span className="text-xs font-black text-emerald-800 font-mono block">
-                {Math.round(macroMastery.FON * 100)}% · Combo x{karaokeCombo}
-              </span>
-              <span className="text-[10px] font-extrabold text-emerald-600">
-                Umbral &gt;80% Activo
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_dsp_acoustic_shield.webp"
+                alt="Escudo DSP"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-emerald-800 font-mono truncate">
+              {Math.round(macroMastery.FON * 100)}% · Combo x{karaokeCombo}
+            </div>
+            <div className="text-[10px] font-extrabold text-emerald-600 truncate mt-0.5">
+              Meta &gt;80% Activa
             </div>
           </div>
 
           {/* 5. Cristal Hexagonal BKT 36 Micro-Habilidades */}
           <div
             onClick={() => setActiveScreen('p6_bkt')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-indigo-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-indigo-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_bkt_hexagon_crystal.webp"
-              alt="Cristal BKT"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
-                Dominio BKT
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
+                Radar BKT
               </span>
-              <span className="text-xs font-black text-indigo-900 font-mono block">
-                {sepCenniProjection.averageBktPct}% Global
-              </span>
-              <span className="text-[10px] font-extrabold text-indigo-600">
-                {sepCenniProjection.unlockedMicroBadgesCount}/36 Micro-Insignias
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_bkt_hexagon_crystal.webp"
+                alt="Cristal BKT"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-indigo-900 font-mono truncate">
+              {sepCenniProjection.averageBktPct}% Global
+            </div>
+            <div className="text-[10px] font-extrabold text-indigo-600 truncate mt-0.5">
+              {sepCenniProjection.unlockedMicroBadgesCount}/36 Insignias
             </div>
           </div>
 
           {/* 6. Medalla Oficial CENNI / Boleta SEP */}
           <div
             onClick={() => setActiveScreen('p6_bkt')}
-            className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 shadow-2xs hover:border-rose-400 transition-all cursor-pointer"
+            className="bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs hover:border-rose-400 hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between"
           >
-            <img
-              src="/images/languages/nanobanana-gamified/nb_cenni_sep_gold_medal.webp"
-              alt="Medalla CENNI SEP"
-              className="w-11 h-11 object-contain shrink-0"
-            />
-            <div className="min-w-0">
-              <span className="text-[10px] font-black uppercase text-slate-400 block truncate">
+            <div className="flex items-center justify-between gap-1.5 mb-1">
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 truncate">
                 Boleta SEP / CENNI
               </span>
-              <span className="text-xs font-black text-rose-800 font-mono block">
-                SEP {sepCenniProjection.sepGrade10.toFixed(1)} / 10
-              </span>
-              <span className="text-[10px] font-extrabold text-amber-700 truncate block">
-                Nivel CENNI {sepCenniProjection.cenniBandNumeric}
-              </span>
+              <img
+                src="/images/languages/nanobanana-gamified/nb_cenni_sep_gold_medal.webp"
+                alt="Medalla CENNI SEP"
+                className="w-7 h-7 object-contain shrink-0"
+              />
+            </div>
+            <div className="text-xs sm:text-sm font-black text-rose-800 font-mono truncate">
+              SEP {sepCenniProjection.sepGrade10.toFixed(1)} / 10
+            </div>
+            <div className="text-[10px] font-extrabold text-amber-700 truncate mt-0.5">
+              Nivel CENNI {sepCenniProjection.cenniBandNumeric}
             </div>
           </div>
         </div>
 
         {/* ===================================================================
-            CINTA INTERACTIVA DEL CICLO CONTINUO 5E (55 MIN) × BLOOM
+            CINTA COMPACTA DEL CICLO CONTINUO 5E (55 MIN) × BLOOM
             =================================================================== */}
-        <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/90">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
-            <div className="flex items-center gap-2">
+        <div className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200/90">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase">
-                CICLO CONTINUO 5E · SESIÓN DE 55 MINUTOS
+                CICLO CONTINUO 5E · 55 MIN
               </span>
               <span className="text-xs font-extrabold text-slate-700">
-                Sincronización Neurolingüística Paso a Paso con la Taxonomía de Bloom
+                Ruta Neurolingüística Sincronizada con la Taxonomía de Bloom
               </span>
             </div>
-            <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
               100% Tiempo de Habla del Alumno (STT {sttPercentage}%)
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-2">
             {CONTINUOUS_METHODOLOGY_STAGES.map((stage, idx) => {
               const isSelected = active5EStageIdx === idx;
               const targetScreenMap: SurgicalScreenId[] = [
@@ -848,12 +848,19 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                 'p5_writing',
                 'p6_bkt',
               ];
+              const conciseStageTitles = [
+                '1. Despertar Acústico & Oído',
+                '2. Inmersión 60 FPS (1ª Persona)',
+                '3. Karaoke Neuromuscular (>80%)',
+                '4. Escritura Socrática (0% IA)',
+                '5. Certificación BKT & CENNI',
+              ];
               const mappedBloomLabels = [
                 'Bloom 1–2 (Recordar/Comprender)',
                 'Bloom 2–3 (Comprender/Aplicar)',
                 'Bloom 3–4 (Aplicar/Analizar)',
                 'Bloom 5–6 (Evaluar/Crear x3.0)',
-                'Auditoría BKT & CENNI',
+                'Auditoría BKT & Boleta SEP',
               ];
 
               return (
@@ -864,24 +871,24 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                     setActive5EStageIdx(idx);
                     setActiveScreen(targetScreenMap[idx] || 'master');
                   }}
-                  className={`text-left p-2.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
+                  className={`text-left px-3 py-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-white border-2 border-indigo-600 shadow-md ring-2 ring-indigo-500/10'
+                      ? 'bg-white border-2 border-indigo-600 shadow-sm ring-2 ring-indigo-500/10'
                       : 'bg-white/80 border-slate-200 hover:border-indigo-300 hover:bg-white'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1 mb-1">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
                     <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
-                      {stage.code} · {stage.durationMinutesPerSession}m
+                      Etapa {idx + 1} · {stage.durationMinutesPerSession}m
                     </span>
                     <span className="text-[10px] font-black text-emerald-700">
                       {stage.weightInContinuousScore}%
                     </span>
                   </div>
-                  <div className="text-[11px] font-black text-slate-900 leading-tight mb-1">
-                    {stage.titleEs}
+                  <div className="text-xs font-black text-slate-900 truncate">
+                    {conciseStageTitles[idx] || stage.titleEs}
                   </div>
-                  <div className="text-[9px] font-bold text-indigo-700 truncate pt-1 border-t border-slate-100">
+                  <div className="text-[10px] font-bold text-indigo-700 truncate mt-0.5">
                     {mappedBloomLabels[idx]} →
                   </div>
                 </button>
@@ -891,9 +898,9 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
         </div>
 
         {/* ===================================================================
-            NAVEGADOR DE LAS 8 PANTALLAS QUIRÚRGICAS (CABINA MAESTRA + P1 A P7)
+            NAVEGADOR DE LAS 8 PANTALLAS QUIRÚRGICAS (100% VISIBLES SIN RECORTE)
             =================================================================== */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {screenTabs.map((tab) => {
             const isActive = activeScreen === tab.id;
             return (
@@ -901,22 +908,22 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveScreen(tab.id)}
-                className={`px-3.5 py-2.5 rounded-2xl border text-left transition-all flex items-center gap-2.5 shrink-0 cursor-pointer ${
+                className={`px-3 py-2 rounded-2xl border text-left transition-all flex items-center gap-2.5 cursor-pointer min-w-0 ${
                   isActive
-                    ? 'bg-slate-900 text-white border-slate-900 shadow-lg scale-[1.01]'
+                    ? 'bg-slate-900 text-white border-slate-900 shadow-md'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
                 }`}
               >
                 <img
                   src={tab.emblem}
                   alt={tab.shortLabel}
-                  className="w-7 h-7 rounded-lg object-cover bg-white p-0.5 border border-slate-200 shrink-0"
+                  className="w-8 h-8 rounded-xl object-cover bg-white p-0.5 border border-slate-200 shrink-0"
                 />
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-black leading-none">{tab.shortLabel}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs font-black truncate">{tab.shortLabel}</span>
                     <span
-                      className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${
+                      className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase shrink-0 ${
                         isActive
                           ? 'bg-amber-400 text-slate-950'
                           : 'bg-slate-100 text-slate-600'
@@ -926,7 +933,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                     </span>
                   </div>
                   <span
-                    className={`text-[10px] block truncate max-w-[180px] ${
+                    className={`text-[10px] block truncate ${
                       isActive ? 'text-slate-300' : 'text-slate-500'
                     }`}
                   >
@@ -944,10 +951,10 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
           ===================================================================== */}
       {activeScreen === 'master' && (
         <div className="space-y-6">
-          {/* Tri-Panel Quirúrgico en Fondo Blanco Puro */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* PANEL IZQUIERDO (4 COLS): MATRIZ EN ESPIRAL DE 40 SEMANAS CON ESTRELLAS Y COFRES */}
-            <div className="lg:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-5 shadow-sm flex flex-col justify-between space-y-4">
+          {/* Tri-Panel Quirúrgico Adaptativo: Celular (1 col) · Tableta (2 cols + 1 full) · Laptop/PC (3 cols) */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6">
+            {/* PANEL IZQUIERDO: MATRIZ EN ESPIRAL DE 40 SEMANAS CON ESTRELLAS Y COFRES */}
+            <div className="md:col-span-6 xl:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -1079,8 +1086,8 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
               </div>
             </div>
 
-            {/* PANEL CENTRAL (4 COLS): ESCALERA COGNITIVA DE LA TAXONOMÍA DE BLOOM (6 NIVELES) */}
-            <div className="lg:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-5 shadow-sm flex flex-col justify-between space-y-4">
+            {/* PANEL CENTRAL: ESCALERA COGNITIVA DE LA TAXONOMÍA DE BLOOM (6 NIVELES) */}
+            <div className="md:col-span-6 xl:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -1204,8 +1211,8 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
               </div>
             </div>
 
-            {/* PANEL DERECHO (4 COLS): RADAR HEXAGONAL BKT + SIMULADOR OFICIAL SEP / CENNI */}
-            <div className="lg:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-5 shadow-sm flex flex-col justify-between space-y-4">
+            {/* PANEL DERECHO: RADAR HEXAGONAL BKT + SIMULADOR OFICIAL SEP / CENNI */}
+            <div className="md:col-span-12 xl:col-span-4 bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-5 shadow-sm flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -1245,7 +1252,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                     width={radarGeometry.size}
                     height={radarGeometry.size}
                     viewBox={`0 0 ${radarGeometry.size} ${radarGeometry.size}`}
-                    className="overflow-visible"
+                    className="w-full max-w-[250px] h-auto aspect-square overflow-visible"
                   >
                     {/* Anillos concéntricos */}
                     {[0.25, 0.5, 0.75, 1.0].map((level) => {
@@ -1407,7 +1414,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <div className="lg:col-span-8 overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full min-w-[560px] text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-200 text-[10px] font-black uppercase text-slate-500">
                         <th className="py-2.5 px-3">Alumno / Matrícula</th>
@@ -1714,186 +1721,97 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                 ))}
               </div>
 
-              {/* Inspector del Nodo Markdown / YAML Frontmatter en la Bóveda Curricular */}
-              <div className="rounded-2xl bg-slate-900 text-slate-100 p-4 space-y-2 font-mono text-[11px]">
-                <div className="flex items-center justify-between text-emerald-400 font-bold">
-                  <span>📄 {currentEnrichedWeek.vaultFilePath}</span>
-                  <span>YAML + [[WikiLinks]]</span>
-                </div>
-                <pre className="whitespace-pre-wrap text-[10px] text-slate-300 leading-relaxed max-h-40 overflow-y-auto">
+              {/* Inspector Secundario Desplegable del Nodo Markdown / YAML en Bóveda Curricular (Modo Claro) */}
+              <details className="group rounded-2xl bg-slate-50 border border-slate-200 p-3.5 text-xs transition-all">
+                <summary className="flex items-center justify-between cursor-pointer font-black text-slate-700 hover:text-indigo-700 list-none">
+                  <span className="flex items-center gap-2 truncate">
+                    <span>📄 Metadatos de Bóveda Curricular:</span>
+                    <span className="font-mono text-[11px] text-indigo-700 truncate">{currentEnrichedWeek.vaultFilePath}</span>
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-bold text-slate-600 shrink-0">
+                    Ver YAML + [[WikiLinks]]
+                  </span>
+                </summary>
+                <pre className="mt-3 p-3 rounded-xl bg-white border border-slate-200 whitespace-pre-wrap font-mono text-[10px] text-slate-700 leading-relaxed max-h-40 overflow-y-auto">
                   {currentEnrichedWeek.vaultYamlFrontmatter}
                 </pre>
-              </div>
+              </details>
             </div>
           </div>
         </div>
       )}
 
       {/* =====================================================================
-          PANTALLA 3 (P3_DSP): LABORATORIO ACÚSTICO SAGITAL F1/F2/F3 & KARAOKE >80%
+          PANTALLA 3 (P3_DSP): ESTUDIO PRINCIPAL DE KARAOKE 60 FPS + DOCK AUXILIAR VOCAL
           ===================================================================== */}
       {activeScreen === 'p3_dsp' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Corte Sagital Anatómico a 60 FPS y Formantes F1/F2/F3 */}
-            <div className="lg:col-span-5 bg-white rounded-3xl border-2 border-slate-200 p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src="/images/languages/nanobanana-gamified/nb_dsp_acoustic_shield.webp"
-                    alt="Escudo Acústico DSP"
-                    className="w-11 h-11 object-contain"
-                  />
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      PANTALLA 3 · CINEMÁTICA ARTICULATORIA 60 FPS
-                    </span>
-                    <h3 className="text-base font-black text-slate-900">
-                      Rayos X Sagital & Formantes (F1/F2/F3)
-                    </h3>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowHardwareCalibrator(!showHardwareCalibrator)}
-                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-[10px] font-black cursor-pointer"
-                >
-                  {showHardwareCalibrator ? 'Ocultar Calibrador SNR' : '🎙️ Calibrar SNR Mic'}
-                </button>
-              </div>
-
-              {/* Selector de Fonemas Críticos del Idioma */}
-              <div className="grid grid-cols-2 gap-2">
-                {phoneticTargetsForLang.map((spec) => {
-                  const isSelected = spec.id === activePhoneticSpec.id;
-                  return (
-                    <button
-                      key={spec.id}
-                      type="button"
-                      onClick={() => setSelectedPhoneticId(spec.id)}
-                      className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-600 text-white border-emerald-700 shadow-md'
-                          : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-white'
-                      }`}
-                    >
-                      <div className="text-xs font-black font-mono">{spec.symbolIpa}</div>
-                      <div className="text-[10px] truncate opacity-90">{spec.titleEs}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Visualizador Anatómico Sagital SVG de Tracto Vocal y Formantes */}
-              <div className="bg-slate-950 text-white rounded-2xl p-4 space-y-3 border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-emerald-400 font-mono">
-                    FONEMA META: {activePhoneticSpec.symbolIpa}
-                  </span>
-                  <div className="flex items-center gap-2 text-[10px] font-mono">
-                    <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                      F1: {activePhoneticSpec.targetF1Hz} Hz
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                      F2: {activePhoneticSpec.targetF2Hz} Hz
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                      F3: {activePhoneticSpec.targetF3Hz} Hz
-                    </span>
-                  </div>
-                </div>
-
-                {/* Diagrama Sagital Paramétrico del Tracto Vocal */}
-                <svg viewBox="0 0 320 155" className="w-full h-36 bg-slate-900/90 rounded-xl border border-slate-800">
-                  {/* Paladar duro y cavidad nasal */}
-                  <path
-                    d="M 55 45 Q 145 18 235 45 L 265 95"
-                    fill="none"
-                    stroke="#38BDF8"
-                    strokeWidth="3"
-                  />
-                  {/* Velo del paladar (abierto en vocales nasales francesas) */}
-                  <line
-                    x1="215"
-                    y1="38"
-                    x2="245"
-                    y2={activePhoneticSpec.velumNasalOpen ? '68' : '48'}
-                    stroke={activePhoneticSpec.velumNasalOpen ? '#F59E0B' : '#38BDF8'}
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-                  {/* Lengua dinámica según altura y anterioridad */}
-                  <path
-                    d={`M 75 ${115 + activePhoneticSpec.jawOpenPct * 0.2} Q ${
-                      195 - activePhoneticSpec.tongueFrontnessPct * 0.85
-                    } ${105 - activePhoneticSpec.tongueHeightPct * 0.65} 230 112`}
-                    fill="rgba(244, 63, 94, 0.35)"
-                    stroke="#FB7185"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-                  {/* Protrusión / Redondeo Labial */}
-                  <circle
-                    cx={52 - activePhoneticSpec.lipRoundingPct * 0.08}
-                    cy={65 + activePhoneticSpec.jawOpenPct * 0.25}
-                    r={6 + activePhoneticSpec.lipRoundingPct * 0.06}
-                    fill="#34D399"
-                  />
-                  <text x="14" y="22" className="text-[9px] fill-cyan-300 font-mono">
-                    Mandíbula: {activePhoneticSpec.jawOpenPct}% · Redondeo Labial: {activePhoneticSpec.lipRoundingPct}%
-                  </text>
-                  <text x="14" y="144" className="text-[9px] fill-amber-300 font-mono">
-                    {activePhoneticSpec.velumNasalOpen
-                      ? 'Velo Nasal ABIERTO (Resonancia Nasal FLE)'
-                      : 'Velo Nasal CERRado (Flujo Oral Puro)'}
-                  </text>
-                </svg>
-
-                <div className="space-y-1.5 text-xs">
-                  <p className="text-emerald-200 font-medium">
-                    <strong>Cinemática Anatómica:</strong> {activePhoneticSpec.anatomicalInstructionEs}
-                  </p>
-                  <p className="text-amber-300 text-[11px]">
-                    <strong>⚠️ {activePhoneticSpec.l1SpanishInterferenceTrapEs}</strong>
-                  </p>
-                </div>
-
-                {/* Palabras Ejemplares con Reproducción Instantánea */}
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {activePhoneticSpec.exemplarWords.map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      onClick={() => handleSpeakText(w.split('/')[0].trim())}
-                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <Volume2 className="w-3 h-3 text-emerald-400" />
-                      <span>{w}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {showHardwareCalibrator && (
-                <div className="pt-2">
-                  <HardwareAudioTester isLightMode={true} />
-                </div>
-              )}
-            </div>
-
-            {/* Karaoke Neuromuscular Palabra por Palabra (>80% Desbloqueo + Combo) */}
-            <div className="lg:col-span-7 bg-white rounded-3xl border-2 border-slate-200 p-5 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* 1. PROTAGONISTA PRINCIPAL (100% ANCHO): KARAOKE NEUROMUSCULAR & AVATAR 60 FPS */}
+          <div className="w-full bg-white rounded-3xl border-2 border-slate-200/90 p-4 sm:p-6 shadow-sm space-y-5 overflow-hidden">
+            {/* Barra Superior del Estudio Principal de Karaoke */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/images/languages/nanobanana-gamified/nb_dsp_acoustic_shield.webp"
+                  alt="Estudio Karaoke Neuromuscular"
+                  className="w-12 h-12 object-contain shrink-0"
+                />
                 <div>
-                  <span className="text-[10px] font-black uppercase text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                    ETAPA 3 DEL CICLO 5E · DESBLOQUEO &gt;80% PRECISIÓN ACÚSTICA
-                  </span>
-                  <h3 className="text-base font-black text-slate-900 mt-0.5">
-                    Karaoke Neuromuscular Sincronizado · Semana {selectedWeekNumber}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-black uppercase text-indigo-800 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200">
+                      ESTUDIO PRINCIPAL · ETAPA 3 DEL CICLO 5E
+                    </span>
+                    <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                      COMBO ACÚSTICO x{karaokeCombo} · META &gt;80%
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 mt-0.5">
+                    Karaoke Neuromuscular Sincronizado a 60 FPS · Semana {selectedWeekNumber} ({currentEnrichedWeek.week.cefr})
                   </h3>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-1.5">
+              {/* Selector Rápido de Mentor 60 FPS + Selector de Frases (1-4) */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Selector compacto de Mentor en 1ª Persona */}
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-2xl border border-slate-200">
+                  <span className="text-[10px] font-black uppercase text-slate-500 mr-1 hidden sm:inline">
+                    Mentor 60 FPS:
+                  </span>
+                  {allMentorsForLang.slice(0, 4).map((m) => {
+                    const isSelectedMentor = m.id === activeMentor.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          stopAllIskoolAudio();
+                          setSelectedMentorId(m.id);
+                          setIsSpeakingLive(false);
+                        }}
+                        className={`px-2 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                          isSelectedMentor
+                            ? 'bg-indigo-600 text-white shadow-xs font-black'
+                            : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                        }`}
+                        title={`Practicar con ${m.name} (${m.era})`}
+                      >
+                        <img
+                          src={m.avatarImage}
+                          alt={m.name}
+                          className="w-5 h-5 rounded-full object-cover shrink-0"
+                        />
+                        <span className="max-w-[95px] truncate">{m.name.split(' ').slice(-1)[0]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Selector de las 4 Frases de la Semana */}
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-2xl border border-slate-200">
+                  <span className="text-[10px] font-black uppercase text-slate-500 mr-1">
+                    Reto:
+                  </span>
                   {activeWeekKaraokePhrases.map((_, idx) => (
                     <button
                       key={idx}
@@ -1901,8 +1819,8 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                       onClick={() => setActiveKaraokeIndex(idx)}
                       className={`w-8 h-8 rounded-xl text-xs font-black cursor-pointer transition-all ${
                         idx === activeKaraokeIndex
-                          ? 'bg-indigo-600 text-white shadow'
-                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                       }`}
                     >
                       {idx + 1}
@@ -1910,34 +1828,216 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                   ))}
                 </div>
               </div>
-
-              {activeWeekKaraokePhrases[activeKaraokeIndex] && (
-                <LanguageKaraokePlayer
-                  phrase={activeWeekKaraokePhrases[activeKaraokeIndex]}
-                  language={currentLang}
-                  avatarGender={activeMentor.gender}
-                  avatarVoice={activeMentor.voiceId}
-                  avatarName={activeMentor.name}
-                  avatarImage={activeMentor.avatarImage}
-                  historicalFigureId={activeMentor.id}
-                  studentName="Sofía Valentina Mendoza"
-                  lessonId={`wk-${selectedWeekNumber}`}
-                  lessonTitle={currentEnrichedWeek.week.title}
-                  isLightMode={true}
-                  onComplete={(stats) => {
-                    const passed = stats.accuracy >= 80;
-                    if (passed) {
-                      setKaraokeCombo((prev) => prev + 1);
-                    }
-                    handleRecordMasteryEvidence(
-                      'FON',
-                      passed,
-                      `Karaoke DSP (${stats.accuracy}% precisión)`
-                    );
-                  }}
-                />
-              )}
             </div>
+
+            {/* Escenario Completo de Karaoke (Avatar 60 FPS a la izquierda + Consola Karaoke a la derecha, 0% superposición) */}
+            {activeWeekKaraokePhrases[activeKaraokeIndex] && (
+              <LanguageKaraokePlayer
+                phrase={activeWeekKaraokePhrases[activeKaraokeIndex]}
+                language={currentLang}
+                avatarGender={activeMentor.gender}
+                avatarVoice={activeMentor.voiceId}
+                avatarName={activeMentor.name}
+                avatarImage={activeMentor.avatarImage}
+                historicalFigureId={activeMentor.id}
+                studentName="Sofía Valentina Mendoza"
+                lessonId={`wk-${selectedWeekNumber}`}
+                lessonTitle={currentEnrichedWeek.week.title}
+                isLightMode={true}
+                onComplete={(stats) => {
+                  const passed = stats.accuracy >= 80;
+                  if (passed) {
+                    setKaraokeCombo((prev) => prev + 1);
+                  }
+                  handleRecordMasteryEvidence(
+                    'FON',
+                    passed,
+                    `Karaoke DSP (${stats.accuracy}% precisión)`
+                  );
+                }}
+              />
+            )}
+          </div>
+
+          {/* 2. DOCK AUXILIAR NANO BANANA 2.1 (SECUNDARIO, ABAJO EN MODO CLARO): GUÍA DE ARTICULACIÓN & FORMANTES */}
+          <div className="w-full bg-gradient-to-r from-slate-50 via-white to-indigo-50/40 rounded-3xl border-2 border-indigo-100 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/images/languages/nanobanana-gamified/nb_articulatory_coach_badge.webp"
+                  alt="Coach de Articulación Nano Banana 2.1"
+                  className="w-11 h-11 rounded-2xl object-contain bg-white border border-indigo-200 p-0.5 shadow-2xs shrink-0"
+                />
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-black uppercase text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded border border-indigo-200">
+                      APOYO COMPLEMENTARIO NANO BANANA 2.1 · GUÍA BIOMECÁNICA DE PRONUNCIACIÓN
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-700">
+                      Fonema Activo: {activePhoneticSpec.symbolIpa} ({activePhoneticSpec.titleEs})
+                    </span>
+                  </div>
+                  <h4 className="text-sm sm:text-base font-black text-slate-900 mt-0.5">
+                    Asistente de Articulación Vocal, Posición de Lengua/Labios & Formantes (F1/F2/F3)
+                  </h4>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowHardwareCalibrator(!showHardwareCalibrator)}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-black cursor-pointer shadow-2xs"
+                >
+                  {showHardwareCalibrator ? 'Ocultar Calibrador SNR' : '🎙️ Calibrador SNR de Micrófono'}
+                </button>
+              </div>
+            </div>
+
+            {/* Grid Horizontal de 3 Columnas en Estética Blanca/Perla Nano Banana 2.1 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+              {/* Columna 1 (4 cols): Selector de los 4 Fonemas Críticos + Palabras Ejemplares */}
+              <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase text-slate-500 block">
+                    1. Selecciona un Fonema para ver su Articulación:
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {phoneticTargetsForLang.map((spec) => {
+                      const isSelected = spec.id === activePhoneticSpec.id;
+                      return (
+                        <button
+                          key={spec.id}
+                          type="button"
+                          onClick={() => setSelectedPhoneticId(spec.id)}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm'
+                              : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-white hover:border-indigo-300'
+                          }`}
+                        >
+                          <div className="text-xs font-black font-mono">{spec.symbolIpa}</div>
+                          <div className="text-[10px] truncate opacity-90">{spec.titleEs}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Palabras Ejemplares con Voz Instantánea */}
+                <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                  <span className="text-[10px] font-black uppercase text-slate-500 block">
+                    Escuchar Palabras Clave ({activePhoneticSpec.symbolIpa}):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {activePhoneticSpec.exemplarWords.map((w) => (
+                      <button
+                        key={w}
+                        type="button"
+                        onClick={() => handleSpeakText(w.split('/')[0].trim())}
+                        className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Volume2 className="w-3 h-3 text-indigo-600" />
+                        <span>{w}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Columna 2 (4 cols): Esquema Articular Claro Nano Banana 2.1 (Fondo Blanco/Perla) */}
+              <div className="lg:col-span-4 bg-gradient-to-br from-white via-indigo-50/40 to-emerald-50/40 rounded-2xl border border-indigo-200/80 p-3.5 flex flex-col justify-between space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-1.5">
+                  <span className="text-xs font-black text-indigo-950 font-mono">
+                    Esquema Vocal: {activePhoneticSpec.symbolIpa}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono">
+                    <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-900 font-bold">
+                      F1:{activePhoneticSpec.targetF1Hz}Hz
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold">
+                      F2:{activePhoneticSpec.targetF2Hz}Hz
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">
+                      F3:{activePhoneticSpec.targetF3Hz}Hz
+                    </span>
+                  </div>
+                </div>
+
+                {/* Diagrama Articular en Modo Claro Cristalino */}
+                <svg
+                  viewBox="0 0 320 135"
+                  className="w-full h-32 bg-white rounded-xl border border-slate-200 shadow-inner"
+                >
+                  {/* Paladar duro y cavidad oral superior */}
+                  <path
+                    d="M 55 38 Q 145 14 235 38 L 265 86"
+                    fill="none"
+                    stroke="#4F46E5"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                  />
+                  {/* Velo del paladar (abierto en vocales nasales francesas) */}
+                  <line
+                    x1="215"
+                    y1="32"
+                    x2="245"
+                    y2={activePhoneticSpec.velumNasalOpen ? '62' : '42'}
+                    stroke={activePhoneticSpec.velumNasalOpen ? '#D97706' : '#4F46E5'}
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                  {/* Lengua dinámica según altura y anterioridad */}
+                  <path
+                    d={`M 75 ${102 + activePhoneticSpec.jawOpenPct * 0.18} Q ${
+                      195 - activePhoneticSpec.tongueFrontnessPct * 0.85
+                    } ${94 - activePhoneticSpec.tongueHeightPct * 0.58} 230 100`}
+                    fill="rgba(244, 63, 94, 0.22)"
+                    stroke="#E11D48"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                  {/* Protrusión / Redondeo Labial */}
+                  <circle
+                    cx={52 - activePhoneticSpec.lipRoundingPct * 0.08}
+                    cy={58 + activePhoneticSpec.jawOpenPct * 0.22}
+                    r={6 + activePhoneticSpec.lipRoundingPct * 0.06}
+                    fill="#10B981"
+                  />
+                  <text x="12" y="18" className="text-[9px] fill-slate-700 font-mono font-bold">
+                    Mandíbula: {activePhoneticSpec.jawOpenPct}% · Labios: {activePhoneticSpec.lipRoundingPct}%
+                  </text>
+                  <text x="12" y="126" className="text-[9px] fill-indigo-900 font-mono font-bold">
+                    {activePhoneticSpec.velumNasalOpen
+                      ? 'Velo Nasal ABIERTO (Resonancia Nasal FLE)'
+                      : 'Velo Nasal CERRADO (Flujo Oral Puro)'}
+                  </text>
+                </svg>
+              </div>
+
+              {/* Columna 3 (4 cols): Instrucción Biomecánica y Prevención de Interferencia L1->L2 */}
+              <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col justify-between space-y-2.5">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block">
+                    💡 Cómo colocar la boca y lengua
+                  </span>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    {activePhoneticSpec.anatomicalInstructionEs}
+                  </p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-[11px] text-amber-950 leading-snug">
+                  <strong>⚠️ Evita el error común (L1→L2):</strong>{' '}
+                  {activePhoneticSpec.l1SpanishInterferenceTrapEs}
+                </div>
+              </div>
+            </div>
+
+            {showHardwareCalibrator && (
+              <div className="pt-2">
+                <HardwareAudioTester isLightMode={true} />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2070,7 +2170,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                     Recompensa: +{Math.round(activeBloomSpec.baseXpReward * activeBloomSpec.xpMultiplier)} XP
                   </span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={studentOralResponseText}

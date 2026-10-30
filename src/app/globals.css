@@ -682,6 +682,23 @@ body {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
+  @media (max-width: 639px) {
+    svg, canvas, video, img {
+      max-width: 100%;
+    }
+  }
+  @media (min-width: 1024px) and (max-width: 1366px) {
+    :root {
+      --dev-chart-h: 235px;
+      --dev-table-max-h: 340px;
+    }
+  }
+  @media (min-width: 1440px) {
+    :root {
+      --dev-chart-h: 280px;
+      --dev-table-max-h: 440px;
+    }
+  }
 }
 
 /* =========================================================================

@@ -1442,10 +1442,10 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   };
 
   return (
-    <div className={`w-full flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center ${className}`}>
+    <div className={`w-full grid grid-cols-1 xl:grid-cols-12 gap-6 items-start ${className}`}>
       
       {/* 1. AVATAR PEDAGÓGICO GESTICULANTE CON CONTROL DE VELOCIDAD */}
-      <div className="flex flex-col items-center shrink-0">
+      <div className="xl:col-span-5 w-full flex flex-col items-center justify-center overflow-hidden">
         <HumanGesticulatingAvatar
           gender={avatarGender}
           name={avatarName}
@@ -1476,7 +1476,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       </div>
 
       {/* 2. ESTUDIO INTERACTIVO DE KARAOKE FONÉTICO */}
-      <div className={`w-full max-w-2xl flex flex-col space-y-5 p-5 sm:p-7 rounded-3xl shadow-2xl backdrop-blur-md transition-all ${
+      <div className={`xl:col-span-7 w-full min-w-0 flex flex-col space-y-5 p-4 sm:p-6 rounded-3xl shadow-xl backdrop-blur-md transition-all ${
         isLightMode 
           ? 'bg-white border-2 border-slate-200 shadow-slate-200/60 text-slate-800' 
           : 'bg-slate-900/95 border-2 border-indigo-500/40 text-white'

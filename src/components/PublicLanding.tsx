@@ -14,7 +14,7 @@ import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
  */
 export const PRIVACY_URL = "https://iskool.mx/privacidad";
 export const TERMS_URL = "https://iskool.mx/terminos";
-export const SUPPORT_EMAIL = "roboticalegotaller1@gmail.com";
+export const SUPPORT_EMAIL = "contacto@iskool.mx";
 
 const features = [
   {
@@ -64,7 +64,7 @@ export function PublicLanding() {
           </h1>
           <p className="mt-5 text-base text-zinc-600 leading-relaxed">
             ISkool conecta a alumnos, docentes, padres de familia y directivos en una sola
-            aplicación web y móvil: aprendizaje gamificado alineado a la Nueva Escuela Mexicana,
+            aplicación web: aprendizaje gamificado alineado a la Nueva Escuela Mexicana,
             planeaciones, control escolar y comunicación con las familias.
           </p>
           <p className="mt-3 text-sm text-zinc-500 leading-relaxed">

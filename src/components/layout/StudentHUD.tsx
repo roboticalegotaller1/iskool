@@ -21,7 +21,8 @@ import {
   X,
   Swords,
   ShieldCheck,
-  Zap
+  Zap,
+  Languages
 } from 'lucide-react';
 import { isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
@@ -58,6 +59,7 @@ export function StudentHUD() {
 
   const navShortcuts = [
     { href: '/student', label: 'Misiones', icon: Compass, exact: true },
+    { href: '/student/idiomas', label: 'Idiomas', icon: Languages },
     { href: '/student/portfolio', label: 'Portafolio', icon: BookOpen },
     { href: '/student/avatar', label: 'Avatar & Compañero', icon: Sparkles },
     { href: '/student/shop', label: 'Tienda Mágica', icon: ShoppingBag }
@@ -108,7 +110,7 @@ export function StudentHUD() {
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs sm:text-sm font-black text-white truncate max-w-[130px] sm:max-w-[180px]">
+              <span className="text-xs sm:text-sm font-black text-white truncate max-w-[96px] min-[380px]:max-w-[135px] sm:max-w-[180px]">
                 {studentName}
               </span>
               <span className={`hidden sm:inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
@@ -228,6 +230,28 @@ export function StudentHUD() {
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
+      </div>
+
+      {/* Barra Táctil Rápida para Celular y Tableta (< 1024px) */}
+      <div className="lg:hidden border-t border-indigo-500/25 bg-slate-950/90 px-3 sm:px-6 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar smooth-touch-scroll">
+        {navShortcuts.map((item) => {
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider shrink-0 whitespace-nowrap transition-all ${
+                isActive
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border border-indigo-400/50 shadow-sm'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white border border-indigo-500/20'
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5 text-teal-300 shrink-0" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Menú Desplegable Móvil Gamer */}

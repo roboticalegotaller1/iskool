@@ -112,38 +112,13 @@ export async function GET(req: NextRequest) {
     const tokens = await GoogleOAuthService.exchangeCodeForTokens(code, origin);
 
     // =========================================================================
-    // FLUJO A: Conexión de Correo Directivo (Workspace Connect)
+    // FLUJO A: Conexión de Correo y Calendario Directivo (Workspace Connect)
+    // Exclusivamente opera con los alcances autorizados: gmail.send y calendar.events
     // =========================================================================
     if (flow === 'workspace_connect') {
-      let realEmailsCount = 0;
-      try {
-        const realEmails = await GoogleOAuthService.fetchRealGmailEmails(
-          tokens.accessToken,
-          tokens.email,
-          30,
-          targetTenantId
-        );
-        realEmailsCount = realEmails.length;
-
-        const tenantIdsToInject = Array.from(new Set([
-          targetTenantId,
-          'e1000000-0000-0000-0000-000000000001',
-          'sch-ibime',
-          'sch-default'
-        ]));
-
-        for (const tId of tenantIdsToInject) {
-          for (const em of realEmails) {
-            injectEmailIntoCache(tId, em);
-          }
-        }
-      } catch (mailSyncErr) {
-        console.warn('Nota: Sincronización de lectura Gmail no disponible o sin scope readonly:', mailSyncErr);
-      }
-
       const safeEmail = JSON.stringify(tokens.email);
       const safeName = JSON.stringify(tokens.name || 'Google Workspace');
-      const safeCount = realEmailsCount;
+      const safeCount = 0;
       const safeOrigin = JSON.stringify(origin);
 
       const html = `<!DOCTYPE html>
@@ -153,10 +128,11 @@ export async function GET(req: NextRequest) {
   <title>Cuenta Institucional Conectada - ISkool</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #0f172a; }
-    .card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; max-width: 420px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+    .card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
     .icon { width: 56px; height: 56px; border-radius: 50%; background: #dcfce7; color: #15803d; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; }
     h2 { margin: 0 0 8px 0; font-size: 18px; font-weight: 800; }
-    p { margin: 0 0 16px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+    p { margin: 0 0 14px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+    .scopes { text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; margin-bottom: 16px; font-family: monospace; font-size: 11px; color: #1e293b; }
     .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 700; }
   </style>
 </head>
@@ -164,8 +140,12 @@ export async function GET(req: NextRequest) {
   <div class="card">
     <div class="icon">✓</div>
     <h2>Cuenta de Google Conectada</h2>
-    <p>Se vinculó exitosamente <strong>${escapeHtml(tokens.email)}</strong> para la gestión institucional y comunicados de dirección.</p>
-    <div class="badge">Conexión completada</div>
+    <p>Se vinculó exitosamente <strong>${escapeHtml(tokens.email)}</strong> bajo el principio de mínimo privilegio OAuth 2.0:</p>
+    <div class="scopes">
+      ✓ .../auth/gmail.send (Envío de comunicados)<br/>
+      ✓ .../auth/calendar.events (Lectura, creación, edición y baja de citas)
+    </div>
+    <div class="badge">Conexión OAuth 2.0 Verificada</div>
   </div>
   <script>
     (function() {
@@ -175,6 +155,10 @@ export async function GET(req: NextRequest) {
         email: ${safeEmail},
         providerName: ${safeName},
         emailsCount: ${safeCount},
+        scopes: [
+          'https://www.googleapis.com/auth/gmail.send',
+          'https://www.googleapis.com/auth/calendar.events'
+        ],
         timestamp: new Date().toISOString()
       };
 

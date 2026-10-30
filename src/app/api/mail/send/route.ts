@@ -193,12 +193,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Si el usuario es un docente o rol no directivo, forzar que el remitente sea su propio correo verificado
-    let effectiveSender = (senderEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+    let effectiveSender = GoogleOAuthService.resolveEffectiveGoogleEmail(senderEmail);
     if (auth.authenticated && auth.user) {
       const userRole = (auth.user.role || '').toLowerCase();
       const isDirectorOrAdmin = ['admin', 'superadmin', 'director', 'ceo', 'owner'].includes(userRole);
       if (!isDirectorOrAdmin && auth.user.email) {
-        effectiveSender = auth.user.email.trim().toLowerCase();
+        effectiveSender = GoogleOAuthService.resolveEffectiveGoogleEmail(auth.user.email);
       }
     }
 
@@ -271,7 +271,8 @@ export async function POST(req: NextRequest) {
       messageId: dispatchResult.messageId,
       threadId: dispatchResult.threadId,
       recipient: recipientEmail,
-      sender: effectiveSender,
+      sender: dispatchResult.senderEmail || effectiveSender,
+      endpoint: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
       dispatchedAt: `${formatCdmxDate(now)} ${formatCdmxTime(now)} (CDMX)`,
       provider: usedProvider
     });

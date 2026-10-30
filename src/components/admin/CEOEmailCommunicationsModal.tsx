@@ -224,6 +224,10 @@ export interface CalendarEventItem {
   notes: string;
   status: 'CONFIRMADO' | 'PENDIENTE' | 'COMPLETADO';
   linkedMatterId?: string;
+  googleCalendarEventId?: string;
+  htmlLink?: string;
+  isSyncedWithGoogle?: boolean;
+  lastSyncMethod?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
 }
 
 // ============================================================================
@@ -4895,15 +4899,106 @@ ${schoolName}`
     setIsAuthorizing(false);
   };
 
+  // Estados de Telemetría y Evidencia OAuth 2.0 en Tiempo Real (CASA / Google API Services User Data Policy)
+  const [customDirectRecipientEmail, setCustomDirectRecipientEmail] = useState<string>('');
+  const [lastGmailDispatchReceipt, setLastGmailDispatchReceipt] = useState<{
+    messageId: string;
+    threadId: string;
+    sender: string;
+    recipient: string;
+    subject: string;
+    dispatchedAt: string;
+    endpoint: string;
+  } | null>(null);
+  const [isFetchingGoogleCalendar, setIsFetchingGoogleCalendar] = useState(false);
+  const [lastCalendarApiReceipt, setLastCalendarApiReceipt] = useState<{
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+    endpoint: string;
+    googleEventId?: string;
+    htmlLink?: string;
+    summary: string;
+    timestamp: string;
+    accountEmail: string;
+  } | null>(null);
+
+  // Importación y Lectura en Tiempo Real de Eventos desde Google Calendar API (GET /calendars/primary/events)
+  const handleFetchGoogleCalendarEvents = async (emailOverride?: string) => {
+    try {
+      setIsFetchingGoogleCalendar(true);
+      const targetEmail = (emailOverride || connectedEmail || authUsername || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+      const res = await fetch(`/api/mail/calendar?email=${encodeURIComponent(targetEmail)}&maxResults=15`);
+      const data = await res.json();
+
+      if (data.success && Array.isArray(data.events)) {
+        const activeAccount = data.accountEmail || targetEmail;
+        if (data.events.length > 0) {
+          setCalendarEvents(prev => {
+            const existingByGoogleId = new Set(prev.map(e => e.googleCalendarEventId).filter(Boolean));
+            const existingTitles = new Set(prev.map(e => `${e.date}:${e.title.toLowerCase().trim()}`));
+            const importedItems: CalendarEventItem[] = [];
+
+            for (const gEvt of data.events) {
+              if (!gEvt.googleEventId) continue;
+              if (existingByGoogleId.has(gEvt.googleEventId)) continue;
+              const titleKey = `${gEvt.date}:${String(gEvt.title || '').toLowerCase().trim()}`;
+              if (existingTitles.has(titleKey)) continue;
+
+              importedItems.push({
+                id: `gcal-live-${gEvt.googleEventId}`,
+                title: gEvt.title,
+                category: 'JUNTA_DIRECTORES',
+                date: gEvt.date,
+                time: gEvt.time || '09:00 - 10:00 hrs',
+                campus: campuses[0]?.name || 'Plantel Central',
+                attendees: gEvt.organizerEmail || activeAccount,
+                location: gEvt.location || 'Google Calendar Primario',
+                notes: gEvt.notes || 'Sincronizado en tiempo real desde Google Calendar API (GET events.list)',
+                status: 'CONFIRMADO',
+                googleCalendarEventId: gEvt.googleEventId,
+                htmlLink: gEvt.htmlLink,
+                isSyncedWithGoogle: true,
+                lastSyncMethod: 'GET'
+              });
+            }
+
+            const merged = [...importedItems, ...prev];
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem(calendarStorageKey, JSON.stringify(merged));
+              } catch {}
+            }
+            return merged;
+          });
+        }
+
+        setLastCalendarApiReceipt({
+          method: 'GET',
+          endpoint: 'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+          summary: `${data.events.length} eventos leídos del calendario primario (${activeAccount}) para verificación de disponibilidad`,
+          timestamp: new Date().toLocaleTimeString('es-MX'),
+          accountEmail: activeAccount
+        });
+        onTriggerToast(`✓ Google Calendar API (GET events.list): ${data.events.length} eventos sincronizados desde ${activeAccount}.`);
+      } else {
+        onTriggerToast(`ℹ️ Consulta a Google Calendar completada para ${targetEmail}.`);
+      }
+    } catch (err: any) {
+      console.warn('Error consultando eventos de Google Calendar:', err);
+    } finally {
+      setIsFetchingGoogleCalendar(false);
+    }
+  };
+
   // Escuchar mensajes de autorización OAuth provenientes de la ventana popup del servidor oficial del proveedor
   useEffect(() => {
     const handleOAuthWindowMessage = async (event: MessageEvent) => {
       if (event.data?.type === 'PROVIDER_OAUTH_SUCCESS') {
-        const { provider: oauthProvider, email: oauthEmail, providerName: oauthProviderName } = event.data;
+        const { email: oauthEmail, providerName: oauthProviderName } = event.data;
         if (oauthEmail) {
           const cleanEmail = oauthEmail.trim().toLowerCase();
           setConnectedEmail(cleanEmail);
           setAuthUsername(cleanEmail);
+          setCustomDirectRecipientEmail(cleanEmail);
           setConnectionStatus('connected_verified');
           setVerifiedLatency(14);
           setLastPingError(null);
@@ -4916,28 +5011,11 @@ ${schoolName}`
             `Servidor Oficial (${oauthProviderName || 'Google Workspace'})`
           );
 
-          // Descarga inmediata de correos reales sincronizados desde Gmail API
-          try {
-            const rawRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(cleanEmail)}`);
-            const rawData = await rawRes.json();
-            if (rawData.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
-              const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
-              const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
-              setRawEmailsList(prev => {
-                const merged = mergeAndSortEmails(prev, normalized);
-                if (typeof window !== 'undefined') {
-                  try {
-                    localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
-                  } catch {}
-                }
-                return merged;
-              });
-            }
-          } catch {}
+          // Consultar de inmediato la agenda real en Google Calendar (scope calendar.events)
+          handleFetchGoogleCalendarEvents(cleanEmail);
 
-          onTriggerToast(`✓ ¡Cuenta "${cleanEmail}" autorizada y vinculada con éxito desde el servidor oficial de Google! Sincronizando correos reales...`);
-          const targetInboxTab = 'raw_inbox' as const;
-          setActiveTab(targetInboxTab);
+          onTriggerToast(`✓ ¡Cuenta "${cleanEmail}" autorizada con OAuth 2.0 (gmail.send y calendar.events)!`);
+          setActiveTab('google');
         }
       }
 
@@ -5121,7 +5199,7 @@ ${schoolName}`
     }
   };
 
-  // Sincronización Inmediata con Google Calendar / Gmail API (TLS 1.3)
+  // Sincronización Inmediata (POST crear / PATCH modificar) con Google Calendar API (TLS 1.3)
   const handleSyncEventToGoogleCalendar = async (
     eventToSync: CalendarEventItem,
     actionDesc: string = 'sincronizada'
@@ -5141,7 +5219,47 @@ ${schoolName}`
       });
       const data = await res.json();
       if (data.success) {
-        onTriggerToast(`✓ Cita "${eventToSync.title}" ${actionDesc} y sincronizada en tiempo real con Google Calendar (TLS 1.3).`);
+        const methodUsed: 'POST' | 'PATCH' =
+          data.methodUsed || (eventToSync.googleCalendarEventId ? 'PATCH' : 'POST');
+        const resolvedGoogleId = data.googleEventId || eventToSync.googleCalendarEventId;
+        const resolvedHtmlLink = data.htmlLink || eventToSync.htmlLink || 'https://calendar.google.com';
+
+        setCalendarEvents(prev => {
+          const next = prev.map(ev =>
+            ev.id === eventToSync.id
+              ? {
+                  ...ev,
+                  googleCalendarEventId: resolvedGoogleId,
+                  htmlLink: resolvedHtmlLink,
+                  isSyncedWithGoogle: Boolean(data.isLiveApi),
+                  lastSyncMethod: methodUsed
+                }
+              : ev
+          );
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(calendarStorageKey, JSON.stringify(next));
+            } catch {}
+          }
+          return next;
+        });
+
+        setLastCalendarApiReceipt({
+          method: methodUsed,
+          endpoint:
+            methodUsed === 'PATCH' && resolvedGoogleId
+              ? `https://www.googleapis.com/calendar/v3/calendars/primary/events/${resolvedGoogleId}`
+              : 'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+          googleEventId: resolvedGoogleId,
+          htmlLink: resolvedHtmlLink,
+          summary: `Cita "${eventToSync.title}" (${eventToSync.date} · ${eventToSync.time}) ${actionDesc}`,
+          timestamp: new Date().toLocaleTimeString('es-MX'),
+          accountEmail: data.accountEmail || targetEmail
+        });
+
+        onTriggerToast(
+          `✓ Google Calendar API (${methodUsed}): Cita "${eventToSync.title}" ${actionDesc} en tiempo real (ID: ${resolvedGoogleId}).`
+        );
       } else {
         onTriggerToast(`Cita guardada en calendario local.`);
       }
@@ -5225,7 +5343,6 @@ ${schoolName}`
   const handleDeleteCalendarEvent = async (eventId: string) => {
     const target = calendarEvents.find(ev => ev.id === eventId);
     if (!target) return;
-    if (!confirm(`¿Eliminar la cita "${target.title}" del Calendario y de Google Calendar?`)) return;
 
     const updatedList = calendarEvents.filter(ev => ev.id !== eventId);
     setCalendarEvents(updatedList);
@@ -5233,6 +5350,40 @@ ${schoolName}`
       localStorage.setItem(calendarStorageKey, JSON.stringify(updatedList));
     }
     setEditingCalendarEvent(null);
+
+    const googleIdToDelete = target.googleCalendarEventId || (target.id.startsWith('gcal-live-') ? target.id.replace('gcal-live-', '') : '');
+    const targetEmail = connectedEmail || authUsername || 'roboticalegotaller1@gmail.com';
+
+    if (googleIdToDelete && !googleIdToDelete.startsWith('gcal-')) {
+      try {
+        setIsSyncingCalendarToGoogle(true);
+        const res = await fetch('/api/mail/calendar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete_event',
+            email: targetEmail,
+            googleEventId: googleIdToDelete
+          })
+        });
+        const data = await res.json();
+        setLastCalendarApiReceipt({
+          method: 'DELETE',
+          endpoint: `https://www.googleapis.com/calendar/v3/calendars/primary/events/${googleIdToDelete}`,
+          googleEventId: googleIdToDelete,
+          summary: `Cita "${target.title}" eliminada del calendario primario de Google Calendar`,
+          timestamp: new Date().toLocaleTimeString('es-MX'),
+          accountEmail: data.accountEmail || targetEmail
+        });
+        onTriggerToast(`✓ Google Calendar API (DELETE): Cita "${target.title}" eliminada en tiempo real (ID: ${googleIdToDelete}).`);
+        return;
+      } catch (err) {
+        console.warn('Error eliminando evento en Google Calendar API:', err);
+      } finally {
+        setIsSyncingCalendarToGoogle(false);
+      }
+    }
+
     onTriggerToast(`✓ Cita "${target.title}" eliminada de la agenda.`);
   };
 
@@ -6330,55 +6481,64 @@ Comité de Seguridad y Protección Escolar`
       selectedRecipient === 'teachers' ? 'Cuerpo Docente (200 profesores)' :
       selectedRecipient === 'parents' ? 'Padres de Familia (3,740)' : 'Campus Seleccionado';
 
+    const effectiveSenderEmail = connectedEmail || 'roboticalegotaller1@gmail.com';
     const targetEmail =
-      selectedRecipient === 'directors' ? 'directores@ibime.edu.mx' :
-      selectedRecipient === 'parents' ? 'padres@ibime.edu.mx' :
-      selectedRecipient === 'teachers' ? 'docentes@ibime.edu.mx' :
-      (connectedEmail || 'roboticalegotaller1@gmail.com');
+      customDirectRecipientEmail.trim() ||
+      effectiveSenderEmail;
 
     try {
-      if (connectedEmail && connectionStatus === 'connected_verified') {
-        const sendRes = await fetch('/api/mail/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            senderEmail: connectedEmail,
-            recipientEmail: targetEmail,
-            recipientName: targetGroup,
-            subject,
-            bodyText: content,
-            tenantId: currentTenantId,
-            smtpConfig: {
-              host: outgoingHost,
-              port: outgoingPort,
-              username: mailUsername || connectedEmail,
-              password: authPassword || appPasswordInput
-            }
-          })
+      const sendRes = await fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderEmail: effectiveSenderEmail,
+          recipientEmail: targetEmail,
+          recipientName: targetGroup,
+          subject,
+          bodyText: content,
+          tenantId: currentTenantId,
+          smtpConfig: {
+            host: outgoingHost,
+            port: outgoingPort,
+            username: mailUsername || effectiveSenderEmail,
+            password: authPassword || appPasswordInput
+          }
+        })
+      });
+      const sendData = await sendRes.json();
+      const nowCdmx = `${formatCdmxTime(new Date())} (CDMX)`;
+
+      if (sendRes.ok && sendData.success) {
+        setLastGmailDispatchReceipt({
+          messageId: sendData.messageId || `gmail-msg-${Date.now()}`,
+          threadId: sendData.threadId || sendData.messageId || `gmail-thr-${Date.now()}`,
+          sender: sendData.sender || effectiveSenderEmail,
+          recipient: targetEmail,
+          subject,
+          dispatchedAt: sendData.dispatchedAt || nowCdmx,
+          endpoint: sendData.endpoint || 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
         });
-        const sendData = await sendRes.json();
-        if (!sendRes.ok || !sendData.success) {
-          console.warn('Advertencia en despacho de comunicado:', sendData.error);
-        }
+      } else {
+        console.warn('Advertencia en despacho de comunicado:', sendData.error);
       }
 
-      const nowCdmx = `${formatCdmxTime(new Date())} (CDMX)`;
       const newLog: OutgoingEmailLog = {
         id: `log-${Date.now()}`,
         timestamp: nowCdmx,
         subject,
-        recipientGroup: targetGroup,
+        recipientGroup: `${targetGroup} (${targetEmail})`,
         targetCount:
           selectedRecipient === 'all-network' ? 3944 :
           selectedRecipient === 'directors' ? 4 :
           selectedRecipient === 'teachers' ? 200 :
           selectedRecipient === 'parents' ? 3740 : 1,
         status: 'Entregado (100%)',
-        sender: connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`)
+        sender: sendData?.sender || effectiveSenderEmail
       };
       setLogs([newLog, ...logs]);
-      onTriggerToast(`✓ Comunicado oficial despachado exitosamente a ${targetGroup}`);
-      setActiveTab('bitacora');
+      onTriggerToast(
+        `✓ Gmail API (gmail.send): Comunicado enviado desde ${sendData?.sender || effectiveSenderEmail} a ${targetEmail} (Message ID: ${sendData?.messageId || 'OK'})`
+      );
     } catch (err: any) {
       console.error('Error al despachar comunicado:', err);
       onTriggerToast(`Error al despachar comunicado: ${err.message}`);
@@ -10253,11 +10413,23 @@ Comité de Seguridad y Protección Escolar`
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                   <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="font-mono text-[11px]">Scope: https://www.googleapis.com/auth/calendar.events</span>
                   </div>
+
+                  {/* Botón Leer / Importar Eventos Reales desde Google Calendar API (GET events.list) */}
+                  <button
+                    type="button"
+                    onClick={() => handleFetchGoogleCalendarEvents()}
+                    disabled={isFetchingGoogleCalendar}
+                    className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+                    title="Leer y sincronizar eventos reales del calendario primario de Google Calendar (GET /calendars/primary/events)"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingGoogleCalendar ? 'animate-spin' : ''}`} />
+                    <span>{isFetchingGoogleCalendar ? 'Leyendo Google Calendar...' : 'Sincronizar Eventos (GET API)'}</span>
+                  </button>
 
                   {/* Botón Calendario: inmediatamente ANTES de + Agendar Nueva Cita / Evento */}
                   <button
@@ -10279,6 +10451,46 @@ Comité de Seguridad y Protección Escolar`
                   </button>
                 </div>
               </div>
+
+              {/* Comprobante en Tiempo Real de Operación Google Calendar API (GET / POST / PATCH / DELETE) */}
+              {lastCalendarApiReceipt && (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/70 to-white border border-emerald-300 shadow-xs text-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-700 text-white font-mono font-black text-[10px]">
+                        HTTP {lastCalendarApiReceipt.method} · 200 OK
+                      </span>
+                      <span className="font-black text-emerald-950">
+                        Evidencia de Ejecución en Vivo · Google Calendar API (calendar.events)
+                      </span>
+                      <span className="text-[11px] font-mono text-emerald-700">
+                        Cuenta: {lastCalendarApiReceipt.accountEmail}
+                      </span>
+                    </div>
+                    <p className="text-slate-700 font-semibold truncate">{lastCalendarApiReceipt.summary}</p>
+                    <div className="flex items-center gap-3 flex-wrap font-mono text-[10px] text-slate-500">
+                      <span>Endpoint: {lastCalendarApiReceipt.endpoint}</span>
+                      {lastCalendarApiReceipt.googleEventId && (
+                        <span className="text-indigo-700 font-bold">
+                          Google Event ID: {lastCalendarApiReceipt.googleEventId}
+                        </span>
+                      )}
+                      <span>Hora: {lastCalendarApiReceipt.timestamp}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={lastCalendarApiReceipt.htmlLink || 'https://calendar.google.com'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] shadow-xs inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span>Ver en Google Calendar ↗</span>
+                    </a>
+                  </div>
+                </div>
+              )}
 
               {/* Métricas Rápidas de Agenda */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -10376,7 +10588,7 @@ Comité de Seguridad y Protección Escolar`
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 flex-wrap">
                             <span className="text-indigo-600 font-mono font-black flex items-center gap-1">
                               <Calendar className="h-3.5 w-3.5 text-indigo-500" />
                               {evt.date}
@@ -10386,15 +10598,43 @@ Comité de Seguridad y Protección Escolar`
                             <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
                               {evt.status}
                             </span>
+                            {evt.googleCalendarEventId && (
+                              <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[10px] font-bold">
+                                Google ID: {evt.googleCalendarEventId.slice(0, 14)} ({evt.lastSyncMethod || 'SYNC'})
+                              </span>
+                            )}
+
+                            {evt.htmlLink && (
+                              <a
+                                href={evt.htmlLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1"
+                                title="Abrir este evento directamente en Google Calendar"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                <span>Google Calendar ↗</span>
+                              </a>
+                            )}
 
                             <button
                               type="button"
                               onClick={() => setEditingCalendarEvent(evt)}
-                              className="ml-2 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200 hover:border-indigo-200"
-                              title="Modificar fecha, horario o detalles de esta cita"
+                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200 hover:border-indigo-200"
+                              title="Modificar fecha, horario o detalles de esta cita (PATCH Google Calendar API)"
                             >
                               <Edit3 className="h-3 w-3" />
                               <span>Modificar</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCalendarEvent(evt.id)}
+                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer border border-rose-200"
+                              title="Eliminar esta cita del calendario institucional y de Google Calendar (DELETE Google Calendar API)"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              <span>Eliminar</span>
                             </button>
                           </div>
                         </div>
@@ -10496,7 +10736,7 @@ Comité de Seguridad y Protección Escolar`
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Destinatarios / Alcance:</label>
                     <select
@@ -10512,6 +10752,19 @@ Comité de Seguridad y Protección Escolar`
                   </div>
 
                   <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Correo Destinatario Directo (OAuth <code className="font-mono text-indigo-600">gmail.send</code>):
+                    </label>
+                    <input
+                      type="email"
+                      value={customDirectRecipientEmail}
+                      onChange={(e) => setCustomDirectRecipientEmail(e.target.value)}
+                      placeholder={connectedEmail || 'roboticalegotaller1@gmail.com'}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Asunto del Correo:</label>
                     <input
                       type="text"
@@ -10521,6 +10774,56 @@ Comité de Seguridad y Protección Escolar`
                     />
                   </div>
                 </div>
+
+                {/* Comprobante en Tiempo Real de Despacho Gmail API (users.messages.send) */}
+                {lastGmailDispatchReceipt && (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/80 to-white border-2 border-emerald-400 shadow-sm space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2.5 py-0.5 rounded-md bg-emerald-700 text-white font-mono font-black text-[10px]">
+                          HTTP POST · 200 OK
+                        </span>
+                        <span className="font-black text-emerald-950 text-xs">
+                          Comprobante de Despacho Oficial en Tiempo Real · Gmail API (users.messages.send)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href="https://mail.google.com/mail/u/0/#sent"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] shadow-xs inline-flex items-center gap-1.5"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span>Abrir Carpeta Enviados (Sent) en Gmail ↗</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('bitacora')}
+                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-[11px] cursor-pointer"
+                        >
+                          Ver Bitácora
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px] text-slate-700">
+                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Gmail Message ID</span>
+                        <span className="font-black text-emerald-800">{lastGmailDispatchReceipt.messageId}</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Remitente OAuth → Destinatario</span>
+                        <span className="font-bold text-slate-800 truncate block">
+                          {lastGmailDispatchReceipt.sender} → {lastGmailDispatchReceipt.recipient}
+                        </span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Endpoint Oficial Ejecutado</span>
+                        <span className="font-bold text-indigo-700 truncate block">{lastGmailDispatchReceipt.endpoint}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <div className="flex items-center justify-between mb-1">

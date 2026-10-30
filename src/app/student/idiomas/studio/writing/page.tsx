@@ -119,38 +119,48 @@ export default function StudentWritingStudioPage() {
           />
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-1.5 shadow-xs">
+            <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-1.5 shadow-2xs">
               <Zap className="w-3.5 h-3.5 text-amber-500" />
-              Writing Copilot Socrático Activo
+              Writing Copilot Socrático Activo · 0% Ghostwriting
             </span>
-            <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
-              <Flame className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
-              Recompensa: +250 XP
+            <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-white border border-amber-200 text-amber-800 flex items-center gap-1.5 shadow-2xs">
+              <img
+                src="/images/languages/nanobanana-gamified/nb_socratic_gold_coin.webp"
+                alt="Moneda Socrática"
+                className="w-4 h-4 object-contain"
+              />
+              Recompensa: +250 XP & Monedas Socráticas
             </span>
           </div>
         </div>
 
-        {/* HERO BAR GAMIFICADA & SELECTORES DUALES (DISEÑO MODO CLARO) */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-sm relative overflow-hidden">
+        {/* HERO BAR GAMIFICADA & SELECTORES DUALES (DISEÑO MODO CLARO NANO BANANA 2.1) */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-50/80 via-teal-50/40 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200">
-                  Estudio de Expresión Escrita
-                </span>
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  {currentSpec.framework === 'cambridge' ? 'Cambridge Assessment English' : 'France Éducation International'}
-                </span>
+            <div className="flex items-start gap-4">
+              <img
+                src="/images/languages/nanobanana-gamified/nb_socratic_quill_scroll.webp"
+                alt="Estudio de Escritura Socrática"
+                className="w-16 h-16 rounded-2xl object-contain bg-white border-2 border-slate-200 p-1.5 shadow-xs shrink-0"
+              />
+              <div>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200">
+                    Estudio de Expresión Escrita Nano Banana 2.1
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    {currentSpec.framework === 'cambridge' ? 'Cambridge Assessment English' : 'France Éducation International'}
+                  </span>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
+                  Writing Studio: {currentSpec.examName}
+                </h1>
+                <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+                  Redacta tu respuesta oficial. El Motor de IA Pedagógica te acompaña en tiempo real corrigiendo concordancias, tiempos verbales y andamiando tu aprendizaje socrático sin escribir por ti.
+                </p>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-3">
-                <PenTool className="w-7 h-7 text-indigo-600" />
-                Writing Studio: {currentSpec.examName}
-              </h1>
-              <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-                Redacta tu respuesta oficial. El Motor de IA Pedagógica te acompaña en tiempo real corrigiendo concordancias, tiempos verbales y andamiando tu aprendizaje socrático.
-              </p>
             </div>
 
             {/* Selectores de Idioma y Nivel MCER */}

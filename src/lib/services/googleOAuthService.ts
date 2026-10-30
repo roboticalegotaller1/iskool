@@ -182,17 +182,31 @@ export class GoogleOAuthService {
   }
 
   /**
+   * Resuelve la cuenta de Google activa para operaciones OAuth (prioriza la cuenta
+   * recién vinculada en la sesión o la cuenta explícita del usuario).
+   */
+  static resolveEffectiveGoogleEmail(email?: string): string {
+    const clean = email ? email.toLowerCase().trim() : '';
+    const lastConnected = ((globalThis as any).__iskoolLastConnectedGoogleEmail || '').toLowerCase().trim();
+    if (
+      clean &&
+      !clean.includes('directora.general') &&
+      !clean.includes('patricia') &&
+      !clean.includes('ibime.edu.mx')
+    ) {
+      return clean;
+    }
+    return lastConnected || 'roboticalegotaller1@gmail.com';
+  }
+
+  /**
    * Asegura la sincronización e hidratación de tokens desde la base de datos Supabase
    * (funciona de forma idéntica en entornos Serverless como Vercel y en local)
    */
   static async ensureTokensLoaded(email?: string): Promise<void> {
     try {
       await this.ensureClientCredentials();
-      const clean = email ? email.toLowerCase().trim() : '';
-      const effectiveEmail =
-        clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-          ? 'roboticalegotaller1@gmail.com'
-          : clean;
+      const effectiveEmail = this.resolveEffectiveGoogleEmail(email);
 
       // Optimización de latencia: Si los tokens ya residen en memoria y son vigentes, evitar consulta de red a Supabase
       if (effectiveEmail && tokenStore.has(effectiveEmail)) {
@@ -389,6 +403,7 @@ export class GoogleOAuthService {
     };
 
     if (email) {
+      (globalThis as any).__iskoolLastConnectedGoogleEmail = email;
       tokenStore.set(email, tokens);
       saveTokensToFile(tokenStore);
       await this.persistTokensToDb(tokens);
@@ -403,10 +418,7 @@ export class GoogleOAuthService {
   static hasValidTokens(email?: string): boolean {
     if (!email) return false;
     const clean = email.toLowerCase().trim();
-    const effectiveEmail =
-      clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-        ? 'roboticalegotaller1@gmail.com'
-        : clean;
+    const effectiveEmail = this.resolveEffectiveGoogleEmail(clean);
 
     const tokens = tokenStore.get(effectiveEmail) || tokenStore.get(clean);
     if (!tokens) {
@@ -420,14 +432,15 @@ export class GoogleOAuthService {
    */
   static getStoredTokens(email?: string): GoogleTokens | undefined {
     if (!email) {
+      const lastConnected = ((globalThis as any).__iskoolLastConnectedGoogleEmail || '').toLowerCase().trim();
+      if (lastConnected && tokenStore.has(lastConnected)) {
+        return tokenStore.get(lastConnected);
+      }
       const first = tokenStore.values().next();
       return first.value;
     }
     const clean = email.toLowerCase().trim();
-    const effectiveEmail =
-      clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-        ? 'roboticalegotaller1@gmail.com'
-        : clean;
+    const effectiveEmail = this.resolveEffectiveGoogleEmail(clean);
 
     return tokenStore.get(effectiveEmail) || tokenStore.get(clean) || tokenStore.values().next().value;
   }
@@ -438,11 +451,7 @@ export class GoogleOAuthService {
    * Renueva activamente el token de acceso con Google OAuth usando el refresh token con deduplicación concurrente
    */
   static async refreshAccessToken(email?: string): Promise<string | null> {
-    const clean = email ? email.toLowerCase().trim() : '';
-    const effectiveEmail =
-      clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-        ? 'roboticalegotaller1@gmail.com'
-        : clean;
+    const effectiveEmail = this.resolveEffectiveGoogleEmail(email);
 
     const existingPromise = this.refreshPromises.get(effectiveEmail);
     if (existingPromise) {
@@ -501,11 +510,7 @@ export class GoogleOAuthService {
    * Obtiene un access token válido, renovándolo automáticamente con Google si expiró
    */
   static async getValidAccessToken(email?: string): Promise<string | null> {
-    const clean = email ? email.toLowerCase().trim() : '';
-    const effectiveEmail =
-      clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-        ? 'roboticalegotaller1@gmail.com'
-        : clean;
+    const effectiveEmail = this.resolveEffectiveGoogleEmail(email);
 
     // Asegurar hidratación desde Supabase si no está en memoria
     if (!tokenStore.has(effectiveEmail)) {
@@ -817,7 +822,129 @@ export class GoogleOAuthService {
   }
 
   /**
-   * Sincroniza un evento o cita escolar directamente con Google Calendar API (TLS 1.3)
+   * Consulta y descarga eventos reales del calendario primario del usuario desde Google Calendar API
+   * (GET https://www.googleapis.com/calendar/v3/calendars/primary/events)
+   */
+  static async listCalendarEvents(
+    email?: string,
+    maxResults = 15
+  ): Promise<{
+    success: boolean;
+    isLiveApi: boolean;
+    accountEmail: string;
+    events: Array<{
+      googleEventId: string;
+      title: string;
+      date: string;
+      time: string;
+      location: string;
+      notes: string;
+      htmlLink: string;
+      status: string;
+      organizerEmail?: string;
+    }>;
+    error?: string;
+  }> {
+    const targetEmail = this.resolveEffectiveGoogleEmail(email);
+    try {
+      await this.ensureTokensLoaded(targetEmail);
+      const accessToken = await this.getValidAccessToken(targetEmail);
+      if (!accessToken) {
+        return {
+          success: false,
+          isLiveApi: false,
+          accountEmail: targetEmail,
+          events: [],
+          error: `Sin token OAuth activo para ${targetEmail}`
+        };
+      }
+
+      // Consultar desde 7 días atrás hacia adelante para mostrar la agenda activa real del usuario
+      const timeMin = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?maxResults=${maxResults}&singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(timeMin)}`;
+
+      let gcalRes = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      if (gcalRes.status === 401) {
+        const refreshed = await this.refreshAccessToken(targetEmail);
+        if (refreshed) {
+          gcalRes = await fetch(url, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${refreshed}`
+            }
+          });
+        }
+      }
+
+      if (!gcalRes.ok) {
+        const errBody = await gcalRes.text();
+        return {
+          success: false,
+          isLiveApi: false,
+          accountEmail: targetEmail,
+          events: [],
+          error: `Google Calendar GET error ${gcalRes.status}: ${errBody}`
+        };
+      }
+
+      const data = await gcalRes.json();
+      const items: any[] = Array.isArray(data.items) ? data.items : [];
+
+      const parsedEvents = items.map((item) => {
+        const rawStart: string = item.start?.dateTime || item.start?.date || new Date().toISOString();
+        const rawEnd: string = item.end?.dateTime || item.end?.date || rawStart;
+
+        const datePart = rawStart.slice(0, 10);
+        let timeStr = '09:00 - 10:00 hrs';
+        if (item.start?.dateTime) {
+          const startD = new Date(rawStart);
+          const endD = new Date(rawEnd);
+          const fmt = (d: Date) =>
+            `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+          timeStr = `${fmt(startD)} - ${fmt(endD)} hrs`;
+        } else {
+          timeStr = 'Todo el día';
+        }
+
+        return {
+          googleEventId: String(item.id || ''),
+          title: String(item.summary || 'Evento de Google Calendar'),
+          date: datePart,
+          time: timeStr,
+          location: String(item.location || 'Google Calendar Primario'),
+          notes: String(item.description || 'Sincronizado en tiempo real desde Google Calendar API (events.list)'),
+          htmlLink: String(item.htmlLink || 'https://calendar.google.com'),
+          status: item.status === 'cancelled' ? 'Cancelado' : 'Confirmado',
+          organizerEmail: item.organizer?.email || targetEmail
+        };
+      });
+
+      return {
+        success: true,
+        isLiveApi: true,
+        accountEmail: targetEmail,
+        events: parsedEvents
+      };
+    } catch (err: any) {
+      console.warn('Error en listCalendarEvents:', err.message);
+      return {
+        success: false,
+        isLiveApi: false,
+        accountEmail: targetEmail,
+        events: [],
+        error: err.message
+      };
+    }
+  }
+
+  /**
+   * Sincroniza (Crea con POST o Modifica con PATCH) un evento directamente con Google Calendar API
    */
   static async syncCalendarEvent(
     email: string,
@@ -839,11 +966,14 @@ export class GoogleOAuthService {
     googleEventId?: string;
     htmlLink?: string;
     isLiveApi: boolean;
+    methodUsed?: 'POST' | 'PATCH';
+    accountEmail?: string;
     error?: string;
   }> {
+    const targetEmail = this.resolveEffectiveGoogleEmail(email);
     try {
-      const cleanEmail = (email || '').toLowerCase().trim();
-      const accessToken = await this.getValidAccessToken(cleanEmail);
+      await this.ensureTokensLoaded(targetEmail);
+      const accessToken = await this.getValidAccessToken(targetEmail);
 
       // Parsear horas de inicio y fin (ej. "08:30 - 09:30 hrs" o "10:00")
       const timeMatch = event.time.match(/(\d{1,2}:\d{2})\s*[-–a]\s*(\d{1,2}:\d{2})/);
@@ -866,27 +996,44 @@ export class GoogleOAuthService {
       const endDateTime = `${event.date}T${endTime}:00-06:00`;
 
       if (accessToken) {
-        const isUpdate = Boolean(event.googleCalendarEventId);
-        const endpoint = isUpdate
+        const hasRealGoogleId = Boolean(
+          event.googleCalendarEventId && !event.googleCalendarEventId.startsWith('gcal-')
+        );
+        let method: 'POST' | 'PATCH' = hasRealGoogleId ? 'PATCH' : 'POST';
+        let endpoint = hasRealGoogleId
           ? `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(event.googleCalendarEventId!)}`
           : `https://www.googleapis.com/calendar/v3/calendars/primary/events`;
 
-        const method = isUpdate ? 'PATCH' : 'POST';
+        const eventPayload = {
+          summary: event.title,
+          description: `${event.notes || ''}\n\nCategoría: ${event.category || 'Institucional'}\nAsistentes: ${event.attendees || ''}\nSede: ${event.campus || ''}`,
+          location: `${event.location || ''}, ${event.campus || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
+          start: { dateTime: startDateTime, timeZone: 'America/Mexico_City' },
+          end: { dateTime: endDateTime, timeZone: 'America/Mexico_City' }
+        };
 
-        const gcalRes = await fetch(endpoint, {
+        let gcalRes = await fetch(endpoint, {
           method,
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            summary: event.title,
-            description: `${event.notes || ''}\n\nCategoría: ${event.category || 'Institucional'}\nAsistentes: ${event.attendees || ''}\nSede: ${event.campus || ''}`,
-            location: `${event.location || ''}, ${event.campus || ''}`.trim().replace(/^,\s*|,\s*$/g, ''),
-            start: { dateTime: startDateTime, timeZone: 'America/Mexico_City' },
-            end: { dateTime: endDateTime, timeZone: 'America/Mexico_City' }
-          })
+          body: JSON.stringify(eventPayload)
         });
+
+        // Si el evento a actualizar ya no existe en Google Calendar (404), recrearlo con POST
+        if (method === 'PATCH' && gcalRes.status === 404) {
+          method = 'POST';
+          endpoint = `https://www.googleapis.com/calendar/v3/calendars/primary/events`;
+          gcalRes = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eventPayload)
+          });
+        }
 
         if (gcalRes.ok) {
           const gcalData = await gcalRes.json();
@@ -894,7 +1041,9 @@ export class GoogleOAuthService {
             success: true,
             googleEventId: gcalData.id,
             htmlLink: gcalData.htmlLink,
-            isLiveApi: true
+            isLiveApi: true,
+            methodUsed: method,
+            accountEmail: targetEmail
           };
         } else {
           console.warn('Google Calendar API returned non-ok status:', gcalRes.status);
@@ -905,7 +1054,9 @@ export class GoogleOAuthService {
       return {
         success: true,
         googleEventId: event.googleCalendarEventId || `gcal-${event.id}-${Date.now()}`,
-        isLiveApi: false
+        isLiveApi: false,
+        methodUsed: 'POST',
+        accountEmail: targetEmail
       };
     } catch (err: any) {
       console.warn('Error en syncCalendarEvent:', err.message);
@@ -913,6 +1064,66 @@ export class GoogleOAuthService {
         success: true,
         googleEventId: event.googleCalendarEventId || `gcal-${event.id}`,
         isLiveApi: false,
+        accountEmail: targetEmail,
+        error: err.message
+      };
+    }
+  }
+
+  /**
+   * Elimina un evento en tiempo real del calendario primario de Google Calendar API
+   * (DELETE https://www.googleapis.com/calendar/v3/calendars/primary/events/{eventId})
+   */
+  static async deleteCalendarEvent(
+    email: string,
+    googleEventId: string
+  ): Promise<{
+    success: boolean;
+    isLiveApi: boolean;
+    deletedEventId: string;
+    accountEmail: string;
+    error?: string;
+  }> {
+    const targetEmail = this.resolveEffectiveGoogleEmail(email);
+    try {
+      await this.ensureTokensLoaded(targetEmail);
+      const accessToken = await this.getValidAccessToken(targetEmail);
+
+      if (accessToken && googleEventId && !googleEventId.startsWith('gcal-')) {
+        const endpoint = `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(googleEventId)}`;
+        const gcalRes = await fetch(endpoint, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+
+        if (gcalRes.ok || gcalRes.status === 204 || gcalRes.status === 410) {
+          return {
+            success: true,
+            isLiveApi: true,
+            deletedEventId: googleEventId,
+            accountEmail: targetEmail
+          };
+        } else {
+          const errText = await gcalRes.text();
+          console.warn('Google Calendar DELETE returned non-ok status:', gcalRes.status, errText);
+        }
+      }
+
+      return {
+        success: true,
+        isLiveApi: false,
+        deletedEventId: googleEventId,
+        accountEmail: targetEmail
+      };
+    } catch (err: any) {
+      console.warn('Error en deleteCalendarEvent:', err.message);
+      return {
+        success: false,
+        isLiveApi: false,
+        deletedEventId: googleEventId,
+        accountEmail: targetEmail,
         error: err.message
       };
     }
@@ -934,10 +1145,11 @@ export class GoogleOAuthService {
     success: boolean;
     messageId?: string;
     threadId?: string;
+    senderEmail?: string;
     error?: string;
   }> {
     try {
-      const sender = (params.senderEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+      const sender = this.resolveEffectiveGoogleEmail(params.senderEmail);
       const recipient = (params.recipientEmail || '').trim();
       if (!recipient) {
         throw new Error('Se requiere una dirección de correo de destinatario válida.');
@@ -1005,7 +1217,8 @@ export class GoogleOAuthService {
       return {
         success: true,
         messageId: data.id,
-        threadId: data.threadId
+        threadId: data.threadId,
+        senderEmail: sender
       };
     } catch (err: any) {
       console.error('Error en sendEmailViaGmailApi:', err);
@@ -1024,10 +1237,7 @@ export class GoogleOAuthService {
     try {
       let tokenToRevoke = emailOrToken;
       const clean = emailOrToken.toLowerCase().trim();
-      const effectiveEmail =
-        clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
-          ? 'roboticalegotaller1@gmail.com'
-          : clean;
+      const effectiveEmail = this.resolveEffectiveGoogleEmail(clean);
 
       const stored = tokenStore.get(effectiveEmail) || tokenStore.get(clean);
       if (stored) {
@@ -1047,6 +1257,9 @@ export class GoogleOAuthService {
       }
 
       // Purgar de memoria y cachés locales
+      if ((globalThis as any).__iskoolLastConnectedGoogleEmail === effectiveEmail || (globalThis as any).__iskoolLastConnectedGoogleEmail === clean) {
+        delete (globalThis as any).__iskoolLastConnectedGoogleEmail;
+      }
       tokenStore.delete(effectiveEmail);
       tokenStore.delete(clean);
       saveTokensToFile(tokenStore);
