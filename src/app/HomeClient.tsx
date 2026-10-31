@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { GraduationCap, Trophy, Users, ShieldAlert, Sparkles, BookOpen, Compass, Heart, ArrowRight } from "lucide-react";
@@ -8,9 +8,10 @@ import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/Loader";
 import { useWhiteLabelStore } from "@/store/useWhiteLabelStore";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
-import { PublicLanding, PublicFooter } from "@/components/PublicLanding";
+import { PublicFooter } from "@/components/PublicLanding";
 
-export default function Home() {
+// La portada llega ya renderizada desde el servidor: así su HTML viaja en la respuesta inicial y su código no pesa en el cliente.
+export default function HomeClient({ landing }: { landing: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -56,7 +57,7 @@ export default function Home() {
   // Visitantes sin sesión (y la carga inicial): página de inicio pública con enlaces legales.
   // La verificación de marca de OAuth exige que https://iskool.mx/ sea pública y enlace a /privacidad.
   if (loading || !user) {
-    return <PublicLanding />;
+    return landing;
   }
 
   // Usuarios con sesión que no son Super Usuario: se redirigen a su portal
