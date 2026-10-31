@@ -24,7 +24,7 @@ export const ISKOOL_THEME_TOKENS: TenantThemeTokens = {
   shortName: 'iSkool',
   tagline: 'Plataforma de Alta Tecnología Pedagógica, Inteligencia Artificial y Gamificación',
   badgeText: 'iSkool Studio IA',
-  logoUrl: '/brand/iskool_logo.webp',
+  logoUrl: '/brand/iskool-icono.png',
   faviconUrl: '/favicon.ico',
   primaryColorHex: '#2563EB', // Azul Zafiro Tecnológico
   secondaryColorHex: '#7C3AED', // Púrpura Vibrante
@@ -83,6 +83,18 @@ export const IBIME_THEME_TOKENS: TenantThemeTokens = {
     '--brand-badge-text': '#e41b14'
   }
 };
+
+/**
+ * Verdadero cuando el encabezado muestra la marca de ISkool y no la de una escuela:
+ * sin logotipo propio o con el de ISkool, y sin nombre propio.
+ */
+export function isISkoolHouseBrand(logoUrl?: string | null, schoolName?: string | null): boolean {
+  const logo = logoUrl?.trim();
+  const name = schoolName?.trim();
+  const ownLogo = !logo || logo === ISKOOL_THEME_TOKENS.logoUrl;
+  const ownName = !name || name.toLowerCase() === 'iskool' || name === ISKOOL_THEME_TOKENS.schoolName;
+  return ownLogo && ownName;
+}
 
 export function getTokensForTenant(tenantId: TenantId): TenantThemeTokens {
   return tenantId === 'ibime' ? IBIME_THEME_TOKENS : ISKOOL_THEME_TOKENS;

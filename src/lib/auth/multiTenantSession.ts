@@ -66,7 +66,7 @@ export interface MultiTenantSessionPayload {
 export const DEFAULT_ISKOOL_METADATA: InstitutionMetadata = {
   branding: {
     schoolName: 'iSkool Ecosistema Educativo',
-    logoUrl: '/brand/iskool_logo.webp',
+    logoUrl: '/brand/iskool-icono.png',
     primaryColorHex: '#2563EB',
     themePreset: 'sapphire'
   },
