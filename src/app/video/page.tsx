@@ -341,9 +341,18 @@ export default function VideoQrLandingPage() {
         {/* Tarjeta de Garantía de URL Permanente para Código QR + Acciones Rápidas */}
         <div className="mt-8 w-full max-w-4xl rounded-2xl border border-white/10 bg-slate-900/60 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 border border-blue-500/30 text-blue-400">
-              <QrCode className="h-5 w-5" />
-            </div>
+            <a
+              href="/brand/iskool-qr-video.jpg"
+              download="ISkool_QR_Video_Oficial.jpg"
+              className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-1 border border-blue-500/40 shadow-md overflow-hidden"
+              title="Descargar Código QR Oficial de ISkool en formato JPG"
+            >
+              <img
+                src="/brand/iskool-qr-video.jpg"
+                alt="Código QR Oficial ISkool"
+                className="h-full w-full object-contain rounded-lg group-hover:scale-105 transition-transform"
+              />
+            </a>
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-sm font-bold text-white">
@@ -369,6 +378,14 @@ export default function VideoQrLandingPage() {
                     </>
                   )}
                 </button>
+                <a
+                  href="/brand/iskool-qr-video.jpg"
+                  download="ISkool_QR_Video_Oficial.jpg"
+                  className="inline-flex items-center gap-1 rounded-md bg-blue-600/25 hover:bg-blue-600/40 border border-blue-500/40 px-2.5 py-0.5 text-[11px] font-bold text-blue-300 transition-colors"
+                >
+                  <QrCode className="h-3 w-3" />
+                  <span>Descargar QR (.JPG)</span>
+                </a>
               </div>
               <p className="mt-1 text-xs text-slate-400 leading-relaxed">
                 Puedes imprimir tu código QR con la dirección{" "}
