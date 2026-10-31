@@ -80,6 +80,7 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname.startsWith('/video/') ||
     pathname === '/api/video-config' ||
     pathname.startsWith('/api/video-config/') ||
+    pathname === '/api/demo' ||
     pathname.startsWith('/brand') ||
     pathname.startsWith('/favicon') ||
     pathname === '/404' ||
