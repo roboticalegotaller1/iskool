@@ -1,0 +1,178 @@
+/*
+ * Estilos de la portada pública. Todo lleva el prefijo lp- o cuelga de .lp-root,
+ * para que el resto de la plataforma no cambie de aspecto.
+ */
+
+/* Colores con su variable siempre emitida: los degradados del cerebro la leen desde estilos en línea. */
+@theme static {
+  --color-lp-navy: #0B1B3F;
+  --color-lp-navy-deep: #071330;
+  --color-lp-sky: #2F9BFF;
+  --color-lp-blue: #1E4FD8;
+  --color-lp-violet: #7C4DFF;
+  --color-lp-magenta: #C13CFF;
+  --color-lp-cyan: #22D3EE;
+  --color-lp-amber: #F5A524;
+  --color-lp-mist: #F4F8FF;
+  --color-lp-surface: #FFFFFF;
+  --color-lp-muted: #4A5B7A;
+}
+
+/* En línea: las fuentes se declaran en .lp-root, no en :root, y ahí es donde deben resolverse. */
+@theme inline {
+  --font-lp-display: var(--font-lp-display-loaded), ui-sans-serif, system-ui, sans-serif;
+  --font-lp-body: var(--font-lp-body-loaded), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---------- Base ---------- */
+
+html:has(.lp-root) {
+  scroll-padding-top: 6.5rem;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Sin esto el cuerpo sería un contenedor de desplazamiento y se romperían el título fijo y las apariciones. */
+body:has(.lp-root) {
+  overflow-x: clip;
+}
+
+.lp-root {
+  overflow-x: clip;
+  letter-spacing: normal;
+  text-rendering: optimizeLegibility;
+}
+
+.lp-root ::selection {
+  background: rgb(47 155 255 / 0.28);
+}
+
+.lp-root :focus-visible {
+  outline: 3px solid var(--color-lp-blue);
+  outline-offset: 3px;
+}
+
+.lp-root .lp-on-dark :focus-visible {
+  outline-color: var(--color-lp-cyan);
+}
+
+/* ---------- Atmósfera ---------- */
+
+/* Retícula de puntos tenue, como papel técnico. */
+.lp-dot-grid {
+  background-image: radial-gradient(rgb(11 27 63 / 0.09) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+.lp-dot-grid-light {
+  background-image: radial-gradient(rgb(255 255 255 / 0.1) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+
+.lp-fade-edges {
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+
+/* ---------- Movimiento ---------- */
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lp-twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes lp-flow {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+@keyframes lp-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes lp-ping-ring {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.lp-root) {
+    scroll-behavior: smooth;
+  }
+
+  /* Entrada escalonada del hero: --i fija el orden. */
+  .lp-rise {
+    animation: lp-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+
+  .lp-brain-twinkle {
+    animation: lp-twinkle 3.8s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  .lp-brain-flow {
+    animation: lp-flow 5.5s linear infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  .lp-brain-aura {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lp-breathe 8s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  .lp-brain-ping {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: lp-ping-ring 3.4s ease-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  /* Aparición al entrar en pantalla, solo donde el navegador lo soporta sin JavaScript. */
+  @supports (animation-timeline: view()) {
+    .lp-reveal {
+      animation: lp-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 38%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-brain-ping {
+    display: none;
+  }
+}
