@@ -4,6 +4,7 @@ import React from 'react';
 import { IbimeOfficialLogo } from './IbimeOfficialLogo';
 import { CorporateOfficialLogo } from './CorporateOfficialLogo';
 import { ISkoolOfficialLogo } from './ISkoolOfficialLogo';
+import { isISkoolOwnLogo } from '@/lib/branding/tenantThemeTokens';
 
 export interface SchoolOfficialLogoProps {
   schoolId?: string;
@@ -81,7 +82,7 @@ export const SchoolOfficialLogo: React.FC<SchoolOfficialLogoProps> = ({
   }
 
   // 2.1 iSkool Oficial
-  const isIskool = sId === 'sch-iskool' || sId === 'iskool' || sName.includes('iskool');
+  const isIskool = sId === 'sch-iskool' || sId === 'iskool' || sName.includes('iskool') || isISkoolOwnLogo(logoUrl);
   if (isIskool) {
     return (
       <ISkoolOfficialLogo

@@ -82,6 +82,13 @@ describe('marca propia frente a marca blanca', () => {
     expect(isISkoolHouseBrand('', 'Colegio Sol')).toBe(false)
   })
 
+  it('una ruta guardada del logotipo anterior no se pinta como imagen rota', () => {
+    expect(isISkoolHouseBrand('/brand/iskool_logo.webp', schoolName)).toBe(true)
+    const { container } = render(<SchoolOfficialLogo schoolId="sch-sol" name="Colegio Sol" logoUrl="/brand/iskool_logo.webp" />)
+    expect(container.querySelector('img')).toBeNull()
+    expect(part(container, 'mark')).toBeTruthy()
+  })
+
   it('SchoolOfficialLogo usa el cuadro para ISkool y respeta los logos subidos', () => {
     const iskool = render(<SchoolOfficialLogo schoolId="sch-iskool" size={44} />)
     expect(part(iskool.container, 'mark')).toBeTruthy()
@@ -92,7 +99,7 @@ describe('marca propia frente a marca blanca', () => {
 })
 
 describe('guardas del logotipo', () => {
-  const sources = walk(join(ROOT, 'src')).filter((f) => /\.(tsx?|css)$/.test(f))
+  const sources = walk(join(ROOT, 'src'))
 
   it('ningún archivo de src/ apunta al logotipo anterior', () => {
     const offenders = sources.filter((f) => readFileSync(f, 'utf8').includes('iskool_logo.webp')).map((f) => relative(ROOT, f))

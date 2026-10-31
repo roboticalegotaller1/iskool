@@ -3,5 +3,3 @@ const font = () => ({ className: '', variable: '', style: { fontFamily: 'sans-se
 
 export const Poppins = font
 export const Instrument_Sans = font
-export const Plus_Jakarta_Sans = font
-export const JetBrains_Mono = font

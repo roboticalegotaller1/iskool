@@ -84,14 +84,18 @@ export const IBIME_THEME_TOKENS: TenantThemeTokens = {
   }
 };
 
+/** Cualquier archivo propio de ISkool, incluidas rutas guardadas de versiones anteriores del logotipo. */
+export function isISkoolOwnLogo(logoUrl?: string | null): boolean {
+  return Boolean(logoUrl?.trim().startsWith('/brand/iskool'));
+}
+
 /**
  * Verdadero cuando el encabezado muestra la marca de ISkool y no la de una escuela:
  * sin logotipo propio o con el de ISkool, y sin nombre propio.
  */
 export function isISkoolHouseBrand(logoUrl?: string | null, schoolName?: string | null): boolean {
-  const logo = logoUrl?.trim();
   const name = schoolName?.trim();
-  const ownLogo = !logo || logo === ISKOOL_THEME_TOKENS.logoUrl;
+  const ownLogo = !logoUrl?.trim() || isISkoolOwnLogo(logoUrl);
   const ownName = !name || name.toLowerCase() === 'iskool' || name === ISKOOL_THEME_TOKENS.schoolName;
   return ownLogo && ownName;
 }
