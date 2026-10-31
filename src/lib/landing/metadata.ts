@@ -35,7 +35,7 @@ export const landingJsonLd = {
   '@type': 'Organization',
   name: SITE.name,
   url: HOME_URL,
-  logo: `${SITE.url}/brand/iskool_logo.webp`,
+  logo: `${SITE.url}/brand/iskool-logo-web.png`,
   email: SITE.email,
   description,
   areaServed: REGION.placeName,
