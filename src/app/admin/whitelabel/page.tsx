@@ -28,6 +28,8 @@ import {
   Info
 } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
+import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
 
 // Paleta de Presets Institucionales Recomendados
 const COLOR_PRESETS = [
@@ -440,6 +442,10 @@ export default function WhiteLabelAdminPage() {
                 </span>
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between gap-3 shadow-xs">
                   <div className="flex items-center gap-2.5 min-w-0">
+                    {isISkoolHouseBrand(logoUrl, schoolName) ? (
+                      <ISkoolOfficialLogo variant="horizontal" size={28} showTagline={false} />
+                    ) : (
+                    <>
                     {logoUrl ? (
                       <img
                         src={logoUrl}
@@ -457,6 +463,8 @@ export default function WhiteLabelAdminPage() {
                         Académico
                       </span>
                     </div>
+                    </>
+                    )}
                   </div>
 
                   {/* Pestañas simuladas */}

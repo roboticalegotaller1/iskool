@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/Loader";
 import { useWhiteLabelStore } from "@/store/useWhiteLabelStore";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
+import { isISkoolHouseBrand } from "@/lib/branding/tenantThemeTokens";
 import { PublicFooter } from "@/components/PublicLanding";
 
 // La portada llega ya renderizada desde el servidor: así su HTML viaja en la respuesta inicial y su código no pesa en el cliente.
@@ -71,7 +72,7 @@ export default function HomeClient({ landing }: { landing: ReactNode }) {
       <header className="w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80 sticky top-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2.5">
-            {whiteLabelLogo ? (
+            {whiteLabelLogo && !isISkoolHouseBrand(whiteLabelLogo, whiteLabelSchoolName) ? (
               <div className="flex items-center gap-2.5">
                 <img
                   src={whiteLabelLogo}
@@ -83,7 +84,7 @@ export default function HomeClient({ landing }: { landing: ReactNode }) {
                 </span>
               </div>
             ) : (
-              <ISkoolOfficialLogo variant="horizontal" size={32} showTagline={true} />
+              <ISkoolOfficialLogo variant="horizontal" size={32} showTagline={false} />
             )}
           </div>
           <div className="flex items-center gap-3">

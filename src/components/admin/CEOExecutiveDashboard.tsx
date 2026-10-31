@@ -99,6 +99,7 @@ import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
@@ -2099,10 +2100,7 @@ export default function CEOExecutiveDashboard({
               </div>
             ) : (
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                  i
-                </div>
-                <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
+                <ISkoolOfficialLogo variant="horizontal" theme="light" size={28} showTagline={false} />
                 <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
                   CEO OS
                 </span>
@@ -2233,10 +2231,7 @@ export default function CEOExecutiveDashboard({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                      i
-                    </div>
-                    <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
+                    <ISkoolOfficialLogo variant="horizontal" theme="light" size={28} showTagline={false} />
                     <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
                       CEO OS
                     </span>

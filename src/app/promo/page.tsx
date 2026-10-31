@@ -48,6 +48,7 @@ import {
   Compass,
   Check
 } from "lucide-react";
+import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
 
 // Tipos de diapositiva
 type SlideType = "curtain" | "showcase";
@@ -521,13 +522,8 @@ export default function PromoPage() {
       <header className="relative z-50 flex items-center justify-between px-4 sm:px-8 py-3.5 border-b border-emerald-500/30 bg-slate-950/80 backdrop-blur-xl shadow-lg shadow-emerald-500/5">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-emerald-500/40 text-emerald-400 group-hover:scale-105 transition-transform shadow-lg shadow-emerald-500/20">
-              <GraduationCap className="h-6 w-6" />
-            </div>
             <div>
-              <span className="text-lg font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-teal-200 bg-clip-text text-transparent">
-                ISkool Académico
-              </span>
+              <ISkoolOfficialLogo variant="horizontal" theme="dark" size={26} showTagline={false} className="mb-0.5" />
               <div className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-xs shadow-emerald-400 animate-pulse" />
                 <span className="text-[10px] text-teal-400 font-bold uppercase tracking-widest">

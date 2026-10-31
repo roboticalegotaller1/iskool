@@ -8,7 +8,8 @@ import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { magicLinkService } from '@/lib/magicLinkService';
-import { ShieldCheck, AlertTriangle, Clock, CheckCircle2, Building2, Lock, ArrowRight, HelpCircle } from 'lucide-react';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
+import { ShieldCheck, AlertTriangle, Clock, CheckCircle2, Lock, ArrowRight, HelpCircle } from 'lucide-react';
 
 interface MagicLinkPageProps {
   params: Promise<{
@@ -41,11 +42,8 @@ export default async function MagicLinkPage({ params }: MagicLinkPageProps) {
       {/* Barra Superior Institucional */}
       <header className="max-w-4xl mx-auto w-full flex items-center justify-between py-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 font-bold">
-            <Building2 className="w-5 h-5" />
-          </div>
           <div>
-            <div className="font-bold text-lg text-white tracking-tight">ISkool</div>
+            <ISkoolOfficialLogo variant="horizontal" theme="dark" size={26} showTagline={false} className="mb-1" />
             <div className="text-xs text-slate-400 uppercase tracking-wider">Pasarela Financiera Segura</div>
           </div>
         </div>

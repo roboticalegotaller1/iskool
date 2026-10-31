@@ -10,6 +10,8 @@ import { useGamificationStore } from '../store/useGamificationStore';
 import { usePortfolioStore } from '../store/usePortfolioStore';
 import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
+import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
 import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 import { BackButton } from '@/components/navigation/BackButton';
@@ -64,6 +66,8 @@ export const Header: React.FC = () => {
     : (isSuperUser && !activeSchoolId 
         ? 'ISkool (Directorio Global)' 
         : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool'));
+  const isGlobalDirectory = !isIbimeActive && isSuperUser && !activeSchoolId;
+  const showISkoolLogo = !isIbimeActive && isISkoolHouseBrand(effectiveLogoUrl, isGlobalDirectory ? '' : effectiveSchoolName);
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {
@@ -233,6 +237,17 @@ export const Header: React.FC = () => {
             aria-label="Página de inicio institucional"
             className="flex items-center gap-2.5 group hover:opacity-90 transition-opacity"
           >
+            {showISkoolLogo ? (
+              <>
+                <ISkoolOfficialLogo variant="horizontal" size={30} showTagline={false} />
+                {isGlobalDirectory && (
+                  <span className="font-semibold text-[10px] sm:text-xs shrink-0" style={{ color: 'var(--brand-primary, #2563EB)' }}>
+                    Directorio Global
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
             {effectiveLogoUrl ? (
               <img 
                 src={effectiveLogoUrl} 
@@ -256,6 +271,8 @@ export const Header: React.FC = () => {
                 Académico
               </span>
             </div>
+              </>
+            )}
           </Link>
         </div>
 

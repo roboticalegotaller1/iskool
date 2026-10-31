@@ -16,6 +16,7 @@ import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 
 export type CopilotTheme = 'carbon' | 'suizo' | 'heritage' | 'esmeralda';
 
@@ -391,10 +392,11 @@ _Reporte oficial emitido desde la plataforma de control escolar ISkool._`;
         <div className="flex md:flex-col items-center gap-2">
           <button 
             onClick={() => setActiveTab('timeline')}
-            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-black text-base shadow-md cursor-pointer hover:scale-105 transition-transform"
+            className="rounded-xl cursor-pointer hover:scale-105 transition-transform"
             title="ISkool Copilot Docente"
+            aria-label="ISkool Copilot Docente"
           >
-            iS
+            <ISkoolOfficialLogo variant="emblem_only" size={40} />
           </button>
         </div>
 

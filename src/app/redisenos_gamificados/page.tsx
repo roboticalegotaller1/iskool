@@ -51,6 +51,7 @@ import { CeoMontessoriBridgeModal } from '@/components/redisenos/CeoMontessoriBr
 import { RedesignDocViewerModal } from '@/components/redisenos/RedesignDocViewerModal';
 import { InteractiveTasksModal } from '@/components/redisenos/InteractiveTasksModal';
 import { LiveRedesignPlayerModal } from '@/components/redisenos/LiveRedesignPlayerModal';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 
 export default function RedisenosGamificadosPage() {
   const router = useRouter();
@@ -228,12 +229,9 @@ export default function RedisenosGamificadosPage() {
           
           {/* Logo y Colegio Montessori */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 p-0.5 shadow-lg shadow-purple-600/20 flex items-center justify-center font-black text-white text-xl">
-              iS
-            </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-white text-base tracking-tight">ISkool</span>
+                <ISkoolOfficialLogo variant="horizontal" theme="dark" size={24} showTagline={false} />
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   CCT: {COLEGIO_MONTESSORI_METRICS.cct}
                 </span>

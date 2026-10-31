@@ -216,11 +216,8 @@ export default function VideoQrLandingPage() {
       <header className="w-full border-b border-white/10 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <ISkoolOfficialLogo variant="emblem_only" theme="dark" size={32} />
             <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tight text-white group-hover:text-blue-400 transition-colors">
-                ISkool
-              </span>
+              <ISkoolOfficialLogo variant="horizontal" theme="dark" size={24} showTagline={false} className="mb-0.5" />
               <span className="text-[10px] font-semibold uppercase tracking-widest text-blue-400">
                 Canal QR Institucional
               </span>

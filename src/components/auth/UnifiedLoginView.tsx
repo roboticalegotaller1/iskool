@@ -536,15 +536,15 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2.5 lg:hidden mb-2">
               {isIbimeMode ? (
-                <IbimeOfficialLogo variant="shield_only" size={36} />
+                <>
+                  <IbimeOfficialLogo variant="shield_only" size={36} />
+                  <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                    Instituto Bilingüe Ibime
+                  </span>
+                </>
               ) : (
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md bg-blue-600 text-white">
-                  <GraduationCap className="h-5 w-5" />
-                </div>
+                <ISkoolOfficialLogo variant="horizontal" size={32} showTagline={false} />
               )}
-              <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                {isIbimeMode ? 'Instituto Bilingüe Ibime' : 'ISkool'}
-              </span>
             </div>
 
             <div className="flex items-center gap-2">

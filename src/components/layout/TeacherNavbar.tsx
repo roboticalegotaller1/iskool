@@ -6,6 +6,8 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
+import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
 import { isPlatformSuperUser } from '@/types';
 import { 
   GraduationCap, 
@@ -69,6 +71,7 @@ export function TeacherNavbar() {
   const schoolName = isIbime 
     ? 'Instituto Bilingüe IBIME' 
     : (whiteLabelSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
+  const showISkoolLogo = !isIbime && isISkoolHouseBrand(whiteLabelLogo, schoolName);
 
   return (
     <header className={`sticky top-0 z-40 transition-colors ${
@@ -97,7 +100,7 @@ export function TeacherNavbar() {
               <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
                 <IbimeOfficialLogo size={40} showText={false} />
               </div>
-            ) : whiteLabelLogo ? (
+            ) : showISkoolLogo ? null : whiteLabelLogo ? (
               <img
                 src={whiteLabelLogo}
                 alt={schoolName}
@@ -133,9 +136,13 @@ export function TeacherNavbar() {
                 </>
               ) : (
                 <>
-                  <span className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
-                    {schoolName}
-                  </span>
+                  {showISkoolLogo ? (
+                    <ISkoolOfficialLogo variant="horizontal" size={24} showTagline={false} className="self-start mb-0.5" />
+                  ) : (
+                    <span className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
+                      {schoolName}
+                    </span>
+                  )}
                   <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
                     Portal Docente <span className="text-slate-300 dark:text-slate-600">•</span> Gestión Pedagógica
                   </span>
