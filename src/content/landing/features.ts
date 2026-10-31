@@ -42,8 +42,8 @@ const items: readonly Feature[] = [
   },
   {
     audience: 'Dueños y administración',
-    title: 'Cobranza y facturación',
-    body: 'Colegiaturas, becas, estados de cuenta y recordatorios de pago, con facturación desde la misma plataforma.',
+    title: 'Cobranza',
+    body: 'Colegiaturas, becas, estados de cuenta y recordatorios de pago, desde la misma plataforma.',
   },
 ]
 

@@ -43,7 +43,7 @@ describe('estructura', () => {
   it('explica en concreto qué hace, con ocho funciones para sus distintos públicos', () => {
     expect(FEATURES.items).toHaveLength(8)
     const text = flatten(FEATURES.items)
-    for (const topic of [/docente/i, /alumno/i, /familia/i, /hist[oó]ric/i, /ingl[eé]s/i, /franc[eé]s/i, /directiv/i, /facturaci[oó]n/i]) {
+    for (const topic of [/docente/i, /alumno/i, /familia/i, /hist[oó]ric/i, /ingl[eé]s/i, /franc[eé]s/i, /directiv/i, /cobranza/i]) {
       expect(text).toMatch(topic)
     }
   })
@@ -53,7 +53,7 @@ describe('honestidad comercial', () => {
   const all = flatten([HOME, STEPS, ROLES, FEATURES, BENEFITS, CLOSING])
 
   it('no promete funciones no verificadas', () => {
-    expect(all).not.toMatch(/timbrad|CFDI|SPEI|tarjeta|credencial|app m[oó]vil|torniquete|copiloto|tutor IA/i)
+    expect(all).not.toMatch(/factur|timbrad|CFDI|SPEI|tarjeta|credencial|app m[oó]vil|torniquete|copiloto|tutor IA/i)
   })
 
   it('no usa porcentajes ni cifras de resultados', () => {
