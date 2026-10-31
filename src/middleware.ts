@@ -76,6 +76,10 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname.startsWith('/privacy/') ||
     pathname === '/terms' ||
     pathname.startsWith('/terms/') ||
+    pathname === '/video' ||
+    pathname.startsWith('/video/') ||
+    pathname === '/api/video-config' ||
+    pathname.startsWith('/api/video-config/') ||
     pathname.startsWith('/brand') ||
     pathname.startsWith('/favicon') ||
     pathname === '/404' ||
@@ -449,7 +453,7 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  response.headers.set('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), browsing-topics=()');
+  response.headers.set('Permissions-Policy', 'camera=(self), microphone=(self), autoplay=(self "https://www.youtube.com" "https://www.youtube-nocookie.com"), geolocation=(), browsing-topics=()');
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
@@ -460,7 +464,7 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
       'Content-Security-Policy',
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com https://www.youtube.com https://s.ytimg.com",
         "style-src 'self' 'unsafe-inline' https:",
         "font-src 'self' data: https:",
         "img-src 'self' data: blob: https:",
