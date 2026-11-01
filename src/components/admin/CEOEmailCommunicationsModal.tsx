@@ -282,7 +282,8 @@ export function generateDefaultMattersForSchool(
   schoolName: string = 'Colegio',
   domain: string = 'colegio.edu.mx',
   campuses: any[] = [],
-  tenantId: string = 'sch-default'
+  tenantId: string = 'sch-default',
+  onlySandboxTenant: boolean = false
 ): MatterItem[] {
   const isTestTenant =
     tenantId === 'sch-test-case' ||
@@ -290,7 +291,7 @@ export function generateDefaultMattersForSchool(
     schoolName.toLowerCase().includes('laboratorio') ||
     schoolName.toLowerCase().includes('test case');
 
-  if (!isTestTenant) {
+  if (onlySandboxTenant && !isTestTenant) {
     return [];
   }
 
@@ -3888,7 +3889,7 @@ ${schoolName}`
         }
       ];
     }
-    return generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId);
+    return generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true);
   });
 
   // Si cambia el tenant de la institución, recargar asuntos correspondientes
@@ -3901,7 +3902,7 @@ ${schoolName}`
           if (Array.isArray(parsed) && parsed.length > 0) {
             const deduped = deduplicateExecutiveMatters(parsed);
             const cleaned = deduped.filter((m: any) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
-            setMattersList(cleaned.length > 0 ? cleaned : isIbime ? [] : generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
+            setMattersList(cleaned.length > 0 ? cleaned : isIbime ? [] : generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true));
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return;
           }
@@ -4019,7 +4020,7 @@ ${schoolName}`
         }
       ]);
     } else {
-      setMattersList(generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
+      setMattersList(generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true));
     }
   }, [mattersStorageKey, isIbime, schoolName, schoolDomain, campuses, currentTenantId]);
 

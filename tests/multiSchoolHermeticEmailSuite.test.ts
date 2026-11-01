@@ -57,20 +57,20 @@ describe('🏛️ SUITE DE CORREO INSTITUCIONAL HERMÉTICO & MULTI-COLEGIO (CEO 
 
   describe('2. Activación Universal en Tablero Ejecutivo CEO (src/components/admin/CEOExecutiveDashboard.tsx)', () => {
     it('debe tener el botón Email & Triage visible permanentemente en el sidebar desktop para todo colegio', () => {
-      expect(ceoContent).toContain('Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)');
-      expect(ceoContent).toContain('onClick={() => setIsEmailModalOpen(true)}');
+      expect(ceoContent).toContain('iMail & Triage');
+      expect(ceoContent).toContain("handleNavClick('imail_triage')");
     });
 
     it('debe tener el botón Email & Triage en el cajón de navegación móvil', () => {
-      expect(ceoContent).toContain('setIsEmailModalOpen(true)');
+      expect(ceoContent).toContain("{ id: 'imail_triage', label: 'iMail', icon: Mail }");
     });
 
     it('debe tener acceso directo en el header superior ejecutivo', () => {
-      expect(ceoContent).toContain('Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)');
+      expect(ceoContent).toContain('iMail & Triage');
     });
 
     it('debe resolver dinámicamente el schoolId sin forzar hardcode a sch-ibime', () => {
-      expect(ceoContent).toContain("schoolId={schoolId || holding?.id || currentInstitution?.id || 'sch-ibime'}");
+      expect(ceoContent).toContain('schoolId={schoolId || currentInstitution?.id || holding?.id');
     });
   });
 

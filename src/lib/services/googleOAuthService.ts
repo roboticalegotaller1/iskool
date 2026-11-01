@@ -27,7 +27,7 @@ function getSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     '';
-  return createClient(url, key);
+  return key ? createClient(url, key) : null;
 }
 
 function loadTokensFromFile(): Map<string, GoogleTokens> {
@@ -148,6 +148,7 @@ export class GoogleOAuthService {
     }
     try {
       const supabase = getSupabaseClient();
+      if (!supabase) return;
       const { data } = await supabase
         .from('oauth_credentials')
         .select('client_id, client_secret')
@@ -217,6 +218,7 @@ export class GoogleOAuthService {
       }
 
       const supabase = getSupabaseClient();
+      if (!supabase) return;
       let query = supabase.from('email_accounts').select('*').eq('is_active', true);
       if (effectiveEmail) {
         query = query.eq('email_address', effectiveEmail);
@@ -253,6 +255,7 @@ export class GoogleOAuthService {
   static async persistTokensToDb(tokens: GoogleTokens): Promise<void> {
     try {
       const supabase = getSupabaseClient();
+      if (!supabase) return;
       await supabase.from('email_accounts').upsert(
         {
           email_address: tokens.email.toLowerCase().trim(),
@@ -1267,7 +1270,7 @@ export class GoogleOAuthService {
       // Desactivar y limpiar en Supabase
       try {
         const supabase = getSupabaseClient();
-        await supabase
+        if (supabase) await supabase
           .from('email_accounts')
           .update({
             is_active: false,

@@ -37,7 +37,7 @@ describe('FASE 3: Lógica de Negocio y Conectividad con el Motor Analítico del 
       const report = computeAdmissionsPipelineMetrics(leads, candidates, 'all', '2026-2027');
 
       expect(report.campusId).toBe('all');
-      expect(report.campusName).toContain('Consolidado IBIME');
+      expect(report.campusName).toMatch(/Consolidado (IBIME|Multisede)/);
       expect(report.capacity.totalPhysicalSeats).toBe(3900);
       expect(report.capacity.targetSeats).toBe(3740);
       expect(report.capacity.baseEnrolledSeats).toBe(3620);

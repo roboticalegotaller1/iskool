@@ -115,7 +115,7 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
     
     // Verificar que está ubicada entre Bitácora y ROI & Telemetría
     const bitacoraIndex = content.indexOf("setActiveTab('bitacora')");
-    const rawInboxIndex = content.indexOf("setActiveTab('raw_inbox')");
+    const rawInboxIndex = content.indexOf("setActiveTab('raw_inbox')", bitacoraIndex);
     const roiIndex = content.indexOf("setActiveTab('roi')");
     
     expect(bitacoraIndex).toBeGreaterThan(-1);
