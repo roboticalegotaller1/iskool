@@ -12,7 +12,8 @@ export const runtime = 'nodejs';
  */
 export async function GET(req: NextRequest) {
   try {
-    const origin = req.nextUrl.origin || 'http://localhost:3000';
+    await GoogleOAuthService.ensureClientCredentials();
+    const origin = GoogleOAuthService.resolveOAuthOrigin(req.nextUrl.origin, req.headers);
     const tenantId = req.nextUrl.searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
     const rawEmail = req.nextUrl.searchParams.get('email') || undefined;
     const forceHint = req.nextUrl.searchParams.get('forceHint') === 'true';

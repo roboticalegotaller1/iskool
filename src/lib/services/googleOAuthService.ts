@@ -22,11 +22,14 @@ const TOKENS_FILE = path.join(process.cwd(), '.data', 'google_tokens.json');
 
 function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dekeyzuqpqxdfnnhohne.supabase.co';
-  const key =
+  const envKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
     '';
+  const fallbackPubKey = process.env.VITEST ? '' : 'sb_publishable_qW12f-wH3U48y-eMce33AA_gH3d293W';
+  const key = envKey || fallbackPubKey;
   return key ? createClient(url, key) : null;
 }
 
@@ -127,10 +130,40 @@ export const GOOGLE_DIRECTOR_WORKSPACE_SCOPES = [
 export const GOOGLE_RESTRICTED_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 
 export class GoogleOAuthService {
+  public static readonly DEFAULT_PUBLIC_GOOGLE_CLIENT_ID =
+    '33763602603-f1hqfhjgb5l5isuu6qde0epquj9ak38v.apps.googleusercontent.com';
+
   private static cachedClientId = '';
   private static cachedClientSecret = '';
 
-  private static async ensureClientCredentials(): Promise<void> {
+  /**
+   * Resuelve el origen canónico para redirecciones OAuth 2.0.
+   * En AWS Amplify Compute detrás de CloudFront, el contenedor interno recibe Host: localhost:3000
+   * con protocolo HTTPS (https://localhost:3000). En ese escenario se normaliza a https://iskool.mx.
+   */
+  public static resolveOAuthOrigin(reqOrigin?: string, headers?: Headers): string {
+    const forwardedHost = headers?.get('x-forwarded-host')?.split(',')[0]?.trim();
+    if (forwardedHost && !forwardedHost.includes('localhost') && !forwardedHost.includes('127.0.0.1')) {
+      return `https://${forwardedHost}`;
+    }
+
+    const rawOrigin = (reqOrigin || 'http://localhost:3000').replace(/\/$/, '');
+    const isLocalOrigin = rawOrigin.includes('localhost') || rawOrigin.includes('127.0.0.1');
+    const isCloudFrontOrHttpsLocal =
+      rawOrigin.startsWith('https://localhost') ||
+      rawOrigin.startsWith('https://127.0.0.1') ||
+      Boolean(headers?.get('cloudfront-viewer-country')) ||
+      Boolean(headers?.get('via')?.toLowerCase().includes('cloudfront')) ||
+      (isLocalOrigin && process.env.NODE_ENV === 'production' && !process.env.VITEST);
+
+    if (isLocalOrigin && isCloudFrontOrHttpsLocal) {
+      return (process.env.NEXT_PUBLIC_SITE_URL || 'https://iskool.mx').replace(/\/$/, '');
+    }
+
+    return rawOrigin;
+  }
+
+  public static async ensureClientCredentials(): Promise<void> {
     if (this.cachedClientId && this.cachedClientSecret) return;
     const envCid =
       process.env.GOOGLE_CLIENT_ID ||
@@ -169,7 +202,7 @@ export class GoogleOAuthService {
       process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
       process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID ||
       this.cachedClientId ||
-      ''
+      this.DEFAULT_PUBLIC_GOOGLE_CLIENT_ID
     );
   }
 
@@ -354,6 +387,7 @@ export class GoogleOAuthService {
    * Intercambia el código de autorización temporal por tokens reales de acceso
    */
   static async exchangeCodeForTokens(code: string, origin: string): Promise<GoogleTokens> {
+    await this.ensureClientCredentials();
     const clientId = this.getClientId();
     const clientSecret = this.getClientSecret();
     const redirectUri = `${origin}/api/auth/callback/google`;

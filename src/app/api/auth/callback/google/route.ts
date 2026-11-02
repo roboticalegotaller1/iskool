@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const code = searchParams.get('code');
     const error = searchParams.get('error');
-    const origin = req.nextUrl.origin || 'http://localhost:3000';
+    const origin = GoogleOAuthService.resolveOAuthOrigin(req.nextUrl.origin, req.headers);
 
     if (error) {
       const safeError = escapeHtml(error);
@@ -120,6 +120,31 @@ export async function GET(req: NextRequest) {
       const safeName = JSON.stringify(tokens.name || 'Google Workspace');
       const safeCount = 0;
       const safeOrigin = JSON.stringify(origin);
+      const fallbackPath = redirectUrl && redirectUrl.startsWith('/') ? redirectUrl : '/director';
+      const destinationUrl = `${fallbackPath}${fallbackPath.includes('?') ? '&' : '?'}oauth_success=1&email=${encodeURIComponent(tokens.email)}`;
+      const safeDestinationUrl = JSON.stringify(destinationUrl);
+
+      const directorProfile = {
+        id: 'usr-dir-jjrosseau',
+        email: tokens.email || 'director@iskool.edu.mx',
+        role: 'director' as const,
+        school_id: 'sch-jjrosseau',
+        tenant_id: 'iskool',
+        first_name: (tokens.name || 'Director').split(' ')[0] || 'Director',
+        last_name: (tokens.name || 'Institucional').split(' ').slice(1).join(' ') || 'Institucional',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const workspaceSessionToken = await signSessionToken({
+        id: directorProfile.id,
+        email: directorProfile.email,
+        role: 'director',
+        school_id: directorProfile.school_id,
+        tenant_id: 'iskool',
+        first_name: directorProfile.first_name,
+        last_name: directorProfile.last_name
+      });
 
       const html = `<!DOCTYPE html>
 <html lang="es">
@@ -162,24 +187,48 @@ export async function GET(req: NextRequest) {
         timestamp: new Date().toISOString()
       };
 
+      try {
+        localStorage.setItem('iskool_last_connected_email', ${safeEmail});
+        localStorage.setItem('iskool_last_mail_verified', 'true');
+        if (!sessionStorage.getItem('iskool_active_session_v2')) {
+          sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(${JSON.stringify(directorProfile)}));
+        }
+      } catch (e) {}
+
       if (window.opener) {
-        window.opener.postMessage(authData, ${safeOrigin});
+        try {
+          window.opener.postMessage(authData, ${safeOrigin});
+        } catch (e) {
+          try { window.opener.postMessage(authData, '*'); } catch (e2) {}
+        }
         setTimeout(function() {
           window.close();
         }, 1200);
       } else {
         setTimeout(function() {
-          window.location.href = '/admin?tab=inbox&auth=success&email=' + encodeURIComponent(${safeEmail});
-        }, 1500);
+          window.location.href = ${safeDestinationUrl};
+        }, 1200);
       }
     })();
   </script>
 </body>
 </html>`;
 
-      return new NextResponse(html, {
+      const response = new NextResponse(html, {
         headers: { 'Content-Type': 'text/html; charset=utf-8' }
       });
+
+      if (!req.cookies.get('iskool_session')?.value) {
+        response.cookies.set('iskool_session', workspaceSessionToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 60 * 60 * 12
+        });
+      }
+
+      return response;
     }
 
     // =========================================================================

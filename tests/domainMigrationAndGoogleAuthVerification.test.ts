@@ -77,6 +77,20 @@ describe('🌐 MIGRACIÓN A APP.ISKOOL.MX Y VERIFICACIÓN DE GOOGLE AUTH', () =>
 
       // Por defecto no debe incluir gmail.readonly para no requerir auditoría CASA
       expect(scopes).not.toContain(GOOGLE_RESTRICTED_READONLY_SCOPE);
+
+      // Verificación crítica: client_id jamás debe ir vacío en la URL de autorización
+      expect(url.searchParams.get('client_id')).toBe(
+        GoogleOAuthService.DEFAULT_PUBLIC_GOOGLE_CLIENT_ID
+      );
+      expect(url.searchParams.get('redirect_uri')).toBe(
+        'https://iskool.mx/api/auth/callback/google'
+      );
+    });
+
+    it('debe normalizar https://localhost:3000 (AWS Amplify Compute detrás de CloudFront) a https://iskool.mx', () => {
+      expect(GoogleOAuthService.resolveOAuthOrigin('https://localhost:3000')).toBe('https://iskool.mx');
+      expect(GoogleOAuthService.resolveOAuthOrigin('http://localhost:3000')).toBe('http://localhost:3000');
+      expect(GoogleOAuthService.resolveOAuthOrigin('https://iskool.mx')).toBe('https://iskool.mx');
     });
 
     it('debe firmar criptográficamente el state tanto en login como en connect', () => {

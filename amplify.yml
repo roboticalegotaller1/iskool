@@ -5,6 +5,15 @@ frontend:
       commands:
         - npm ci --cache .npm --prefer-offline
         - if [ -n "$SESSION_SECRET" ]; then echo "SESSION_SECRET=$SESSION_SECRET" >> .env.production; fi
+        - if [ -n "$GOOGLE_CLIENT_ID" ]; then echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env.production; fi
+        - if [ -n "$GOOGLE_CLIENT_SECRET" ]; then echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env.production; fi
+        - if [ -n "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" ]; then echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID" >> .env.production; fi
+        - if [ -n "$SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID" ]; then echo "SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=$SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID" >> .env.production; fi
+        - if [ -n "$SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET" ]; then echo "SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=$SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET" >> .env.production; fi
+        - if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ]; then echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" >> .env.production; fi
+        - if [ -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.production; fi
+        - if [ -n "$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" ]; then echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" >> .env.production; fi
+        - if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production; fi
         - if [ -n "$SMTP_HOST" ]; then echo "SMTP_HOST=$SMTP_HOST" >> .env.production; fi
         - if [ -n "$SMTP_PORT" ]; then echo "SMTP_PORT=$SMTP_PORT" >> .env.production; fi
         - if [ -n "$SMTP_USER" ]; then echo "SMTP_USER=$SMTP_USER" >> .env.production; fi
