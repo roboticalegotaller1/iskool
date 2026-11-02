@@ -565,6 +565,28 @@ export const getDemoUser = (email: string): UserProfile => {
   }
 
   if (
+    emailLower === 'director@iskool.edu.mx' ||
+    emailLower === 'director@iskool.mx' ||
+    emailLower === 'director.general@iskool.edu.mx' ||
+    emailLower === 'reviewer@iskool.mx' ||
+    emailLower === 'reviewer@iskool.edu.mx' ||
+    emailLower === 'usr-dir-jjrosseau'
+  ) {
+    return {
+      id: 'usr-dir-jjrosseau',
+      school_id: 'sch-jjrosseau',
+      campus_id: 'cmp-ros-delvalle',
+      campus_name: 'Campus Del Valle (Sede Central)',
+      first_name: 'Roberto',
+      last_name: 'Gómez (Dirección General ISkool)',
+      role: 'director',
+      email: 'director@iskool.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
     emailLower === 'admin' || 
     emailLower === 'superadmin' ||
     emailLower === 'admin@iskool.edu.mx' ||

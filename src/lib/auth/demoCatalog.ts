@@ -250,7 +250,29 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
     };
   }
 
-  // 2. Super Usuarios Globales de Plataforma ISkool
+  // 2. Super Usuarios Globales y Director Institucional de Plataforma ISkool
+  if (
+    emailLower === 'director@iskool.edu.mx' ||
+    emailLower === 'director@iskool.mx' ||
+    emailLower === 'director.general@iskool.edu.mx' ||
+    emailLower === 'reviewer@iskool.mx' ||
+    emailLower === 'reviewer@iskool.edu.mx' ||
+    emailLower === 'usr-dir-jjrosseau'
+  ) {
+    return {
+      id: 'usr-dir-jjrosseau',
+      school_id: 'sch-jjrosseau',
+      campus_id: 'cmp-ros-delvalle',
+      campus_name: 'Campus Del Valle (Sede Central)',
+      first_name: 'Roberto',
+      last_name: 'Gómez (Dirección General ISkool)',
+      role: 'director' as UserRole,
+      email: 'director@iskool.edu.mx',
+      created_at: '2026-01-01T08:00:00.000Z',
+      updated_at: new Date().toISOString()
+    };
+  }
+
   const matchedSuper = SUPER_USERS_ISKOOL_SEED.find(
     su => su.email?.toLowerCase() === emailLower || su.id.toLowerCase() === emailLower
   );
