@@ -117,6 +117,25 @@ export const DEFAULT_WHITE_LABEL_CONFIG = {
   isCustomized: false
 };
 
+function isCustomBrandConfig(logoUrl: string, schoolName: string, primaryColor: string): boolean {
+  const logo = logoUrl.trim();
+  const name = schoolName.trim();
+  const color = primaryColor.trim().toUpperCase();
+  const hasCustomLogo = Boolean(logo && !logo.startsWith('/brand/iskool') && logo !== '/brand/ibime_logo.webp');
+  const hasCustomName = Boolean(
+    name &&
+    name.toLowerCase() !== 'iskool' &&
+    name !== 'iSkool Ecosistema Educativo' &&
+    name !== 'Instituto Bilingüe Ibime'
+  );
+  const hasCustomColor = Boolean(
+    color &&
+    color !== DEFAULT_WHITE_LABEL_CONFIG.primaryColor.toUpperCase() &&
+    color !== '#E41B14'
+  );
+  return hasCustomLogo || hasCustomName || hasCustomColor;
+}
+
 export const useWhiteLabelStore = create<WhiteLabelState>()(
   persist(
     (set, get) => ({
@@ -126,7 +145,7 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
         const trimmed = url.trim();
         set({ 
           logoUrl: trimmed, 
-          isCustomized: Boolean(trimmed || get().primaryColor !== DEFAULT_WHITE_LABEL_CONFIG.primaryColor || get().schoolName) 
+          isCustomized: isCustomBrandConfig(trimmed, get().schoolName, get().primaryColor)
         });
       },
 
@@ -134,7 +153,7 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
         const formattedHex = hexColor.startsWith('#') ? hexColor : `#${hexColor}`;
         set({ 
           primaryColor: formattedHex,
-          isCustomized: Boolean(get().logoUrl || formattedHex !== DEFAULT_WHITE_LABEL_CONFIG.primaryColor || get().schoolName)
+          isCustomized: isCustomBrandConfig(get().logoUrl, get().schoolName, formattedHex)
         });
         applyWhiteLabelCssVariables(formattedHex);
       },
@@ -143,7 +162,7 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
         const trimmed = name.trim();
         set({ 
           schoolName: trimmed,
-          isCustomized: Boolean(get().logoUrl || get().primaryColor !== DEFAULT_WHITE_LABEL_CONFIG.primaryColor || trimmed)
+          isCustomized: isCustomBrandConfig(get().logoUrl, trimmed, get().primaryColor)
         });
       },
 
@@ -159,7 +178,7 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
           logoUrl: newLogo,
           primaryColor: newPrimary,
           schoolName: newName,
-          isCustomized: Boolean(newLogo || newPrimary !== DEFAULT_WHITE_LABEL_CONFIG.primaryColor || newName)
+          isCustomized: isCustomBrandConfig(newLogo, newName, newPrimary)
         });
 
         applyWhiteLabelCssVariables(newPrimary);

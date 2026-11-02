@@ -5,6 +5,7 @@ import { TenantId } from '@/lib/auth/multiTenantSession';
 import {
   TenantThemeTokens,
   getTokensForTenant,
+  isISkoolHouseBrand,
   ISKOOL_THEME_TOKENS
 } from '@/lib/branding/tenantThemeTokens';
 import { useWhiteLabelStore, applyWhiteLabelCssVariables } from '@/store/useWhiteLabelStore';
@@ -53,19 +54,34 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
     const root = document.documentElement;
     root.setAttribute('data-tenant', tenantId);
 
-    // 1. Inyección de variables CSS
-    applyWhiteLabelCssVariables(tokens.primaryColorHex);
-
+    // 1. Inyección de variables CSS base del tenant
     Object.entries(tokens.cssVariables).forEach(([key, val]) => {
       root.style.setProperty(key, val);
     });
 
-    // 2. Sincronización con el store global de marca blanca
-    setWhiteLabelConfig({
-      schoolName: tokens.schoolName,
-      logoUrl: tokens.logoUrl,
-      primaryColor: tokens.primaryColorHex
-    });
+    // 2. Sincronización con el store global de marca blanca:
+    // Si el tenant es 'iskool' y se guardó una marca personalizada en /admin/whitelabel,
+    // se preserva al recargar la página sin sobreescribirla con los valores por defecto.
+    const currentWhiteLabel = useWhiteLabelStore.getState();
+    const isIbimeStored =
+      currentWhiteLabel.logoUrl === '/brand/ibime_logo.webp' ||
+      currentWhiteLabel.schoolName === 'Instituto Bilingüe Ibime';
+    const hasCustomWhiteLabel =
+      tenantId === 'iskool' &&
+      !isIbimeStored &&
+      (currentWhiteLabel.isCustomized ||
+        !isISkoolHouseBrand(currentWhiteLabel.logoUrl, currentWhiteLabel.schoolName));
+
+    if (hasCustomWhiteLabel) {
+      applyWhiteLabelCssVariables(currentWhiteLabel.primaryColor || tokens.primaryColorHex);
+    } else {
+      applyWhiteLabelCssVariables(tokens.primaryColorHex);
+      setWhiteLabelConfig({
+        schoolName: tokens.schoolName,
+        logoUrl: tokens.logoUrl,
+        primaryColor: tokens.primaryColorHex
+      });
+    }
 
     // 3. Actualización dinámica del Favicon
     let faviconLink = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;

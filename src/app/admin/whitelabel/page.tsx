@@ -29,7 +29,8 @@ import {
 } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
-import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
+import { isISkoolHouseBrand, isISkoolOwnLogo, ISKOOL_THEME_TOKENS } from '@/lib/branding/tenantThemeTokens';
+import { compressImageDataUrl } from '@/utils/imageCompressor';
 
 // Paleta de Presets Institucionales Recomendados
 const COLOR_PRESETS = [
@@ -66,10 +67,13 @@ export default function WhiteLabelAdminPage() {
   const setWhiteLabelConfig = useWhiteLabelStore(state => state.setWhiteLabelConfig);
   const resetWhiteLabel = useWhiteLabelStore(state => state.resetWhiteLabel);
 
-  // Estados locales para edición en vivo
-  const [logoUrl, setLogoUrl] = useState(currentLogoUrl);
+  // Estados locales para edición en vivo (si es marca propia de ISkool, iniciar campos editables limpios)
+  const normalizeEditableLogo = (url: string) => (isISkoolOwnLogo(url) ? '' : url);
+  const normalizeEditableName = (name: string) => (name === ISKOOL_THEME_TOKENS.schoolName ? '' : name);
+
+  const [logoUrl, setLogoUrl] = useState(() => normalizeEditableLogo(currentLogoUrl));
   const [primaryColor, setPrimaryColor] = useState(currentPrimaryColor);
-  const [schoolName, setSchoolName] = useState(currentSchoolName);
+  const [schoolName, setSchoolName] = useState(() => normalizeEditableName(currentSchoolName));
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -78,9 +82,9 @@ export default function WhiteLabelAdminPage() {
 
   // Sincronizar estado local si el store se actualiza
   useEffect(() => {
-    setLogoUrl(currentLogoUrl);
+    setLogoUrl(normalizeEditableLogo(currentLogoUrl));
     setPrimaryColor(currentPrimaryColor);
-    setSchoolName(currentSchoolName);
+    setSchoolName(normalizeEditableName(currentSchoolName));
   }, [currentLogoUrl, currentPrimaryColor, currentSchoolName]);
 
   // Aplicar temporalmente el color en tiempo real para previsualización inmediata en toda la app
@@ -89,7 +93,7 @@ export default function WhiteLabelAdminPage() {
     applyWhiteLabelCssVariables(newHex);
   };
 
-  // Carga directa de archivo de imagen local (Data URL Base64)
+  // Carga directa de archivo de imagen local con compresión automática (Regla No Negociable 3)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -100,10 +104,20 @@ export default function WhiteLabelAdminPage() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const result = event.target?.result as string;
       if (result) {
-        setLogoUrl(result);
+        if (file.type === 'image/svg+xml') {
+          setLogoUrl(result);
+        } else {
+          const compressed = await compressImageDataUrl(result, {
+            maxWidth: 512,
+            maxHeight: 512,
+            quality: 0.85,
+            format: 'image/webp'
+          });
+          setLogoUrl(compressed);
+        }
       }
     };
     reader.readAsDataURL(file);

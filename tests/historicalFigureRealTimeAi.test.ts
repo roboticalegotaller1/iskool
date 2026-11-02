@@ -1,12 +1,19 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { POST } from '@/app/api/ai/historical-figure/route';
 import { NextRequest } from 'next/server';
 import { signSessionToken } from '@/lib/sessionToken';
+import fs from 'fs';
+import path from 'path';
 
 describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeout: 45000 }, () => {
   let authHeaders: Record<string, string>;
+  const villaFilePath = path.join(process.cwd(), 'personajes_historicos', 'francisco_villa.md');
+  let originalVillaContent: string | null = null;
 
   beforeAll(async () => {
+    if (fs.existsSync(villaFilePath)) {
+      originalVillaContent = fs.readFileSync(villaFilePath, 'utf8');
+    }
     const token = await signSessionToken({
       id: 'test-student-1',
       email: 'student@iskool.edu.mx',
@@ -17,6 +24,12 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     };
+  });
+
+  afterAll(() => {
+    if (originalVillaContent !== null) {
+      fs.writeFileSync(villaFilePath, originalVillaContent, 'utf8');
+    }
   });
 
   it('debe responder a una pregunta en primera persona estricta sin meta-discursos', async () => {

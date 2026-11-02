@@ -12,6 +12,7 @@ import {
   useTenantBranding
 } from '@/components/branding/TenantBrandingProvider';
 import { TenantTeacherHubCards } from '@/components/branding/TenantTeacherHubCards';
+import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 
 describe('🎨 MOTOR DE WHITE-LABEL Y DISEÑO ATÓMICO: iSkool e IBIME', () => {
 
@@ -107,6 +108,28 @@ describe('🎨 MOTOR DE WHITE-LABEL Y DISEÑO ATÓMICO: iSkool e IBIME', () => {
       expect(screen.getByTestId('tenant-id').textContent).toBe('ibime');
       expect(screen.getByTestId('tenant-name').textContent).toBe('Instituto Bilingüe Ibime');
       expect(screen.getByTestId('is-ibime').textContent).toBe('true');
+    });
+
+    it('debe conservar el logotipo, nombre y color configurados en /admin/whitelabel al recargar (montar TenantBrandingProvider)', () => {
+      useWhiteLabelStore.getState().setWhiteLabelConfig({
+        logoUrl: '/uploads/colegio-sol-logo.webp',
+        schoolName: 'Colegio Sol de México',
+        primaryColor: '#059669'
+      });
+
+      render(
+        <TenantBrandingProvider initialTenant="iskool">
+          <TestConsumer />
+        </TenantBrandingProvider>
+      );
+
+      const stateAfterReload = useWhiteLabelStore.getState();
+      expect(stateAfterReload.isCustomized).toBe(true);
+      expect(stateAfterReload.logoUrl).toBe('/uploads/colegio-sol-logo.webp');
+      expect(stateAfterReload.schoolName).toBe('Colegio Sol de México');
+      expect(stateAfterReload.primaryColor).toBe('#059669');
+
+      useWhiteLabelStore.getState().resetWhiteLabel();
     });
   });
 

@@ -1,9 +1,31 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederationService';
 import { UserAuditContext, CreateOrExtendPlanInput } from '@/lib/curriculum/types';
 
 describe('📚 FEDERACIÓN E INTEROPERABILIDAD CURRICULAR: iSkool Core e IBIME', () => {
+  const trackedPlanFiles = [
+    path.join(process.cwd(), 'planeaciones', 'IBIME', 'Fase_4', '4_Grado', 'ibime-imp-ibime-overlay-plan-nem-f4-g4-cie-001.md'),
+    path.join(process.cwd(), 'planeaciones', 'IBIME', 'Fase_4', '4_Grado', 'ibime-overlay-plan-nem-f4-g4-cie-001.md'),
+    path.join(process.cwd(), 'planeaciones', 'IBIME', 'Fase_5', '5_Grado', 'ibime-imp-plan-nem-f5-g5-mat-002.md'),
+  ];
+  const fileSnapshots = new Map<string, string>();
+
+  beforeAll(() => {
+    for (const filePath of trackedPlanFiles) {
+      if (fs.existsSync(filePath)) {
+        fileSnapshots.set(filePath, fs.readFileSync(filePath, 'utf8'));
+      }
+    }
+  });
+
+  afterAll(() => {
+    for (const [filePath, content] of fileSnapshots.entries()) {
+      fs.writeFileSync(filePath, content, 'utf8');
+    }
+  });
 
   const ibimeTeacherContext: UserAuditContext = {
     user_id: 'usr-ibime-prof-88',

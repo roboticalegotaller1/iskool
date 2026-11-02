@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import {
   GOOGLE_LOGIN_SCOPES,
   GOOGLE_DIRECTOR_WORKSPACE_SCOPES,
@@ -14,6 +16,36 @@ import {
 import robots from '@/app/robots';
 
 describe('🌐 MIGRACIÓN A APP.ISKOOL.MX Y VERIFICACIÓN DE GOOGLE AUTH', () => {
+  const jsonVaultPath = path.join(process.cwd(), 'Correo', 'IBIME', 'borradores_redaccion.json');
+  const borradoresDir = path.join(process.cwd(), 'Correo', 'IBIME', 'borradores');
+  let originalJsonVault: string | null = null;
+  let existingBorradoresFiles = new Set<string>();
+
+  beforeAll(() => {
+    if (fs.existsSync(jsonVaultPath)) {
+      originalJsonVault = fs.readFileSync(jsonVaultPath, 'utf8');
+    }
+    if (fs.existsSync(borradoresDir)) {
+      existingBorradoresFiles = new Set(fs.readdirSync(borradoresDir));
+    }
+  });
+
+  afterAll(() => {
+    if (originalJsonVault !== null) {
+      fs.writeFileSync(jsonVaultPath, originalJsonVault, 'utf8');
+    }
+    if (fs.existsSync(borradoresDir)) {
+      for (const file of fs.readdirSync(borradoresDir)) {
+        if (!existingBorradoresFiles.has(file)) {
+          try {
+            fs.unlinkSync(path.join(borradoresDir, file));
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+  });
   describe('1. Separación Estricta de Scopes OAuth (Evitar Auditoría CASA Tier 2/3)', () => {
     it('el login normal debe solicitar ÚNICAMENTE openid, email y profile', () => {
       expect(GOOGLE_LOGIN_SCOPES).toEqual(['openid', 'email', 'profile']);

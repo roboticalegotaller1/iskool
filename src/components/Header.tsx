@@ -11,7 +11,7 @@ import { usePortfolioStore } from '../store/usePortfolioStore';
 import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
-import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
+import { isISkoolHouseBrand, ISKOOL_THEME_TOKENS } from '@/lib/branding/tenantThemeTokens';
 import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 import { BackButton } from '@/components/navigation/BackButton';
@@ -60,14 +60,17 @@ export const Header: React.FC = () => {
   const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 
+  const customSchoolName = whiteLabelSchoolName && whiteLabelSchoolName !== ISKOOL_THEME_TOKENS.schoolName
+    ? whiteLabelSchoolName
+    : '';
   const effectiveLogoUrl = isIbimeActive ? '/brand/ibime_logo.webp' : (whiteLabelLogo || schoolSettings?.logoUrl);
   const effectiveSchoolName = isIbimeActive 
     ? 'Instituto Bilingüe IBIME' 
     : (isSuperUser && !activeSchoolId 
         ? 'ISkool (Directorio Global)' 
-        : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool'));
+        : (customSchoolName || schoolSettings?.name || 'ISkool'));
   const isGlobalDirectory = !isIbimeActive && isSuperUser && !activeSchoolId;
-  const showISkoolLogo = !isIbimeActive && isISkoolHouseBrand(effectiveLogoUrl, isGlobalDirectory ? '' : effectiveSchoolName);
+  const showISkoolLogo = !isIbimeActive && isISkoolHouseBrand(effectiveLogoUrl, isGlobalDirectory ? '' : (customSchoolName || (user || activeSchoolId ? effectiveSchoolName : '')));
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {

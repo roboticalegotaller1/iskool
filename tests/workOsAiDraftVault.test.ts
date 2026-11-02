@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   generateDraftWithRealTokens,
   searchSimilarDraftInVault,
@@ -13,6 +13,36 @@ import path from 'path';
 
 describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y RECUPERACIÓN POR SIMILITUD', () => {
   const testTenantId = 'e1000000-0000-0000-0000-000000000001';
+  const jsonVaultPath = path.join(process.cwd(), 'Correo', 'IBIME', 'borradores_redaccion.json');
+  const borradoresDir = path.join(process.cwd(), 'Correo', 'IBIME', 'borradores');
+  let originalJsonVault: string | null = null;
+  let existingBorradoresFiles = new Set<string>();
+
+  beforeAll(() => {
+    if (fs.existsSync(jsonVaultPath)) {
+      originalJsonVault = fs.readFileSync(jsonVaultPath, 'utf8');
+    }
+    if (fs.existsSync(borradoresDir)) {
+      existingBorradoresFiles = new Set(fs.readdirSync(borradoresDir));
+    }
+  });
+
+  afterAll(() => {
+    if (originalJsonVault !== null) {
+      fs.writeFileSync(jsonVaultPath, originalJsonVault, 'utf8');
+    }
+    if (fs.existsSync(borradoresDir)) {
+      for (const file of fs.readdirSync(borradoresDir)) {
+        if (!existingBorradoresFiles.has(file)) {
+          try {
+            fs.unlinkSync(path.join(borradoresDir, file));
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+  });
 
   it('debe normalizar consultas y calcular similitud entre temas relacionados', () => {
     const q1 = normalizeDraftQuery('voluntarios para el festival de navidad');

@@ -1,5 +1,7 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 import { NextRequest } from 'next/server';
 import { middleware } from '@/middleware';
 import { signMultiTenantToken } from '@/lib/auth/multiTenantSession';
@@ -8,6 +10,27 @@ import { UserAuditContext, CreateOrExtendPlanInput } from '@/lib/curriculum/type
 import { getTokensForTenant } from '@/lib/branding/tenantThemeTokens';
 
 describe('🛡️ E2E INTEGRATION TEST: Aislamiento Hermético de iSkool e IBIME', () => {
+  const trackedOverlayPath = path.join(
+    process.cwd(),
+    'planeaciones',
+    'IBIME',
+    'Fase_4',
+    '4_Grado',
+    'ibime-overlay-plan-nem-f4-g4-cie-001.md'
+  );
+  let originalOverlayContent: string | null = null;
+
+  beforeAll(() => {
+    if (fs.existsSync(trackedOverlayPath)) {
+      originalOverlayContent = fs.readFileSync(trackedOverlayPath, 'utf8');
+    }
+  });
+
+  afterAll(() => {
+    if (originalOverlayContent !== null) {
+      fs.writeFileSync(trackedOverlayPath, originalOverlayContent, 'utf8');
+    }
+  });
 
   const ibimeTeacherContext: UserAuditContext = {
     user_id: 'usr-ibime-prof-e2e',

@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
-import { isISkoolHouseBrand } from '@/lib/branding/tenantThemeTokens';
+import { isISkoolHouseBrand, ISKOOL_THEME_TOKENS } from '@/lib/branding/tenantThemeTokens';
 import { isPlatformSuperUser } from '@/types';
 import { 
   GraduationCap, 
@@ -68,10 +68,13 @@ export function TeacherNavbar() {
   ];
 
   const displayName = user ? `${user.first_name || 'Profesor(a)'} ${user.last_name || ''}`.trim() : 'Docente';
+  const customSchoolName = whiteLabelSchoolName && whiteLabelSchoolName !== ISKOOL_THEME_TOKENS.schoolName
+    ? whiteLabelSchoolName
+    : '';
   const schoolName = isIbime 
     ? 'Instituto Bilingüe IBIME' 
-    : (whiteLabelSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
-  const showISkoolLogo = !isIbime && isISkoolHouseBrand(whiteLabelLogo, schoolName);
+    : (customSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
+  const showISkoolLogo = !isIbime && isISkoolHouseBrand(whiteLabelLogo, customSchoolName || (user ? schoolName : ''));
 
   return (
     <header className={`sticky top-0 z-40 transition-colors ${
