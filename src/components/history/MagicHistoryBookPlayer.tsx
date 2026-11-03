@@ -32,6 +32,7 @@ import {
   HistoricalFigureMoment 
 } from '@/types/studioBlocks';
 import { HistoricalLivingAvatar } from './HistoricalLivingAvatar';
+import { stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import { HistoricalInteractiveMap } from './HistoricalInteractiveMap';
 import { HistoricalTimelineComic } from './HistoricalTimelineComic';
 import { HistoricalCinematicVideo } from './HistoricalCinematicVideo';
@@ -179,6 +180,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   };
 
   const handleCloseBook = () => {
+    stopAllIskoolAudio();
     playPageTurnSound();
     setIsClosing(true);
     setTimeout(() => {
@@ -189,6 +191,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   };
 
   const handleNextPage = () => {
+    stopAllIskoolAudio();
     // Si estamos en la página del Timelapse / Cómic (Página 2 de 6, índice 1), pasar a la siguiente card
     if (currentPage === 1) {
       const totalMoments = (data.moments && data.moments.length > 0) ? data.moments.length : 4;
@@ -210,6 +213,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   };
 
   const handlePrevPage = () => {
+    stopAllIskoolAudio();
     // Si estamos en la página del Timelapse / Cómic (Página 2 de 6, índice 1), retroceder de card
     if (currentPage === 1) {
       if (comicMomentIndex > 0) {
@@ -502,7 +506,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                             <div className="pt-2 flex flex-wrap gap-2">
                               <button
                                 type="button"
-                                onClick={() => setCurrentPage(1)}
+                                onClick={() => { stopAllIskoolAudio(); setCurrentPage(1); }}
                                 className="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
                               >
                                 <span>Explorar Novela Gráfica (4 Momentos)</span>
@@ -510,7 +514,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => setCurrentPage(4)}
+                                onClick={() => { stopAllIskoolAudio(); setCurrentPage(4); }}
                                 className="px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-amber-200 font-bold text-xs flex items-center gap-2 border border-amber-500/30 cursor-pointer"
                               >
                                 <MessageSquare className="w-4 h-4 text-amber-400" />

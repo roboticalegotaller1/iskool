@@ -256,28 +256,29 @@ export function normalizeMexicanSpanishText(text: string): string {
     return yearToSpanishWords(parseInt(yearStr, 10));
   });
 
-  // 5. Números formateados con separador de miles (espacio o coma), tropas y censos:
+  // 5.a Cantidades monetarias e importes (ANTES de expandir comas de miles): e.g. "$235,900.00", "$20,000", "$500 pesos", "$100"
+  const currencyRegex = /\$\s*(\d[\d\s,]*(?:\.\d{1,2})?)\s*(?:pesos|dólares|usd|mxn)?\b/gi;
+  result = result.replace(currencyRegex, (_match, amountStr) => {
+    const integerPart = amountStr.replace(/\.00$/, '').replace(/[\s,]/g, '');
+    const clean = parseInt(integerPart, 10);
+    if (!isNaN(clean)) {
+      return `${numberToSpanishWords(clean)} pesos`;
+    }
+    return _match;
+  });
+
+  // 5.b Números formateados con separador de miles (espacio o coma), tropas y censos:
   // e.g. "20 000 combatientes" -> "veinte mil combatientes", "100 000 hombres", "1,500 cañones"
-  const spacedThousandsRegex = /\b(\d{1,3}(?:\s+\d{3})+)\b/g;
+  const spacedThousandsRegex = /\b(\d{1,3}(?:\s+\d{3})+)(?:\.00)?\b/g;
   result = result.replace(spacedThousandsRegex, (_match, numStr) => {
     const cleanNum = parseInt(numStr.replace(/\s+/g, ''), 10);
     return isNaN(cleanNum) ? numStr : numberToSpanishWords(cleanNum);
   });
 
-  const commaThousandsRegex = /\b(\d{1,3}(?:,\d{3})+)\b/g;
+  const commaThousandsRegex = /\b(\d{1,3}(?:,\d{3})+)(?:\.00)?\b/g;
   result = result.replace(commaThousandsRegex, (_match, numStr) => {
     const cleanNum = parseInt(numStr.replace(/,/g, ''), 10);
     return isNaN(cleanNum) ? numStr : numberToSpanishWords(cleanNum);
-  });
-
-  // Cantidades monetarias e importes: e.g. "$20,000", "$500 pesos", "$100"
-  const currencyRegex = /\$\s*(\d[\d\s,.]*)\s*(?:pesos|dólares|usd|mxn)?\b/gi;
-  result = result.replace(currencyRegex, (_match, amountStr) => {
-    const clean = parseInt(amountStr.replace(/[\s,]/g, ''), 10);
-    if (!isNaN(clean)) {
-      return `${numberToSpanishWords(clean)} pesos`;
-    }
-    return _match;
   });
 
   // 5. Siglos en números romanos: "Siglo XIX" -> "Siglo diecinueve"
@@ -414,11 +415,17 @@ export function normalizeMexicanSpanishText(text: string): string {
   // Asegura que las exclamaciones lleven signo de apertura
   result = result.replace(/(^|[.?!\n;]\s*)([^.?!¿¡\n]+)(!)/g, '$1¡$2$3');
 
-  // 10. Corrección ortoépica de hiato acentual en "país" / "países" para articulación natural
+  // 10. Corrección ortoépica de hiato/diptongo acentual en "país" / "países" y "patria" / "patrias"
+  // Evita que motores neurales es-MX deslicen el acento de "patria" hacia "pa-trí-a"
   result = result.replace(/\bPais\b/g, 'País');
   result = result.replace(/\bpais\b/g, 'país');
   result = result.replace(/\bPaises\b/g, 'Países');
   result = result.replace(/\bpaises\b/g, 'países');
+  result = result.replace(/\bPatria\b/g, 'Pátria');
+  result = result.replace(/\bpatria\b/g, 'pátria');
+  result = result.replace(/\bPatrias\b/g, 'Pátrias');
+  result = result.replace(/\bpatrias\b/g, 'pátrias');
+  result = result.replace(/\bISkool\b/gi, 'Aiskul');
 
   return result;
 }

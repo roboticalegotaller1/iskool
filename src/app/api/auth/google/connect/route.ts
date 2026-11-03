@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
     const email = forceHint ? rawEmail : undefined;
     const rawRedirect = req.nextUrl.searchParams.get('redirect') || '';
     const safeRedirect = sanitizeInternalRedirectUrl(rawRedirect, '');
-    const includeReadonly = req.nextUrl.searchParams.get('includeReadonly') === 'true';
 
     const statePayload = signOAuthState({
       flow: 'workspace_connect',
@@ -29,11 +28,12 @@ export async function GET(req: NextRequest) {
       redirect: safeRedirect
     });
 
+    // Blindaje OAuth: Siempre solicita únicamente los scopes sensibles verificados (gmail.send y calendar.events)
     const authUrl = GoogleOAuthService.getWorkspaceConnectUrl(
       origin,
       statePayload,
       email,
-      includeReadonly
+      false
     );
 
     return NextResponse.redirect(authUrl);

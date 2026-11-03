@@ -6,6 +6,7 @@
 
 import { normalizeMexicanSpanishText } from './audio/lexicalNormalizer';
 import { applyPhoneticSubstitutions } from './audio/phoneticDictionary';
+import { attachStudioBroadcastMaster, StudioBroadcastChain } from './audio/studioBroadcastMaster';
 import {
   getLanguagePipeline,
   resolveTargetLocale,
@@ -1022,20 +1023,43 @@ export interface UniversalAudioController {
 // Caché en memoria para URLs de audio ya sintetizadas (latencia 0 ms en repeticiones)
 const universalAudioBlobCache = new Map<string, string>();
 let globalActiveAudioElement: HTMLAudioElement | null = null;
+let globalActiveBroadcastChain: StudioBroadcastChain | null = null;
 let globalActiveUtterance: SpeechSynthesisUtterance | null = null;
+let globalActiveAbortController: AbortController | null = null;
+let globalActiveStopCallback: (() => void) | null = null;
+let globalPlaybackSeq = 0;
 
 /**
- * Detiene inmediatamente cualquier locución o audio en curso en todo el sistema ISkool.
+ * Detiene inmediatamente cualquier locución, petición en vuelo o audio en curso en todo el sistema ISkool.
  */
 export function stopAllIskoolAudio(): void {
   if (typeof window === 'undefined') return;
 
+  globalPlaybackSeq++;
+
+  if (globalActiveAbortController) {
+    try {
+      globalActiveAbortController.abort();
+    } catch {}
+    globalActiveAbortController = null;
+  }
+
   if (globalActiveAudioElement) {
     try {
+      globalActiveAudioElement.onplay = null;
+      globalActiveAudioElement.onended = null;
+      globalActiveAudioElement.onerror = null;
       globalActiveAudioElement.pause();
       globalActiveAudioElement.currentTime = 0;
     } catch {}
     globalActiveAudioElement = null;
+  }
+
+  if (globalActiveBroadcastChain) {
+    try {
+      globalActiveBroadcastChain.cleanup();
+    } catch {}
+    globalActiveBroadcastChain = null;
   }
 
   if ('speechSynthesis' in window) {
@@ -1044,12 +1068,20 @@ export function stopAllIskoolAudio(): void {
     } catch {}
     globalActiveUtterance = null;
   }
+
+  if (globalActiveStopCallback) {
+    const cb = globalActiveStopCallback;
+    globalActiveStopCallback = null;
+    try {
+      cb();
+    } catch {}
+  }
 }
 
 /**
  * Reproductor de voz universal de ISkool:
  * 1. Prioriza el motor neural en `/api/ai/tts` con prosodia oratoria, respiración natural y fonética nativa certificada.
- * 2. Utiliza caché en memoria para respuesta instantánea en clics repetidos.
+ * 2. Utiliza caché en memoria para respuesta instantánea en clics repetidos y bloqueo atómico anti-doble clic.
  * 3. Si no hay conexión o falla la red, activa el fallback local con SpeechSynthesis aplicando
  *    el dialecto nativo (fr-FR para francés, en-US para inglés o es-MX con filtro anti-castellano para español).
  */
@@ -1081,21 +1113,51 @@ export async function playUniversalIskoolVoice(
 
   let isStopped = false;
   let isCurrentlyPlaying = false;
+  let hasNotifiedStart = false;
+  let hasNotifiedEnd = false;
+
+  const notifyStartOnce = () => {
+    if (!hasNotifiedStart && !isStopped) {
+      hasNotifiedStart = true;
+      isCurrentlyPlaying = true;
+      onStart?.();
+    }
+  };
+
+  const notifyEndOnce = () => {
+    if (!hasNotifiedEnd) {
+      hasNotifiedEnd = true;
+      isCurrentlyPlaying = false;
+      onEnd?.();
+    }
+  };
 
   const controller: UniversalAudioController = {
     stop: () => {
+      if (isStopped) return;
       isStopped = true;
       isCurrentlyPlaying = false;
+      if (globalActiveStopCallback === notifyEndOnce) {
+        globalActiveStopCallback = null;
+      }
       stopAllIskoolAudio();
-      onEnd?.();
+      notifyEndOnce();
     },
-    isPlaying: () => isCurrentlyPlaying
+    isPlaying: () => isCurrentlyPlaying && !isStopped
   };
 
   if (typeof window === 'undefined') return controller;
 
-  // Detener cualquier audio anterior
+  // Detener cualquier audio o petición anterior antes de iniciar una nueva
   stopAllIskoolAudio();
+
+  const mySeq = ++globalPlaybackSeq;
+  const abortController = new AbortController();
+  globalActiveAbortController = abortController;
+  globalActiveStopCallback = () => {
+    isStopped = true;
+    notifyEndOnce();
+  };
 
   // Limpieza inicial de texto y markdown
   const cleanText = text
@@ -1106,9 +1168,13 @@ export async function playUniversalIskoolVoice(
     .trim();
 
   if (!cleanText) {
-    onEnd?.();
+    notifyEndOnce();
     return controller;
   }
+
+  // Notificar inicio inmediatamente para que cualquier botón de interfaz cambie a estado activo ("Detener")
+  // desde el primer clic y bloquee dobles clics mientras se sintetiza el audio.
+  notifyStartOnce();
 
   const effectiveGender = gender || (characterName ? getPersonaGender(characterName) : 'female');
   const rawLang = (language || '').toLowerCase();
@@ -1121,7 +1187,7 @@ export async function playUniversalIskoolVoice(
     : voiceId?.startsWith('en-')
     ? 'en'
     : 'es';
-  const cacheKey = `${voiceId || characterName || role}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
+  const cacheKey = `v6_studio_human_conv::${voiceId || characterName || role}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
 
   // Intentar primero con el motor neural de alta fidelidad
   try {
@@ -1132,6 +1198,7 @@ export async function playUniversalIskoolVoice(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        signal: abortController.signal,
         body: JSON.stringify({
           text: cleanText,
           characterName,
@@ -1151,38 +1218,57 @@ export async function playUniversalIskoolVoice(
       }
 
       const blob = await response.blob();
+      if (isStopped || mySeq !== globalPlaybackSeq) {
+        return controller;
+      }
       audioUrl = URL.createObjectURL(blob);
       universalAudioBlobCache.set(cacheKey, audioUrl);
     }
 
-    if (isStopped) return controller;
+    if (isStopped || mySeq !== globalPlaybackSeq) return controller;
 
     const audio = new Audio(audioUrl);
     globalActiveAudioElement = audio;
-    // El archivo MP3 neural de 24kHz ya viene sintetizado con la prosodia humana exacta;
+    // El archivo MP3 neural ya viene sintetizado con la prosodia humana exacta;
     // mantener playbackRate en 1.0 evita artefactos metálicos por time-stretching del navegador.
     audio.playbackRate = 1.0;
 
+    // Conectar el flujo a la cadena de masterización Broadcast de 7 etapas (EQ, De-Esser, Compresor Óptico y Cabina Acústica)
+    const broadcastChain = attachStudioBroadcastMaster(audio, {
+      gender: effectiveGender,
+      role
+    });
+    globalActiveBroadcastChain = broadcastChain;
+
     audio.onplay = () => {
-      if (isStopped) {
+      if (isStopped || mySeq !== globalPlaybackSeq) {
         audio.pause();
         return;
       }
-      isCurrentlyPlaying = true;
-      onStart?.();
+      notifyStartOnce();
     };
 
     audio.onended = () => {
-      isCurrentlyPlaying = false;
+      if (globalActiveBroadcastChain === broadcastChain) {
+        broadcastChain?.cleanup();
+        globalActiveBroadcastChain = null;
+      }
       if (globalActiveAudioElement === audio) {
         globalActiveAudioElement = null;
       }
-      onEnd?.();
+      if (globalActiveStopCallback) {
+        globalActiveStopCallback = null;
+      }
+      notifyEndOnce();
     };
 
     audio.onerror = (e) => {
+      if (isStopped || mySeq !== globalPlaybackSeq) return;
       console.warn('[VozUniversal] Error reproduciendo audio neural, derivando a síntesis local:', e);
-      isCurrentlyPlaying = false;
+      if (globalActiveBroadcastChain === broadcastChain) {
+        broadcastChain?.cleanup();
+        globalActiveBroadcastChain = null;
+      }
       if (globalActiveAudioElement === audio) {
         globalActiveAudioElement = null;
       }
@@ -1191,11 +1277,12 @@ export async function playUniversalIskoolVoice(
 
     await audio.play();
     return controller;
-  } catch (err) {
-    console.warn('[VozUniversal] Derivando a síntesis local debido a:', err);
-    if (!isStopped) {
-      runLocalSpeechFallback();
+  } catch (err: any) {
+    if (isStopped || mySeq !== globalPlaybackSeq || err?.name === 'AbortError') {
+      return controller;
     }
+    console.warn('[VozUniversal] Derivando a síntesis local debido a:', err);
+    runLocalSpeechFallback();
     return controller;
   }
 
@@ -1355,32 +1442,35 @@ export async function playUniversalIskoolVoice(
       }
 
       utterance.onstart = () => {
-        if (isStopped) {
+        if (isStopped || mySeq !== globalPlaybackSeq) {
           window.speechSynthesis.cancel();
           return;
         }
-        isCurrentlyPlaying = true;
-        onStart?.();
+        notifyStartOnce();
       };
 
       utterance.onend = () => {
-        isCurrentlyPlaying = false;
         globalActiveUtterance = null;
-        onEnd?.();
+        if (globalActiveStopCallback) {
+          globalActiveStopCallback = null;
+        }
+        notifyEndOnce();
       };
 
       utterance.onerror = (err) => {
-        isCurrentlyPlaying = false;
         globalActiveUtterance = null;
+        if (globalActiveStopCallback) {
+          globalActiveStopCallback = null;
+        }
         onError?.(err);
-        onEnd?.();
+        notifyEndOnce();
       };
 
       globalActiveUtterance = utterance;
       window.speechSynthesis.speak(utterance);
     } catch (localErr) {
       onError?.(localErr);
-      onEnd?.();
+      notifyEndOnce();
     }
   }
 }
@@ -1472,7 +1562,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 4. ADA LOVELACE (3D: /images/languages/3d/ada_lovelace_3d.webp | 2D: /images/languages/historical/ada_lovelace.jpg)
-  if (norm.includes('ada') || norm.includes('lovelace')) {
+  if (norm.includes('lovelace') || /\bada\b/.test(norm)) {
     if (is2DPortrait) {
       return {
         x1: 504, y1: 344, cx: 530, cy: 344, x2: 556, y2: 344,
@@ -1490,7 +1580,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 5. MARIE CURIE (3D: /images/languages/3d/marie_curie_3d.webp | 2D: /images/languages/historical/marie_curie.jpg)
-  if (norm.includes('curie') || norm.includes('marie')) {
+  if (norm.includes('curie') || /\bmarie\b/.test(norm)) {
     if (is2DPortrait) {
       return {
         x1: 472, y1: 460, cx: 504, cy: 460, x2: 536, y2: 460,
@@ -1508,7 +1598,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 6. VICTOR HUGO (3D: /images/languages/3d/victor_hugo_3d.webp | 2D: /images/languages/historical/victor_hugo.jpg)
-  if (norm.includes('victor') || norm.includes('hugo')) {
+  if (norm.includes('victor hugo') || /\bhugo\b/.test(norm)) {
     if (is2DPortrait) {
       return {
         x1: 484, y1: 402, cx: 520, cy: 402, x2: 556, y2: 402,
@@ -1526,7 +1616,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 7. JEANNE D'ARC (3D: /images/languages/3d/jeanne_darc_3d.webp | 2D: /images/languages/historical/jeanne_darc.jpg)
-  if (norm.includes('jeanne') || norm.includes('darc') || norm.includes('arc')) {
+  if (norm.includes('jeanne') || norm.includes('darc') || norm.includes("d'arc") || norm.includes('juana de arco')) {
     if (is2DPortrait) {
       return {
         x1: 488, y1: 390, cx: 516, cy: 390, x2: 544, y2: 390,
@@ -1544,7 +1634,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
-  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem') || norm.includes('mme') || norm.includes('mentor_female')) {
+  if (norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
     return {
       x1: 464, y1: 370, cx: 516, cy: 374, x2: 568, y2: 370,
       chinY: 424, eyeY: 256, leftEyeX: 444, rightEyeX: 588, eyeRadius: 34, baseOpen: 0.38,
@@ -1554,7 +1644,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 9. MENTOR MASCULINO 3D (/images/languages/3d/mentor_male_3d_v2.webp)
-  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri') || norm.includes('prof') || norm.includes('mentor_male')) {
+  if (norm.includes('mentor_male') || norm.includes('arthur') || norm.includes('henri')) {
     return {
       x1: 448, y1: 292, cx: 486, cy: 294, x2: 524, y2: 292,
       chinY: 350, eyeY: 196, leftEyeX: 442, rightEyeX: 534, eyeRadius: 24, baseOpen: 0.30,
@@ -1567,12 +1657,23 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS (CALIBRACIÓN SUB-PÍXEL VERIFICADA)
   // =========================================================================
 
-  // 10. EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
+  // 10. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png) — PRIORIDAD ALTA ANTES DE APELLIDO DOMÍNGUEZ
+  if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
+    return {
+      x1: 454, y1: 368, cx: 490, cy: 368, x2: 528, y2: 368,
+      chinY: 426, eyeY: 264, leftEyeX: 450, rightEyeX: 536, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 492, focusY: 340, zoom: 1.35 },
+      maxOpening: 16.5, cavityDarkColor: '#120204', cavityMidColor: '#2e070c', cavityRimColor: '#521119',
+      lowerLipRimColor: 'rgba(172, 68, 72, 0.94)', teethColor: '#f6f0e6'
+    };
+  }
+
+  // 10.B EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
   if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
     return {
       x1: 516, y1: 562, cx: 566, cy: 560, x2: 616, y2: 562,
       chinY: 648, eyeY: 422, leftEyeX: 500, rightEyeX: 626, eyeRadius: 22, baseOpen: 0,
-      maxOpening: 15, cavityDarkColor: '#0e0204', cavityMidColor: '#26050a', cavityRimColor: '#440d14',
+      maxOpening: 16, cavityDarkColor: '#0e0204', cavityMidColor: '#26050a', cavityRimColor: '#440d14',
       lowerLipRimColor: 'rgba(152, 62, 54, 0.92)', teethColor: '#ede4d6', mustacheCover: true
     };
   }
@@ -1580,9 +1681,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.png)
   if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
     return {
-      x1: 462, y1: 355, cx: 500, cy: 353, x2: 538, y2: 355,
-      chinY: 420, eyeY: 252, leftEyeX: 452, rightEyeX: 552, eyeRadius: 18, baseOpen: 0,
-      maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#320a10', cavityRimColor: '#52131a',
+      x1: 468, y1: 330, cx: 506, cy: 330, x2: 546, y2: 330,
+      chinY: 382, eyeY: 236, leftEyeX: 460, rightEyeX: 554, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 506, focusY: 310, zoom: 1.24 },
+      maxOpening: 15.5, cavityDarkColor: '#160406', cavityMidColor: '#320a10', cavityRimColor: '#52131a',
       lowerLipRimColor: 'rgba(168, 76, 70, 0.90)', teethColor: '#eee4d8'
     };
   }
@@ -1590,9 +1692,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
-      x1: 486, y1: 331, cx: 511, cy: 332, x2: 536, y2: 331,
-      chinY: 382, eyeY: 256, leftEyeX: 472, rightEyeX: 548, eyeRadius: 16, baseOpen: 0,
-      maxOpening: 13, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
+      x1: 472, y1: 374, cx: 494, cy: 374, x2: 520, y2: 374,
+      chinY: 410, eyeY: 304, leftEyeX: 466, rightEyeX: 528, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 498, focusY: 345, zoom: 1.35 },
+      maxOpening: 14.5, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
       lowerLipRimColor: 'rgba(202, 88, 98, 0.94)', teethColor: '#fff5ec'
     };
   }
@@ -1600,9 +1703,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
-      x1: 482, y1: 314, cx: 510, cy: 314, x2: 538, y2: 314,
-      chinY: 374, eyeY: 232, leftEyeX: 468, rightEyeX: 552, eyeRadius: 16, baseOpen: 0,
-      maxOpening: 14, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
+      x1: 486, y1: 286, cx: 514, cy: 286, x2: 544, y2: 286,
+      chinY: 338, eyeY: 208, leftEyeX: 474, rightEyeX: 554, eyeRadius: 16, baseOpen: 0,
+      bustCrop: { focusX: 514, focusY: 270, zoom: 1.30 },
+      maxOpening: 15, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
       lowerLipRimColor: 'rgba(160, 70, 65, 0.90)', teethColor: '#ede4d6'
     };
   }
@@ -1712,7 +1816,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.png)
-  if (norm.includes('belisario') || norm.includes('dominguez')) {
+  if (norm.includes('belisario')) {
     return {
       x1: 484, y1: 295, cx: 511, cy: 295, x2: 538, y2: 295,
       chinY: 348, eyeY: 216, leftEyeX: 474, rightEyeX: 548, eyeRadius: 15, baseOpen: 0,
@@ -1759,27 +1863,18 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       x1: 490, y1: 340, cx: 516, cy: 340, x2: 542, y2: 340,
       chinY: 388, eyeY: 274, leftEyeX: 482, rightEyeX: 550, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 516, focusY: 320, zoom: 1.32 },
-      maxOpening: 13, cavityDarkColor: '#080102', cavityMidColor: '#1f0306', cavityRimColor: '#3d0b11',
+      maxOpening: 15, cavityDarkColor: '#080102', cavityMidColor: '#1f0306', cavityRimColor: '#3d0b11',
       lowerLipRimColor: 'rgba(145, 60, 50, 0.92)', teethColor: '#ede5d8', mustacheCover: true
     };
   }
 
-  // 29. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png)
-  if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
-    return {
-      x1: 478, y1: 358, cx: 506, cy: 358, x2: 534, y2: 358,
-      chinY: 416, eyeY: 266, leftEyeX: 464, rightEyeX: 550, eyeRadius: 18, baseOpen: 0,
-      maxOpening: 13.5, cavityDarkColor: '#0a0102', cavityMidColor: '#240407', cavityRimColor: '#450d13',
-      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)', teethColor: '#f2ede4'
-    };
-  }
-
-  // 30. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
+  // 29. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
   if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
     return {
-      x1: 472, y1: 344, cx: 506, cy: 344, x2: 540, y2: 344,
-      chinY: 405, eyeY: 248, leftEyeX: 458, rightEyeX: 554, eyeRadius: 18, baseOpen: 0,
-      maxOpening: 14, cavityDarkColor: '#090203', cavityMidColor: '#210508', cavityRimColor: '#3c0f14',
+      x1: 486, y1: 352, cx: 526, cy: 352, x2: 564, y2: 352,
+      chinY: 414, eyeY: 236, leftEyeX: 474, rightEyeX: 566, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 520, focusY: 320, zoom: 1.24 },
+      maxOpening: 15.5, cavityDarkColor: '#090203', cavityMidColor: '#210508', cavityRimColor: '#3c0f14',
       lowerLipRimColor: 'rgba(165, 80, 75, 0.88)', teethColor: '#eee6da'
     };
   }

@@ -468,7 +468,7 @@ export async function POST(req: NextRequest) {
 
     const cacheKey = crypto
       .createHash('sha256')
-      .update(`${targetVoice}::${normalizedTextHash}::${targetSSML}`)
+      .update(`v6_studio_human_conv::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
       .digest('hex');
 
     const cachedBuffer = getAudioFromCache(cacheKey);
@@ -485,7 +485,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Síntesis neuronal de audio de alta fidelidad (24kHz / 96kbps MP3)
+    // 3. Síntesis neuronal de audio de alta fidelidad con masterización de estudio
     let audioBuffer: Buffer;
     try {
       const fallbackRatePercent = Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
@@ -500,7 +500,9 @@ export async function POST(req: NextRequest) {
         text: rawNormalizedText || cleanText || text || targetSSML.replace(/<[^>]+>/g, ' '),
         voice: targetVoice,
         rate: finalRate,
-        pitch: finalPitch
+        pitch: finalPitch,
+        characterName: characterName || '',
+        role: role || ''
       });
     } catch (neuralErr) {
       console.warn('[TTS] Motor neuronal primario reportó incidencia, intentando canal secundario:', neuralErr);

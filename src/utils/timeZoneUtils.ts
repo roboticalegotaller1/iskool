@@ -387,6 +387,8 @@ export function sanitizeCommercialTrademarks(text?: string | null): string {
   return text
     .replace(/google\s*ai\s*studio/gi, 'Centro de Innovación y Motor IA')
     .replace(/google\s*ai/gi, 'Inteligencia Artificial Pedagógica')
+    .replace(/google\s*calendar/gi, 'Calendario Institucional')
+    .replace(/calendar-notification@google\.com/gi, 'agenda.institucional@iskool.mx')
     .replace(/gemini\s*(?:\d+(?:\.\d+)?\s*(?:flash|pro|ultra|argon)?|advanced)?/gi, 'Motor Pedagógico IA')
     .replace(/chatgpt/gi, 'Asistente Digital')
     .replace(/openai/gi, 'Laboratorio de Inteligencia Artificial')
@@ -395,4 +397,154 @@ export function sanitizeCommercialTrademarks(text?: string | null): string {
     .replace(/canvas\s*lms/gi, 'Lienzo Digital')
     .replace(/\bcanvas\b/gi, 'Lienzo Digital');
 }
+
+function tryDecodeBase64Utf8Chunk(b64Raw: string): string | null {
+  try {
+    const clean = b64Raw.replace(/\.{2,}$/, '').replace(/[^A-Za-z0-9+/=]/g, '');
+    if (clean.length < 16) return null;
+    const alignedLen = clean.length - (clean.length % 4);
+    if (alignedLen < 16) return null;
+    const aligned = clean.slice(0, alignedLen);
+
+    let bytes: Uint8Array;
+    if (typeof Buffer !== 'undefined') {
+      bytes = new Uint8Array(Buffer.from(aligned, 'base64'));
+    } else if (typeof atob === 'function') {
+      const bin = atob(aligned);
+      bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    } else {
+      return null;
+    }
+
+    const decoded = new TextDecoder('utf-8', { fatal: false })
+      .decode(bytes)
+      .replace(/\uFFFD+$/g, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!decoded || decoded.length < 6) return null;
+    // Verificar que al menos el 80% sean caracteres legibles en español/ASCII
+    let printable = 0;
+    for (let i = 0; i < decoded.length; i++) {
+      const code = decoded.charCodeAt(i);
+      if ((code >= 32 && code <= 126) || (code >= 160 && code <= 687)) {
+        printable++;
+      }
+    }
+    if (printable / decoded.length < 0.8) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Decodifica automáticamente cadenas Base64 (ej. invitaciones MIME de calendario o fragmentos truncados)
+ * y limpia artefactos técnicos para presentar siempre un resumen ejecutivo legible en español.
+ */
+export function decodeEmailBodyOrSnippet(
+  rawText?: string | null,
+  fallbackSubject?: string,
+  senderName?: string
+): string {
+  if (!rawText || typeof rawText !== 'string') {
+    return fallbackSubject
+      ? `Comunicación institucional referente a «${sanitizeCommercialTrademarks(fallbackSubject)}».`
+      : 'Comunicación oficial registrada en buzón institucional.';
+  }
+
+  let text = rawText.trim();
+
+  // Caso 1: Todo el texto es un bloque Base64 (con o sin saltos de línea/espacios y '...' al final)
+  const strippedForCheck = text.replace(/\.{2,}$/, '').replace(/\s+/g, '');
+  if (strippedForCheck.length >= 20 && /^[A-Za-z0-9+/=]+$/.test(strippedForCheck) && !/\s/.test(text.slice(0, 24))) {
+    const fullDecoded = tryDecodeBase64Utf8Chunk(strippedForCheck);
+    if (fullDecoded) {
+      return sanitizeCommercialTrademarks(fullDecoded);
+    }
+  }
+
+  // Caso 2: Bloques Base64 incrustados dentro del texto (ej. después de 'Google Calendar · VGlIbmVz...')
+  text = text.replace(
+    /(?:[A-Za-z0-9+/]{24,}(?:\s+[A-Za-z0-9+/=]{10,})*(?:\.{2,})?)/g,
+    (match) => {
+      const decodedChunk = tryDecodeBase64Utf8Chunk(match);
+      if (decodedChunk) return decodedChunk;
+      return '';
+    }
+  );
+
+  // Limpiar artefactos quoted-printable o encabezados residuales
+  text = text
+    .replace(/=[0-9A-F]{2}/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[·•\-:\s]+|[·•\-:\s]+$/g, '')
+    .trim();
+
+  if (!text || text.length < 8 || /[A-Za-z0-9+/]{35,}/.test(text)) {
+    const cleanSub = sanitizeCommercialTrademarks(fallbackSubject || 'Notificación Institucional');
+    const cleanSender = sanitizeCommercialTrademarks(senderName || 'Remitente Institucional');
+    return `Notificación oficial emitida por ${cleanSender} sobre «${cleanSub}». Pendiente de revisión y confirmación en el despacho directivo.`;
+  }
+
+  return sanitizeCommercialTrademarks(text);
+}
+
+/**
+ * Normaliza códigos de expediente eliminando guiones duplicados (ej. MAT-TEST--2026-511 -> MAT-TEST-2026-511).
+ */
+export function formatCleanMatterCode(code?: string | null): string {
+  if (!code) return 'MAT-INST-2026-001';
+  return code.replace(/-{2,}/g, '-').replace(/^-|-$/g, '').toUpperCase();
+}
+
+/**
+ * Limpia el texto de SLA para evitar emojis duplicados (⏱️ ⏱️) y mantener formato compacto.
+ */
+export function formatCleanSlaText(slaText?: string | null, slaHours?: number): string {
+  if (!slaText) return `${slaHours || 12}h restantes`;
+  return slaText.replace(/^[⏱️⏳\s]+/u, '').trim() || `${slaHours || 12}h restantes`;
+}
+
+/**
+ * Formatea una fecha/hora de expediente en versión ejecutiva compacta para tarjetas de listado
+ * (ej. "miércoles, 28 de octubre de 2026, 07:49:53 (Hora CDMX) (28 oct...)" -> "28 oct · 07:49")
+ */
+export function formatCompactExecutiveTimestamp(raw?: string | null): string {
+  if (!raw) return 'Hoy';
+  const clean = raw.trim();
+  if (clean.length <= 22) return clean.replace(/\s*\(Hora CDMX\)/i, '');
+
+  const spanishMatch = clean.match(/(\d{1,2})\s+de\s+([a-záéíóúñ]{3,10})(?:\s+de\s+\d{4})?.*?(\d{1,2}:\d{2})/i);
+  if (spanishMatch) {
+    const day = spanishMatch[1].padStart(2, '0');
+    const month = spanishMatch[2].slice(0, 3).toLowerCase();
+    const time = spanishMatch[3];
+    return `${day} ${month} · ${time}`;
+  }
+
+  const shortMatch = clean.match(/(\d{1,2}\s+[a-záéíóúñ]{3}).*?(\d{1,2}:\d{2})/i);
+  if (shortMatch) {
+    return `${shortMatch[1].toLowerCase()} · ${shortMatch[2]}`;
+  }
+
+  return clean.split('(')[0].replace(/,\s*\d{4}/, '').trim().slice(0, 22);
+}
+
+/**
+ * Formatea una fecha/hora de expediente completa pero limpia (sin duplicaciones entre paréntesis)
+ * para el encabezado del Muelle de Decisión.
+ */
+export function formatFullExecutiveTimestamp(raw?: string | null): string {
+  if (!raw) return 'Hoy · Hora CDMX';
+  // Eliminar segundo paréntesis duplicado como "(Hora CDMX) (28 oct 2026...)"
+  const withoutDuplicateParen = raw
+    .replace(/\(Hora CDMX\)\s*\([^)]*\)/i, '(Hora CDMX)')
+    .replace(/:\d{2}\s*\(Hora CDMX\)/i, ' hrs (CDMX)')
+    .trim();
+  return withoutDuplicateParen;
+}
+
 

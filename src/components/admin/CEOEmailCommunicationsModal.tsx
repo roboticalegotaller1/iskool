@@ -136,7 +136,12 @@ import {
   formatCdmxSmartBadge,
   formatCdmxFull,
   parseEmailDateMs,
-  sanitizeCommercialTrademarks
+  sanitizeCommercialTrademarks,
+  decodeEmailBodyOrSnippet,
+  formatCleanMatterCode,
+  formatCleanSlaText,
+  formatCompactExecutiveTimestamp,
+  formatFullExecutiveTimestamp
 } from '@/utils/timeZoneUtils';
 import { WorkOsBoard } from './workOs/WorkOsBoard';
 import { SeedAccountsConfigPanel } from './workOs/SeedAccountsConfigPanel';
@@ -190,6 +195,28 @@ export interface MatterItem {
   is_resolved?: boolean;
   is_replied?: boolean;
   resolved_at?: string;
+}
+
+function resolveDistinctExecutiveCategory(matter: { category?: string; title?: string; sender_name?: string; sender_email?: string }): string {
+  const rawCat = (matter.category || '').trim();
+  const isRedundantCeoLabel = !rawCat || /atenci[oó]n\s+inmediata\s+ceo/i.test(rawCat);
+  if (!isRedundantCeoLabel) {
+    return sanitizeCommercialTrademarks(rawCat);
+  }
+  const combined = `${matter.title || ''} ${matter.sender_name || ''} ${matter.sender_email || ''}`.toLowerCase();
+  if (/calendar|evento|gira|agenda|cita|audiencia|reuni[oó]n|invitaci[oó]n/i.test(combined)) {
+    return 'Agenda & Eventos Directivos';
+  }
+  if (/comedor|alimento|salud|m[eé]dic|enfermer|alergia|nutrici/i.test(combined)) {
+    return 'Salud & Bienestar Escolar';
+  }
+  if (/sep\b|supervisi[oó]n|zona\s+escolar|normativ|jur[ií]dic|acta|acuerdo/i.test(combined)) {
+    return 'Cumplimiento & Normativa SEP';
+  }
+  if (/cfdi|sat\b|factura|colegiatura|beca|tesorer|finanza|pago/i.test(combined)) {
+    return 'Finanzas & Tesorería';
+  }
+  return 'Despacho de Dirección General';
 }
 
 export interface DiscardedEmailItem {
@@ -3086,31 +3113,31 @@ export function CEOEmailCommunicationsModal({
           return m.id === `mat-live-${email.id}` || mCleanId === cleanId || mNormSub === normSub;
         });
 
-        const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
-        const summary = cleanSnippet.length > 220 ? cleanSnippet.slice(0, 217) + '...' : (cleanSnippet || 'Comunicación oficial recibida en buzón.');
+        const decodedSnippet = decodeEmailBodyOrSnippet(email.snippet || email.body_text || '', email.subject, email.sender_name);
+        const summary = decodedSnippet.length > 220 ? decodedSnippet.slice(0, 217) + '...' : (decodedSnippet || 'Comunicación oficial recibida en buzón.');
         const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
-        const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
+        const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 5) || 'MAT';
 
         const synthesizedMatter: MatterItem = {
           id: `mat-live-${cleanId || email.id}`,
           matter_code: `MAT-${prefix}-2026-${(cleanId || email.id).replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
-          title: email.subject,
+          title: sanitizeCommercialTrademarks(email.subject),
           summary,
-          category: 'Atención Inmediata CEO',
+          category: resolveDistinctExecutiveCategory({ title: email.subject, sender_name: email.sender_name, sender_email: email.sender_email }),
           urgency: 'CRITICA',
           destination: 'ATENCION_CEO',
           why_shown: 'Correo prioritario clasificado como Atención Inmediata CEO por instrucción directiva.',
           reincidence_count: 1,
           recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
-          suggested_draft_reply: `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`,
+          suggested_draft_reply: `Estimado(a) ${sanitizeCommercialTrademarks(email.sender_name)}:\n\nHe recibido personalmente su comunicación en relación con: "${sanitizeCommercialTrademarks(email.subject)}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`,
           assigned_role: 'Dirección General / CEO',
           assigned_email: email.recipient_email,
           sla_hours: 12,
-          sla_remaining_text: '⏱️ 12h restantes',
-          sender_name: email.sender_name,
-          sender_email: email.sender_email,
-          provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
-          received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : formatCdmxRelative(new Date()),
+          sla_remaining_text: '12h restantes',
+          sender_name: sanitizeCommercialTrademarks(email.sender_name),
+          sender_email: sanitizeCommercialTrademarks(email.sender_email),
+          provenance_doc: `Buzón Institucional en Vivo (${sanitizeCommercialTrademarks(email.sender_email)})`,
+          received_at: email.received_at || formatCdmxRelative(new Date()),
           campus: primaryCampus
         };
 
@@ -4138,22 +4165,22 @@ ${schoolName}`
             whyShown = `Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO (${category}).`;
           }
 
-          const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
-          const summary = cleanSnippet.length > 220 ? cleanSnippet.slice(0, 217) + '...' : (cleanSnippet || 'Comunicación oficial recibida en buzón.');
+          const decodedSnippet = decodeEmailBodyOrSnippet(email.snippet || email.body_text || '', email.subject, email.sender_name);
+          const summary = decodedSnippet.length > 220 ? decodedSnippet.slice(0, 217) + '...' : (decodedSnippet || 'Comunicación oficial recibida en buzón.');
 
           const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
-          const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
+          const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 5) || 'MAT';
 
           const defaultDraft = isFoodDiningConcern
-            ? `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`
-            : `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
+            ? `Estimado(a) ${sanitizeCommercialTrademarks(email.sender_name)}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`
+            : `Estimado(a) ${sanitizeCommercialTrademarks(email.sender_name)}:\n\nHe recibido personalmente su comunicación en relación con: "${sanitizeCommercialTrademarks(email.subject)}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
 
           const synthesizedMatter: MatterItem = {
             id: `mat-live-${email.id}`,
             matter_code: `MAT-${prefix}-2026-${email.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
-            title: email.subject,
+            title: sanitizeCommercialTrademarks(email.subject),
             summary,
-            category,
+            category: resolveDistinctExecutiveCategory({ category, title: email.subject, sender_name: email.sender_name, sender_email: email.sender_email }),
             urgency: 'CRITICA',
             destination: 'ATENCION_CEO',
             why_shown: whyShown,
@@ -4163,11 +4190,11 @@ ${schoolName}`
             assigned_role: 'Dirección General / CEO',
             assigned_email: email.recipient_email,
             sla_hours: 12,
-            sla_remaining_text: '⏱️ 12h restantes',
-            sender_name: email.sender_name,
-            sender_email: email.sender_email,
-            provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
-            received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : formatCdmxRelative(new Date()),
+            sla_remaining_text: '12h restantes',
+            sender_name: sanitizeCommercialTrademarks(email.sender_name),
+            sender_email: sanitizeCommercialTrademarks(email.sender_email),
+            provenance_doc: `Buzón Institucional en Vivo (${sanitizeCommercialTrademarks(email.sender_email)})`,
+            received_at: email.received_at || formatCdmxRelative(new Date()),
             campus: primaryCampus
           };
 
@@ -5063,17 +5090,7 @@ ${schoolName}`
           window.location.href = popupUrl;
         } else {
           popup.focus();
-          onTriggerToast('🌐 Abriendo ventana oficial de Google: En la ventana emergente, marca "Seleccionar todo" y presiona "Continuar" al fondo...');
-          
-          // Vigilar cierre de la ventana: si el usuario la cierra sin autorizar, ofrecer el token de 16 dígitos
-          const checkClosedTimer = setInterval(() => {
-            if (popup.closed) {
-              clearInterval(checkClosedTimer);
-              setTimeout(() => {
-                setShowAppPasswordHelper(true);
-              }, 600);
-            }
-          }, 1000);
+          onTriggerToast('🌐 Abriendo ventana oficial de Google OAuth 2.0 (alcances verificados: gmail.send y calendar.events)...');
         }
       }
       return;
@@ -5678,12 +5695,7 @@ ${schoolName}`
       // 2.1 Sincronización reactiva de la Bandeja de Entrada con Gmail API oficial e IMAP
       try {
         let rawData: any = null;
-        const passParam = effectivePass ? `&password=${encodeURIComponent(effectivePass)}` : '';
-        const getRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}${passParam}`);
-        if (getRes.ok) {
-          rawData = await getRes.json();
-        }
-        if (!rawData?.success || !Array.isArray(rawData?.emails) || rawData.emails.length === 0) {
+        if (effectivePass) {
           const postRes = await fetch('/api/mail/raw-inbox', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -5693,11 +5705,35 @@ ${schoolName}`
               password: effectivePass,
               host: currentHost,
               port: currentPort,
-              isOAuth: isOAuthMode
+              isOAuth: isOAuthMode,
+              force: !isSilent
             })
           });
           if (postRes.ok) {
             rawData = await postRes.json();
+          }
+        } else {
+          const getRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`);
+          if (getRes.ok) {
+            rawData = await getRes.json();
+          }
+          if (!rawData?.success || !Array.isArray(rawData?.emails) || rawData.emails.length === 0) {
+            const postRes = await fetch('/api/mail/raw-inbox', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                tenantId: currentTenantId,
+                email: targetEmail,
+                password: '',
+                host: currentHost,
+                port: currentPort,
+                isOAuth: isOAuthMode,
+                force: !isSilent
+              })
+            });
+            if (postRes.ok) {
+              rawData = await postRes.json();
+            }
           }
         }
         if (rawData?.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
@@ -8375,33 +8411,51 @@ Comité de Seguridad y Protección Escolar`
                       </div>
                     )}
 
-                    {/* Barra de Control de Densidad Visual */}
-                    <div className="flex items-center justify-between px-1 pb-1">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {filteredMatters.length} Asunto(s) · {groupIncidentMatters ? 'Agrupados por Incidencia' : 'Vista Compacta'}
-                        </span>
-                        {usableSubFilter === 'DELEGADOS' && (
-                          <button
-                            type="button"
-                            onClick={() => setGroupIncidentMatters(!groupIncidentMatters)}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
-                              groupIncidentMatters
-                                ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300'
-                                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
-                            }`}
-                            title="Alternar entre agrupar correos iguales o verlos individualmente"
-                          >
-                            {groupIncidentMatters ? '✓ Casos Agrupados' : 'Desglosado (Individual)'}
-                          </button>
-                        )}
+                    {/* Barra de Control de Densidad Visual con Emblema Ejecutivo Nano Banana 2.1 */}
+                    <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border ${
+                      currentTheme.isDark
+                        ? 'bg-slate-900/80 border-white/10'
+                        : 'bg-white/90 border-slate-200/80 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <img
+                          src="/images/triage_executive_crest.webp"
+                          alt="Emblema Triage Institucional"
+                          className="w-7 h-7 rounded-lg object-cover border border-indigo-500/30 shadow-2xs shrink-0"
+                        />
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <span className={`text-[11px] font-black tracking-tight ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                            {filteredMatters.length} Expediente(s)
+                          </span>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                            currentTheme.isDark
+                              ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-300'
+                              : 'bg-indigo-50 border-indigo-200/70 text-indigo-700'
+                          }`}>
+                            {groupIncidentMatters ? 'Agrupados por Incidencia' : 'Vista Compacta'}
+                          </span>
+                          {usableSubFilter === 'DELEGADOS' && (
+                            <button
+                              type="button"
+                              onClick={() => setGroupIncidentMatters(!groupIncidentMatters)}
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
+                                groupIncidentMatters
+                                  ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300'
+                                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                              }`}
+                              title="Alternar entre agrupar correos iguales o verlos individualmente"
+                            >
+                              {groupIncidentMatters ? '✓ Casos Agrupados' : 'Desglosado (Individual)'}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <button
                           type="button"
                           onClick={expandAllCards}
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
-                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                          className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                           }`}
                           title="Expandir todas las tarjetas"
                         >
@@ -8410,8 +8464,8 @@ Comité de Seguridad y Protección Escolar`
                         <button
                           type="button"
                           onClick={collapseAllCards}
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
-                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                          className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                           }`}
                           title="Colapsar a vista compacta de alta densidad"
                         >
@@ -8421,9 +8475,15 @@ Comité de Seguridad y Protección Escolar`
                     </div>
 
                     {filteredMatters.map((matter) => {
-                      const isUrgent = matter.urgency === 'CRITICA';
                       const isCeoAttention = matter.destination === 'ATENCION_CEO';
                       const isExpanded = !!expandedCardIds[matter.id];
+                      const cleanCode = formatCleanMatterCode(matter.matter_code);
+                      const cleanSla = formatCleanSlaText(matter.sla_remaining_text, matter.sla_hours);
+                      const compactTime = formatCompactExecutiveTimestamp(matter.received_at);
+                      const distinctCategory = resolveDistinctExecutiveCategory(matter);
+                      const cleanTitle = sanitizeCommercialTrademarks(matter.title);
+                      const cleanSender = sanitizeCommercialTrademarks(matter.sender_name);
+                      const cleanSummary = decodeEmailBodyOrSnippet(matter.summary, matter.title, matter.sender_name);
 
                       return (
                         <div
@@ -8435,24 +8495,24 @@ Comité de Seguridad y Protección Escolar`
                               setShowExpandedMatterDrawer(true);
                             }
                           }}
-                          className={`p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer group relative border ${
+                          className={`p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer group relative border ${
                             selectedMatter?.id === matter.id
-                              ? `${currentTheme.cardSelected} shadow-md`
+                              ? `${currentTheme.cardSelected} shadow-md ring-1 ring-indigo-500/30`
                               : isCeoAttention
                               ? currentTheme.isDark
-                                ? 'border-red-500/50 bg-[#160A0D] hover:border-red-400'
-                                : 'border-red-200 bg-white hover:border-red-300'
+                                ? 'border-red-500/45 bg-[#160A0D] hover:border-red-400'
+                                : 'border-red-200/90 bg-white hover:border-red-300 shadow-2xs'
                               : matter.destination === 'DELEGADO_CON_SLA'
                               ? currentTheme.isDark
                                 ? 'border-amber-500/40 bg-[#171207] hover:border-amber-400'
-                                : 'border-amber-200 bg-white hover:border-amber-300'
+                                : 'border-amber-200/90 bg-white hover:border-amber-300 shadow-2xs'
                               : `${currentTheme.cardBg} ${currentTheme.cardBorder} ${currentTheme.cardHover}`
                           }`}
                           style={themeMode === 'custom' && customTheme.cardColor ? {
                             backgroundColor: selectedMatter?.id === matter.id
                               ? (isColorLight(customTheme.cardColor) ? '#FFFFFF' : '#1E293B')
                               : isCeoAttention
-                              ? (isColorLight(customTheme.cardColor) ? '#FFF5F5' : '#1C0D12')
+                              ? (isColorLight(customTheme.cardColor) ? '#FFF8F8' : '#1C0D12')
                               : customTheme.cardColor,
                             borderColor: selectedMatter?.id === matter.id
                               ? customTheme.buttonColor || '#6366F1'
@@ -8463,44 +8523,59 @@ Comité de Seguridad y Protección Escolar`
                           } : undefined}
                           title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
                         >
-                          {/* FILA SUPERIOR COMPACTA (EXACTO A IMAGEN 4) */}
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                              <span className={`font-mono text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-md ${
-                                currentTheme.isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700'
+                          {/* FILA SUPERIOR DE METADATOS EJECUTIVOS (SIN DESBORDAMIENTO NI RUPTURA DE BADGES) */}
+                          <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+                            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                              <span className={`font-mono text-[10px] font-black px-2 py-0.5 rounded-md whitespace-nowrap shrink-0 border ${
+                                currentTheme.isDark
+                                  ? 'bg-white/10 border-white/10 text-slate-100'
+                                  : 'bg-slate-100 border-slate-200/80 text-slate-800'
                               }`}>
-                                {matter.matter_code}
+                                {cleanCode}
                               </span>
-                              <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                isCeoAttention ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30' :
-                                matter.destination === 'DELEGADO_CON_SLA' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' :
-                                'bg-blue-500/15 text-blue-600 dark:text-blue-300 border border-blue-500/30'
+                              <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wide px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                                isCeoAttention
+                                  ? 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
+                                  : matter.destination === 'DELEGADO_CON_SLA'
+                                  ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                                  : 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30'
                               }`}>
-                                {isCeoAttention ? '🔴 ATENCIÓN INMEDIATA CEO' :
-                                 matter.destination === 'DELEGADO_CON_SLA' ? '🟡 DELEGADO CON SLA' :
-                                 '🔵 INFORMATIVO'}
+                                {isCeoAttention
+                                  ? '🔴 Atención CEO'
+                                  : matter.destination === 'DELEGADO_CON_SLA'
+                                  ? '🟡 Delegado SLA'
+                                  : '🔵 Informativo'}
                               </span>
-                              <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border truncate max-w-[130px] sm:max-w-none ${
+                              <span className={`hidden xl:inline-block text-[9px] font-bold px-2 py-0.5 rounded-md border truncate max-w-[140px] ${
                                 currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'
                               }`}>
-                                {matter.category}
+                                {distinctCategory}
                               </span>
                               {matter.reincidence_count > 1 && (
-                                <span className="text-[9px] font-black text-rose-600 bg-rose-500/15 px-1.5 py-0.5 rounded-md border border-rose-500/30 flex items-center gap-0.5">
+                                <span className="text-[9px] font-black text-rose-600 bg-rose-500/15 px-1.5 py-0.5 rounded-md border border-rose-500/30 flex items-center gap-0.5 whitespace-nowrap shrink-0">
                                   <AlertTriangle className="h-2.5 w-2.5" /> {matter.reincidence_count}
                                 </span>
                               )}
                             </div>
 
-                            <div className="flex items-center gap-2 shrink-0 text-[10px] sm:text-[11px] font-bold">
-                              <span 
-                                className="font-mono font-black flex items-center gap-1"
+                            <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-bold ml-auto">
+                              <span
+                                className={`font-mono font-black px-2 py-0.5 rounded-md whitespace-nowrap flex items-center gap-1 border ${
+                                  currentTheme.isDark
+                                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                                    : 'bg-amber-50 border-amber-200/80 text-amber-800'
+                                }`}
                                 style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
                               >
-                                ⏱️ {matter.sla_remaining_text}
+                                <span>⏱️</span>
+                                <span>{cleanSla}</span>
                               </span>
-                              <span className={currentTheme.isDark ? 'text-slate-500' : 'text-slate-400'}>•</span>
-                              <span className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}>{matter.received_at}</span>
+                              <span
+                                className={`whitespace-nowrap font-semibold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                                title={matter.received_at}
+                              >
+                                {compactTime}
+                              </span>
                               <button
                                 type="button"
                                 onClick={(e) => toggleCardExpand(matter.id, e)}
@@ -8515,35 +8590,41 @@ Comité de Seguridad y Protección Escolar`
                             </div>
                           </div>
 
-                          {/* FILA INFERIOR COMPACTA: TÍTULO Y SNIPPET DE 1 LÍNEA */}
-                          <div className="mt-1.5 flex items-baseline justify-between gap-2">
-                            <h4 
-                              className={`text-xs sm:text-sm font-black truncate group-hover:text-indigo-500 transition-colors ${
+                          {/* FILA INTERMEDIA E INFERIOR: TÍTULO COMPLETO Y RESUMEN DECODIFICADO LEGIBLE */}
+                          <div className="mt-2 space-y-1">
+                            <h4
+                              className={`text-xs sm:text-[13px] font-black leading-snug truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors ${
                                 currentTheme.isDark ? 'text-white' : 'text-slate-900'
                               }`}
                               style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
                             >
-                              {matter.title}
+                              {cleanTitle}
                             </h4>
                             {!isExpanded && (
-                              <span 
-                                className={`text-[10px] sm:text-[11px] font-medium truncate max-w-[160px] sm:max-w-xs shrink-0 ${
-                                  currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
-                                }`}
-                                style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
-                              >
-                                {matter.sender_name} · {matter.summary}
-                              </span>
+                              <div className="flex items-center gap-1.5 text-[11px] min-w-0">
+                                <span className={`font-bold shrink-0 ${currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                                  {cleanSender}
+                                </span>
+                                <span className={currentTheme.isDark ? 'text-slate-600' : 'text-slate-300'}>·</span>
+                                <span
+                                  className={`font-medium truncate min-w-0 ${
+                                    currentTheme.isDark ? 'text-slate-400' : 'text-slate-600'
+                                  }`}
+                                  style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                                >
+                                  {cleanSummary}
+                                </span>
+                              </div>
                             )}
                           </div>
 
-                          {/* SECCIÓN EXPANDIBLE (SE DESPLIEGA AL HACER CLIC EN EL CHEVRON O EN LA TARJETA) */}
+                          {/* SECCIÓN EXPANDIBLE (SE DESPLIEGA AL HACER CLIC EN EL CHEVRON) */}
                           {isExpanded && (
                             <div className={`mt-3 pt-3 border-t space-y-2.5 animate-in fade-in duration-150 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
                               <p className={`text-xs leading-relaxed font-medium ${
                                 currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
                               }`}>
-                                {matter.summary}
+                                {cleanSummary}
                               </p>
 
                               {/* Explicabilidad Causal: ¿Por qué te lo muestro? */}
@@ -8551,7 +8632,7 @@ Comité de Seguridad y Protección Escolar`
                                 currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/80'
                               }`}>
                                 <span className="font-bold text-indigo-500 shrink-0">¿Por qué te lo muestro?</span>
-                                <span className={currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'}>{matter.why_shown}</span>
+                                <span className={currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'}>{sanitizeCommercialTrademarks(matter.why_shown)}</span>
                               </div>
 
                               {/* Cláusula de procedencia Bóveda Curricular */}
@@ -8563,14 +8644,14 @@ Comité de Seguridad y Protección Escolar`
                                   <span>Procedencia Bóveda Curricular:</span>
                                   <code className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
                                     currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-700'
-                                  }`}>{matter.provenance_doc}</code>
+                                  }`}>{sanitizeCommercialTrademarks(matter.provenance_doc)}</code>
                                 </div>
                               )}
 
                               {/* Remitente y Botones de Acción */}
                               <div className={`pt-2 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
                                 <div className={`text-xs ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                  <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{matter.sender_name}</strong> ({matter.sender_email})</span>
+                                  <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{cleanSender}</strong> ({sanitizeCommercialTrademarks(matter.sender_email)})</span>
                                 </div>
 
                                 <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto justify-end">
@@ -8629,87 +8710,150 @@ Comité de Seguridad y Protección Escolar`
                     } : undefined}
                   >
                     {selectedMatter ? (
-                      <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
-                        {/* Encabezado del Dock */}
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-3" style={themeMode === 'custom' ? { borderColor: isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155' } : undefined}>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-black text-sm px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800">
-                              {selectedMatter.matter_code}
+                      <div className="flex-1 overflow-y-auto p-5 sm:p-6 pb-16 space-y-4 text-xs">
+                        {/* Encabezado Ejecutivo del Dock con Emblema Nano Banana 2.1 */}
+                        <div
+                          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 flex-wrap ${
+                            currentTheme.isDark
+                              ? 'bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border-white/10'
+                              : 'bg-gradient-to-r from-slate-50 via-indigo-50/40 to-white border-slate-200/90 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 flex-wrap min-w-0">
+                            <img
+                              src="/images/triage_executive_crest.webp"
+                              alt="Escudo de Gobernanza Ejecutiva"
+                              className="w-9 h-9 rounded-xl object-cover border border-indigo-500/30 shadow-xs shrink-0"
+                            />
+                            <span className="font-mono font-black text-xs sm:text-sm px-2.5 py-1 rounded-xl bg-slate-900 text-white dark:bg-white/10 dark:text-white whitespace-nowrap">
+                              {formatCleanMatterCode(selectedMatter.matter_code)}
                             </span>
-                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                              selectedMatter.destination === 'ATENCION_CEO' ? 'bg-red-100 text-red-800' :
-                              selectedMatter.destination === 'DELEGADO_CON_SLA' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
-                              'bg-blue-100 text-blue-800'
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${
+                              selectedMatter.destination === 'ATENCION_CEO'
+                                ? 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
+                                : selectedMatter.destination === 'DELEGADO_CON_SLA'
+                                ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                                : 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30'
                             }`}>
-                              {selectedMatter.destination === 'ATENCION_CEO' ? '🔴 Atención Inmediata CEO' :
-                               selectedMatter.destination === 'DELEGADO_CON_SLA' ? '🟡 Delegado con SLA' : '🔵 Informativo'}
+                              {selectedMatter.destination === 'ATENCION_CEO'
+                                ? '🔴 Atención Inmediata CEO'
+                                : selectedMatter.destination === 'DELEGADO_CON_SLA'
+                                ? '🟡 Delegado con SLA'
+                                : '🔵 Informativo'}
                             </span>
-                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {selectedMatter.category}
+                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap ${
+                              currentTheme.isDark
+                                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
+                                : 'bg-indigo-50 border-indigo-200/80 text-indigo-800'
+                            }`}>
+                              {resolveDistinctExecutiveCategory(selectedMatter)}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="text-amber-700 font-mono font-black text-xs bg-amber-50 px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
-                              {selectedMatter.sla_remaining_text}
+                          <div className="flex items-center gap-2 shrink-0 ml-auto">
+                            <span className="text-amber-800 dark:text-amber-300 font-mono font-black text-xs bg-amber-50 dark:bg-amber-500/15 px-3 py-1 rounded-xl border border-amber-200 dark:border-amber-500/30 shadow-2xs whitespace-nowrap flex items-center gap-1">
+                              <span>⏱️</span>
+                              <span>{formatCleanSlaText(selectedMatter.sla_remaining_text, selectedMatter.sla_hours)}</span>
                             </span>
                             <button
                               type="button"
                               onClick={() => setShowExpandedMatterDrawer(true)}
-                              className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border border-slate-200"
+                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border border-slate-200 dark:border-white/10 whitespace-nowrap shadow-2xs"
                               title="Ampliar expediente a pantalla completa"
                             >
-                              <Maximize2 className="h-3.5 w-3.5 text-slate-600" />
-                              <span className="hidden sm:inline">Ampliar</span>
+                              <Maximize2 className="h-3.5 w-3.5 text-indigo-500" />
+                              <span>Ampliar</span>
                             </button>
                           </div>
                         </div>
 
-                        {/* Título y Datos del Remitente */}
-                        <div className="space-y-1">
+                        {/* Título, Remitente Sanitizado y Estampado Temporal CDMX */}
+                        <div className="space-y-1.5 px-0.5">
                           <h3 
-                            className={`text-base font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}
+                            className={`text-base sm:text-lg font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}
                             style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
                           >
-                            {selectedMatter.title}
+                            {sanitizeCommercialTrademarks(selectedMatter.title)}
                           </h3>
                           <div 
-                            className={`flex items-center gap-2 text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                            className={`flex items-center gap-2 flex-wrap text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
                             style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
                           >
-                            <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
+                            <span>
+                              Remitente:{' '}
+                              <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>
+                                {sanitizeCommercialTrademarks(selectedMatter.sender_name)}
+                              </strong>{' '}
+                              <span className="font-mono text-[10px] opacity-80">&lt;{sanitizeCommercialTrademarks(selectedMatter.sender_email)}&gt;</span>
+                            </span>
                             <span>•</span>
-                            <span>Plantel: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
+                            <span>
+                              Plantel:{' '}
+                              <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>
+                                {selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}
+                              </strong>
+                            </span>
+                            {selectedMatter.received_at && (
+                              <>
+                                <span>•</span>
+                                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
+                                  {formatFullExecutiveTimestamp(selectedMatter.received_at)}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
 
-                        {/* Extracto de Comunicación Original */}
-                        <div className={`p-3.5 rounded-2xl border space-y-1.5 ${currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/90'}`}>
-                          <div className="flex items-center justify-between">
-                            <span className={`text-[10px] font-black uppercase tracking-wider ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                              Extracto del Mensaje Recibido
+                        {/* Extracto de Comunicación Original (Con Decodificación Automática Base64 / UTF-8 y Lectura de Estudio) */}
+                        <div className={`p-4 rounded-2xl border space-y-2 relative overflow-hidden ${
+                          currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50/90 border-slate-200/90'
+                        }`}>
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
+                          <div className="flex items-center justify-between gap-2 flex-wrap pl-1">
+                            <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
+                              currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-900'
+                            }`}>
+                              <MailOpen className="h-3.5 w-3.5 text-indigo-500" />
+                              <span>Extracto del Mensaje Recibido (Decodificado)</span>
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenOriginalEmailFromMatter(selectedMatter)}
-                              className="text-[11px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 cursor-pointer"
-                            >
-                              <Mail className="h-3 w-3" /> Ver Correo Completo
-                            </button>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const decodedBody = decodeEmailBodyOrSnippet(selectedMatter.summary, selectedMatter.title, selectedMatter.sender_name);
+                                  playUniversalIskoolVoice({
+                                    text: `Expediente ${formatCleanMatterCode(selectedMatter.matter_code)}. Asunto: ${sanitizeCommercialTrademarks(selectedMatter.title)}. ${decodedBody}`,
+                                    role: 'pedagogical',
+                                    gender: 'female'
+                                  });
+                                }}
+                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 flex items-center gap-1 cursor-pointer transition-colors"
+                                title="Escuchar resumen con voz generativa de estudio"
+                              >
+                                <Volume2 className="h-3 w-3" /> Escuchar Resumen
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenOriginalEmailFromMatter(selectedMatter)}
+                                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                              >
+                                <Mail className="h-3 w-3" /> Ver Correo Completo
+                              </button>
+                            </div>
                           </div>
-                          <p className={`text-xs leading-relaxed font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                            {selectedMatter.summary}
+                          <p className={`text-xs leading-relaxed font-medium pl-1 ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-700'}`}>
+                            {decodeEmailBodyOrSnippet(selectedMatter.summary, selectedMatter.title, selectedMatter.sender_name)}
                           </p>
                         </div>
 
                         {/* TARJETA EXPEDIENTE 360° EN VIVO (BUS CONTEXTUAL iMAIL ↔ PORTAL ACADÉMICO ↔ FINANZAS) */}
-                        <div className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                        <div className={`p-4 rounded-2xl border space-y-3 ${
                           currentTheme.isDark
                             ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-100'
                             : 'bg-emerald-50/70 border-emerald-200/90 text-slate-900'
                         }`}>
                           <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-300 flex items-center gap-1.5">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
                               <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Expediente 360° en Vivo · Bus Contextual iSkool
                             </span>
                             <button
@@ -8721,16 +8865,16 @@ Comité de Seguridad y Protección Escolar`
                                   onTriggerToast('Abriendo expediente del alumno en Portal Académico 360°...');
                                 }
                               }}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                              className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
                             >
                               <span>🎓 Ver Portafolio en Portal Académico 360° →</span>
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
-                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
-                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Alumno / Familia</span>
-                              <span className="font-black block truncate">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 text-[11px]">
+                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Alumno / Familia</span>
+                              <span className="font-black block truncate text-slate-900 dark:text-white">
                                 {selectedMatter.sender_name?.includes('Mendoza')
                                   ? 'Mateo Mendoza (5º B)'
                                   : selectedMatter.sender_name?.includes('SEP')
@@ -8738,18 +8882,18 @@ Comité de Seguridad y Protección Escolar`
                                   : 'Sofía Hernández (CCH)'}
                               </span>
                             </div>
-                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
-                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Promedio & Asistencia</span>
-                              <span className="font-black text-emerald-600 dark:text-emerald-400 block">9.6 · 98.5% Asist.</span>
+                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Promedio & Asistencia</span>
+                              <span className="font-black text-emerald-600 dark:text-emerald-400 block whitespace-nowrap">9.6 · 98.5% Asist.</span>
                             </div>
-                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
-                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Avance en La Aldea</span>
-                              <span className="font-black text-indigo-600 dark:text-indigo-400 block">Nivel 14 (3,420 XP)</span>
+                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Avance en La Aldea</span>
+                              <span className="font-black text-indigo-600 dark:text-indigo-400 block whitespace-nowrap">Nivel 14 (3,420 XP)</span>
                             </div>
-                            <div className={`p-2 rounded-xl border ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70'}`}>
-                              <span className="text-[9px] font-bold uppercase text-slate-400 block">Estatus SAT CFDI 4.0</span>
-                              <span className={`font-black text-emerald-700 dark:text-emerald-300 block ${boardroomPrivacyMode ? 'blur-xs select-none' : ''}`}>
-                                Al Corriente (0 Adeudos)
+                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Estatus SAT CFDI 4.0</span>
+                              <span className={`font-black text-emerald-700 dark:text-emerald-300 block whitespace-nowrap ${boardroomPrivacyMode ? 'blur-xs select-none' : ''}`}>
+                                ✓ Al Corriente (0 Adeudos)
                               </span>
                             </div>
                           </div>
@@ -9312,79 +9456,103 @@ Comité de Seguridad y Protección Escolar`
 
                 {/* Estado de la Cuenta Activa (Verificación Estricta por Ping en Tiempo Real) */}
                 {connectedEmail && connectedEmail !== 'DISCONNECTED' && connectionStatus === 'connected_verified' ? (
-                  /* 1. Tarjeta Verificada Exitosamente con Ping de Retorno Confirmado */
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50/70 via-slate-50 to-white border border-emerald-200/80 space-y-3">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-xs shrink-0 p-2">
-                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 24)}
+                  /* 1. Tarjeta Verificada Exitosamente con Ping de Retorno Confirmado (Layout Ejecutivo Nano Banana 2.1 en 3 Niveles sin Solapamiento) */
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-slate-50 to-white border border-emerald-200/90 shadow-xs space-y-3.5">
+                    {/* NIVEL 1: Identidad de Cuenta Verificada (Ancho Completo sin Compresión) */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-white border border-emerald-200 flex items-center justify-center shadow-xs shrink-0 p-2">
+                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 26)}
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-slate-900 text-sm truncate">{connectedEmail}</span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-300">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-black text-slate-900 text-sm sm:text-base tracking-tight break-all">
+                              {connectedEmail}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[11px] border border-emerald-300 shrink-0 shadow-2xs">
+                              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                               Conectado & Verificado ({verifiedLatency || 18}ms)
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 truncate">
-                            <span className="font-medium truncate">{directorTitle}</span>
-                            <span>•</span>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-600 flex-wrap">
+                            <span className="font-semibold text-slate-700">{directorTitle}</span>
+                            <span className="text-slate-300">•</span>
                             <span className="font-mono text-emerald-700 font-bold">
                               {selectedProtocol}: {incomingPort} ({incomingSecurity})
                             </span>
-                            <span>•</span>
-                            <span className="font-mono text-slate-600 font-medium">
+                            <span className="text-slate-300">•</span>
+                            <span className="font-mono text-slate-600 font-semibold">
                               SMTP: {outgoingPort}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Botones de Gestión de Cuenta: Conectar OAuth 2.0, Configurar y Salir */}
-                      <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenProviderOAuth('google')}
-                          className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 font-black text-xs shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                          title="Abrir pantalla de consentimiento oficial de Google OAuth 2.0 (gmail.send y calendar.events)"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5 text-white" />
-                          <span>Conectar con Google OAuth 2.0 ↗</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
-                          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${
-                            isEditingServerConfig
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100'
-                              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
-                          }`}
-                        >
-                          <Settings2 className="h-3.5 w-3.5" />
-                          <span>{isEditingServerConfig ? 'Ocultar Configuración' : 'Configurar Servidor'}</span>
-                          {isEditingServerConfig ? (
-                            <ChevronUp className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleSignOutGoogleAccount}
-                          className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                          title="Cerrar sesión de esta cuenta para cambiar a otra cuenta"
-                        >
-                          <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                          <span>Salir de la Cuenta</span>
-                        </button>
+                      <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-800 font-bold text-[10px] shadow-2xs">
+                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                          <span>OAuth 2.0 + IMAP Híbrido</span>
+                        </span>
                       </div>
                     </div>
 
-                    {/* Acciones Rápidas Ejecutivas */}
-                    <div className="pt-2.5 border-t border-emerald-200/50 flex flex-wrap items-center justify-between gap-2">
+                    {/* NIVEL 2: Barra Dedicada de 4 Botones de Control de Cuenta (Grid Responsivo 4 Columnas Cero Solapamiento y Texto Completo) */}
+                    <div className="pt-3 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenProviderOAuth('google')}
+                        className="w-full px-3 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 font-black text-[11px] shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
+                        title="Abrir pantalla de consentimiento oficial de Google OAuth 2.0 (gmail.send y calendar.events)"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5 text-white shrink-0" />
+                        <span>Google OAuth 2.0 ↗</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
+                        className={`w-full px-3 py-2.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5 border shadow-xs active:scale-95 whitespace-nowrap ${
+                          showAppPasswordHelper
+                            ? 'bg-amber-600 text-white border-amber-600 shadow-amber-100'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
+                        }`}
+                        title="Configurar Contraseña de Aplicación de 16 dígitos (IMAP 993) para recibir todos tus correos entrantes en tiempo real"
+                      >
+                        <Key className="h-3.5 w-3.5 shrink-0" />
+                        <span>{showAppPasswordHelper ? 'Ocultar Clave 16 Dígitos' : 'Clave 16 Dígitos (IMAP)'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
+                        className={`w-full px-3 py-2.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5 border shadow-xs active:scale-95 whitespace-nowrap ${
+                          isEditingServerConfig
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100'
+                            : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        <Settings2 className="h-3.5 w-3.5 shrink-0" />
+                        <span>{isEditingServerConfig ? 'Ocultar Servidor' : 'Configurar Servidor'}</span>
+                        {isEditingServerConfig ? (
+                          <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleSignOutGoogleAccount}
+                        className="w-full px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
+                        title="Cerrar sesión de esta cuenta para cambiar a otra cuenta"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                        <span>Salir de la Cuenta</span>
+                      </button>
+                    </div>
+
+                    {/* NIVEL 3: Acciones Rápidas Ejecutivas */}
+                    <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <button
                           type="button"
@@ -9453,22 +9621,22 @@ Comité de Seguridad y Protección Escolar`
                   </div>
                 ) : ((connectedEmail && connectedEmail !== 'DISCONNECTED' && connectionStatus === 'failed') || device2FAChallenge?.active) ? (
                   /* 3. Tarjeta en Estado de Fallo de Ping / Error de Credenciales o Desafío 2FA Activo */
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50/90 via-indigo-50/40 to-white border border-blue-300 shadow-xs space-y-3">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-11 h-11 rounded-xl bg-white border border-blue-200 flex items-center justify-center shadow-xs shrink-0 p-2">
-                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 24)}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/40 to-white border border-blue-300 shadow-xs space-y-3.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-white border border-blue-200 flex items-center justify-center shadow-xs shrink-0 p-2">
+                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 26)}
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-slate-900 text-sm truncate">{connectedEmail}</span>
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px] border border-blue-300">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="font-black text-slate-900 text-sm sm:text-base tracking-tight break-all">{connectedEmail}</span>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px] border border-blue-300 shrink-0">
                               <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
                               Autorización Oficial de Google Requerida
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500 truncate">
-                            <span className="font-medium text-blue-700 font-bold">Pendiente de Concesión en Google</span>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
+                            <span className="font-bold text-blue-700">Pendiente de Concesión en Google</span>
                             <span>•</span>
                             <span className="font-mono text-slate-600">
                               OAuth 2.0 Oficial (Gmail & Calendario)
@@ -9476,47 +9644,47 @@ Comité de Seguridad y Protección Escolar`
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenProviderOAuth('google')}
-                          className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                          title="Abrir autorización directa en el servidor oficial de Google"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          <span>Abrir Ventana Oficial de Google ↗</span>
-                        </button>
+                    <div className="pt-3 border-t border-blue-200/70 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenProviderOAuth('google')}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                        title="Abrir autorización directa en el servidor oficial de Google"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">Abrir Ventana Oficial de Google ↗</span>
+                      </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setShowAppPasswordHelper(true)}
-                          className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                          title="Configuración IMAP / SMTP avanzada"
-                        >
-                          <Key className="h-3.5 w-3.5 text-slate-600" />
-                          <span>Credenciales SMTP</span>
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                        title="Configurar Contraseña de Aplicación de 16 dígitos (IMAP 993)"
+                      >
+                        <Key className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span className="truncate">Contraseña 16 Dígitos (IMAP)</span>
+                      </button>
 
-                        <button
-                          type="button"
-                          onClick={() => setIsEditingServerConfig(true)}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Settings2 className="h-3.5 w-3.5" />
-                          <span>Configurar Manual</span>
-                        </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Settings2 className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">Configurar Servidor</span>
+                      </button>
 
-                        <button
-                          type="button"
-                          onClick={handleSignOutGoogleAccount}
-                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                          title="Cerrar o desvincular esta cuenta"
-                        >
-                          <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                          <span>Desvincular</span>
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSignOutGoogleAccount}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                        title="Cerrar o desvincular esta cuenta"
+                      >
+                        <LogOut className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                        <span className="truncate">Desvincular</span>
+                      </button>
                     </div>
 
                     {/* Panel de Autorización Oficial de Google OAuth 2.0 */}
@@ -9596,6 +9764,15 @@ Comité de Seguridad y Protección Escolar`
                       >
                         <ExternalLink className="h-4 w-4 text-white" />
                         <span>Sign in with Google / Conectar con Google OAuth 2.0</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
+                        className="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs border border-amber-300 shadow-xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Key className="h-3.5 w-3.5 text-amber-600" />
+                        <span>{showAppPasswordHelper ? 'Ocultar Token 16 Dígitos' : 'Contraseña 16 Dígitos (IMAP)'}</span>
                       </button>
 
                       <button
@@ -13803,16 +13980,21 @@ Comité de Seguridad y Protección Escolar`
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono font-bold bg-slate-100 px-2.5 py-1 rounded-md text-slate-800 text-xs">
-                    {selectedMatter.matter_code}
+                  <img
+                    src="/images/triage_executive_crest.webp"
+                    alt="Escudo de Gobernanza Ejecutiva"
+                    className="w-7 h-7 rounded-lg object-cover border border-indigo-500/30 shrink-0"
+                  />
+                  <span className="font-mono font-bold bg-slate-100 px-2.5 py-1 rounded-md text-slate-800 text-xs whitespace-nowrap">
+                    {formatCleanMatterCode(selectedMatter.matter_code)}
                   </span>
-                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 text-red-800">
-                    {selectedMatter.destination}
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 text-red-800 whitespace-nowrap">
+                    {selectedMatter.destination === 'ATENCION_CEO' ? '🔴 Atención Inmediata CEO' : selectedMatter.destination}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleDelegateMatter(selectedMatter)}
-                    className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer whitespace-nowrap"
                     title="Delegar este expediente a coordinación de plantel"
                   >
                     <Forward className="h-3 w-3 text-amber-600" />
@@ -13829,10 +14011,10 @@ Comité de Seguridad y Protección Escolar`
 
               <div>
                 <h3 className="text-base font-black text-slate-900 leading-tight">
-                  {selectedMatter.title}
+                  {sanitizeCommercialTrademarks(selectedMatter.title)}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Plantel: <strong>{selectedMatter.campus}</strong> · Remitente: <strong>{selectedMatter.sender_name}</strong> ({selectedMatter.sender_email})
+                  Plantel: <strong>{selectedMatter.campus}</strong> · Remitente: <strong>{sanitizeCommercialTrademarks(selectedMatter.sender_name)}</strong> ({sanitizeCommercialTrademarks(selectedMatter.sender_email)})
                 </p>
               </div>
 
@@ -13871,25 +14053,25 @@ Comité de Seguridad y Protección Escolar`
                                 </span>
                               )}
                               <span className="font-bold text-slate-800">
-                                {email.sender_name}
+                                {sanitizeCommercialTrademarks(email.sender_name)}
                               </span>
                               <span className="text-slate-400 font-mono text-[10px]">
-                                &lt;{email.sender_email}&gt;
+                                &lt;{sanitizeCommercialTrademarks(email.sender_email)}&gt;
                               </span>
                             </div>
                             <span className="text-slate-500 font-semibold text-[10px]">
-                              {email.received_at || email.timestamp || selectedMatter.received_at}
+                              {formatFullExecutiveTimestamp(email.received_at || email.timestamp || selectedMatter.received_at)}
                             </span>
                           </div>
 
                           {email.subject && email.subject !== selectedMatter.title && (
                             <p className="text-[11px] font-bold text-slate-700">
-                              Asunto: {email.subject}
+                              Asunto: {sanitizeCommercialTrademarks(email.subject)}
                             </p>
                           )}
 
                           <div className="text-xs text-slate-800 font-sans leading-relaxed whitespace-pre-wrap max-h-56 overflow-y-auto pr-1 selection:bg-indigo-100">
-                            {email.body_text || email.snippet || selectedMatter.summary}
+                            {decodeEmailBodyOrSnippet(email.body_text || email.snippet || selectedMatter.summary, email.subject || selectedMatter.title, email.sender_name || selectedMatter.sender_name)}
                           </div>
 
                           <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">

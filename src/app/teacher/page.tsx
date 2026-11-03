@@ -22,7 +22,6 @@ import {
 import { FormattedDate } from '@/components/FormattedDate';
 import dynamic from 'next/dynamic';
 import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile, Group } from '@/types';
-import { TeacherHubCards } from '@/components/TeacherHubCards';
 import { TeacherMasterCopilot } from '@/components/teacher/TeacherMasterCopilot';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -299,10 +298,86 @@ function TeacherDashboardContent() {
     return scheduled.length > 0 ? scheduled : groupsList;
   }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId, isAdminSupervisor, querySchoolId]);
 
-  // Navegación principal del portal del profesor (Por defecto: 'hub' - Regla de los 3 Clics de Apple)
+  // Navegación principal del portal del profesor (Unificado en iSkool Daylight Studio Pro)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
-  // Modo de visualización del Hub: 'copilot' (ISkool Copilot Docente 2.0) o 'classic' (Bento Cards clásicas)
-  const [hubViewMode, setHubViewMode] = useState<'copilot' | 'classic'>('copilot');
+
+  // Telemetría en Tiempo Real para el Sistema de Supervisión Espejo del CEO
+  const [ceoMirrorTelemetry, setCeoMirrorTelemetry] = useState<{
+    groupLabel: string;
+    subjectLabel: string;
+    activeSessionTitle: string;
+    scheduleSlot: string;
+    activeNodeTitle: string;
+    bloomLevel: string;
+    bloomVerb: string;
+    presentCount: number;
+    totalStudents: number;
+    stampedCount: number;
+    stampPage: string;
+    pendingReviews: number;
+    signedMagicLinks: number;
+    totalMagicLinks: number;
+    deferredClassesCount: number;
+    ceoEndorsed: boolean;
+    ceoEndorsedBy?: string;
+    ceoEndorsedAt?: string;
+  }>({
+    groupLabel: '1°A Secundaria',
+    subjectLabel: 'Historia & Ciencias',
+    activeSessionTitle: 'Ecuaciones Lineales & Fuentes Primarias 1810',
+    scheduleSlot: 'Hoy 08:00 - 08:50 AM (En Curso)',
+    activeNodeTitle: 'Momento 2: Desarrollo & Taller de Libreta',
+    bloomLevel: 'Nivel 4: Analizar',
+    bloomVerb: 'Contrastar / Modelar',
+    presentCount: 67,
+    totalStudents: 68,
+    stampedCount: 65,
+    stampPage: 'Pág. 48',
+    pendingReviews: 12,
+    signedMagicLinks: 2,
+    totalMagicLinks: 3,
+    deferredClassesCount: 4,
+    ceoEndorsed: false,
+  });
+
+  useEffect(() => {
+    const onTelemetryEvent = (e: Event) => {
+      const custom = e as CustomEvent;
+      if (custom.detail) {
+        setCeoMirrorTelemetry(prev => ({ ...prev, ...custom.detail }));
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('iskool-ceo-mirror-telemetry', onTelemetryEvent);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('iskool-ceo-mirror-telemetry', onTelemetryEvent);
+      }
+    };
+  }, []);
+
+  const handleTriggerCeoEndorsement = () => {
+    const endorser = `${user?.first_name || 'Dirección'} ${user?.last_name || 'General'}`.trim();
+    const timeStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+    setCeoMirrorTelemetry(prev => ({
+      ...prev,
+      ceoEndorsed: !prev.ceoEndorsed,
+      ceoEndorsedBy: endorser,
+      ceoEndorsedAt: timeStr,
+    }));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('iskool-ceo-endorsement-action', {
+          detail: {
+            endorsed: !ceoMirrorTelemetry.ceoEndorsed,
+            endorsedBy: endorser,
+            endorsedAt: timeStr,
+          },
+        })
+      );
+    }
+  };
 
   // Estados para búsqueda optimizada con debounce en tablas
   const [attendanceSearch, setAttendanceSearch] = useState('');
@@ -879,45 +954,115 @@ function TeacherDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-100/80 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 overflow-x-clip">
       <Header />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col gap-4 sm:gap-6 overflow-x-hidden">
+      <main className="flex-1 w-full max-w-[1860px] mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-4 flex flex-col gap-4 overflow-x-clip">
         
-        {/* Banner de Supervisión y Auditoría Directiva (CEO / Administrador de Colegio) */}
+        {/* Sistema de Supervisión Espejo del CEO en Tiempo Real (CEO Live Mirror & Telemetry HUD) */}
         {isAdminSupervisor && (
-          <div className="rounded-3xl p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white border border-indigo-500/40 shadow-xl shadow-indigo-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in duration-200">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl shadow-inner shrink-0">
-                👑
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                    Modo Supervisión & Auditoría
-                  </span>
-                  <span className="text-xs text-indigo-300 font-medium">
-                    {isIbime ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Supervisión Institucional')}
-                  </span>
+          <div className="rounded-3xl p-4 sm:p-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-indigo-500/30 shadow-xl shadow-indigo-500/5 space-y-3.5 animate-in fade-in duration-200">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-xl shadow-md shrink-0">
+                  👑
                 </div>
-                <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
-                  <span>Portal Académico: Vista del Profesor</span>
-                </h3>
-                <p className="text-xs text-slate-300 font-medium">
-                  Sesión activa de <strong className="text-white">{user?.first_name} {user?.last_name || ''}</strong> ({user?.email || 'Administrador Institucional'}) con permisos completos de auditoría, planeación y revisión de clases.
-                </p>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                      <span>Espejo Ejecutivo CEO en Tiempo Real</span>
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                      {isIbime ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Red Institucional iSkool')}
+                    </span>
+                    {ceoMirrorTelemetry.ceoEndorsed && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        ✓ Sesión Auditada y Visada por {ceoMirrorTelemetry.ceoEndorsedBy} ({ceoMirrorTelemetry.ceoEndorsedAt})
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                    <span>Supervisando Aula en Vivo: {ceoMirrorTelemetry.groupLabel} • {ceoMirrorTelemetry.subjectLabel}</span>
+                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                      ({ceoMirrorTelemetry.scheduleSlot})
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    Sesión directiva de <strong className="text-slate-800 dark:text-slate-200">{user?.first_name} {user?.last_name || ''}</strong> • Sincronización exacta 1:1 con el lienzo del docente, Taxonomía de Bloom y Bóveda Curricular.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0 flex-wrap">
+                <button
+                  type="button"
+                  onClick={handleTriggerCeoEndorsement}
+                  className={`px-3.5 py-2 rounded-xl font-black text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                    ceoMirrorTelemetry.ceoEndorsed
+                      ? 'bg-emerald-600 text-white border-emerald-700'
+                      : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-200 dark:border-indigo-800'
+                  }`}
+                  title="Emitir sello de visado directivo en tiempo real en la pantalla del profesor"
+                >
+                  <CheckCircle2 size={14} />
+                  <span>{ceoMirrorTelemetry.ceoEndorsed ? '✓ Clase Visada por CEO' : 'Visar y Certificar Sesión'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => router.push(isIbime ? '/ibime/portal?view=ceo' : '/admin/ceo')}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ArrowLeft size={14} />
+                  <span>Volver a Visión Ejecutiva CEO</span>
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 self-stretch sm:self-auto shrink-0 flex-wrap">
-              <button
-                type="button"
-                onClick={() => router.push(isIbime ? '/ibime/portal?view=ceo' : '/admin/ceo')}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/20 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <ArrowLeft size={14} />
-                <span>Volver a Visión Ejecutiva CEO</span>
-              </button>
+            {/* Cinta de Telemetría Exacta de Aula para el CEO (5 Indicadores en Vivo) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60">
+                <div className="text-[10px] font-bold uppercase text-slate-400">Secuencia & Nodo Activo</div>
+                <div className="font-black text-slate-900 dark:text-white truncate mt-0.5">{ceoMirrorTelemetry.activeNodeTitle}</div>
+                <div className="text-[10px] text-sky-600 dark:text-sky-400 font-bold truncate">{ceoMirrorTelemetry.activeSessionTitle}</div>
+              </div>
+
+              <div className="p-2.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50">
+                <div className="text-[10px] font-bold uppercase text-indigo-500">Taxonomía de Bloom</div>
+                <div className="font-black text-indigo-900 dark:text-indigo-200 mt-0.5">{ceoMirrorTelemetry.bloomLevel}</div>
+                <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">Verbo: {ceoMirrorTelemetry.bloomVerb}</div>
+              </div>
+
+              <div className="p-2.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/50">
+                <div className="text-[10px] font-bold uppercase text-emerald-600">Asistencia & Sellos Hoy</div>
+                <div className="font-black text-emerald-900 dark:text-emerald-200 mt-0.5">
+                  {ceoMirrorTelemetry.presentCount}/{ceoMirrorTelemetry.totalStudents} Presentes
+                </div>
+                <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">
+                  {ceoMirrorTelemetry.stampedCount} Libretas Selladas ({ceoMirrorTelemetry.stampPage})
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50">
+                <div className="text-[10px] font-bold uppercase text-amber-600">Clases Preparadas (Diferidas)</div>
+                <div className="font-black text-amber-900 dark:text-amber-200 mt-0.5">
+                  {ceoMirrorTelemetry.deferredClassesCount} Clases en Cola SEP
+                </div>
+                <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                  Bóveda Curricular • 0 Tokens IA
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-2xl bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/50 col-span-2 sm:col-span-1">
+                <div className="text-[10px] font-bold uppercase text-sky-600">Trazabilidad Magic Links</div>
+                <div className="font-black text-sky-900 dark:text-sky-200 mt-0.5">
+                  {ceoMirrorTelemetry.signedMagicLinks}/{ceoMirrorTelemetry.totalMagicLinks} Firmados ✓
+                </div>
+                <div className="text-[10px] text-sky-700 dark:text-sky-400 font-semibold">
+                  {ceoMirrorTelemetry.pendingReviews} Evidencias en Portafolio
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -985,94 +1130,17 @@ function TeacherDashboardContent() {
           </div>
         )}
         
-        {/* VISTA 1: ISKOOL COPILOT DOCENTE (REDiseño MAESTRO 2.0) O HUB BENTO CLÁSICO */}
+        {/* VISTA 1: ISKOOL DAYLIGHT STUDIO PRO (SIN HUB BENTO CLÁSICO REDUNDANTE) */}
         {currentMenuTab === 'hub' && (
-          <div className="space-y-4">
-            {/* Barra de alternancia rápida entre Copilot Maestro y Hub Bento */}
-            <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Modo de Operación:
-                </span>
-                <div className="inline-flex p-0.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xs font-bold shadow-inner">
-                  <button
-                    type="button"
-                    onClick={() => setHubViewMode('copilot')}
-                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                      hubViewMode === 'copilot'
-                        ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                    }`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Copilot Docente (Timeline & Aula)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHubViewMode('classic')}
-                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
-                      hubViewMode === 'classic'
-                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white font-black shadow-sm'
-                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
-                    }`}
-                  >
-                    <span>Hub Bento Clásico</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Badges de los 2 Pilares de Infraestructura */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => router.push('/teacher/idiomas')}
-                  className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                  title="Pilar 1: Centro de Idiomas & Fonética Avanzada"
-                >
-                  <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                  <span>Centro de Idiomas & Fonética</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => router.push('/teacher/studio')}
-                  className="px-3 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border border-purple-800/50 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                  title="Pilar 2: Lienzo de Bloques / Estudio ISkool"
-                >
-                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-                  <span>Lienzo Studio</span>
-                </button>
-              </div>
-            </div>
-
-            {hubViewMode === 'copilot' ? (
-              <div className="w-full rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80">
-                <TeacherMasterCopilot
-                  teacher={currentTeacher}
-                  students={detailedStudents}
-                  groups={availableTeacherGroups}
-                  portfolioItems={portfolioItems}
-                  onOpenClassicHub={() => setHubViewMode('classic')}
-                  onOpenPlanning={() => setCurrentMenuTab('planning')}
-                  onOpenEmergency={() => setIsEmergencyModalOpen(true)}
-                />
-              </div>
-            ) : (
-              <TeacherHubCards
-                teacherName={`${currentTeacher.first_name || 'Profesor(a)'} ${currentTeacher.last_name || ''}`}
-                totalStudents={detailedStudents.length || 184}
-                pendingReviews={pendingItems.length || 12}
-                vaultPlans={38}
-                onSelectAction={(action) => {
-                  if (action === 'classroom') setCurrentMenuTab('classroom');
-                  if (action === 'classes') setCurrentMenuTab('evaluation');
-                  if (action === 'studio') router.push('/teacher/studio');
-                  if (action === 'community') router.push('/teacher/community');
-                  if (action === 'planning') setCurrentMenuTab('planning');
-                  if (action === 'attendance') setCurrentMenuTab('attendance');
-                  if (action === 'idiomas') router.push('/teacher/idiomas');
-                }}
-              />
-            )}
+          <div className="w-full rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800/80 overflow-x-clip">
+            <TeacherMasterCopilot
+              teacher={currentTeacher}
+              students={detailedStudents}
+              groups={availableTeacherGroups}
+              portfolioItems={portfolioItems}
+              onOpenPlanning={() => setCurrentMenuTab('planning')}
+              onOpenEmergency={() => setIsEmergencyModalOpen(true)}
+            />
           </div>
         )}
 

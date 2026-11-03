@@ -3,7 +3,7 @@ import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, injectEmailsBatchIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
-import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs, sanitizeCommercialTrademarks } from '@/utils/timeZoneUtils';
+import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs, sanitizeCommercialTrademarks, decodeEmailBodyOrSnippet } from '@/utils/timeZoneUtils';
 import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
@@ -727,11 +727,12 @@ export async function POST(request: NextRequest) {
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
 
+    const forcePostRefresh = Boolean(body.force);
     const cachedInboxPost = getCachedInboxEmails(tenantId, email);
-    if (cachedInboxPost && cachedInboxPost.length > 0 && (cleanPass || hasGoogleOAuth || body.injectEmail)) {
+    if (!forcePostRefresh && cachedInboxPost && cachedInboxPost.length > 0 && (cleanPass || hasGoogleOAuth || body.injectEmail)) {
       authenticated = true;
       emails = cachedInboxPost;
-    } else if (hasGoogleOAuth) {
+    } else if (hasGoogleOAuth && !cleanPass) {
       try {
         const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 15, tenantId);
         if (liveGoogle.length > 0) {
@@ -745,7 +746,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Consulta en vivo por IMAP si se cuenta con credenciales
+    // 2. Consulta en vivo por IMAP (imap.gmail.com:993) cuando se proporciona Contraseña de Aplicación de 16 dígitos
     let resolvedPostEmail = email;
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
@@ -758,12 +759,16 @@ export async function POST(request: NextRequest) {
         if (imapRes.connectedEmail) {
           resolvedPostEmail = imapRes.connectedEmail;
         }
+      } else if (cachedInboxPost && cachedInboxPost.length > 0) {
+        authenticated = true;
+        requiresAppPassword = false;
+        emails = cachedInboxPost;
       } else {
         authenticated = false;
         requiresAppPassword = imapRes.requiresAppPassword || false;
         authError = imapRes.error;
       }
-    } else if (!hasGoogleOAuth && !body.injectEmail) {
+    } else if (!hasGoogleOAuth && !body.injectEmail && !authenticated) {
       requiresAppPassword = true;
       authenticated = false;
     }

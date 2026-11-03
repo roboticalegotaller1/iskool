@@ -139,10 +139,25 @@ export default function ParentDashboard() {
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [showParentModal, setShowParentModal] = useState(false);
   const [isSwitchingParent, setIsSwitchingParent] = useState(false);
+  const [magicLinkReplyText, setMagicLinkReplyText] = useState('');
+  const [isSigningMagicLink, setIsSigningMagicLink] = useState(false);
   const [magicLinkAccess, setMagicLinkAccess] = useState<{
     token: string;
     studentId: string;
+    studentName?: string;
+    tutorName?: string;
+    incidentType?: string;
+    incidentLabel?: string;
+    customMessage?: string;
+    attendanceStatus?: string;
+    stampPage?: string;
+    isStamped?: boolean;
+    xpAwarded?: number;
+    teacherName?: string;
+    timeLabel?: string;
     signed: boolean;
+    signedAt?: string;
+    parentReply?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -151,21 +166,81 @@ export default function ParentDashboard() {
       const studentIdParam = sp.get('student_id');
       const tokenParam = sp.get('token') || sp.get('magic_token');
 
-      if (studentIdParam) {
-        useStudentStore.getState().switchStudent(studentIdParam);
-        
-        // Asociar la cuenta de tutor correspondiente al alumno si existe
-        const matchingAccount = SYSTEM_PARENT_ACCOUNTS.find(acc => acc.studentId === studentIdParam);
-        if (matchingAccount) {
-          setSelectedParentAccount(matchingAccount);
+      if (studentIdParam || tokenParam) {
+        if (studentIdParam) {
+          useStudentStore.getState().switchStudent(studentIdParam);
+          const matchingAccount = SYSTEM_PARENT_ACCOUNTS.find(acc => acc.studentId === studentIdParam);
+          if (matchingAccount) {
+            setSelectedParentAccount(matchingAccount);
+          }
         }
 
         if (tokenParam) {
+          // 1. Inicializar de inmediato y revisar caché local primero
+          let localMatch: Record<string, unknown> | null = null;
+          try {
+            const cachedRaw = localStorage.getItem('iskool_magic_links_v1');
+            if (cachedRaw) {
+              const parsed = JSON.parse(cachedRaw);
+              if (Array.isArray(parsed)) {
+                localMatch = parsed.find((r: Record<string, unknown>) => r.token === tokenParam) || null;
+              }
+            }
+          } catch {
+            // ignore
+          }
+
           setMagicLinkAccess({
             token: tokenParam,
-            studentId: studentIdParam,
-            signed: false
+            studentId: String(localMatch?.studentId || studentIdParam || 's1'),
+            studentName: localMatch?.studentName ? String(localMatch.studentName) : undefined,
+            tutorName: localMatch?.tutorName ? String(localMatch.tutorName) : undefined,
+            incidentType: localMatch?.incidentType ? String(localMatch.incidentType) : 'asistencia',
+            incidentLabel: localMatch?.incidentLabel ? String(localMatch.incidentLabel) : 'Reporte Diario de Asistencia y Libreta Física',
+            customMessage: localMatch?.customMessage ? String(localMatch.customMessage) : undefined,
+            attendanceStatus: localMatch?.attendanceStatus ? String(localMatch.attendanceStatus) : 'present',
+            stampPage: localMatch?.stampPage ? String(localMatch.stampPage) : 'Pág. 48',
+            isStamped: localMatch?.isStamped !== undefined ? Boolean(localMatch.isStamped) : true,
+            xpAwarded: localMatch?.xpAwarded ? Number(localMatch.xpAwarded) : 0,
+            teacherName: localMatch?.teacherName ? String(localMatch.teacherName) : 'Docente Titular ISkool',
+            timeLabel: localMatch?.timeLabel ? String(localMatch.timeLabel) : undefined,
+            signed: localMatch?.status === 'signed',
+            signedAt: localMatch?.signedAt ? String(localMatch.signedAt) : undefined,
+            parentReply: localMatch?.parentReply ? String(localMatch.parentReply) : undefined,
           });
+
+          // 2. Consultar servidor /api/parent/magic-link para hidratar datos exactos
+          fetch(`/api/parent/magic-link?token=${encodeURIComponent(tokenParam)}&student_id=${encodeURIComponent(studentIdParam || '')}`, {
+            cache: 'no-store',
+          })
+            .then(r => (r.ok ? r.json() : null))
+            .then(data => {
+              if (data?.ok && data.record) {
+                const rec = data.record;
+                setMagicLinkAccess({
+                  token: rec.token,
+                  studentId: rec.studentId || studentIdParam || 's1',
+                  studentName: rec.studentName,
+                  tutorName: rec.tutorName,
+                  incidentType: rec.incidentType,
+                  incidentLabel: rec.incidentLabel,
+                  customMessage: rec.customMessage,
+                  attendanceStatus: rec.attendanceStatus,
+                  stampPage: rec.stampPage,
+                  isStamped: rec.isStamped,
+                  xpAwarded: rec.xpAwarded,
+                  teacherName: rec.teacherName,
+                  timeLabel: rec.timeLabel,
+                  signed: rec.status === 'signed',
+                  signedAt: rec.signedAt,
+                  parentReply: rec.parentReply,
+                });
+                if (rec.parentReply) {
+                  setMagicLinkReplyText(rec.parentReply);
+                }
+              }
+            })
+            .catch(() => {});
         }
         return;
       }
@@ -185,6 +260,83 @@ export default function ParentDashboard() {
       }
     }
   }, [user, loading, router]);
+
+  // Firma digital bidireccional del Magic Link (actualiza servidor + Bitácora del Profesor en vivo)
+  const handleSignMagicLink = async () => {
+    if (!magicLinkAccess || isSigningMagicLink) return;
+    setIsSigningMagicLink(true);
+    const nowIso = new Date().toISOString();
+    const signerName = magicLinkAccess.tutorName || `${currentParent.first_name} ${currentParent.last_name}`.trim() || 'Tutor Familiar';
+    const replyClean = magicLinkReplyText.trim() || undefined;
+
+    setMagicLinkAccess(prev =>
+      prev
+        ? {
+            ...prev,
+            signed: true,
+            signedAt: nowIso,
+            parentReply: replyClean || prev.parentReply,
+          }
+        : null
+    );
+
+    // 1. Actualizar localStorage y emitir BroadcastChannel para que el panel del profesor cambie a "Firmado de Enterado ✓" al instante
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedRaw = localStorage.getItem('iskool_magic_links_v1');
+        if (cachedRaw) {
+          const parsed = JSON.parse(cachedRaw);
+          if (Array.isArray(parsed)) {
+            const updatedLocal = parsed.map((rec: Record<string, unknown>) =>
+              rec.token === magicLinkAccess.token
+                ? {
+                    ...rec,
+                    status: 'signed',
+                    signedAt: nowIso,
+                    signedBy: signerName,
+                    parentReply: replyClean || rec.parentReply,
+                  }
+                : rec
+            );
+            localStorage.setItem('iskool_magic_links_v1', JSON.stringify(updatedLocal));
+          }
+        }
+        if ('BroadcastChannel' in window) {
+          const bc = new BroadcastChannel('iskool_magic_links_channel');
+          bc.postMessage({
+            type: 'MAGIC_LINK_SIGNED',
+            token: magicLinkAccess.token,
+            signedAt: nowIso,
+            signedBy: signerName,
+            parentReply: replyClean,
+          });
+          bc.close();
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Persistir en el servidor (/api/parent/magic-link)
+    try {
+      await fetch('/api/parent/magic-link', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: magicLinkAccess.token,
+          studentId: magicLinkAccess.studentId,
+          studentName: magicLinkAccess.studentName || `${currentStudent?.first_name || ''} ${currentStudent?.last_name || ''}`.trim(),
+          status: 'signed',
+          signedBy: signerName,
+          parentReply: replyClean,
+        }),
+      });
+    } catch {
+      // ignore network error
+    } finally {
+      setIsSigningMagicLink(false);
+    }
+  };
 
   useEffect(() => {
     if (currentStudent?.id) {
@@ -354,40 +506,109 @@ export default function ParentDashboard() {
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Banner de Magic Link Inmediato con Firma en 1 Toque */}
+        {/* Banner de Magic Link Inmediato con Firma Bidireccional en 1 Toque */}
         {magicLinkAccess && (
-          <div className="mb-6 rounded-3xl bg-gradient-to-r from-emerald-950/90 via-teal-950/90 to-slate-900 border border-emerald-500/50 p-5 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-emerald-100 animate-fade-in">
-            <div className="flex items-center gap-3.5">
-              <div className="p-3 rounded-2xl bg-emerald-500 text-slate-950 font-black shrink-0 shadow-md">
-                <Zap className="w-6 h-6 fill-slate-950" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm sm:text-base font-black text-white">
-                    Acceso Efímero Verificado por Magic Link Institucional
-                  </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                    Sin Contraseña • Conexión Segura
-                  </span>
+          <div className="mb-6 rounded-3xl bg-gradient-to-r from-emerald-950/95 via-teal-950/95 to-slate-900 border border-emerald-500/60 p-5 sm:p-6 shadow-2xl space-y-4 text-emerald-100 animate-fade-in">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="p-3 rounded-2xl bg-emerald-500 text-slate-950 font-black shrink-0 shadow-md">
+                  <Zap className="w-6 h-6 fill-slate-950" />
                 </div>
-                <p className="text-xs text-emerald-200/80 mt-1">
-                  Reporte diario, registro de asistencia y sello de libreta física de <strong>{currentStudent?.first_name || 'su hijo(a)'}</strong> disponible para su auditoría y firma familiar.
-                </p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-black text-white">
+                      {magicLinkAccess.incidentLabel || 'Acceso Efímero Verificado por Magic Link Institucional'}
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      Token #{magicLinkAccess.token.slice(-6)} • Conexión Segura
+                    </span>
+                    {magicLinkAccess.signed && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-400 text-slate-950">
+                        ✓ Sincronizado con Bitácora Docente
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-emerald-200/90">
+                    Alumno: <strong>{magicLinkAccess.studentName || `${currentStudent?.first_name || ''} ${currentStudent?.last_name || ''}`.trim() || 'Su hijo(a)'}</strong>
+                    {' '}• Emitido por: <strong>{magicLinkAccess.teacherName || 'Docente Titular ISkool'}</strong>
+                    {magicLinkAccess.timeLabel ? ` (${magicLinkAccess.timeLabel})` : ''}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleSignMagicLink}
+                  disabled={isSigningMagicLink}
+                  className={`px-4 py-2.5 rounded-xl font-black text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto ${
+                    magicLinkAccess.signed
+                      ? 'bg-emerald-400 text-slate-950 shadow-emerald-500/30'
+                      : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>
+                    {magicLinkAccess.signed
+                      ? '✓ Reporte Firmado de Enterado'
+                      : isSigningMagicLink
+                      ? 'Firmando...'
+                      : 'Firmar de Enterado con 1 Toque'}
+                  </span>
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-              <button
-                onClick={() => setMagicLinkAccess(prev => prev ? { ...prev, signed: true } : null)}
-                className={`px-4 py-2.5 rounded-xl font-black text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto ${
-                  magicLinkAccess.signed
-                    ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/20'
-                    : 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950'
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{magicLinkAccess.signed ? '✓ Reporte Firmado de Enterado' : 'Firmar de Enterado con 1 Toque'}</span>
-              </button>
+            {/* Detalle del Comunicado Docente y Telemetría de Aula */}
+            <div className="p-4 rounded-2xl bg-slate-950/60 border border-emerald-500/30 space-y-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`px-2.5 py-1 rounded-lg font-black text-[11px] border ${
+                  magicLinkAccess.attendanceStatus === 'absent'
+                    ? 'bg-rose-950/80 text-rose-300 border-rose-700'
+                    : magicLinkAccess.attendanceStatus === 'late'
+                    ? 'bg-amber-950/80 text-amber-300 border-amber-700'
+                    : 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
+                }`}>
+                  📍 Asistencia: {magicLinkAccess.attendanceStatus === 'absent' ? 'Falta en Aula ✗' : magicLinkAccess.attendanceStatus === 'late' ? 'Retardo Registrado ⚠' : 'Presente en Aula ✓'}
+                </span>
+
+                <span className={`px-2.5 py-1 rounded-lg font-black text-[11px] border ${
+                  magicLinkAccess.isStamped === false
+                    ? 'bg-rose-950/80 text-rose-300 border-rose-700'
+                    : 'bg-cyan-950/80 text-cyan-300 border-cyan-700'
+                }`}>
+                  📖 Libreta Física: {magicLinkAccess.stampPage || 'Pág. 48'} ({magicLinkAccess.isStamped === false ? 'Sin Sello / Pendiente ✗' : 'Sellada ✓'})
+                </span>
+
+                {(magicLinkAccess.xpAwarded ?? 0) > 0 && (
+                  <span className="px-2.5 py-1 rounded-lg font-black text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    🏆 +{magicLinkAccess.xpAwarded} XP Mérito Formativo
+                  </span>
+                )}
+              </div>
+
+              {magicLinkAccess.customMessage && (
+                <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 text-slate-100 leading-relaxed font-medium">
+                  &ldquo;{magicLinkAccess.customMessage}&rdquo;
+                </div>
+              )}
+
+              {/* Respuesta rápida opcional del Tutor que se refleja en la Bitácora del Profesor */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                <input
+                  type="text"
+                  value={magicLinkReplyText}
+                  onChange={(e) => setMagicLinkReplyText(e.target.value)}
+                  placeholder="Mensaje opcional para el profesor (ej. Enterado profesor, hoy revisamos la Pág. 48 en casa)..."
+                  className="flex-1 bg-slate-900 border border-slate-700/80 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs text-white outline-hidden"
+                />
+                <button
+                  type="button"
+                  onClick={handleSignMagicLink}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all cursor-pointer shrink-0"
+                >
+                  {magicLinkAccess.signed ? 'Actualizar Acuse & Nota' : 'Enviar Nota & Firmar ✓'}
+                </button>
+              </div>
             </div>
           </div>
         )}

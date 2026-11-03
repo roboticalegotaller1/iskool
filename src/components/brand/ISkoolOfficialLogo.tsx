@@ -8,6 +8,7 @@ export interface ISkoolOfficialLogoProps {
   theme?: 'dark' | 'light' | 'auto' | 'monochrome';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | number;
   showTagline?: boolean;
+  showSquareIcon?: boolean;
   className?: string;
   glow?: boolean;
 }
@@ -47,6 +48,7 @@ export const ISkoolOfficialLogo: React.FC<ISkoolOfficialLogoProps> = ({
   theme = 'auto',
   size = 'md',
   showTagline = true,
+  showSquareIcon = false,
   className = '',
   glow = false
 }) => {
@@ -82,21 +84,46 @@ export const ISkoolOfficialLogo: React.FC<ISkoolOfficialLogoProps> = ({
   const fontSize = Math.round(withTagline && !stacked ? pixelDim * 0.72 : pixelDim);
   const wordColor = WORD_COLOR[theme];
 
+  const markSize = Math.max(20, Math.round(fontSize * 0.9));
+
   return (
     <span
       role="img"
       aria-label="ISkool"
       className={`inline-flex shrink-0 select-none flex-col leading-none ${stacked ? 'items-center text-center' : 'text-left'} ${glowClass} ${className}`}
     >
-      <span
-        aria-hidden="true"
-        data-logo-part="wordmark"
-        className={`whitespace-nowrap font-bold tracking-[-0.045em] ${WORDMARK_FONT_CLASS}`}
-        style={{ fontSize }}
-      >
-        <span className={theme === 'monochrome' ? '' : 'text-[#2F9BFF]'}>i</span>
-        <span className={wordColor}>Skool</span>
-        <span className={`relative -top-[1.6em] ml-[0.2em] inline-block text-[0.3em] tracking-normal ${wordColor}`}>®</span>
+      <span className="inline-flex items-center gap-[0.22em]">
+        {showSquareIcon && (
+          <svg
+            aria-hidden="true"
+            data-logo-part="mark"
+            width={markSize}
+            height={markSize}
+            viewBox="0 0 64 64"
+            xmlns="http://www.w3.org/2000/svg"
+            className="shrink-0 rounded-[22%]"
+          >
+            {theme === 'monochrome' ? (
+              <path d={MONOCHROME_MARK} fill="currentColor" fillRule="evenodd" />
+            ) : (
+              <>
+                <rect width="64" height="64" rx="14" fill="#0B1B3F" />
+                <rect x="26" y="26" width="12" height="26" rx="6" fill="#2F9BFF" />
+                <circle cx="32" cy="15" r="6.5" fill="#2F9BFF" />
+              </>
+            )}
+          </svg>
+        )}
+        <span
+          aria-hidden="true"
+          data-logo-part="wordmark"
+          className={`inline-block whitespace-nowrap font-bold tracking-[-0.045em] ${WORDMARK_FONT_CLASS}`}
+          style={{ fontSize }}
+        >
+          <span className={theme === 'monochrome' ? '' : 'text-[#2F9BFF]'}>i</span>
+          <span className={wordColor}>Skool</span>
+          <span className={`relative -top-[1.6em] ml-[0.2em] inline-block text-[0.3em] tracking-normal ${wordColor}`}>®</span>
+        </span>
       </span>
       {withTagline && (
         <span

@@ -9,10 +9,25 @@ interface SynthesizeOptions {
   voice?: string;
   rate?: string;
   pitch?: string;
+  characterName?: string;
+  role?: string;
 }
 
 const memoryAudioCache = new Map<string, Buffer>();
 const MAX_CACHE_ITEMS = 300;
+
+function resolvePythonExecutable(): string {
+  const candidates = [
+    path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'),
+    'C:\\Users\\kami-\\.gemini\\antigravity\\brain\\fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b\\scratch\\.venv\\Scripts\\python.exe',
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      return c;
+    }
+  }
+  return 'python';
+}
 
 interface PendingDaemonRequest {
   resolve: (buf: Buffer) => void;
@@ -20,22 +35,38 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
+const WORKER_ENGINE_GENERATION = 'v6_studio_human_conv_r3';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
+let daemonGeneration = '';
 let daemonStdoutBuffer = '';
 let daemonSeq = 0;
 const pendingRequests = new Map<string, PendingDaemonRequest>();
 
 function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
-  if (daemonProcess && !daemonProcess.killed && daemonProcess.exitCode === null) {
+  if (
+    daemonProcess &&
+    !daemonProcess.killed &&
+    daemonProcess.exitCode === null &&
+    daemonGeneration === WORKER_ENGINE_GENERATION
+  ) {
     return daemonProcess;
+  }
+
+  if (daemonProcess && !daemonProcess.killed) {
+    try {
+      daemonProcess.kill();
+    } catch {}
+    daemonProcess = null;
   }
 
   try {
     const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
-    const child = spawn('python', ['-u', workerScript, '--daemon'], {
+    const pythonBin = resolvePythonExecutable();
+    const child = spawn(pythonBin, ['-u', workerScript, '--daemon'], {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' }
     });
+    daemonGeneration = WORKER_ENGINE_GENERATION;
 
     daemonStdoutBuffer = '';
 
@@ -97,7 +128,7 @@ function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<
     const timer = setTimeout(() => {
       pendingRequests.delete(reqId);
       reject(new Error('Timeout en daemon TTS'));
-    }, 12000);
+    }, 42000);
 
     pendingRequests.set(reqId, { resolve, reject, timer });
 
@@ -107,7 +138,9 @@ function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<
         text: options.text,
         voice: options.voice,
         rate: options.rate,
-        pitch: options.pitch
+        pitch: options.pitch,
+        characterName: options.characterName,
+        role: options.role
       }) + '\n';
       child.stdin.write(line, 'utf-8');
     } catch (writeErr: any) {
@@ -119,15 +152,16 @@ function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<
 }
 
 /**
- * Genera audio MP3 neural de alta fidelidad sin costo de tokens,
- * usando el motor calibrado con prosodia oratoria en Python edge-tts.
+ * Genera audio MP3 neural de alta fidelidad con masterización de estudio.
  */
 export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise<Buffer> {
   const {
     text,
     voice = 'es-MX-DaliaNeural',
     rate = '+0%',
-    pitch = '+0Hz'
+    pitch = '+0Hz',
+    characterName = '',
+    role = ''
   } = options;
 
   const cleanText = text.trim();
@@ -135,10 +169,10 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     throw new Error('Texto vacío para síntesis');
   }
 
-  // Clave de caché
+  // Clave de caché v6 (Motor Acústico Generativo Conversacional Humano + Diseño de Voz a Medida + Biblioteca Extendida)
   const cacheKey = crypto
     .createHash('sha256')
-    .update(`${voice}::${rate}::${pitch}::${cleanText}`)
+    .update(`v6_studio_human_conv::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
     .digest('hex');
 
   // 1. Verificar caché en memoria
@@ -169,7 +203,9 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       text: cleanText,
       voice,
       rate,
-      pitch
+      pitch,
+      characterName,
+      role
     });
     if (daemonBuffer && daemonBuffer.length > 0) {
       try {
@@ -199,16 +235,20 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       voice,
       rate,
       pitch,
+      characterName,
+      role,
       output: tempOutputFile
     }),
     'utf-8'
   );
 
+  const pythonBin = resolvePythonExecutable();
+
   return new Promise<Buffer>((resolve, reject) => {
     execFile(
-      'python',
+      pythonBin,
       [workerScript, '--json', payloadFile],
-      { timeout: 25000 },
+      { timeout: 30000 },
       (err, _stdout, stderr) => {
         // Limpieza de payload
         try {

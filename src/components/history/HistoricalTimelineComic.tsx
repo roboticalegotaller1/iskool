@@ -59,9 +59,17 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
   // Reiniciar momento activo si cambia el personaje
   useEffect(() => {
     setActiveMomentIndex(0);
+    setIsPlayingAudio(false);
     audioCtrlRef.current?.stop();
     stopAllIskoolAudio();
   }, [characterName]);
+
+  // Detener audio si cambia el momento del cómic
+  useEffect(() => {
+    setIsPlayingAudio(false);
+    audioCtrlRef.current?.stop();
+    stopAllIskoolAudio();
+  }, [activeMomentIndex]);
 
   // Detener audio al desmontar
   useEffect(() => {
@@ -121,6 +129,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
 
     const cleanText = text.replace(/[*#_`]/g, '').trim();
     if (!cleanText) return;
+
+    setIsPlayingAudio(true);
 
     playUniversalIskoolVoice({
       text: cleanText,

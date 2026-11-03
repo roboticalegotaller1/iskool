@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { getSupportedRecordingMimeType } from '@/lib/audioEngine';
+import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
 import { 
   configureHistoricalUtterance, 
   getPersonaGender, 
@@ -31,7 +32,8 @@ import {
   calculateAgeAtDeathFromDates,
   normalizeLatinHistoricalPhonetics,
   getHistoricalMouthConfig,
-  CharacterAnatomicalMouth
+  CharacterAnatomicalMouth,
+  stopAllIskoolAudio
 } from '@/lib/historicalVoiceEngine';
 import { NanoBananaLipSyncCanvas } from '@/components/common/NanoBananaLipSyncCanvas';
 
@@ -299,10 +301,17 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const ttsAbortRef = useRef<AbortController | null>(null);
+  const ttsSeqRef = useRef<number>(0);
 
   // Limpieza al desmontar
   useEffect(() => {
     return () => {
+      ttsSeqRef.current++;
+      if (ttsAbortRef.current) {
+        try { ttsAbortRef.current.abort(); } catch {}
+        ttsAbortRef.current = null;
+      }
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current = null;
@@ -413,91 +422,60 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       clearInterval(mouthIntervalRef.current);
       mouthIntervalRef.current = null;
     }
+    if (typeof window !== 'undefined') {
+      (window as any).__iskoolActiveFormantLevels = null;
+    }
     setIsSpeaking(false);
     setMouthOpenRatio(0);
     setMouthWidthRatio(0.5);
     setChestLift(false);
   }, []);
 
-  // Fallback de síntesis de voz: prioriza SIEMPRE el motor neuronal 24kHz antes de tocar síntesis de navegador
+  // Fallback local de síntesis de voz cuando el servidor no responde
   const fallbackSpeechSynthesis = useCallback((cleanText: string, onPlaybackStart?: () => void) => {
     if (typeof window === 'undefined') return;
-
     const normalizedText = normalizeLatinHistoricalPhonetics(cleanText);
-    const profile = getPersonaProfile(characterName, effectiveAge, variantIndex, birthDeathDates);
-    const resolvedVoiceId = voiceId || profile.voiceId;
-
-    fetch('/api/ai/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: normalizedText,
-        characterName,
-        historicalAge: effectiveAge,
-        birthDeathDates,
-        variantIndex,
-        voice: resolvedVoiceId
-      })
-    })
-      .then(async (res) => {
-        if (res.ok) {
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          const audio = new Audio(url);
-          currentAudioRef.current = audio;
-          audio.onplay = () => {
-            onPlaybackStart?.();
-            startLipSyncAnimation();
-          };
-          audio.onended = () => {
-            stopLipSyncAnimation();
-            URL.revokeObjectURL(url);
-            currentAudioRef.current = null;
-          };
-          audio.onerror = () => {
-            onPlaybackStart?.();
-            stopLipSyncAnimation();
-            URL.revokeObjectURL(url);
-            currentAudioRef.current = null;
-          };
-          await audio.play();
-          return;
-        }
-        throw new Error('Neural TTS fallback non-200');
-      })
-      .catch(() => {
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(normalizedText);
-          const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
-          if (isConfiguredLatin) {
-            utterance.onstart = () => {
-              onPlaybackStart?.();
-              startLipSyncAnimation();
-            };
-            utterance.onend = () => {
-              stopLipSyncAnimation();
-            };
-            utterance.onerror = () => {
-              onPlaybackStart?.();
-              stopLipSyncAnimation();
-            };
-            speechSynthRef.current = utterance;
-            window.speechSynthesis.speak(utterance);
-            return;
-          }
-        }
-        onPlaybackStart?.();
-        stopLipSyncAnimation();
-      });
-  }, [characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, startLipSyncAnimation, stopLipSyncAnimation]);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(normalizedText);
+      const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
+      if (isConfiguredLatin) {
+        utterance.onstart = () => {
+          onPlaybackStart?.();
+          startLipSyncAnimation();
+        };
+        utterance.onend = () => {
+          stopLipSyncAnimation();
+        };
+        utterance.onerror = () => {
+          onPlaybackStart?.();
+          stopLipSyncAnimation();
+        };
+        speechSynthRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+    }
+    onPlaybackStart?.();
+    stopLipSyncAnimation();
+  }, [characterName, effectiveAge, startLipSyncAnimation, stopLipSyncAnimation]);
 
   // Reproducción de voz humana neural ultra-realista con sincronización de ondas sonoras
   const speakText = useCallback(async (text: string, onPlaybackStart?: () => void) => {
     if (!audioEnabled || typeof window === 'undefined') return;
 
+    stopAllIskoolAudio();
+    const mySeq = ++ttsSeqRef.current;
+    if (ttsAbortRef.current) {
+      try { ttsAbortRef.current.abort(); } catch {}
+      ttsAbortRef.current = null;
+    }
+
     // Detener cualquier audio previo
     if (currentAudioRef.current) {
+      currentAudioRef.current.onplay = null;
+      currentAudioRef.current.onended = null;
+      currentAudioRef.current.onerror = null;
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
     }
@@ -533,10 +511,14 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       birthOrDeathDates: birthDeathDates
     });
 
+    const abortController = new AbortController();
+    ttsAbortRef.current = abortController;
+
     try {
       const ttsRes = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: abortController.signal,
         body: JSON.stringify({
           ssml: ssmlPayload,
           characterName,
@@ -548,71 +530,29 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         })
       });
 
+      if (mySeq !== ttsSeqRef.current) return;
+
       if (ttsRes.ok) {
         const audioBlob = await ttsRes.blob();
+        if (mySeq !== ttsSeqRef.current) return;
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         currentAudioRef.current = audio;
 
         let setupAnalyserSuccess = false;
         try {
-            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-          if (AudioContextClass) {
-            const ctx = new AudioContextClass();
+          const studioChain = attachStudioBroadcastMaster(audio, {
+            gender: profile.gender,
+            role: 'character'
+          });
+          if (studioChain) {
+            const ctx = studioChain.context;
+            const analyser = studioChain.analyser;
             audioContextRef.current = ctx;
-            const src = ctx.createMediaElementSource(audio);
-            const analyser = ctx.createAnalyser();
-
-            // DSP Avanzado: FFT 512 y constante de suavizado exponencial 0.82
-            analyser.fftSize = 512;
-            analyser.smoothingTimeConstant = 0.82;
-
-            // =========================================================================
-            // CADENA DE MASTERIZACIÓN DSP CON WEB AUDIO API
-            // =========================================================================
-
-            // 1. Compensación de Resonancia Torácica (Warmth EQ Transparente): Peaking 180Hz, Q 1.0, +1.2dB
-            const warmthFilter = ctx.createBiquadFilter();
-            warmthFilter.type = 'peaking';
-            warmthFilter.frequency.value = 180;
-            warmthFilter.Q.value = 1.0;
-            warmthFilter.gain.value = 1.2;
-
-            // 2. Atenuador de Sibilancias (De-Esser Dinámico Suave): Highshelf 7000Hz, -1.2dB
-            const deEsserFilter = ctx.createBiquadFilter();
-            deEsserFilter.type = 'highshelf';
-            deEsserFilter.frequency.value = 7000;
-            deEsserFilter.gain.value = -1.2;
-
-            // 3. Convolución Ambiental Sutil (Presencia íntima de estudio RT60 ~0.28s)
-            const convolver = ctx.createConvolver();
-            convolver.buffer = createHistoricRoomReverbBuffer(ctx, 0.28, 4.5);
-
-            const dryGain = ctx.createGain();
-            dryGain.gain.value = 0.97; // 97% señal directa cristalina de 24kHz
-
-            const wetGain = ctx.createGain();
-            wetGain.gain.value = 0.03; // 3% aire acústico natural sin efecto metálico
-
-            // Conexión en serie de ecualización y de-essing
-            src.connect(warmthFilter);
-            warmthFilter.connect(deEsserFilter);
-
-            // Bifurcación Dry / Wet para espacialidad física
-            deEsserFilter.connect(dryGain);
-            deEsserFilter.connect(convolver);
-            convolver.connect(wetGain);
-
-            // Reagrupación en el nodo analizador espectral
-            dryGain.connect(analyser);
-            wetGain.connect(analyser);
-
-            // Salida a los altavoces
-            analyser.connect(ctx.destination);
 
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
-            const sampleRate = ctx.sampleRate || 44100;
+            const sampleRate = ctx.sampleRate || 48000;
             const binSize = sampleRate / analyser.fftSize;
 
             // =========================================================================
@@ -654,14 +594,27 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               const avgF2 = f2Count > 0 ? f2Sum / f2Count : 0;
 
               // Mapeo F1 (Apertura mandibular con inercia IIR)
-              const rawF1 = Math.min(1, Math.max(0, (avgF1 - 10) / 42));
-              smoothedF1 = smoothedF1 * 0.68 + rawF1 * 0.32;
+              const rawF1 = Math.min(1, Math.max(0, (avgF1 - 8) / 38));
+              smoothedF1 = smoothedF1 * 0.62 + rawF1 * 0.38;
               setMouthOpenRatio(smoothedF1);
 
               // Mapeo F2 (Comisuras: Vocales abiertas E/I ensanchan, O/U estrechan)
               const f2Ratio = avgF1 > 4 ? Math.min(1, Math.max(0.1, (avgF2 / (avgF1 + 0.1)) * 0.95)) : 0.5;
-              smoothedF2 = smoothedF2 * 0.76 + f2Ratio * 0.24;
+              smoothedF2 = smoothedF2 * 0.72 + f2Ratio * 0.28;
               setMouthWidthRatio(smoothedF2);
+
+              // Publicar niveles formánticos en tiempo real a 60 FPS para NanoBananaLipSyncCanvas
+              if (typeof window !== 'undefined') {
+                const rmsNorm = Math.min(1, (avgF1 + avgF2) / 140);
+                (window as any).__iskoolActiveFormantLevels = {
+                  rms: rmsNorm,
+                  open: smoothedF1,
+                  spread: (smoothedF2 - 0.5) * 1.4,
+                  rounded: smoothedF1 > 0.25 && smoothedF2 < 0.42 ? (0.45 - smoothedF2) * 1.6 : 0,
+                  alveolar: avgF2 > avgF1 * 0.72 && avgF2 > 28,
+                  bilabial: rmsNorm > 0.02 && avgF1 < 18 && avgF2 < 12,
+                };
+              }
 
               // Detección de silencios y pausas dramáticas de respiración (<break>)
               const totalVocalEnergy = avgF1 + avgF2;
@@ -755,10 +708,14 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         await audio.play();
         return;
       }
-    } catch (ttsErr) {
+    } catch (ttsErr: any) {
+      if (mySeq !== ttsSeqRef.current || ttsErr?.name === 'AbortError') {
+        return;
+      }
       console.warn('Fallo al solicitar voz neural humana, recurriendo a voz de navegador:', ttsErr);
     }
 
+    if (mySeq !== ttsSeqRef.current) return;
     fallbackSpeechSynthesis(cleanText, onPlaybackStart);
   }, [audioEnabled, characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, voiceRate, voicePitch, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
 
@@ -1124,7 +1081,16 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         </div>
 
         {/* Lienzo del Avatar Anatómico con Gesticulaciones */}
-        <div className="relative my-4 w-44 h-44 sm:w-48 sm:h-48 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl shadow-amber-500/20 bg-slate-950 overflow-hidden flex items-center justify-center">
+        <div
+          onClick={() => {
+            const lastCharMsg = [...messages].reverse().find(m => m.sender === 'character');
+            if (lastCharMsg && audioEnabled) {
+              speakText(lastCharMsg.text);
+            }
+          }}
+          title="Haz clic para escuchar nuevamente al personaje"
+          className="relative my-4 w-44 h-44 sm:w-48 sm:h-48 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl shadow-amber-500/20 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer"
+        >
           <motion.div 
             className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center"
             animate={getAvatarTransform()}
@@ -1136,6 +1102,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               characterId={slug || characterName}
               isSpeaking={isSpeaking}
               mouthConfig={mouthCfg}
+              externalMouthOpen={mouthOpenRatio}
+              externalMouthSpread={mouthWidthRatio - 0.5}
               fallbackImageSrc="/images/history/josefa_ortiz_avatar.png"
               enableSmartBustCrop={true}
               className="filter contrast-105 brightness-95"

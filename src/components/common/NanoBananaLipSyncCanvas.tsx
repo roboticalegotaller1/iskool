@@ -22,6 +22,10 @@ export interface NanoBananaLipSyncCanvasProps {
   isSpeaking: boolean;
   /** Optional explicit mouth config override */
   mouthConfig?: CharacterAnatomicalMouth;
+  /** Optional external real-time mouth open ratio (0..1) from parent analyser */
+  externalMouthOpen?: number;
+  /** Optional external real-time mouth width/spread ratio (-0.5..0.5) from parent analyser */
+  externalMouthSpread?: number;
   /** Optional text currently being spoken (used to drive phoneme-aware syllable envelopes) */
   spokenText?: string;
   /** Optional CSS class for the outer container */
@@ -60,6 +64,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   characterId,
   isSpeaking,
   mouthConfig,
+  externalMouthOpen = 0,
+  externalMouthSpread = 0,
   spokenText = '',
   className = '',
   fallbackImageSrc = '/images/history/personaje_generico_avatar.png',
@@ -71,6 +77,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const stripCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [loadedSrc, setLoadedSrc] = useState<string>('');
   const isSpeakingRef = useRef<boolean>(isSpeaking);
+  const externalOpenRef = useRef<number>(externalMouthOpen);
+  const externalSpreadRef = useRef<number>(externalMouthSpread);
   const spokenTextRef = useRef<string>(spokenText);
 
   useEffect(() => {
@@ -78,13 +86,22 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   }, [isSpeaking]);
 
   useEffect(() => {
+    externalOpenRef.current = externalMouthOpen;
+  }, [externalMouthOpen]);
+
+  useEffect(() => {
+    externalSpreadRef.current = externalMouthSpread;
+  }, [externalMouthSpread]);
+
+  useEffect(() => {
     spokenTextRef.current = spokenText;
   }, [spokenText]);
 
   // Resolve calibrated anatomical landmarks in 1024x1024 space
+  // Prioritizes explicit mouthConfig or characterId first so image filename never causes false collisions
   const resolvedConfig = React.useMemo(() => {
     if (mouthConfig) return mouthConfig;
-    const key = `${characterId} ${imageSrc}`;
+    const key = characterId || imageSrc;
     return getHistoricalMouthConfig(key);
   }, [characterId, imageSrc, mouthConfig]);
 
@@ -191,38 +208,51 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
       if (speaking) {
         const formants = getVoiceFormantLevels();
+        const extOpen = externalOpenRef.current;
+        const extSpread = externalSpreadRef.current;
         const tSec = now * 0.001;
 
+        // 60 FPS Syllabic Viseme Articulator (~4.8 syllables/sec with natural bilabial closures & vowel peaks)
+        const sylWave1 = Math.sin(tSec * 9.8);
+        const sylWave2 = Math.sin(tSec * 15.6 + 0.9);
+        const sylWave3 = Math.cos(tSec * 6.3 - 0.5);
+        const phraseGate = Math.sin(tSec * 2.2) > -0.84 ? 1.0 : 0.06;
+        const rawEnvelope = 0.48 * sylWave1 + 0.34 * sylWave2 + 0.18 * sylWave3;
+
+        let oscOpen = 0.02;
+        let oscSpread = -0.10;
+        let oscTongue = 0.35;
+        if (rawEnvelope >= -0.22 && phraseGate >= 0.2) {
+          const normEnv = Math.min(1, Math.max(0, (rawEnvelope + 0.22) / 1.12));
+          oscOpen = (0.18 + 0.80 * Math.pow(normEnv, 1.05)) * phraseGate;
+          oscSpread = 0.28 * Math.sin(tSec * 7.6 + 0.4) - 0.20 * Math.cos(tSec * 11.5);
+          oscTongue = 0.45 + 0.42 * Math.sin(tSec * 18.5);
+        }
+
         if (formants.rms > 0.015) {
-          // Driven by real-time Web Audio FFT Formants (F1/F2/F3)
-          if (formants.bilabial) {
+          // Hybrid Real-Time Formant + Syllabic Viseme Articulation
+          if (formants.bilabial || rawEnvelope < -0.32) {
             targetOpen = 0.02; // Full lip closure on /m/, /b/, /p/
+            targetSpread = -0.10;
+          } else {
+            const formantOpen = Math.min(0.98, Math.max(0.18, formants.open * 1.15));
+            targetOpen = Math.min(0.98, formantOpen * 0.65 + oscOpen * 0.35);
+            targetSpread = (formants.spread - formants.rounded * 0.85) * 0.42 + oscSpread * 0.25;
+            targetTongue = formants.alveolar ? 0.85 : oscTongue;
+          }
+        } else if (extOpen > 0.03) {
+          if (rawEnvelope < -0.30) {
+            targetOpen = 0.02;
             targetSpread = -0.08;
           } else {
-            targetOpen = Math.min(0.95, Math.max(0.04, formants.open * 0.92));
-            targetSpread = (formants.spread - formants.rounded * 0.85) * 0.45;
-            targetTongue = formants.alveolar ? 0.82 : 0.25 + 0.3 * Math.sin(tSec * 14);
+            targetOpen = Math.min(0.98, Math.max(0.22, extOpen * 1.25) * 0.62 + oscOpen * 0.38);
+            targetSpread = extSpread * 0.65 + oscSpread * 0.35;
+            targetTongue = oscTongue;
           }
         } else {
-          // Synchronized 60 FPS Syllable & Viseme Sequencer (for browser SpeechSynthesis / fallback)
-          // Generates natural syllable cadence (~4.8 syllables/sec) with bilabial closures & vowel peaks
-          const sylWave1 = Math.sin(tSec * 9.6);
-          const sylWave2 = Math.sin(tSec * 15.2 + 0.9);
-          const sylWave3 = Math.cos(tSec * 6.1 - 0.5);
-          const phraseGate = Math.sin(tSec * 2.1) > -0.82 ? 1.0 : 0.08; // Brief breath pauses
-
-          const rawEnvelope = 0.48 * sylWave1 + 0.34 * sylWave2 + 0.18 * sylWave3;
-          // Bilabial closure dips when rawEnvelope < -0.25
-          if (rawEnvelope < -0.22 || phraseGate < 0.2) {
-            targetOpen = 0.02;
-            targetSpread = -0.10;
-            targetTongue = 0.35;
-          } else {
-            const normEnv = Math.min(1, Math.max(0, (rawEnvelope + 0.22) / 1.15));
-            targetOpen = (0.14 + 0.78 * Math.pow(normEnv, 1.12)) * phraseGate;
-            targetSpread = 0.26 * Math.sin(tSec * 7.4 + 0.4) - 0.18 * Math.cos(tSec * 11.3);
-            targetTongue = 0.45 + 0.42 * Math.sin(tSec * 18.5);
-          }
+          targetOpen = oscOpen;
+          targetSpread = oscSpread;
+          targetTongue = oscTongue;
         }
       } else {
         // Idle state: gentle relaxed mouth (slightly more closed than open smile so character looks natural)
@@ -231,9 +261,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         targetTongue = 0.2;
       }
 
-      // 2. Damped 60 FPS Spring Physics Integration (stiffness: 340, damping: 26)
-      const stiffness = 340;
-      const damping = 26;
+      // 2. Damped 60 FPS Spring Physics Integration (stiffness: 380, damping: 24)
+      const stiffness = 380;
+      const damping = 24;
 
       const openForce = (targetOpen - spring.open) * stiffness - spring.openVel * damping;
       spring.openVel += openForce * dt;
@@ -267,9 +297,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       // 4. Subtle 60 FPS Breathing & Prosodic Head Micro-Motion
       const tSec = now * 0.001;
       const breathBob = Math.sin(tSec * 1.65) * 1.4;
-      const speechBob = speaking ? Math.sin(tSec * 5.2) * 1.8 * spring.open : 0;
+      const speechBob = speaking ? Math.sin(tSec * 5.2) * 2.2 * spring.open : 0;
       const targetBobY = breathBob + speechBob;
-      const targetTiltX = speaking ? Math.sin(tSec * 3.1) * 1.2 * spring.open : Math.sin(tSec * 0.8) * 0.4;
+      const targetTiltX = speaking ? Math.sin(tSec * 3.1) * 1.4 * spring.open : Math.sin(tSec * 0.8) * 0.4;
       spring.headBobY += (targetBobY - spring.headBobY) * Math.min(1, dt * 10);
       spring.headTiltX += (targetTiltX - spring.headTiltX) * Math.min(1, dt * 10);
 
@@ -290,39 +320,64 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       // Draw canonical base portrait
       ctx.drawImage(off, 0, 0, 1024, 1024);
 
-      // 6. Surgical Strip-Mesh Jaw & Lip Warping + Anatomical Oral Cavity
+      // 6. Surgical Strip-Mesh Upper Lip + Lower Lip & Mandible Warping + Anatomical Oral Cavity
       const mouthW = cfg.x2 - cfg.x1;
       const halfW = mouthW * 0.5;
       const chinY = cfg.chinY ?? cfg.cy + Math.max(48, mouthW * 0.85);
       const jawHeight = Math.max(36, chinY - cfg.cy);
-      const maxJawDrop = Math.min(28, Math.max(cfg.maxOpening * 1.65, jawHeight * 0.34));
+      const maxJawDrop = Math.min(38, Math.max(cfg.maxOpening * 2.15, jawHeight * 0.44));
 
       const deltaOpen = spring.open - baseOpen;
       const isClosedBase = baseOpen < 0.12;
 
-      // Displace the character's REAL lower lip, mandible, and chin using 24 horizontal micro-strips
+      // Displace the character's REAL upper lip, lower lip, mandible, and chin
       if (Math.abs(deltaOpen) > 0.01 || Math.abs(spring.spread) > 0.01) {
-        const numStrips = 24;
-        const warpWidth = halfW * 2.5;
+        const warpWidth = halfW * 2.55;
         const warpLeft = cfg.cx - warpWidth * 0.5;
+        const horizScale = 1 + spring.spread * 0.24;
+
+        // 6A. Upper lip micro-lift (8 horizontal micro-strips above stomion)
+        if (!cfg.mustacheCover && deltaOpen > 0.01) {
+          const upStrips = 8;
+          const upSpanY = Math.max(14, jawHeight * 0.28);
+          const upStripH = upSpanY / upStrips;
+          const upperLiftPx = (isClosedBase ? spring.open : deltaOpen) * maxJawDrop * 0.22;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(cfg.cx, cfg.cy - upSpanY * 0.45, halfW * 1.15, upSpanY * 0.65, 0, 0, Math.PI * 2);
+          ctx.clip();
+          for (let i = 0; i < upStrips; i++) {
+            const normY = i / upStrips; // 0 at top of philtrum, 1 at stomion (cy)
+            const falloff = Math.pow(Math.sin(normY * Math.PI * 0.5), 1.5);
+            const dy = -upperLiftPx * falloff;
+            const srcY = (cfg.cy - upSpanY) + i * upStripH;
+            const dstY = srcY + dy;
+            const dstW = warpWidth * (1 + (horizScale - 1) * falloff);
+            const dstX = cfg.cx - dstW * 0.5;
+            ctx.drawImage(off, warpLeft, srcY, warpWidth, upStripH + 1.2, dstX, dstY, dstW, upStripH + 1.4);
+          }
+          ctx.restore();
+        }
+
+        // 6B. Lower lip, mandible, and chin drop (28 horizontal micro-strips below stomion)
+        const numStrips = 28;
         const warpTop = cfg.cy;
-        const warpSpanY = jawHeight * 1.22;
+        const warpSpanY = jawHeight * 1.24;
         const stripH = warpSpanY / numStrips;
 
         const lowerDropPx = isClosedBase
-          ? spring.open * maxJawDrop * 0.62
-          : deltaOpen * maxJawDrop * 0.68;
-
-        const horizScale = 1 + spring.spread * 0.22;
+          ? spring.open * maxJawDrop * 0.78
+          : deltaOpen * maxJawDrop * 0.82;
 
         ctx.save();
         // Soft elliptical clip around the lower lip, mandible, and chin so cheeks/background never tear
         ctx.beginPath();
         ctx.ellipse(
           cfg.cx,
-          cfg.cy + jawHeight * 0.52,
-          halfW * 1.22,
-          jawHeight * 0.72,
+          cfg.cy + jawHeight * 0.54,
+          halfW * 1.26,
+          jawHeight * 0.76,
           0,
           0,
           Math.PI * 2
@@ -331,7 +386,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
         for (let i = 0; i < numStrips; i++) {
           const normY = i / numStrips; // 0 at stomion (cy), 1 at bottom of chin
-          const falloff = Math.pow(Math.cos(normY * Math.PI * 0.5), 1.75);
+          const falloff = Math.pow(Math.cos(normY * Math.PI * 0.5), 1.65);
           const dy = lowerDropPx * falloff;
           const sScaleX = 1 + (horizScale - 1) * Math.sin(normY * Math.PI);
 
@@ -360,17 +415,17 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         ? spring.open
         : Math.max(0, spring.open - baseOpen * 0.65);
 
-      if (effectiveOpen > 0.035) {
-        const activeHalfW = halfW * (0.90 + spring.spread * 0.16);
-        const upperLiftPx = effectiveOpen * maxJawDrop * (cfg.mustacheCover ? 0.05 : 0.16);
-        const lowerDropPx = effectiveOpen * maxJawDrop * 0.62;
-        const cornerY = (cfg.y1 + cfg.y2) * 0.5;
+      if (effectiveOpen > 0.03) {
+        const activeHalfW = halfW * (0.92 + spring.spread * 0.18);
+        const upperLiftPx = effectiveOpen * maxJawDrop * (cfg.mustacheCover ? 0.06 : 0.22);
+        const lowerDropPx = effectiveOpen * maxJawDrop * 0.74;
+        const cornerY = (cfg.y1 + cfg.y2) * 0.5 + lowerDropPx * 0.12;
         const stomionCenterY = cfg.cy;
 
         const leftX = cfg.cx - activeHalfW;
         const rightX = cfg.cx + activeHalfW;
-        const topCtrlY = stomionCenterY - upperLiftPx * 1.35;
-        const botCtrlY = stomionCenterY + lowerDropPx * 1.45;
+        const topCtrlY = stomionCenterY - upperLiftPx * 1.38;
+        const botCtrlY = stomionCenterY + lowerDropPx * 1.48;
 
         ctx.save();
 

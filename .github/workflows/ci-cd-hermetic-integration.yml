@@ -24,7 +24,7 @@ jobs:
   # ===========================================================================
   quality-gate:
     name: 🛡️ Quality Gate (Estático, Tipos & Tests Herméticos)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
       SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
@@ -73,7 +73,7 @@ jobs:
   # ===========================================================================
   e2e-browser:
     name: 🎭 E2E Browser Testing (Playwright Chromium)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: quality-gate
     timeout-minutes: 25
     env:

@@ -430,7 +430,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               </div>
             </>
           ) : (
-            <ISkoolOfficialLogo variant="horizontal" size={40} theme="dark" showTagline={true} />
+            <ISkoolOfficialLogo variant="horizontal" size={40} theme="dark" showTagline={true} showSquareIcon={true} />
           )}
         </div>
 
@@ -907,14 +907,29 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
             </div>
           )}
 
-          {/* Ayuda o Soporte Institucional */}
-          <div className="flex items-center justify-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-            <HelpCircle className="h-3.5 w-3.5" />
-            <span>
-              {isIbimeMode 
-                ? '¿Requieres asistencia institucional? Contacta a la Dirección de tu Plantel IBIME.'
-                : '¿Requieres asistencia institucional? Contacta a tu plantel.'}
-            </span>
+          {/* Ayuda o Soporte Institucional y Enlaces Legales Oficiales (Requisito Google OAuth Branding) */}
+          <div className="flex flex-col items-center gap-2.5 text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="flex items-center justify-center gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5" />
+              <span>
+                {isIbimeMode 
+                  ? '¿Requieres asistencia institucional? Contacta a la Dirección de tu Plantel IBIME.'
+                  : '¿Requieres asistencia institucional? Contacta a contacto@iskool.mx'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <a href="/privacidad" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Política de Privacidad
+              </a>
+              <span aria-hidden="true">•</span>
+              <a href="/terminos" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Condiciones del Servicio
+              </a>
+              <span aria-hidden="true">•</span>
+              <a href="/" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Sitio Oficial ISkool
+              </a>
+            </div>
           </div>
 
         </div>

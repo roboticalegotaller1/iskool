@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
           <div className="flex items-center gap-3">
             <div>
               <span className="font-black text-base sm:text-lg tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                <ISkoolOfficialLogo variant="horizontal" size={24} showTagline={false} />
+                <ISkoolOfficialLogo variant="horizontal" size={24} showTagline={false} showSquareIcon={true} />
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                   Legal
                 </span>

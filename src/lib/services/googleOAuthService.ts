@@ -124,10 +124,26 @@ export const GOOGLE_DIRECTOR_WORKSPACE_SCOPES = [
 ];
 
 /**
- * Scope restringido para lectura profunda de Gmail.
- * Requiere auditoría anual CASA Tier 2/3. Se mantiene configurable y desactivado por defecto.
+ * Lista blanca estricta e inmutable de los 5 alcances (scopes) oficialmente verificados
+ * y aprobados por Google Trust & Safety para el proyecto iskool-498904.
+ * Cualquier scope fuera de este conjunto queda bloqueado a nivel de arquitectura para
+ * proteger permanentemente el estado "Verificado" de Acceso a los Datos y Marca.
  */
-export const GOOGLE_RESTRICTED_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
+export const VERIFIED_GOOGLE_ALLOWED_SCOPES = new Set([
+  'openid',
+  'email',
+  'profile',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/calendar.events'
+]);
+
+/**
+ * Scope restringido desactivado permanentemente para preservar la verificación oficial
+ * de Google OAuth (solo gmail.send y calendar.events están aprobados en producción).
+ */
+export const GOOGLE_RESTRICTED_READONLY_SCOPE = '';
 
 export class GoogleOAuthService {
   public static readonly DEFAULT_PUBLIC_GOOGLE_CLIENT_ID =
@@ -327,14 +343,13 @@ export class GoogleOAuthService {
     let scopeList: string[];
     if (scopeType === 'workspace') {
       scopeList = [...GOOGLE_DIRECTOR_WORKSPACE_SCOPES];
-      if (options?.includeReadonly) {
-        scopeList.push(GOOGLE_RESTRICTED_READONLY_SCOPE);
-      }
     } else {
       scopeList = [...GOOGLE_LOGIN_SCOPES];
     }
 
-    const scopes = scopeList.join(' ');
+    // Blindaje quirúrgico: Filtrar exclusivamente contra los scopes verificados en Google Cloud Console
+    const safeVerifiedScopes = scopeList.filter((s) => VERIFIED_GOOGLE_ALLOWED_SCOPES.has(s));
+    const scopes = safeVerifiedScopes.join(' ');
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -593,6 +608,16 @@ export class GoogleOAuthService {
       const cached = gmailFetchCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < 25000 && cached.emails.length > 0) {
         return cached.emails;
+      }
+
+      // BLINDAJE DE PERMISOS VERIFICADOS GOOGLE OAUTH (project=iskool-498904):
+      // Nuestra aplicación está verificada bajo mínimo privilegio exclusivamente para:
+      //   - https://www.googleapis.com/auth/gmail.send
+      //   - https://www.googleapis.com/auth/calendar.events
+      // No se invoca GET /gmail/v1/users/me/messages (que exigiría el scope no solicitado gmail.readonly
+      // y generaría errores 403 ACCESS_TOKEN_SCOPE_INSUFFICIENT en la telemetría de Google Cloud).
+      if (process.env.GOOGLE_OAUTH_READONLY_VERIFIED !== 'true') {
+        return cached ? cached.emails : [];
       }
 
       // 1. Obtener lista de IDs de mensajes en INBOX

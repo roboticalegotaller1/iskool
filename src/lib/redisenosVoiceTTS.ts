@@ -1,6 +1,8 @@
 // src/lib/redisenosVoiceTTS.ts
 "use client";
 
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from './historicalVoiceEngine';
+
 /**
  * MOTOR CENTRALIZADO DE SÍNTESIS DE VOZ FEMENINA NATURAL EN ESPAÑOL
  * ----------------------------------------------------------------------------
@@ -76,11 +78,8 @@ export interface SpeakNaturalFemaleOptions {
   onError?: () => void;
 }
 
-// Estado global de reproducción y caché de audio en cliente
-let activeAudioElement: HTMLAudioElement | null = null;
-let activeAbortController: AbortController | null = null;
+// Estado global de preferencia de voz femenina en cliente
 let preferredFemaleVoiceId: string = 'es-MX-DaliaNeural';
-const clientAudioBlobCache = new Map<string, string>();
 
 /**
  * Obtiene la voz femenina natural actualmente preferida por el usuario.
@@ -115,133 +114,12 @@ export function setPreferredFemaleVoiceId(voiceId: string): void {
  * Detiene inmediatamente cualquier reproducción de voz neural o de navegador activa.
  */
 export function stopNaturalFemaleVoice(): void {
-  if (activeAbortController) {
-    activeAbortController.abort();
-    activeAbortController = null;
-  }
-
-  if (activeAudioElement) {
-    try {
-      activeAudioElement.pause();
-      activeAudioElement.currentTime = 0;
-    } catch {
-      // Ignorar error al pausar
-    }
-    activeAudioElement = null;
-  }
-
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      // Ignorar error de speechSynthesis
-    }
-  }
+  stopAllIskoolAudio();
 }
 
 /**
- * Selecciona la mejor voz femenina en español disponible en el navegador como respaldo offline,
- * descartando explícitamente voces masculinas.
- */
-function selectBestBrowserFemaleSpanishVoice(): SpeechSynthesisVoice | null {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) return null;
-
-  const esVoices = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
-  if (esVoices.length === 0) return null;
-
-  const femaleKeywords = [
-    'dalia', 'salome', 'salomé', 'camila', 'paloma', 'sabina', 'paulina',
-    'maria', 'maría', 'helena', 'laura', 'monica', 'mónica', 'lucia', 'lucía',
-    'sofia', 'sofía', 'valentina', 'isabela', 'renata', 'beatriz', 'larissa',
-    'marina', 'nuria', 'catala', 'catalina', 'elena', 'paola', 'andrea',
-    'marta', 'female', 'mujer', 'femenina'
-  ];
-
-  const maleKeywords = [
-    'raul', 'raúl', 'jorge', 'pablo', 'diego', 'carlos', 'alonso', 'gonzalo',
-    'alex', 'tomas', 'tomás', 'lorenzo', 'juan', 'manuel', 'emilio', 'luis',
-    'andres', 'andrés', 'sebastian', 'sebastián', 'male', 'hombre'
-  ];
-
-  let bestVoice: SpeechSynthesisVoice | null = null;
-  let bestScore = -999;
-
-  for (const v of esVoices) {
-    const nameLower = v.name.toLowerCase();
-    const langLower = v.lang.toLowerCase();
-    let score = 0;
-
-    // Priorizar español de México y Latinoamérica
-    if (langLower === 'es-mx' || langLower === 'es_mx') score += 40;
-    else if (langLower.startsWith('es-us') || langLower.startsWith('es-co') || langLower.startsWith('es-pe') || langLower.startsWith('es-419')) score += 30;
-    else if (langLower.startsWith('es')) score += 15;
-
-    // Priorizar voces Neural / Natural / Online
-    if (nameLower.includes('natural') || nameLower.includes('neural')) score += 60;
-    if (!v.localService) score += 20;
-
-    // Bonificar coincidencias con nombres femeninos
-    if (femaleKeywords.some(k => nameLower.includes(k))) {
-      score += 80;
-    }
-
-    // Penalizar severamente nombres masculinos
-    if (maleKeywords.some(k => nameLower.includes(k))) {
-      score -= 200;
-    }
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestVoice = v;
-    }
-  }
-
-  return bestVoice || esVoices[0];
-}
-
-/**
- * Respaldo en navegador con selección estricta de voz femenina en español.
- */
-function speakFallbackBrowserFemale(
-  text: string,
-  options: SpeakNaturalFemaleOptions
-): void {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-    options.onEnd?.();
-    return;
-  }
-
-  try {
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    const chosenVoice = selectBestBrowserFemaleSpanishVoice();
-    if (chosenVoice) {
-      utter.voice = chosenVoice;
-      utter.lang = chosenVoice.lang || 'es-MX';
-    } else {
-      utter.lang = 'es-MX';
-    }
-    utter.rate = options.rate ?? 1.0;
-    utter.pitch = options.pitch ?? 1.05;
-
-    utter.onstart = () => options.onStart?.();
-    utter.onend = () => options.onEnd?.();
-    utter.onerror = () => {
-      options.onError?.();
-      options.onEnd?.();
-    };
-
-    window.speechSynthesis.speak(utter);
-  } catch {
-    options.onEnd?.();
-  }
-}
-
-/**
- * Reproduce texto en español utilizando el motor neuronal de voces femeninas humanas (/api/ai/tts).
- * Garantiza entonación humana natural, cálida y cristalina en todos los rediseños.
+ * Reproduce texto en español utilizando el motor universal de estudio (/api/ai/tts)
+ * con protección atómica anti-doble clic y masterización broadcast de 7 etapas.
  */
 export async function speakNaturalFemaleSpanish(
   text: string,
@@ -252,96 +130,20 @@ export async function speakNaturalFemaleSpanish(
     return;
   }
 
-  stopNaturalFemaleVoice();
-
   const targetVoiceId = options.voiceId || getPreferredFemaleVoiceId() || 'es-MX-DaliaNeural';
   const profile = NATURAL_FEMALE_SPANISH_VOICES.find(v => v.id === targetVoiceId) || NATURAL_FEMALE_SPANISH_VOICES[0];
-  const rate = options.rate ?? profile.defaultRate;
-  const pitch = options.pitch ?? profile.defaultPitch;
 
-  const cleanText = text.replace(/\s+/g, ' ').trim();
-  const cacheKey = `${profile.id}:${rate.toFixed(2)}:${pitch.toFixed(2)}:${cleanText}`;
-
-  // 1. Verificar caché en memoria del cliente (latencia 0ms)
-  const cachedBlobUrl = clientAudioBlobCache.get(cacheKey);
-  if (cachedBlobUrl) {
-    try {
-      const audio = new Audio(cachedBlobUrl);
-      activeAudioElement = audio;
-      options.onStart?.();
-      audio.onended = () => {
-        if (activeAudioElement === audio) activeAudioElement = null;
-        options.onEnd?.();
-      };
-      audio.onerror = () => {
-        if (activeAudioElement === audio) activeAudioElement = null;
-        speakFallbackBrowserFemale(cleanText, options);
-      };
-      await audio.play();
-      return;
-    } catch {
-      // Si falla reproducción del blob en caché, continuar con petición o fallback
-    }
-  }
-
-  // 2. Solicitar síntesis neuronal de alta definición a /api/ai/tts
-  const abortController = new AbortController();
-  activeAbortController = abortController;
-
-  try {
-    options.onStart?.();
-
-    const response = await fetch('/api/ai/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: abortController.signal,
-      body: JSON.stringify({
-        text: cleanText,
-        voice: profile.id,
-        language: 'es',
-        rate,
-        pitch,
-        role: 'pedagogical_female'
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const audioBlob = await response.blob();
-    if (abortController.signal.aborted) return;
-
-    const blobUrl = URL.createObjectURL(audioBlob);
-    if (clientAudioBlobCache.size >= 100) {
-      const oldestKey = clientAudioBlobCache.keys().next().value;
-      if (oldestKey) {
-        const oldUrl = clientAudioBlobCache.get(oldestKey);
-        if (oldUrl) URL.revokeObjectURL(oldUrl);
-        clientAudioBlobCache.delete(oldestKey);
-      }
-    }
-    clientAudioBlobCache.set(cacheKey, blobUrl);
-
-    const audio = new Audio(blobUrl);
-    activeAudioElement = audio;
-    audio.onended = () => {
-      if (activeAudioElement === audio) activeAudioElement = null;
-      options.onEnd?.();
-    };
-    audio.onerror = () => {
-      if (activeAudioElement === audio) activeAudioElement = null;
-      speakFallbackBrowserFemale(cleanText, options);
-    };
-
-    await audio.play();
-  } catch (err: unknown) {
-    if (err instanceof Error && err.name === 'AbortError') {
-      options.onEnd?.();
-      return;
-    }
-    // Respaldo inmediato con la mejor voz femenina del navegador
-    speakFallbackBrowserFemale(cleanText, options);
-  }
+  await playUniversalIskoolVoice({
+    text,
+    voiceId: profile.id,
+    language: 'es',
+    gender: 'female',
+    role: 'pedagogical',
+    rate: options.rate ?? profile.defaultRate,
+    pitch: options.pitch ?? profile.defaultPitch,
+    onStart: options.onStart,
+    onEnd: options.onEnd,
+    onError: () => options.onError?.()
+  });
 }
 

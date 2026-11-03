@@ -17,13 +17,22 @@ export default function ProviderOAuthPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Metadatos de cada proveedor
+  // Blindaje Google Safe Browsing & OAuth Compliance:
+  // Cuando el proveedor es Google, redirigir de inmediato al flujo real verificado (/api/auth/google/connect)
+  useEffect(() => {
+    if (provider === 'google' && typeof window !== 'undefined') {
+      const target = `/api/auth/google/connect${initialEmail ? `?email=${encodeURIComponent(initialEmail)}` : ''}`;
+      window.location.replace(target);
+    }
+  }, [provider, initialEmail]);
+
+  // Metadatos de conector institucional (sin suplantar dominios externos para proteger Google Safe Browsing)
   const providerMeta = {
     google: {
       name: 'Google Workspace',
-      serverDomain: 'accounts.google.com',
-      authTitle: 'Acceder con Google',
-      authSubtitle: 'Continuar a ISkool Portal Directivo',
+      serverDomain: 'iskool.mx · Redirección OAuth 2.0 Oficial',
+      authTitle: 'Redirigiendo a Google OAuth 2.0...',
+      authSubtitle: 'Conectando con el servidor oficial de autorización de Google',
       logo: <GoogleOfficialLogo size={28} />,
       accentColor: 'blue',
       themeBg: 'bg-white',
@@ -32,9 +41,9 @@ export default function ProviderOAuthPage() {
     },
     microsoft: {
       name: 'Microsoft 365',
-      serverDomain: 'login.microsoftonline.com',
-      authTitle: 'Iniciar sesión en Microsoft',
-      authSubtitle: 'Conectar buzón institucional de Office 365 / Outlook',
+      serverDomain: 'iskool.mx · Conector Institucional M365',
+      authTitle: 'Conector Institucional Microsoft 365',
+      authSubtitle: 'Vincular buzón institucional de Office 365 / Outlook a ISkool',
       logo: <OutlookOfficialLogo size={28} />,
       accentColor: 'sky',
       themeBg: 'bg-slate-50',
@@ -43,8 +52,8 @@ export default function ProviderOAuthPage() {
     },
     apple: {
       name: 'Apple iCloud',
-      serverDomain: 'appleid.apple.com',
-      authTitle: 'Iniciar sesión con Apple ID',
+      serverDomain: 'iskool.mx · Conector Institucional iCloud',
+      authTitle: 'Conector Institucional Apple iCloud',
       authSubtitle: 'Vincular buzón @icloud.com a ISkool',
       logo: <AppleICloudOfficialLogo size={28} />,
       accentColor: 'slate',
@@ -54,9 +63,9 @@ export default function ProviderOAuthPage() {
     },
     yahoo: {
       name: 'Yahoo Mail',
-      serverDomain: 'api.login.yahoo.com',
-      authTitle: 'Acceder con Yahoo',
-      authSubtitle: 'Autorizar sincronización de correo Yahoo',
+      serverDomain: 'iskool.mx · Conector Institucional Yahoo',
+      authTitle: 'Conector Institucional Yahoo Mail',
+      authSubtitle: 'Autorizar sincronización de correo Yahoo en ISkool',
       logo: <YahooOfficialLogo size={28} />,
       accentColor: 'purple',
       themeBg: 'bg-white',
@@ -65,9 +74,9 @@ export default function ProviderOAuthPage() {
     },
     zoho: {
       name: 'Zoho Mail',
-      serverDomain: 'accounts.zoho.com',
-      authTitle: 'Iniciar sesión en Zoho',
-      authSubtitle: 'Conectar buzón empresarial Zoho Workspace',
+      serverDomain: 'iskool.mx · Conector Institucional Zoho',
+      authTitle: 'Conector Institucional Zoho Workspace',
+      authSubtitle: 'Conectar buzón empresarial Zoho Workspace a ISkool',
       logo: <ZohoOfficialLogo size={28} />,
       accentColor: 'amber',
       themeBg: 'bg-white',
@@ -76,8 +85,8 @@ export default function ProviderOAuthPage() {
     }
   }[provider] || {
     name: 'Proveedor de Correo',
-    serverDomain: 'oauth.mailserver.com',
-    authTitle: 'Autorización en Servidor',
+    serverDomain: 'iskool.mx · Conector Institucional',
+    authTitle: 'Autorización Institucional',
     authSubtitle: 'Conectar buzón a ISkool',
     logo: <ShieldCheck size={28} className="text-indigo-600" />,
     accentColor: 'indigo',

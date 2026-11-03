@@ -38,6 +38,7 @@ export function useTeacherSocialLoopStream({
   const lastHeartbeatRef = useRef<number>(Date.now());
   const attemptCountRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
+  const connectSSERef = useRef<() => void>(() => {});
 
   const clearMilestone = useCallback(() => {
     setLatestMilestone(null);
@@ -110,8 +111,8 @@ export function useTeacherSocialLoopStream({
       // 2. Heartbeat (Ping) del servidor cada 25-30s
       eventSource.addEventListener('ping', () => {
         lastHeartbeatRef.current = Date.now();
-        if (connectionStatus !== 'connected' && isMountedRef.current) {
-          setConnectionStatus('connected');
+        if (isMountedRef.current) {
+          setConnectionStatus((prev) => (prev !== 'connected' ? 'connected' : prev));
         }
       });
 
@@ -165,7 +166,7 @@ export function useTeacherSocialLoopStream({
         const delay = calculateBackoffDelay(attemptCountRef.current);
         reconnectTimerRef.current = setTimeout(() => {
           if (isMountedRef.current) {
-            connectSSE();
+            connectSSERef.current();
           }
         }, delay);
       };
@@ -173,7 +174,11 @@ export function useTeacherSocialLoopStream({
       console.warn('[SSE Teacher Social Loop] Error inicializando EventSource:', err);
       setConnectionStatus('reconnecting');
     }
-  }, [enabled, teacherId, schoolId, cleanupConnection, calculateBackoffDelay, connectionStatus]);
+  }, [enabled, teacherId, schoolId, cleanupConnection, calculateBackoffDelay]);
+
+  useEffect(() => {
+    connectSSERef.current = connectSSE;
+  }, [connectSSE]);
 
   // Manejo de montaje, Watchdog y eventos de conectividad del navegador
   useEffect(() => {

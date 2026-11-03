@@ -272,11 +272,28 @@ const EJES_ARTICULADORES = [
   { name: 'Interculturalidad Crítica', icon: Globe, color: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200/40' }
 ];
 
+export type PlanningBloomLevel = 'recordar' | 'comprender' | 'aplicar' | 'analizar' | 'evaluar' | 'crear';
+export type PlanningScheduleSlot = 'en_curso' | 'horario_diferido' | 'dia_diferido';
+
 interface PlanningTabProps {
   currentTeacher: UserProfile;
   subjects: Subject[];
   schedulesList: ClassSchedule[];
   groupsList: Group[];
+  initialTopic?: string;
+  initialBloomLevel?: PlanningBloomLevel;
+  onSyncPlanningToEcosystem?: (payload: {
+    planning: any;
+    bloomLevel: PlanningBloomLevel;
+    scheduleType: PlanningScheduleSlot;
+    dayLabel: string;
+    timeRange: string;
+    groupLabel: string;
+    stampPage: string;
+    sessionIndex?: number;
+    goToTab?: 'timeline' | 'stamps' | 'evidences' | 'planning' | 'classroom' | 'enlace' | 'settings';
+  }) => void;
+  onNavigateToCopilotTab?: (tab: 'timeline' | 'stamps' | 'evidences' | 'planning' | 'classroom' | 'enlace' | 'settings') => void;
 }
 
 const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => {
@@ -417,7 +434,16 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
   };
 };
 
-export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsList }: PlanningTabProps) {
+export function PlanningTab({
+  currentTeacher,
+  subjects,
+  schedulesList,
+  groupsList,
+  initialTopic,
+  initialBloomLevel,
+  onSyncPlanningToEcosystem,
+  onNavigateToCopilotTab
+}: PlanningTabProps) {
   const subjectsList = useSchoolAdminStore(state => state.subjectsList);
   const normalizedTeacherId = currentTeacher?.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : currentTeacher?.id;
 
@@ -651,13 +677,32 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
   };
 
   // --- Estados de Entrada ---
-  const [inputText, setInputText] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('primaria-baja');
+  const [inputText, setInputText] = useState(initialTopic || '');
+  const [selectedLevel, setSelectedLevel] = useState('secundaria');
   const [selectedSubject, setSelectedSubject] = useState('');
   const [sessionCount, setSessionCount] = useState<number>(3);
+  const [selectedBloomLevel, setSelectedBloomLevel] = useState<PlanningBloomLevel>(initialBloomLevel || 'analizar');
+  const [selectedScheduleSlot, setSelectedScheduleSlot] = useState<PlanningScheduleSlot>('en_curso');
+  const [selectedDayLabel, setSelectedDayLabel] = useState<string>('Hoy Lunes (En Curso)');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('08:00 - 08:50 AM');
+  const [selectedGroupLabel, setSelectedGroupLabel] = useState<string>(() => groupsList?.[0]?.name || '1°A Secundaria');
+  const [selectedStampPage, setSelectedStampPage] = useState<string>('Pág. 48 - Nuestros Saberes SEP');
+  const [ecosystemSyncedAt, setEcosystemSyncedAt] = useState<string | null>(null);
   const [pdaSuggestions, setPdaSuggestions] = useState<string[]>([]);
   const [isLoadingPDAs, setIsLoadingPDAs] = useState(false);
   const [selectedSuggestedPda, setSelectedSuggestedPda] = useState('');
+
+  useEffect(() => {
+    if (initialTopic && initialTopic.trim() && !inputText) {
+      setInputText(initialTopic);
+    }
+  }, [initialTopic]);
+
+  useEffect(() => {
+    if (initialBloomLevel) {
+      setSelectedBloomLevel(initialBloomLevel);
+    }
+  }, [initialBloomLevel]);
 
   // Materias oficiales base según el nivel educativo seleccionado (Preescolar a Preparatoria)
   const displaySubjects = LEVEL_BASE_SUBJECTS[selectedLevel] || LEVEL_BASE_SUBJECTS['primaria-baja'];
@@ -1133,6 +1178,9 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
       } catch (e) {
         console.warn("No se pudo auto-guardar en Bóveda Curricular:", e);
       }
+
+      // Step 4: Integración Automática 360° con todo el Ecosistema iSkool
+      integratePlanningIntoISkool360(resultPlanning, 0);
     }
 
     clearInterval(interval);
@@ -1142,6 +1190,104 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
     const updatedHistory = [resultPlanning, ...planningsHistory.filter(p => p.id !== resultPlanning.id)];
     saveHistory(updatedHistory);
     setActivePlanning(resultPlanning);
+  };
+
+  // --- Integrador Quirúrgico 360° con Todo el Ecosistema iSkool ---
+  const integratePlanningIntoISkool360 = (
+    planningObj: any,
+    sessionIdx: number = 0,
+    goToTab?: 'timeline' | 'stamps' | 'evidences' | 'planning' | 'classroom' | 'enlace' | 'settings'
+  ) => {
+    if (!planningObj) return;
+    const sesiones: SessionPlanItem[] = Array.isArray(planningObj.sesiones) ? planningObj.sesiones : [];
+    const targetSession = sesiones[sessionIdx] || sesiones[0];
+    const sepPageRaw = targetSession?.libroSep?.paginas || selectedStampPage || 'Pág. 48';
+    const cleanPageMatch = sepPageRaw.match(/p[áa]g(?:ina)?s?\.?\s*(\d+)/i);
+    const shortPageNum = cleanPageMatch ? `Pág. ${cleanPageMatch[1]}` : (sepPageRaw.split('-')[0]?.trim() || 'Pág. 48');
+    const deliverableTitle = targetSession?.entregableSesion || planningObj.proyectoIntegrador?.productoFinal || 'Actividad SEP NEM';
+    const computedStampPage = `${shortPageNum} - ${deliverableTitle.slice(0, 34)}`;
+    setSelectedStampPage(computedStampPage);
+
+    // 1. Publicar Misión Gamificada en useGamificationStore (+50 XP / +25 Monedas)
+    try {
+      const gamificationStore = useGamificationStore.getState();
+      if (gamificationStore.saveQuest) {
+        const subjectIdToUse = planningObj.subjectId || selectedSubject || 'sub-his';
+        gamificationStore.saveQuest(subjectIdToUse, {
+          id: `q-plan-${Date.now()}`,
+          mission_id: planningObj.id || `plan-${Date.now()}`,
+          title: `${shortPageNum}: ${(targetSession?.titulo || planningObj.title || 'Reto Curricular SEP').slice(0, 55)}`,
+          description: `${deliverableTitle} • PDA: ${(planningObj.pda || '').slice(0, 120)}`,
+          type: 'portfolio_submission',
+          xp_reward: 50,
+          coins_reward: 25,
+          sequence_order: sessionIdx + 1,
+          pda_ids: [planningObj.id || 'NEM-PDA-2026']
+        } as any);
+      }
+    } catch {
+      // ignore fallback
+    }
+
+    // 2. Publicar Campaña Curricular en usePlanningStore
+    try {
+      const { addCampaign } = usePlanningStore.getState();
+      addCampaign({
+        id: planningObj.id || `camp-${Date.now()}`,
+        subject_id: planningObj.subjectId || selectedSubject || 'sub-his',
+        subject_name: planningObj.subjectName || 'Asignatura SEP NEM',
+        level: planningObj.levelName || selectedGroupLabel,
+        reality_diagnosis: targetSession?.actividadInicio || planningObj.inicio || 'Diagnóstico de aula SEP NEM',
+        problematic: (planningObj.preguntasDetonadoras && planningObj.preguntasDetonadoras[0]) || 'Pregunta detonadora de pensamiento crítico',
+        student_needs: `Taxonomía de Bloom (${selectedBloomLevel.toUpperCase()}) • ${computedStampPage}`,
+        campo_formativo_id: 'cf-nem',
+        campo_formativo_name: planningObj.campoFormativo || 'Saberes y Pensamiento Científico',
+        selected_pda_ids: [planningObj.id || 'NEM-PDA-01'],
+        quests: [
+          {
+            title: targetSession?.titulo || planningObj.title,
+            description: deliverableTitle,
+            type: 'portfolio_submission',
+            xp_reward: 50,
+            coins_reward: 25,
+            pda_ids: [planningObj.id || 'NEM-PDA-01']
+          }
+        ],
+        published_at: new Date().toISOString()
+      });
+    } catch {
+      // ignore fallback
+    }
+
+    // 3. Emitir sincronización en vivo hacia TeacherMasterCopilot (Agenda Diferida, Pizarra, Sellos, Magic Links y Espejo CEO)
+    const syncPayload = {
+      planning: planningObj,
+      bloomLevel: selectedBloomLevel,
+      scheduleType: selectedScheduleSlot,
+      dayLabel: selectedDayLabel,
+      timeRange: selectedTimeRange,
+      groupLabel: selectedGroupLabel,
+      stampPage: computedStampPage,
+      sessionIndex: sessionIdx,
+      goToTab
+    };
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('iskool-planning-generated-sync', { detail: syncPayload }));
+    }
+
+    if (onSyncPlanningToEcosystem) {
+      onSyncPlanningToEcosystem(syncPayload);
+    }
+
+    const timeNow = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+    setEcosystemSyncedAt(timeNow);
+    setToastMessage(`¡Planeación integrada en todo iSkool 360° (Pizarra, Sellos ${shortPageNum}, Misión +50 XP, Magic Links y Agenda Diferida)!`);
+    setTimeout(() => setToastMessage(null), 5500);
+
+    if (goToTab && onNavigateToCopilotTab) {
+      onNavigateToCopilotTab(goToTab);
+    }
   };
 
   // --- Llamada al Servicio de Inteligencia Artificial Pedagógica (con Soporte Multimodal para Fotos y Libros) ---
@@ -1491,10 +1637,10 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
       </div>
 
       {activeModule === 'generator' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 items-start">
       
-      {/* -------------------- COLUMNA IZQUIERDA: INPUTS (lg:col-span-4) -------------------- */}
-      <div className="lg:col-span-4 flex flex-col gap-5 bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-3xl p-5 shadow-sm text-left no-print">
+      {/* -------------------- COLUMNA IZQUIERDA: INPUTS (xl:col-span-4) -------------------- */}
+      <div className="xl:col-span-4 flex flex-col gap-4 sm:gap-5 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm text-left no-print">
         
         {/* Banner de Derechos Únicos / Super Usuario: Prof. Israel López Ángeles */}
         {isIsraelLopez && (
@@ -1558,7 +1704,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
         )}
 
         {/* Nivel Educativo y Asignatura */}
-        <div className="grid grid-cols-2 gap-4 font-bold text-xs text-zinc-800 dark:text-zinc-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2 gap-3.5 font-bold text-xs text-zinc-800 dark:text-zinc-200">
           <div className="flex flex-col gap-1.5">
             <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider">Nivel Educativo</label>
             <select aria-label="Seleccionar opción"
@@ -1605,7 +1751,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
           {isEnglishSubject(selectedSubject, inputText) && (() => {
             const spec = getCambridgeSpecification(selectedLevel);
             return (
-              <div className="col-span-2 flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/40 dark:to-blue-950/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs font-bold">
+              <div className="sm:col-span-2 xl:col-span-1 2xl:col-span-2 flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/40 dark:to-blue-950/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs font-bold">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🇬🇧</span>
                   <div>
@@ -1657,6 +1803,97 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
             <option value={10}>10 sesiones (500 min • 2 semanas lectivas / Proyecto integrado)</option>
             <option value={12}>12 sesiones (600 min • Unidad temática avanzada)</option>
           </select>
+        </div>
+
+        {/* Selector de Taxonomía de Bloom (6 Niveles Cognitivos) */}
+        <div className="flex flex-col gap-1.5 font-bold text-xs text-zinc-800 dark:text-zinc-200 p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/25 border border-indigo-200/80 dark:border-indigo-900/50">
+          <div className="flex items-center justify-between">
+            <label className="text-[9.5px] text-indigo-700 dark:text-indigo-300 uppercase tracking-wider font-black flex items-center gap-1">
+              <Brain className="h-3.5 w-3.5 text-indigo-600" />
+              Nivel Cognitivo — Taxonomía de Bloom
+            </label>
+            <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-indigo-600 text-white uppercase">
+              6 Niveles
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-0.5">
+            {([
+              { id: 'recordar', label: '1. Recordar', verb: 'Identificar' },
+              { id: 'comprender', label: '2. Comprender', verb: 'Explicar' },
+              { id: 'aplicar', label: '3. Aplicar', verb: 'Resolver' },
+              { id: 'analizar', label: '4. Analizar', verb: 'Contrastar' },
+              { id: 'evaluar', label: '5. Evaluar', verb: 'Argumentar' },
+              { id: 'crear', label: '6. Crear', verb: 'Diseñar' }
+            ] as const).map(b => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setSelectedBloomLevel(b.id)}
+                className={`p-1.5 rounded-xl border text-left transition-all cursor-pointer ${
+                  selectedBloomLevel === b.id
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                    : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border-indigo-200/70 dark:border-zinc-800 hover:border-indigo-400'
+                }`}
+              >
+                <div className="text-[10px] font-black leading-tight truncate">{b.label}</div>
+                <div className={`text-[8.5px] truncate ${selectedBloomLevel === b.id ? 'text-indigo-100' : 'text-zinc-400'}`}>
+                  {b.verb}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Programación en Agenda iSkool (En Curso, Horario Diferido o Día Diferido) */}
+        <div className="flex flex-col gap-2 font-bold text-xs text-zinc-800 dark:text-zinc-200 p-3 rounded-2xl bg-sky-50/60 dark:bg-sky-950/25 border border-sky-200/80 dark:border-sky-900/50">
+          <div className="flex items-center justify-between">
+            <label className="text-[9.5px] text-sky-800 dark:text-sky-300 uppercase tracking-wider font-black flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5 text-sky-600" />
+              Destino en Agenda & Horario Diferido
+            </label>
+            <span className="text-[9px] font-black text-emerald-600">Sincronización 360°</span>
+          </div>
+
+          <select
+            aria-label="Modalidad de Programación"
+            value={selectedScheduleSlot}
+            onChange={(e) => {
+              const val = e.target.value as PlanningScheduleSlot;
+              setSelectedScheduleSlot(val);
+              if (val === 'en_curso') {
+                setSelectedDayLabel('Hoy Lunes (En Curso)');
+                setSelectedTimeRange('08:00 - 08:50 AM');
+              } else if (val === 'horario_diferido') {
+                setSelectedDayLabel('Hoy Lunes (Horario Diferido)');
+                setSelectedTimeRange('11:20 AM - 12:10 PM');
+              } else {
+                setSelectedDayLabel('Mañana Martes (Día Diferido)');
+                setSelectedTimeRange('09:30 - 10:20 AM');
+              }
+            }}
+            className="w-full p-2 rounded-xl border border-sky-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold"
+          >
+            <option value="en_curso">⚡ Clase en Curso Ahora (Proyectar en Pizarra)</option>
+            <option value="horario_diferido">🕒 Horario Diferido (Más tarde el mismo día)</option>
+            <option value="dia_diferido">📅 Día Diferido (Preparar para otros días de la semana)</option>
+          </select>
+
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              value={selectedDayLabel}
+              onChange={(e) => setSelectedDayLabel(e.target.value)}
+              placeholder="Día (ej. Jueves)"
+              className="p-2 rounded-xl border border-sky-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[11px] font-bold"
+            />
+            <input
+              type="text"
+              value={selectedTimeRange}
+              onChange={(e) => setSelectedTimeRange(e.target.value)}
+              placeholder="Horario (ej. 10:00 AM)"
+              className="p-2 rounded-xl border border-sky-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[11px] font-bold"
+            />
+          </div>
         </div>
 
         {/* Toggle Bypass Bóveda / Forzar Nueva Variante IA */}
@@ -1815,27 +2052,27 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
           )}
         </div>
 
-        {/* Botón de Enviar */}
+        {/* Botón de Enviar e Integrar en Todo iSkool 360° */}
         <button
           onClick={handleGenerate}
           disabled={isGenerating || (!inputText.trim() && !uploadedFile)}
-          className={`w-full py-3 rounded-2xl text-xs font-black shadow-md flex items-center justify-center gap-2 transition-all ${
+          className={`w-full py-3.5 px-4 rounded-2xl text-xs font-black shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer ${
             isGenerating 
               ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed shadow-none'
               : !inputText.trim() && !uploadedFile
                 ? 'bg-zinc-100 dark:bg-zinc-950 text-zinc-400 border border-zinc-200 dark:border-zinc-800 cursor-not-allowed shadow-none'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/10 hover:scale-[1.01]'
+                : 'bg-gradient-to-r from-[#0284C7] via-[#1D63FF] to-emerald-600 hover:from-[#0369A1] hover:via-blue-700 hover:to-emerald-500 text-white shadow-blue-500/20 hover:scale-[1.01]'
           }`}
         >
           {isGenerating ? (
             <>
               <RefreshCw className="h-4 w-4 animate-spin" />
-              Generando Planeación...
+              <span>Generando e Integrando en Ecosistema iSkool 360°...</span>
             </>
           ) : (
             <>
-              <Sparkles className="h-4 w-4" />
-              Generar con IA NEM
+              <Sparkles className="h-4 w-4 text-yellow-300" />
+              <span>Generar Planeación SEP + Integrar en Todo iSkool 360°</span>
             </>
           )}
         </button>
@@ -1879,8 +2116,8 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
       </div>
 
-      {/* -------------------- COLUMNA DERECHA: DOCUMENTO / LOADING (lg:col-span-8) -------------------- */}
-      <div className="lg:col-span-8 flex flex-col gap-4">
+      {/* -------------------- COLUMNA DERECHA: DOCUMENTO / LOADING (xl:col-span-8) -------------------- */}
+      <div className="xl:col-span-8 flex flex-col gap-4 min-w-0">
         
         {/* PANTALLA DE CARGA DE IA */}
         {isGenerating ? (
@@ -1939,22 +2176,118 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
         ) : (
           /* VISTA DEL DOCUMENTO GENERADO (HOJA A4) */
           <>
-            {/* Barra de Acciones del Documento */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-3 shadow-xs flex justify-between items-center no-print">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-400 font-bold flex items-center gap-1.5 px-2">
-                  <Edit3 className="h-4 w-4 text-zinc-400" />
-                  Haz clic sobre cualquier texto para editar directamente la planeación
-                </span>
+            {/* BARRA DE SINCRONIZACIÓN TOTAL ECOSISTEMA ISKOOL 360° */}
+            <div className="bg-gradient-to-r from-emerald-50 via-sky-50 to-indigo-50 dark:from-emerald-950/40 dark:via-sky-950/30 dark:to-indigo-950/40 border-2 border-emerald-400/80 dark:border-emerald-700 rounded-2xl p-4 shadow-sm space-y-3 no-print animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                        Sincronización Ecosistema iSkool 360° Activa
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white">
+                        {ecosystemSyncedAt ? `Sincronizado ${ecosystemSyncedAt}` : 'Listo para Aula'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-300 font-medium">
+                      Esta planeación alimenta automáticamente la Pizarra Timeline, Sellos de Libreta, Misiones (+50 XP), Magic Links a Padres, Agenda Diferida y Espejo CEO.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'timeline')}
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#0284C7] to-[#1D63FF] hover:from-[#0369A1] hover:to-blue-700 text-white text-xs font-black shadow-sm flex items-center gap-1.5 cursor-pointer transition-all"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-yellow-300" />
+                    <span>Proyectar Ahora en Mi Clase (Pizarra)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrint}
+                    className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-black shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Descargar PDF Oficial SEP</span>
+                  </button>
+                </div>
               </div>
-              
-              <div className="flex gap-2">
+
+              {/* 7 Nodos Conectados del Ecosistema iSkool (Clic para saltar a cada módulo) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-7 gap-2 pt-1">
                 <button
-                  onClick={handlePrint}
-                  className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-black shadow-sm shadow-blue-500/10 flex items-center gap-1.5 transition-all"
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0)}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-emerald-300 dark:border-emerald-800 text-[10px] font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 cursor-pointer hover:bg-emerald-50 transition-all"
+                  title="Guardado en Bóveda Curricular (.md)"
                 >
-                  <Download className="h-3.5 w-3.5" />
-                  Descargar PDF / Imprimir
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">1. Bóveda .MD</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'planning')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-sky-300 dark:border-sky-800 text-[10px] font-black text-sky-800 dark:text-sky-300 flex items-center gap-1.5 cursor-pointer hover:bg-sky-50 transition-all"
+                  title="Programado en Agenda Diferida (En Curso, Horarios y Días Diferidos)"
+                >
+                  <Check className="w-3.5 h-3.5 text-sky-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">2. Agenda ({activePlanning.sesiones?.length || 1} ses.)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'timeline')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-blue-300 dark:border-blue-800 text-[10px] font-black text-blue-800 dark:text-blue-300 flex items-center gap-1.5 cursor-pointer hover:bg-blue-50 transition-all"
+                  title="Ir a Pizarra y Timeline 2.0 en Mi Clase"
+                >
+                  <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">3. Pizarra Aula</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'stamps')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-emerald-300 dark:border-emerald-800 text-[10px] font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 cursor-pointer hover:bg-emerald-50 transition-all"
+                  title="Ir a Sellos Gráficos de Libreta Física"
+                >
+                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">4. Sello Libreta</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'evidences')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-amber-300 dark:border-amber-800 text-[10px] font-black text-amber-800 dark:text-amber-300 flex items-center gap-1.5 cursor-pointer hover:bg-amber-50 transition-all"
+                  title="Misión de Portafolio publicada con +50 XP"
+                >
+                  <Check className="w-3.5 h-3.5 text-amber-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">5. Misión +50 XP</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'classroom')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-indigo-300 dark:border-indigo-800 text-[10px] font-black text-indigo-800 dark:text-indigo-300 flex items-center gap-1.5 cursor-pointer hover:bg-indigo-50 transition-all"
+                  title="Pregunta Detonadora Bloom lista en Ruleta de Aula"
+                >
+                  <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">6. Bloom: {selectedBloomLevel}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => integratePlanningIntoISkool360(activePlanning, 0, 'enlace')}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 border border-teal-300 dark:border-teal-800 text-[10px] font-black text-teal-800 dark:text-teal-300 flex items-center gap-1.5 cursor-pointer hover:bg-teal-50 transition-all"
+                  title="Plantilla de Magic Link actualizada para Padres + Espejo CEO"
+                >
+                  <Check className="w-3.5 h-3.5 text-teal-600 shrink-0 stroke-[3]" />
+                  <span className="truncate">7. Magic Link & CEO</span>
                 </button>
               </div>
             </div>
@@ -2614,8 +2947,8 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                             </h4>
                           </div>
 
-                          {/* Insignias de Minutero */}
-                          <div className="flex items-center gap-1.5 text-[9px] font-bold">
+                          {/* Insignias de Minutero + Botón 1-Clic Proyectar Esta Sesión en Aula */}
+                          <div className="flex flex-wrap items-center gap-1.5 text-[9px] font-bold">
                             <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50">
                               🟢 Inicio: {sesion.tiempos?.inicio || '10 min'}
                             </span>
@@ -2625,6 +2958,15 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                             <span className="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/50">
                               🟠 Cierre: {sesion.tiempos?.cierre || '10 min'}
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => integratePlanningIntoISkool360(activePlanning, sIdx, 'timeline')}
+                              className="no-print px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#0284C7] to-[#1D63FF] hover:from-[#0369A1] hover:to-blue-700 text-white font-black text-[10px] shadow-2xs flex items-center gap-1 cursor-pointer transition-all"
+                              title={`Cargar Sesión ${sesion.numero} en la Pizarra de Mi Clase y actualizar Sello de Libreta`}
+                            >
+                              <Sparkles className="w-3 h-3 text-yellow-300" />
+                              <span>Proyectar Sesión {sesion.numero} en Aula</span>
+                            </button>
                           </div>
                         </div>
 
