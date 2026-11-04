@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       './*.mp4',
       './*.wav',
       './.data/**/*',
+      './.cache/**/*',
+      './public/**/*',
+      './scripts/**/*',
+      './Correo/**/*',
       './node_modules/@ffmpeg-installer/**/*',
       './node_modules/puppeteer/**/*'
     ]

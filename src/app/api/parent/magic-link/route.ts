@@ -108,14 +108,14 @@ const DEFAULT_SEED_LINKS: MagicLinkRecord[] = [
 
 function readMagicLinksStore(): MagicLinkRecord[] {
   try {
-    if (!fs.existsSync(CACHE_DIR)) {
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
+    if (!fs.existsSync(/*turbopackIgnore: true*/ CACHE_DIR)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ CACHE_DIR, { recursive: true });
     }
-    if (!fs.existsSync(MAGIC_LINKS_FILE)) {
-      fs.writeFileSync(MAGIC_LINKS_FILE, JSON.stringify(DEFAULT_SEED_LINKS, null, 2), 'utf-8');
+    if (!fs.existsSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE)) {
+      fs.writeFileSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE, JSON.stringify(DEFAULT_SEED_LINKS, null, 2), 'utf-8');
       return [...DEFAULT_SEED_LINKS];
     }
-    const raw = fs.readFileSync(MAGIC_LINKS_FILE, 'utf-8');
+    const raw = fs.readFileSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
       return parsed;
@@ -128,10 +128,10 @@ function readMagicLinksStore(): MagicLinkRecord[] {
 
 function writeMagicLinksStore(records: MagicLinkRecord[]): void {
   try {
-    if (!fs.existsSync(CACHE_DIR)) {
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
+    if (!fs.existsSync(/*turbopackIgnore: true*/ CACHE_DIR)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ CACHE_DIR, { recursive: true });
     }
-    fs.writeFileSync(MAGIC_LINKS_FILE, JSON.stringify(records.slice(0, 100), null, 2), 'utf-8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE, JSON.stringify(records.slice(0, 100), null, 2), 'utf-8');
   } catch (err) {
     console.error('[MagicLinkStore] Error writing store:', err);
   }

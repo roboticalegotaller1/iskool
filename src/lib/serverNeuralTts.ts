@@ -22,7 +22,7 @@ function resolvePythonExecutable(): string {
     'C:\\Users\\kami-\\.gemini\\antigravity\\brain\\fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b\\scratch\\.venv\\Scripts\\python.exe',
   ];
   for (const c of candidates) {
-    if (fs.existsSync(c)) {
+    if (fs.existsSync(/*turbopackIgnore: true*/ c)) {
       return c;
     }
   }
@@ -62,7 +62,7 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
   try {
     const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
     const pythonBin = resolvePythonExecutable();
-    const child = spawn(pythonBin, ['-u', workerScript, '--daemon'], {
+    const child = spawn(/*turbopackIgnore: true*/ pythonBin, ['-u', workerScript, '--daemon'], {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' }
     });
@@ -183,13 +183,13 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
 
   // 2. Verificar caché en disco
   const cacheDir = path.join(process.cwd(), '.cache', 'tts_audio');
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true });
+  if (!fs.existsSync(/*turbopackIgnore: true*/ cacheDir)) {
+    fs.mkdirSync(/*turbopackIgnore: true*/ cacheDir, { recursive: true });
   }
   const cachedFilePath = path.join(cacheDir, `${cacheKey}.mp3`);
-  if (fs.existsSync(cachedFilePath)) {
+  if (fs.existsSync(/*turbopackIgnore: true*/ cachedFilePath)) {
     try {
-      const diskBuffer = fs.readFileSync(cachedFilePath);
+      const diskBuffer = fs.readFileSync(/*turbopackIgnore: true*/ cachedFilePath);
       if (diskBuffer.length > 0) {
         memoryAudioCache.set(cacheKey, diskBuffer);
         return diskBuffer;
@@ -209,7 +209,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     });
     if (daemonBuffer && daemonBuffer.length > 0) {
       try {
-        fs.writeFileSync(cachedFilePath, daemonBuffer);
+        fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, daemonBuffer);
       } catch {}
       if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
         const firstKey = memoryAudioCache.keys().next().value;
@@ -229,7 +229,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
   // Usar archivo JSON temporal para evitar desbordamiento o problemas de escape de caracteres en CLI
   const payloadFile = path.join(os.tmpdir(), `iskool_payload_${cacheKey}_${Date.now()}.json`);
   fs.writeFileSync(
-    payloadFile,
+    /*turbopackIgnore: true*/ payloadFile,
     JSON.stringify({
       text: cleanText,
       voice,
@@ -246,29 +246,29 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
 
   return new Promise<Buffer>((resolve, reject) => {
     execFile(
-      pythonBin,
+      /*turbopackIgnore: true*/ pythonBin,
       [workerScript, '--json', payloadFile],
       { timeout: 30000, env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' } },
       (err, _stdout, stderr) => {
         // Limpieza de payload
         try {
-          if (fs.existsSync(payloadFile)) fs.unlinkSync(payloadFile);
+          if (fs.existsSync(/*turbopackIgnore: true*/ payloadFile)) fs.unlinkSync(/*turbopackIgnore: true*/ payloadFile);
         } catch {}
 
         if (err) {
           try {
-            if (fs.existsSync(tempOutputFile)) fs.unlinkSync(tempOutputFile);
+            if (fs.existsSync(/*turbopackIgnore: true*/ tempOutputFile)) fs.unlinkSync(/*turbopackIgnore: true*/ tempOutputFile);
           } catch {}
           return reject(new Error(`Fallo en síntesis neural: ${stderr || err.message}`));
         }
 
         try {
-          if (!fs.existsSync(tempOutputFile)) {
+          if (!fs.existsSync(/*turbopackIgnore: true*/ tempOutputFile)) {
             return reject(new Error('El archivo de audio temporal no fue generado'));
           }
 
-          const audioBuffer = fs.readFileSync(tempOutputFile);
-          fs.unlinkSync(tempOutputFile);
+          const audioBuffer = fs.readFileSync(/*turbopackIgnore: true*/ tempOutputFile);
+          fs.unlinkSync(/*turbopackIgnore: true*/ tempOutputFile);
 
           if (audioBuffer.length === 0) {
             return reject(new Error('Audio generado con 0 bytes'));
@@ -276,7 +276,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
 
           // Guardar en caché de disco y memoria
           try {
-            fs.writeFileSync(cachedFilePath, audioBuffer);
+            fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, audioBuffer);
           } catch {}
 
           if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {

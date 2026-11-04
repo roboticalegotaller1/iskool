@@ -32,8 +32,8 @@ export interface CorreoDelegatedMatter {
  */
 export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
   const root = path.join(process.cwd(), 'Correo');
-  if (!fs.existsSync(root)) {
-    fs.mkdirSync(root, { recursive: true });
+  if (!fs.existsSync(/*turbopackIgnore: true*/ root)) {
+    fs.mkdirSync(/*turbopackIgnore: true*/ root, { recursive: true });
   }
 
   const raw = (tenantIdOrAccount || 'IBIME').trim();
@@ -51,8 +51,8 @@ export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
   }
 
   const tenantDir = path.join(root, folder);
-  if (!fs.existsSync(tenantDir)) {
-    fs.mkdirSync(tenantDir, { recursive: true });
+  if (!fs.existsSync(/*turbopackIgnore: true*/ tenantDir)) {
+    fs.mkdirSync(/*turbopackIgnore: true*/ tenantDir, { recursive: true });
   }
 
   return tenantDir;
@@ -65,8 +65,8 @@ export function getDelegatedMattersFromCorreoVault(tenantIdOrAccount: string): C
   try {
     const tenantDir = getTenantCorreoDir(tenantIdOrAccount);
     const jsonPath = path.join(tenantDir, 'Asuntos_Delegados_Con_SLA.json');
-    if (fs.existsSync(jsonPath)) {
-      const content = fs.readFileSync(jsonPath, 'utf8');
+    if (fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
+      const content = fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8');
       const parsed = JSON.parse(content);
       if (Array.isArray(parsed)) {
         return parsed;
@@ -91,9 +91,9 @@ export function saveDelegatedMatterToCorreoVault(
     const jsonPath = path.join(tenantDir, 'Asuntos_Delegados_Con_SLA.json');
     
     let current: CorreoDelegatedMatter[] = [];
-    if (fs.existsSync(jsonPath)) {
+    if (fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
       try {
-        current = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+        current = JSON.parse(fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8'));
         if (!Array.isArray(current)) current = [];
       } catch {
         current = [];
@@ -113,12 +113,12 @@ export function saveDelegatedMatterToCorreoVault(
       current.unshift(updatedMatter);
     }
 
-    fs.writeFileSync(jsonPath, JSON.stringify(current, null, 2), 'utf8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ jsonPath, JSON.stringify(current, null, 2), 'utf8');
 
     // Registro individual en Markdown en subcarpeta delegados/
     const delegadosFolder = path.join(tenantDir, 'delegados');
-    if (!fs.existsSync(delegadosFolder)) {
-      fs.mkdirSync(delegadosFolder, { recursive: true });
+    if (!fs.existsSync(/*turbopackIgnore: true*/ delegadosFolder)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ delegadosFolder, { recursive: true });
     }
 
     const safeFileCode = (matter.matter_code || matter.id).replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -148,7 +148,7 @@ ${matter.summary}
 Asignado con SLA estricto de **${matter.sla_hours} horas** a **${matter.assigned_role}** (${matter.assigned_email}).
 `;
 
-    fs.writeFileSync(mdPath, mdContent, 'utf8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ mdPath, mdContent, 'utf8');
 
     return {
       success: true,

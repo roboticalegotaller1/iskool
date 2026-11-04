@@ -36,8 +36,8 @@ function getSupabaseClient() {
 function loadTokensFromFile(): Map<string, GoogleTokens> {
   const map = new Map<string, GoogleTokens>();
   try {
-    if (fs.existsSync(TOKENS_FILE)) {
-      const raw = fs.readFileSync(TOKENS_FILE, 'utf8');
+    if (fs.existsSync(/*turbopackIgnore: true*/ TOKENS_FILE)) {
+      const raw = fs.readFileSync(/*turbopackIgnore: true*/ TOKENS_FILE, 'utf8');
       const data = JSON.parse(raw);
       if (Array.isArray(data)) {
         for (const item of data) {
@@ -77,15 +77,15 @@ function loadTokensFromFile(): Map<string, GoogleTokens> {
 function saveTokensToFile(map: Map<string, GoogleTokens>) {
   try {
     const dir = path.dirname(TOKENS_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ dir, { recursive: true });
     }
     const arr = Array.from(map.values()).map(item => ({
       ...item,
       accessToken: encryptToken(item.accessToken),
       refreshToken: item.refreshToken ? encryptToken(item.refreshToken) : undefined
     }));
-    fs.writeFileSync(TOKENS_FILE, JSON.stringify(arr, null, 2), 'utf8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ TOKENS_FILE, JSON.stringify(arr, null, 2), 'utf8');
   } catch (e) {
     // Entorno serverless donde el disco local es de solo lectura
   }

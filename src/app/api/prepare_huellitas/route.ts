@@ -9,8 +9,8 @@ export async function GET() {
   const brainDir = 'C:/Users/kami-/.gemini/antigravity-ide/brain/857a2b8b-6bf7-44b2-a4b6-0eba05c0008a';
   const outputDir = path.join(process.cwd(), 'public', 'redisenos_assets', 'huellitas');
 
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
+  if (!fs.existsSync(/*turbopackIgnore: true*/ outputDir)) {
+    fs.mkdirSync(/*turbopackIgnore: true*/ outputDir, { recursive: true });
   }
 
   const itemsToProcess = [
@@ -260,11 +260,11 @@ export async function GET() {
   const results = [];
 
   for (const item of itemsToProcess) {
-    if (!fs.existsSync(item.src)) {
+    if (!fs.existsSync(/*turbopackIgnore: true*/ item.src)) {
       results.push({ file: path.basename(item.src), status: 'not_found' });
       continue;
     }
-    const inputBuf = fs.readFileSync(item.src);
+    const inputBuf = fs.readFileSync(/*turbopackIgnore: true*/ item.src);
     const processedBuf = await sharp(inputBuf)
       .resize({
         width: item.maxDim,
@@ -275,8 +275,8 @@ export async function GET() {
       .jpeg({ quality: item.quality, mozjpeg: true })
       .toBuffer();
 
-    fs.mkdirSync(path.dirname(item.dest), { recursive: true });
-    fs.writeFileSync(item.dest, processedBuf);
+    fs.mkdirSync(/*turbopackIgnore: true*/ path.dirname(item.dest), { recursive: true });
+    fs.writeFileSync(/*turbopackIgnore: true*/ item.dest, processedBuf);
     results.push({
       file: path.basename(item.dest),
       origKb: (inputBuf.length / 1024).toFixed(1),
