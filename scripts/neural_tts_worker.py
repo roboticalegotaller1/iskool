@@ -366,8 +366,8 @@ def clean_and_structure_text(text: str, lang: str = 'es') -> str:
         clean = re.sub(r'\bIng\.\s*', 'Ingeniero ', clean)
         clean = re.sub(r'\bC\.P\.\s*', 'Contador Público ', clean)
 
-        # 7. Expandir siglas y acrónimos pedagógicos para pronunciación natural y fluida
-        clean = re.sub(r'\b(?:ái-Skool|ISkool|iSkool)\b', 'Aiskul', clean, flags=re.IGNORECASE)
+        # 7. Expandir siglas y acrónimos pedagógicos para pronunciación natural y fluida (IPA ˈɪskuːl -> Ískul)
+        clean = re.sub(r'\b(?:ái-Skool|Aiskul|ISkool|iSkool)\b', 'Ískul', clean, flags=re.IGNORECASE)
         clean = re.sub(r'\bSEP\s+NEM\b', 'Nueva Escuela Mexicana', clean)
         clean = re.sub(r'\bSEP\b', 'Secretaría de Educación Pública', clean)
         clean = re.sub(r'\bCEO\b', 'Dirección General', clean)

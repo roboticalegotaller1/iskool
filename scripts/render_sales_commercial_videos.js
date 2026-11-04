@@ -13,7 +13,8 @@ const cleanScreensDir = path.join(rootDir, 'temp_sales_video_assets', 'clean_scr
 const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio');
 const artifactDir = 'C:/Users/kami-/.gemini/antigravity/brain/fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b';
 
-const officialLogoPath = path.join(artifactDir, '.user_uploaded', 'media_1793685015325_34960e51.jpg');
+const officialLogoPath = path.join(artifactDir, '.user_uploaded', 'media_1793750185112_1ff778c5.jpg');
+const qrWhatsappPath = path.join(artifactDir, '.user_uploaded', 'media_1793750252405_5e1a4f64.png');
 const bumperBgPath = path.join(artifactDir, 'iskool_bumper_daylight_bg_1793686782872.jpg');
 const ctaBgPath = path.join(artifactDir, 'iskool_cta_executive_bg_1793686795356.jpg');
 
@@ -40,6 +41,7 @@ async function main() {
   // Load all images as base64 Data URIs for instant zero-latency HTML5 Canvas rendering
   const assets = {
     logo: toDataURI(officialLogoPath),
+    qrWhatsapp: toDataURI(qrWhatsappPath),
     bumperBg: toDataURI(bumperBgPath),
     ctaBg: toDataURI(ctaBgPath),
     screens: {}
@@ -95,6 +97,7 @@ window.initAssets = async function(rawAssets, manifestData) {
   });
   const tasks = [
     loadImg('logo', rawAssets.logo),
+    loadImg('qrWhatsapp', rawAssets.qrWhatsapp),
     loadImg('bumperBg', rawAssets.bumperBg),
     loadImg('ctaBg', rawAssets.ctaBg)
   ];
@@ -303,7 +306,7 @@ function drawStudioScreen(imgKey, opts = {}) {
   return { x, y, w, h, dx, dy, dw, dh };
 }
 
-// Draw Clean Vector Signaling Arrow (Flecha de Señalización Sin Ruido Visual)
+// Draw Clean Vector Signaling Arrow (Flecha de Señalización Quirúrgica: Pill Centrado en fromX,fromY -> Punta Exacta en toX,toY)
 function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68FF', progress = 1.0, globalT = 0) {
   const p = easeOutCubic(clamp(progress));
   if (p <= 0.01) return;
@@ -311,28 +314,53 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
   ctx.save();
   ctx.globalAlpha = p;
 
-  // 1. Pulsing Target Ring at (toX, toY)
+  // 1. Compute Callout Pill dimensions and exact bounds centered at (fromX, fromY)
+  ctx.font = '800 19px "Segoe UI", sans-serif';
+  const w1 = label ? ctx.measureText(label).width : 0;
+  ctx.font = '600 14.5px "Segoe UI", sans-serif';
+  const w2 = sublabel ? ctx.measureText(sublabel).width : 0;
+  const pillW = Math.max(w1, w2) + 46;
+  const pillH = sublabel ? 64 : 44;
+
+  const px = clamp(fromX - pillW / 2, 24, 1896 - pillW);
+  const py = clamp(fromY - pillH / 2, 24, 1056 - pillH);
+  const cx = px + pillW / 2;
+  const cy = py + pillH / 2;
+
+  // Compute exact intersection point on the outer border of the pill box facing (toX, toY)
+  const dx = toX - cx;
+  const dy = toY - cy;
+  const halfW = pillW / 2 + 2;
+  const halfH = pillH / 2 + 2;
+  const tEdge = Math.min(
+    halfW / Math.max(1, Math.abs(dx)),
+    halfH / Math.max(1, Math.abs(dy)),
+    0.85
+  );
+  const startX = cx + dx * tEdge;
+  const startY = cy + dy * tEdge;
+
+  // 2. Pulsing Target Ring at exact UI coordinate (toX, toY)
   const pulse = 0.5 + 0.5 * Math.sin(globalT * 7.5);
   ctx.beginPath();
-  ctx.arc(toX, toY, 18 + pulse * 12, 0, Math.PI * 2);
-  ctx.fillStyle = color === '#1D68FF' ? 'rgba(29, 104, 255, 0.18)' : 'rgba(16, 185, 129, 0.20)';
+  ctx.arc(toX, toY, 18 + pulse * 11, 0, Math.PI * 2);
+  ctx.fillStyle = color === '#1D68FF' ? 'rgba(29, 104, 255, 0.22)' : 'rgba(16, 185, 129, 0.24)';
   ctx.fill();
 
   ctx.beginPath();
-  ctx.arc(toX, toY, 10, 0, Math.PI * 2);
+  ctx.arc(toX, toY, 9.5, 0, Math.PI * 2);
   ctx.fillStyle = '#FFFFFF';
   ctx.fill();
   ctx.lineWidth = 4;
   ctx.strokeStyle = color;
   ctx.stroke();
 
-  // 2. Animated Vector Shaft from (fromX, fromY) to (toX, toY)
-  const curX = fromX + (toX - fromX) * p;
-  const curY = fromY + (toY - fromY) * p;
+  // 3. Animated Vector Shaft from Pill Border (startX, startY) to Target (toX, toY)
+  const curX = startX + (toX - startX) * p;
+  const curY = startY + (toY - startY) * p;
 
-  // White halo outline for 100% contrast on both light and dark UIs
   ctx.beginPath();
-  ctx.moveTo(fromX, fromY);
+  ctx.moveTo(startX, startY);
   ctx.lineTo(curX, curY);
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 9;
@@ -340,21 +368,21 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(fromX, fromY);
+  ctx.moveTo(startX, startY);
   ctx.lineTo(curX, curY);
   ctx.strokeStyle = color;
   ctx.lineWidth = 4.5;
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // 3. Crisp Vector Arrowhead at (curX, curY)
-  const angle = Math.atan2(toY - fromY, toX - fromX);
+  // 4. Crisp Vector Arrowhead landing squarely on (curX, curY) -> (toX, toY)
+  const angle = Math.atan2(toY - startY, toX - startX);
   const headLen = 20;
   ctx.save();
   ctx.translate(curX, curY);
   ctx.rotate(angle);
   ctx.beginPath();
-  ctx.moveTo(4, 0);
+  ctx.moveTo(3, 0);
   ctx.lineTo(-headLen, -11);
   ctx.lineTo(-headLen * 0.72, 0);
   ctx.lineTo(-headLen, 11);
@@ -367,21 +395,9 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
   ctx.fill();
   ctx.restore();
 
-  // 4. Minimalist Executive Callout Pill at (fromX, fromY)
+  // 5. Minimalist Executive Callout Pill Box centered at (cx, cy)
   if (label) {
-    ctx.font = '800 20px "Segoe UI", sans-serif';
-    const w1 = ctx.measureText(label).width;
-    ctx.font = '600 15px "Segoe UI", sans-serif';
-    const w2 = sublabel ? ctx.measureText(sublabel).width : 0;
-    const pillW = Math.max(w1, w2) + 44;
-    const pillH = sublabel ? 64 : 44;
-
-    // Position pill neatly behind the arrow origin
-    const dirX = fromX <= toX ? -1 : 0;
-    const px = dirX === -1 ? Math.max(24, fromX - pillW + 16) : Math.min(1896 - pillW, fromX - 16);
-    const py = fromY <= toY ? Math.max(24, fromY - pillH - 6) : Math.min(1056 - pillH, fromY + 6);
-
-    ctx.shadowColor = 'rgba(10, 25, 58, 0.24)';
+    ctx.shadowColor = 'rgba(10, 25, 58, 0.26)';
     ctx.shadowBlur = 22;
     ctx.shadowOffsetY = 6;
     ctx.fillStyle = '#0A193A';
@@ -394,7 +410,6 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
-    // Left accent bar
     ctx.fillStyle = color;
     roundRect(ctx, px + 8, py + 8, 6, pillH - 16, 3);
     ctx.fill();
@@ -410,6 +425,192 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
       ctx.fillText(sublabel, px + 24, py + 49);
     }
   }
+
+  ctx.restore();
+}
+
+// Draw Executive Slide: Los 5 Pilares de la Educación & Beneficios Reales de iSkool® (Before Operational Screens)
+function drawFivePillarsAndBenefitsSlide(localT, duration) {
+  const enter = easeOutCubic(localT / 0.45);
+  const exit = localT > duration - 0.35 ? easeInOutCubic((duration - localT) / 0.35) : 1;
+  ctx.save();
+  ctx.globalAlpha = enter * exit;
+
+  ctx.drawImage(IMAGES.bumperBg, 0, 0, 1920, 1080);
+  const grad = ctx.createRadialGradient(960, 520, 90, 960, 540, 960);
+  grad.addColorStop(0, 'rgba(255,255,255,0.94)');
+  grad.addColorStop(0.7, 'rgba(248,250,252,0.86)');
+  grad.addColorStop(1, 'rgba(226,236,255,0.65)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1920, 1080);
+
+  // Header bar with Official iSkool® Logo
+  const logo = IMAGES.logo;
+  if (logo) {
+    const lh = 56;
+    const lw = lh * (logo.width / logo.height);
+    ctx.drawImage(logo, 95, 42, lw, lh);
+  }
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#0A193A';
+  ctx.font = '900 36px "Segoe UI", sans-serif';
+  ctx.fillText('¿Qué es iSkool® y cómo transforma tu Institución?', 345, 74);
+  ctx.fillStyle = '#1D68FF';
+  ctx.font = '700 20px "Segoe UI", sans-serif';
+  ctx.fillText('El ecosistema educativo integral que conecta en tiempo real a los 5 Pilares de la Educación con beneficios medibles', 345, 105);
+
+  // Connecting line behind the 5 Pillars
+  ctx.strokeStyle = 'rgba(29, 104, 255, 0.35)';
+  ctx.lineWidth = 5;
+  ctx.beginPath();
+  ctx.moveTo(240, 222);
+  ctx.lineTo(1680, 222);
+  ctx.stroke();
+
+  const pillars = [
+    { num: 'PILAR 01', name: 'Directivos', desc: 'Gobernanza & KPIs 360°', color: '#0A193A' },
+    { num: 'PILAR 02', name: 'Coordinadores', desc: 'Supervisión & Espejo 1:1', color: '#1D68FF' },
+    { num: 'PILAR 03', name: 'Docentes', desc: 'Planeación SEP & Aula Viva', color: '#7C3AED' },
+    { num: 'PILAR 04', name: 'Alumnos', desc: 'Gamificación & Idiomas', color: '#10B981' },
+    { num: 'PILAR 05', name: 'Tutores', desc: 'Logros, Avisos & Pagos SAT', color: '#F59E0B' }
+  ];
+
+  pillars.forEach((pl, i) => {
+    const pw = 324;
+    const ph = 148;
+    const px = 95 + i * 356;
+    const py = 148;
+    const pop = easeOutCubic(clamp((localT - i * 0.10) / 0.45));
+
+    ctx.save();
+    ctx.translate(px + pw / 2, py + ph / 2);
+    ctx.scale(0.92 + 0.08 * pop, 0.92 + 0.08 * pop);
+    ctx.shadowColor = 'rgba(10, 25, 58, 0.14)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, -pw / 2, -ph / 2, pw, ph, 22);
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = pl.color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    ctx.fillStyle = pl.color;
+    roundRect(ctx, -70, -ph / 2 + 16, 140, 28, 14);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 13px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(pl.num, 0, -ph / 2 + 35);
+
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 28px "Segoe UI", sans-serif';
+    ctx.fillText(pl.name, 0, 14);
+
+    ctx.fillStyle = '#475569';
+    ctx.font = '600 16px "Segoe UI", sans-serif';
+    ctx.fillText(pl.desc, 0, 46);
+    ctx.restore();
+  });
+
+  // Section Title for Real Institutional Benefits
+  ctx.fillStyle = '#0A193A';
+  ctx.font = '900 28px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('BENEFICIOS REALES Y TANGIBLES EN OPERACIÓN DIARIA', 960, 355);
+
+  const benefits = [
+    {
+      badge: 'CRECIMIENTO DE MATRÍCULA',
+      metric: 'Admisión 360° & CRM Escolar',
+      title: 'Cero Prospectos Perdidos',
+      desc: 'Seguimiento puntual de cada aspirante desde registro por WhatsApp, visita al campus y diagnóstico psicopedagógico hasta inscripción pagada SEP.',
+      color: '#1D68FF'
+    },
+    {
+      badge: 'EFICIENCIA DIRECTIVA',
+      metric: '3.8 Horas Ahorradas al Día',
+      title: 'Triage Cognitivo & Modo Espejo',
+      desc: 'Filtra cientos de correos diarios destacando solo los críticos para dirección, y supervisa cada salón en vivo sin interrumpir la clase.',
+      color: '#0A193A'
+    },
+    {
+      badge: 'EXCELENCIA DOCENTE SEP NEM',
+      metric: 'Planeación 360° & Aula Viva',
+      title: 'Curva de Aprendizaje Cero',
+      desc: 'Genera secuencias oficiales SEP NEM en segundos con Taxonomía de Bloom, asistencia histórica, sellos digitales de libreta y bloques interactivos.',
+      color: '#7C3AED'
+    },
+    {
+      badge: 'RETENCIÓN & COBRANZA SAT 4.0',
+      metric: '20 Mundos + Idiomas + CFDI 4.0',
+      title: 'Motivación Estudiantil & Pagos en 1 Clic',
+      desc: 'Gamificación por mérito, laboratorio fonético Cambridge y DELF/DALF, avisos con firma de enterado y pasarela de pago con factura automática.',
+      color: '#10B981'
+    }
+  ];
+
+  benefits.forEach((b, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const bw = 845;
+    const bh = 280;
+    const bx = 95 + col * 885;
+    const by = 385 + row * 305;
+    const bPop = easeOutCubic(clamp((localT - 0.35 - i * 0.14) / 0.5));
+
+    ctx.save();
+    ctx.globalAlpha = enter * exit * bPop;
+    ctx.shadowColor = 'rgba(10, 25, 58, 0.14)';
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 10;
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, bx, by, bw, bh, 26);
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = b.color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    ctx.fillStyle = b.color;
+    roundRect(ctx, bx + 28, by + 26, 290, 34, 17);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 14px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.badge, bx + 28 + 145, by + 48);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = b.color;
+    ctx.font = '900 22px "Segoe UI", sans-serif';
+    ctx.fillText(b.metric, bx + bw - 28, by + 50);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 32px "Segoe UI", sans-serif';
+    ctx.fillText(b.title, bx + 28, by + 115);
+
+    ctx.fillStyle = '#334155';
+    ctx.font = '600 21px "Segoe UI", sans-serif';
+    const words = b.desc.split(' ');
+    let line = '';
+    let ly = by + 165;
+    for (const w of words) {
+      const test = line ? line + ' ' + w : w;
+      if (ctx.measureText(test).width > bw - 56) {
+        ctx.fillText(line, bx + 28, ly);
+        line = w;
+        ly += 32;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, bx + 28, ly);
+    ctx.restore();
+  });
 
   ctx.restore();
 }
@@ -447,18 +648,18 @@ function drawStudioHeaderAndFooter(portalName, stepBadge, captionText) {
 
   // Right Step Badge & Contact Reminder
   ctx.fillStyle = 'rgba(29, 104, 255, 0.10)';
-  roundRect(ctx, 605, 22, 540, 40, 20);
+  roundRect(ctx, 596, 22, 660, 40, 20);
   ctx.fill();
   ctx.fillStyle = '#1D68FF';
-  ctx.font = '700 16px "Segoe UI", sans-serif';
+  ctx.font = '700 15px "Segoe UI", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(stepBadge, 605 + 270, 47);
+  ctx.fillText(stepBadge, 596 + 330, 47);
 
   // Top-right subtle sales contact badge
   ctx.textAlign = 'right';
   ctx.fillStyle = '#0A193A';
-  ctx.font = '800 16px "Segoe UI", sans-serif';
-  ctx.fillText('contacto@iskool.mx  •  Tel. 55 1140 4767', 1856, 48);
+  ctx.font = '800 15.5px "Segoe UI", sans-serif';
+  ctx.fillText('contacto@iskool.mx  •  WA 56 1140 4767  •  Tel. 55 1140 4767', 1864, 48);
 
   // Bottom Executive Caption Bar
   if (captionText) {
@@ -503,41 +704,43 @@ window.renderFrameAtTime = function(globalT) {
   const p = clamp(localT / dur);
 
   // =========================================================================
-  // SCENE 1: Logo Intro (0..3.5s) -> Cortinilla CEO (3.5..6.2s) -> Resumen Ejecutivo (6.2..dur)
+  // SCENE 1: Logo Intro (0..2.8s) -> 5 Pilares & Beneficios Reales (2.8..9.6s) -> Cortinilla CEO (9.6..12.0s) -> Resumen Ejecutivo (12.0..dur)
   // =========================================================================
   if (sc.id === 'scene01') {
-    if (localT < 3.5) {
+    if (localT < 2.8) {
       // Official iSkool® Keynote Opening
       const ep = easeOutCubic(localT / 0.8);
       ctx.drawImage(IMAGES.bumperBg, 0, 0, 1920, 1080);
-      drawLogoBadge(960 - 380, 290, 760, 290, 0.88 + ep * 0.12);
+      drawLogoBadge(960 - 380, 260, 760, 290, 0.88 + ep * 0.12);
       ctx.fillStyle = '#0A193A';
       ctx.font = '900 46px "Segoe UI", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('El Ecosistema Educativo Integral de Clase Mundial', 960, 675);
+      ctx.fillText('El Ecosistema Educativo Integral que Conecta los 5 Pilares', 960, 650);
       ctx.fillStyle = '#1D68FF';
-      ctx.font = '700 26px "Segoe UI", sans-serif';
-      ctx.fillText('Dirección General  •  Docencia SEP NEM  •  Gamificación  •  Padres de Familia', 960, 730);
-    } else if (localT < 6.2) {
+      ctx.font = '800 28px "Segoe UI", sans-serif';
+      ctx.fillText('Directivos  •  Coordinadores  •  Docentes  •  Alumnos  •  Tutores', 960, 712);
+    } else if (localT < 9.6) {
+      drawFivePillarsAndBenefitsSlide(localT - 2.8, 6.8);
+    } else if (localT < 12.0) {
       drawCortinilla(
         'MÓDULO EJECUTIVO 01',
         'Portal de CEO',
         'Gobernanza Escolar, Admisión 360°, Triage Cognitivo & Supervisión en Vivo',
-        localT - 3.5,
-        2.7
+        localT - 9.6,
+        2.4
       );
     } else {
-      const uiT = localT - 6.2;
+      const uiT = localT - 12.0;
       drawStudioHeaderAndFooter(
         '1. Portal de CEO',
         'Consola de Mando Corporativo & Resumen Ejecutivo',
         'Controla en tiempo real matrícula, asistencia, cobertura SEP NEM y cobranza consolidada por plantel.'
       );
-      drawStudioScreen('img_02', { zoom: 1.0 + uiT * 0.004 });
+      drawStudioScreen('img_02', { zoom: 1.0 + uiT * 0.003 });
 
-      drawSignalArrow(520, 230, 360, 365, 'KPIs Globales en Tiempo Real', 'Matrícula, 95% Cobertura SEP y 94% Cobranza', '#1D68FF', (uiT - 0.3) / 0.5, globalT);
-      drawSignalArrow(620, 620, 430, 560, 'Focos de Atención Directiva', 'Alertas automáticas de cobranza, reinscripción y triage', '#10B981', (uiT - 1.5) / 0.5, globalT);
-      drawSignalArrow(1420, 520, 1280, 640, 'Avance Comparativo por Colegio', 'Auditoría multicampus en un solo clic', '#8B5CF6', (uiT - 2.8) / 0.5, globalT);
+      drawSignalArrow(540, 220, 450, 355, 'KPIs Globales en Tiempo Real', 'Matrícula, 95% Cobertura SEP y 94% Cobranza', '#1D68FF', (uiT - 0.3) / 0.5, globalT);
+      drawSignalArrow(660, 660, 495, 540, 'Focos de Atención Directiva', 'Alertas automáticas de cobranza, reinscripción y triage', '#10B981', (uiT - 1.4) / 0.5, globalT);
+      drawSignalArrow(1440, 480, 1260, 580, 'Avance Comparativo por Colegio', 'Auditoría multicampus en un solo clic', '#8B5CF6', (uiT - 2.6) / 0.5, globalT);
     }
   }
 
@@ -550,12 +753,12 @@ window.renderFrameAtTime = function(globalT) {
       'Módulo de Admisión 360° & Embudo CRM Escolar',
       'Visualiza cómo cada aspirante avanza desde Captación, Visita al Campus y Diagnóstico hasta su Inscripción Pagada.'
     );
-    drawStudioScreen('img_03', { zoom: 1.0 + p * 0.02 });
+    drawStudioScreen('img_03', { zoom: 1.0 + p * 0.015 });
 
     // Sequential arrows showing how a student advances across the funnel
-    drawSignalArrow(330, 235, 395, 370, '1. Captación & Visita al Campus', 'Registro automático desde WhatsApp y seguimiento', '#1D68FF', (localT - 0.4) / 0.5, globalT);
-    drawSignalArrow(880, 235, 980, 370, '2. Diagnóstico & Carta de Asignación', 'Evaluación psicopedagógica y comité académico', '#F59E0B', (localT - 2.2) / 0.5, globalT);
-    drawSignalArrow(1470, 235, 1610, 420, '3. Inscripción Pagada SEP', 'Cierre de matrícula y alta automática de expediente', '#10B981', (localT - 4.0) / 0.5, globalT);
+    drawSignalArrow(455, 220, 455, 395, '1. Captación & Visita al Campus', 'Registro automático desde WhatsApp y seguimiento', '#1D68FF', (localT - 0.4) / 0.5, globalT);
+    drawSignalArrow(1020, 220, 1020, 395, '2. Diagnóstico & Carta de Asignación', 'Evaluación psicopedagógica y comité académico', '#F59E0B', (localT - 2.0) / 0.5, globalT);
+    drawSignalArrow(1590, 220, 1625, 395, '3. Inscripción Pagada SEP', 'Cierre de matrícula y alta automática de expediente', '#10B981', (localT - 3.6) / 0.5, globalT);
   }
 
   // =========================================================================
@@ -567,11 +770,11 @@ window.renderFrameAtTime = function(globalT) {
       'Consola de Correo Inteligente & Triage Cognitivo',
       'El Triage Cognitivo filtra 299 correos diarios, destaca solo los 9 críticos para el CEO y ahorra 3.8 horas al día.'
     );
-    drawStudioScreen('img_04', { zoom: 1.0 + p * 0.025 });
+    drawStudioScreen('img_04', { zoom: 1.0 + p * 0.015 });
 
-    drawSignalArrow(720, 240, 890, 360, 'Triage Cognitivo Automático', 'De 299 correos recibidos, filtra solo 9 críticos', '#EF4444', (localT - 0.4) / 0.5, globalT);
-    drawSignalArrow(1480, 235, 1590, 360, '3.8 Horas Ahorradas al Día', '290 correos delegados o filtrados sin interrupciones', '#1D68FF', (localT - 2.2) / 0.5, globalT);
-    drawSignalArrow(1340, 620, 1540, 515, 'Detección de Patrones & Circular 1-Clic', 'Responde masivamente a familias sin saturar dirección', '#10B981', (localT - 4.2) / 0.5, globalT);
+    drawSignalArrow(830, 225, 985, 350, 'Triage Cognitivo Automático', 'De 299 correos recibidos, filtra solo 9 críticos', '#EF4444', (localT - 0.4) / 0.5, globalT);
+    drawSignalArrow(1520, 225, 1615, 350, '3.8 Horas Ahorradas al Día', '290 correos delegados o filtrados sin interrupciones', '#1D68FF', (localT - 2.0) / 0.5, globalT);
+    drawSignalArrow(1320, 610, 1595, 472, 'Detección de Patrones & Circular 1-Clic', 'Responde masivamente a familias sin saturar dirección', '#10B981', (localT - 3.6) / 0.5, globalT);
   }
 
   // =========================================================================
@@ -583,10 +786,10 @@ window.renderFrameAtTime = function(globalT) {
       'Supervisión Docente & Modo Espejo de Aula en Tiempo Real',
       'Inspecciona en vivo el avance de cada profesor, su cronómetro SEP NEM y la misión activa sin interrumpir la clase.'
     );
-    drawStudioScreen('img_05', { zoom: 1.0 + p * 0.02 });
+    drawStudioScreen('img_05', { zoom: 1.0 + p * 0.015 });
 
-    drawSignalArrow(480, 260, 560, 415, 'Matriz de Desempeño Docente', '98% Cobertura PDA SEP y rúbricas activas por plantel', '#1D68FF', (localT - 0.4) / 0.5, globalT);
-    drawSignalArrow(1190, 260, 1340, 440, 'Modo Espejo en Aula en Vivo (1:1)', 'Supervisa Inicio, Desarrollo y Cierre en tiempo real', '#10B981', (localT - 2.3) / 0.5, globalT);
+    drawSignalArrow(540, 240, 580, 395, 'Matriz de Desempeño Docente', '98% Cobertura PDA SEP y rúbricas activas por plantel', '#1D68FF', (localT - 0.4) / 0.5, globalT);
+    drawSignalArrow(1420, 235, 1420, 470, 'Modo Espejo en Aula en Vivo (1:1)', 'Supervisa Inicio, Desarrollo y Cierre en tiempo real', '#10B981', (localT - 2.0) / 0.5, globalT);
   }
 
   // =========================================================================
@@ -608,11 +811,11 @@ window.renderFrameAtTime = function(globalT) {
         'iSkool Daylight Studio Pro — Mi Clase en Vivo',
         'Interfaz clara e intuitiva: barra lateral izquierda, Taxonomía de Bloom activa, calendario de asistencia y sellos de libreta.'
       );
-      drawStudioScreen('img_06', { zoom: 1.0 + uiT * 0.004 });
+      drawStudioScreen('img_06', { zoom: 1.0 + uiT * 0.003 });
 
-      drawSignalArrow(370, 560, 210, 560, 'Barra Lateral Intuitiva', 'Acceso inmediato a Mi Clase, Sellos, Planeación y Ajustes', '#1D68FF', (uiT - 0.4) / 0.5, globalT);
-      drawSignalArrow(880, 620, 820, 770, 'Taxonomía de Bloom en Aula', '6 niveles cognitivos y verbos rectores integrados en vivo', '#8B5CF6', (uiT - 2.0) / 0.5, globalT);
-      drawSignalArrow(1340, 260, 1460, 395, 'Asistencia, Sellos por Periodo & Magic Links', 'Calendario histórico de porcentajes y sellado en 1 clic', '#10B981', (uiT - 3.8) / 0.5, globalT);
+      drawSignalArrow(540, 530, 260, 530, 'Barra Lateral Intuitiva', 'Acceso inmediato a Mi Clase, Sellos, Planeación y Ajustes', '#1D68FF', (uiT - 0.4) / 0.5, globalT);
+      drawSignalArrow(890, 640, 890, 765, 'Taxonomía de Bloom en Aula', '6 niveles cognitivos y verbos rectores integrados en vivo', '#8B5CF6', (uiT - 1.8) / 0.5, globalT);
+      drawSignalArrow(1420, 250, 1520, 415, 'Asistencia, Sellos por Periodo & Magic Links', 'Calendario histórico de porcentajes y sellado en 1 clic', '#10B981', (uiT - 3.4) / 0.5, globalT);
     }
   }
 
@@ -627,9 +830,9 @@ window.renderFrameAtTime = function(globalT) {
         'Centro Maestro de Planeación SEP NEM & Generador Curricular 360°',
         'Planea clases en horarios o días diferidos y genera secuencias oficiales SEP NEM conectadas con todo el sistema.'
       );
-      drawStudioScreen('img_07', { zoom: 1.0 + (localT / splitTime) * 0.02 });
-      drawSignalArrow(660, 240, 820, 395, 'Agenda Multi-Clase en Horarios Diferidos', 'Prepara sesiones futuras y cárgales su planeación en 1 clic', '#1D68FF', (localT - 0.3) / 0.5, globalT);
-      drawSignalArrow(1260, 510, 1420, 635, 'Generador Curricular IA 360° & Matriz Bloom', 'Sincroniza Pizarra, Libreta, Misiones y Espejo CEO', '#10B981', (localT - 1.6) / 0.5, globalT);
+      drawStudioScreen('img_07', { zoom: 1.0 + (localT / splitTime) * 0.015 });
+      drawSignalArrow(920, 835, 550, 835, 'Agenda Multi-Clase en Horarios Diferidos', 'Prepara sesiones futuras y cárgales su planeación en 1 clic', '#1D68FF', (localT - 0.3) / 0.5, globalT);
+      drawSignalArrow(1295, 470, 1295, 615, 'Generador Curricular 360° & Matriz Bloom', 'Sincroniza Pizarra, Libreta, Misiones y Espejo CEO', '#10B981', (localT - 1.5) / 0.5, globalT);
     } else {
       const subT = localT - splitTime;
       drawStudioHeaderAndFooter(
@@ -637,9 +840,9 @@ window.renderFrameAtTime = function(globalT) {
         'Estudio iSkool — Constructor Visual de Bloques Interactivos',
         'Diseña actividades interactivas, trivias y entregables digitales mediante nodos visuales listos para proyectar.'
       );
-      drawStudioScreen('img_08', { darkBg: true, zoom: 1.0 + (subT / (dur - splitTime)) * 0.02 });
-      drawSignalArrow(540, 320, 340, 480, 'Biblioteca de Bloques Pedagógicos', 'Arrastra actividades, retos y rúbricas al instante', '#1D68FF', (subT - 0.3) / 0.5, globalT);
-      drawSignalArrow(1280, 340, 1020, 520, 'Lienzo de Nodos Interactivos', 'Publica directo al Portal del Estudiante con recompensa XP', '#10B981', (subT - 1.4) / 0.5, globalT);
+      drawStudioScreen('img_08', { darkBg: true, zoom: 1.0 + (subT / (dur - splitTime)) * 0.015 });
+      drawSignalArrow(235, 385, 445, 520, 'Biblioteca de Bloques Pedagógicos', 'Arrastra actividades, retos y rúbricas al instante', '#1D68FF', (subT - 0.3) / 0.5, globalT);
+      drawSignalArrow(1135, 455, 1135, 620, 'Lienzo de Nodos Interactivos', 'Publica directo al Portal del Estudiante con recompensa XP', '#10B981', (subT - 1.3) / 0.5, globalT);
     }
   }
 
@@ -652,10 +855,10 @@ window.renderFrameAtTime = function(globalT) {
       'Libro Mágico Interactivo & Personajes Históricos en 1ª Persona',
       'Novela gráfica ilustrada y diálogo vivo en primera persona con rigor histórico verificado en la Bóveda Curricular.'
     );
-    drawStudioScreen('img_09', { darkBg: true, zoom: 1.0 + p * 0.025 });
+    drawStudioScreen('img_09', { darkBg: true, zoom: 1.0 + p * 0.015 });
 
-    drawSignalArrow(480, 280, 680, 440, 'Novela Gráfica Histórica Interactiva', 'Viñetas ilustradas que contextualizan cada época', '#F59E0B', (localT - 0.4) / 0.5, globalT);
-    drawSignalArrow(1380, 640, 1140, 540, 'Voz y Diálogo Vivo en 1ª Persona', 'Respuestas con fechas, lugares y hechos históricos reales', '#1D68FF', (localT - 2.0) / 0.5, globalT);
+    drawSignalArrow(380, 285, 640, 375, 'Novela Gráfica Histórica Interactiva', 'Viñetas ilustradas que contextualizan cada época', '#F59E0B', (localT - 0.4) / 0.5, globalT);
+    drawSignalArrow(1470, 430, 1085, 495, 'Voz y Diálogo Vivo en 1ª Persona', 'Respuestas con fechas, lugares y hechos históricos reales', '#1D68FF', (localT - 1.8) / 0.5, globalT);
   }
 
   // =========================================================================
@@ -679,9 +882,9 @@ window.renderFrameAtTime = function(globalT) {
           'Tablero de Misiones Épicas & Progreso Curricular XP',
           'Cada clase y tarea del profesor se transforma en una misión épica con puntos de experiencia, rachas y medallas.'
         );
-        drawStudioScreen('img_10', { darkBg: true, zoom: 1.0 + (uiT / remDur) * 0.02 });
-        drawSignalArrow(580, 250, 430, 390, 'Perfil de Héroe & Compañero Evolucionable', 'Avance motivacional vinculado a la asistencia y tareas', '#1D68FF', (uiT - 0.3) / 0.4, globalT);
-        drawSignalArrow(1220, 540, 1340, 390, 'Barra de Rango Académico & XP', 'Recompensas desbloqueadas por desempeño real en clase', '#10B981', (uiT - 1.2) / 0.4, globalT);
+        drawStudioScreen('img_10', { darkBg: true, zoom: 1.0 + (uiT / remDur) * 0.015 });
+        drawSignalArrow(290, 320, 495, 415, 'Perfil de Héroe & Compañero Evolucionable', 'Avance motivacional vinculado a la asistencia y tareas', '#1D68FF', (uiT - 0.3) / 0.4, globalT);
+        drawSignalArrow(1310, 250, 1310, 395, 'Barra de Rango Académico & XP', 'Recompensas desbloqueadas por desempeño real en clase', '#10B981', (uiT - 1.1) / 0.4, globalT);
       } else {
         const subT = uiT - remDur * 0.52;
         drawStudioHeaderAndFooter(
@@ -689,9 +892,9 @@ window.renderFrameAtTime = function(globalT) {
           'Estudio de Personalización de Avatares por Mérito Académico',
           'Los estudiantes personalizan su avatar desbloqueando atuendos e insignias con las monedas ganadas estudiando.'
         );
-        drawStudioScreen('img_11', { darkBg: true, zoom: 1.0 + subT * 0.005 });
-        drawSignalArrow(540, 340, 690, 490, 'Avatar 3D Personalizable', 'Identidad estudiantil segura y motivadora', '#8B5CF6', (subT - 0.2) / 0.4, globalT);
-        drawSignalArrow(1360, 360, 1210, 520, 'Tienda de Mérito Académico', 'Cero micropagos: todo se gana con estudio y tareas', '#10B981', (subT - 1.1) / 0.4, globalT);
+        drawStudioScreen('img_11', { darkBg: true, zoom: 1.0 + subT * 0.004 });
+        drawSignalArrow(265, 420, 540, 400, 'Tienda de Mérito Académico', 'Cero micropagos: todo se gana con estudio y tareas', '#10B981', (subT - 0.2) / 0.4, globalT);
+        drawSignalArrow(1555, 440, 1215, 460, 'Avatar Personalizable por Nivel', 'Identidad estudiantil segura y motivadora', '#8B5CF6', (subT - 1.0) / 0.4, globalT);
       }
     }
   }
@@ -700,16 +903,16 @@ window.renderFrameAtTime = function(globalT) {
   // SCENE 9: Enseñanza de Idiomas & Karaoke Fonético (Cambridge / DELF-DALF / CELTA-DELTA)
   // =========================================================================
   else if (sc.id === 'scene09') {
-    const splitT = dur * 0.44;
+    const splitT = dur * 0.45;
     if (localT < splitT) {
       drawStudioHeaderAndFooter(
         '3. Portal del Estudiante',
         'Laboratorio de Idiomas — Conversación Interactiva en Vivo',
         'Práctica conversacional guiada con mentores virtuales y control de velocidad gradual de 0.6x a 1.2x.'
       );
-      drawStudioScreen('img_12', { darkBg: true, zoom: 1.0 + (localT / splitT) * 0.02 });
-      drawSignalArrow(520, 320, 430, 480, 'Mentora Conversacional en Vivo', 'Inmersión natural en Inglés y Francés', '#1D68FF', (localT - 0.3) / 0.5, globalT);
-      drawSignalArrow(1340, 250, 1240, 155, 'Velocidad Fonética Adaptativa (0.6x - 1.2x)', 'Escucha y comprende a tu propio ritmo', '#10B981', (localT - 1.4) / 0.5, globalT);
+      drawStudioScreen('img_12', { darkBg: false, zoom: 1.0 + (localT / splitT) * 0.012 });
+      drawSignalArrow(430, 390, 825, 420, 'Mentora Conversacional en Vivo', 'Inmersión natural en Inglés y Francés', '#1D68FF', (localT - 0.3) / 0.5, globalT);
+      drawSignalArrow(1520, 560, 1135, 625, 'Velocidad Fonética Adaptativa (0.6x - 1.2x)', 'Escucha y comprende a tu propio ritmo', '#10B981', (localT - 1.3) / 0.5, globalT);
     } else {
       const subT = localT - splitT;
       drawStudioHeaderAndFooter(
@@ -717,9 +920,9 @@ window.renderFrameAtTime = function(globalT) {
         'Karaoke de Fluidez Fonética — Certificación Cambridge, DELF/DALF y CELTA/DELTA',
         'Evaluación de pronunciación palabra por palabra en Inglés (Cambridge) y Francés (DELF / DALF bajo metodología CELTA y DELTA).'
       );
-      drawStudioScreen('img_13', { darkBg: true, zoom: 1.0 + (subT / (dur - splitT)) * 0.02 });
-      drawSignalArrow(540, 300, 740, 415, 'Karaoke de Fluidez Fonética en Vivo', 'Retroalimentación acústica palabra por palabra al hablar', '#10B981', (subT - 0.3) / 0.5, globalT);
-      drawSignalArrow(1320, 620, 1120, 500, 'Inglés Cambridge + Francés DELF / DALF', 'Alineado a estándares internacionales CELTA y DELTA', '#1D68FF', (subT - 1.6) / 0.5, globalT);
+      drawStudioScreen('img_13', { darkBg: false, zoom: 1.0 + (subT / (dur - splitT)) * 0.012 });
+      drawSignalArrow(1160, 225, 1160, 505, 'Karaoke de Fluidez Fonética en Vivo', 'Retroalimentación acústica palabra por palabra al hablar', '#10B981', (subT - 0.3) / 0.5, globalT);
+      drawSignalArrow(1620, 615, 1410, 755, 'Inglés Cambridge + Francés DELF / DALF', 'Alineado a estándares internacionales CELTA y DELTA', '#1D68FF', (subT - 1.4) / 0.5, globalT);
     }
   }
 
@@ -756,7 +959,6 @@ window.renderFrameAtTime = function(globalT) {
       { key: 'img_25', level: 'PREPARATORIA', title: 'Portafolio & Credenciales QR', color: '#8B5CF6' }
     ];
 
-    // Level indicator pills at top of stage
     const levels = [
       { name: 'PREESCOLAR (4 MUNDOS)', color: '#EC4899', active: p < 0.25 },
       { name: 'PRIMARIA (5 MUNDOS)', color: '#10B981', active: p >= 0.25 && p < 0.50 },
@@ -782,7 +984,6 @@ window.renderFrameAtTime = function(globalT) {
       ctx.restore();
     });
 
-    // Smooth dual-row sliding card showcase showing all 20 cards cleanly
     const cardW = 520;
     const cardH = 340;
     const gapX = 45;
@@ -821,7 +1022,6 @@ window.renderFrameAtTime = function(globalT) {
         ctx.restore();
       }
 
-      // Level Badge
       ctx.fillStyle = c.color;
       roundRect(ctx, cx + 16, cy + cardH - 48, 138, 32, 16);
       ctx.fill();
@@ -830,7 +1030,6 @@ window.renderFrameAtTime = function(globalT) {
       ctx.textAlign = 'center';
       ctx.fillText(c.level, cx + 16 + 69, cy + cardH - 27);
 
-      // Card Title
       ctx.fillStyle = '#0A193A';
       ctx.font = '800 18px "Segoe UI", sans-serif';
       ctx.textAlign = 'left';
@@ -861,12 +1060,11 @@ window.renderFrameAtTime = function(globalT) {
           'Muro de Logros Académicos & Bandeja de Avisos Escolares',
           'Comunicación transparente: consulta de sellos de libreta, avisos urgentes y firma digital de enterado.'
         );
-        // Side-by-side showcase of img_34 (Muro de Logros) and img_35 (Bandeja de Avisos)
         drawStudioScreen('img_34', { x: 70, y: 112, w: 980, h: 845 });
         drawStudioScreen('img_35', { x: 1080, y: 112, w: 770, h: 845 });
 
-        drawSignalArrow(380, 260, 520, 440, 'Muro de Logros y Sellos del Hijo', 'Seguimiento diario desde celular o computadora', '#1D68FF', (uiT - 0.3) / 0.4, globalT);
-        drawSignalArrow(1340, 260, 1460, 430, 'Avisos y Confirmación de Enterado', 'Trazabilidad total de lectura para el colegio', '#10B981', (uiT - 1.1) / 0.4, globalT);
+        drawSignalArrow(360, 225, 480, 420, 'Muro de Logros y Sellos del Hijo', 'Seguimiento diario desde celular o computadora', '#1D68FF', (uiT - 0.3) / 0.4, globalT);
+        drawSignalArrow(1465, 225, 1465, 395, 'Avisos y Confirmación de Enterado', 'Trazabilidad total de lectura para el colegio', '#10B981', (uiT - 1.1) / 0.4, globalT);
       } else {
         const subT = uiT - remDur * 0.48;
         drawStudioHeaderAndFooter(
@@ -874,18 +1072,17 @@ window.renderFrameAtTime = function(globalT) {
           'Estado de Cuenta Escolar, Pasarela de Pagos & Facturación Automática SAT CFDI 4.0',
           'Pago de colegiaturas en línea con tarjeta, transferencia SPEI o referencia y timbrado fiscal CFDI 4.0 al instante.'
         );
-        // Side-by-side showcase of img_36 (Estado de Cuenta) and img_37 (Pasarela de Pago)
         drawStudioScreen('img_36', { x: 70, y: 112, w: 1010, h: 845 });
         drawStudioScreen('img_37', { x: 1110, y: 112, w: 740, h: 845 });
 
-        drawSignalArrow(420, 250, 790, 390, 'Timbrado Automático SAT CFDI 4.0', 'Factura enviada al instante tras confirmar el pago', '#1D68FF', (subT - 0.2) / 0.4, globalT);
-        drawSignalArrow(1350, 250, 1480, 510, 'Pasarela Multipago (Tarjeta / SPEI)', 'Conciliación bancaria automática sin carga administrativa', '#10B981', (subT - 1.0) / 0.4, globalT);
+        drawSignalArrow(575, 225, 855, 415, 'Timbrado Automático SAT CFDI 4.0', 'Factura enviada al instante tras confirmar el pago', '#1D68FF', (subT - 0.2) / 0.4, globalT);
+        drawSignalArrow(1480, 225, 1310, 395, 'Pasarela Multipago (Tarjeta / SPEI)', 'Conciliación bancaria automática sin carga administrativa', '#10B981', (subT - 1.0) / 0.4, globalT);
       }
     }
   }
 
   // =========================================================================
-  // SCENE 12: Gran Cierre de Ventas & Agendamiento de Cita (contacto@iskool.mx / 5511404767)
+  // SCENE 12: Gran Cierre de Ventas & Agendamiento de Cita con QR Oficial (contacto@iskool.mx / 5611404767 / 5511404767)
   // =========================================================================
   else if (sc.id === 'scene12') {
     const enter = easeOutCubic(localT / 0.7);
@@ -893,25 +1090,24 @@ window.renderFrameAtTime = function(globalT) {
     // Executive Closing Background
     ctx.drawImage(IMAGES.ctaBg, 0, 0, 1920, 1080);
 
-    // Soft bright studio overlay
     const grad = ctx.createRadialGradient(960, 500, 100, 960, 540, 960);
-    grad.addColorStop(0, 'rgba(255,255,255,0.92)');
-    grad.addColorStop(0.7, 'rgba(248,250,252,0.82)');
-    grad.addColorStop(1, 'rgba(219,234,254,0.55)');
+    grad.addColorStop(0, 'rgba(255,255,255,0.94)');
+    grad.addColorStop(0.7, 'rgba(248,250,252,0.86)');
+    grad.addColorStop(1, 'rgba(219,234,254,0.60)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 1920, 1080);
 
     // Main Executive Sales Container
-    const cw = 1520;
-    const ch = 840;
+    const cw = 1720;
+    const ch = 910;
     const cx = (1920 - cw) / 2;
-    const cy = (1080 - ch) / 2 + (1 - enter) * 28;
+    const cy = (1080 - ch) / 2 + (1 - enter) * 24;
 
     ctx.save();
     ctx.shadowColor = 'rgba(10, 25, 58, 0.18)';
     ctx.shadowBlur = 60;
     ctx.shadowOffsetY = 20;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.97)';
     roundRect(ctx, cx, cy, cw, ch, 40);
     ctx.fill();
     ctx.lineWidth = 3;
@@ -920,36 +1116,35 @@ window.renderFrameAtTime = function(globalT) {
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
-    // Official iSkool® Logo Centered
+    // Official iSkool® Logo Centered at Top
     const logo = IMAGES.logo;
     if (logo) {
-      const lw = 420;
+      const lw = 320;
       const lh = lw * (logo.height / logo.width);
-      ctx.drawImage(logo, 960 - lw / 2, cy + 48, lw, lh);
+      ctx.drawImage(logo, 960 - lw / 2, cy + 20, lw, lh);
     }
 
     // Sales Headline
     ctx.textAlign = 'center';
     ctx.fillStyle = '#0A193A';
-    ctx.font = '900 54px "Segoe UI", sans-serif';
-    ctx.fillText('Lleva tu Institución Educativa al Estándar Mundial', 960, cy + 285);
+    ctx.font = '900 45px "Segoe UI", sans-serif';
+    ctx.fillText('Lleva tu Institución Educativa al Estándar Mundial', 960, cy + 192);
 
     ctx.fillStyle = '#1D68FF';
-    ctx.font = '700 30px "Segoe UI", sans-serif';
-    ctx.fillText('Agenda hoy mismo tu Demostración Ejecutiva Personalizada', 960, cy + 340);
+    ctx.font = '700 25px "Segoe UI", sans-serif';
+    ctx.fillText('Agenda hoy mismo tu Demostración Ejecutiva Personalizada', 960, cy + 232);
 
-    // Contact Card 1: Correo Oficial (contacto@iskool.mx)
-    const boxW = 640;
-    const boxH = 230;
-    const box1X = 960 - boxW - 30;
-    const box2X = 960 + 30;
-    const boxY = cy + 405;
+    // 3-Column Executive Layout: Left (Email) | Center (Official WhatsApp QR) | Right (Phones)
+    const colY = cy + 262;
+    const colH = 405;
 
-    // Box 1
-    ctx.shadowColor = 'rgba(29, 104, 255, 0.16)';
-    ctx.shadowBlur = 30;
+    // Column 1: Correo Oficial (contacto@iskool.mx)
+    const c1X = cx + 45;
+    const c1W = 525;
+    ctx.shadowColor = 'rgba(29, 104, 255, 0.14)';
+    ctx.shadowBlur = 26;
     ctx.fillStyle = '#F8FAFF';
-    roundRect(ctx, box1X, boxY, boxW, boxH, 28);
+    roundRect(ctx, c1X, colY, c1W, colH, 28);
     ctx.fill();
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#1D68FF';
@@ -957,27 +1152,67 @@ window.renderFrameAtTime = function(globalT) {
     ctx.shadowBlur = 0;
 
     ctx.fillStyle = '#1D68FF';
-    roundRect(ctx, box1X + 40, boxY + 34, 280, 40, 20);
+    roundRect(ctx, c1X + (c1W - 310) / 2, colY + 30, 310, 38, 19);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 16px "Segoe UI", sans-serif';
+    ctx.font = '800 15px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CORREO DE ATENCIÓN DIRECTA', box1X + 40 + 140, boxY + 60);
+    ctx.fillText('CORREO ELECTRÓNICO OFICIAL', c1X + c1W / 2, colY + 55);
 
     ctx.fillStyle = '#0A193A';
-    ctx.font = '900 46px "Segoe UI", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('contacto@iskool.mx', box1X + 40, boxY + 142);
+    ctx.font = '900 42px "Segoe UI", sans-serif';
+    ctx.fillText('contacto@iskool.mx', c1X + c1W / 2, colY + 158);
+
+    ctx.fillStyle = '#1D68FF';
+    ctx.font = '700 20px "Segoe UI", sans-serif';
+    ctx.fillText('Atención Ejecutiva para Colegios', c1X + c1W / 2, colY + 215);
 
     ctx.fillStyle = '#475569';
-    ctx.font = '600 20px "Segoe UI", sans-serif';
-    ctx.fillText('Solicita acceso demo y cotización institucional', box1X + 40, boxY + 188);
+    ctx.font = '600 18px "Segoe UI", sans-serif';
+    ctx.fillText('Solicita acceso demo, presentación', c1X + c1W / 2, colY + 280);
+    ctx.fillText('para Consejo Directivo y cotización.', c1X + c1W / 2, colY + 308);
 
-    // Box 2: Teléfono Directo (5511404767)
+    // Column 2 (Centerpiece): Official WhatsApp QR Code (Imagen 3: 5611404767 & contacto@iskool.mx)
+    const c2X = cx + 600;
+    const c2W = 520;
+    ctx.shadowColor = 'rgba(10, 25, 58, 0.20)';
+    ctx.shadowBlur = 34;
+    ctx.fillStyle = '#FFFFFF';
+    roundRect(ctx, c2X, colY - 8, c2W, colH + 16, 32);
+    ctx.fill();
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = '#0A193A';
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#0A193A';
+    roundRect(ctx, c2X + (c2W - 360) / 2, colY + 12, 360, 36, 18);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 15px "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('ESCANEA PARA WHATSAPP DIRECTO', c2X + c2W / 2, colY + 36);
+
+    const qrImg = IMAGES.qrWhatsapp;
+    if (qrImg) {
+      const qrSize = 250;
+      ctx.drawImage(qrImg, c2X + (c2W - qrSize) / 2, colY + 56, qrSize, qrSize);
+    }
+
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 24px "Segoe UI", sans-serif';
+    ctx.fillText('Tel / WhatsApp: 5611404767', c2X + c2W / 2, colY + 338);
+    ctx.fillStyle = '#1D68FF';
+    ctx.font = '800 19px "Segoe UI", sans-serif';
+    ctx.fillText('contacto@iskool.mx', c2X + c2W / 2, colY + 368);
+
+    // Column 3: Teléfonos de Atención Comercial (5611404767 / 5511404767)
+    const c3X = cx + 1150;
+    const c3W = 525;
     ctx.shadowColor = 'rgba(16, 185, 129, 0.16)';
-    ctx.shadowBlur = 30;
+    ctx.shadowBlur = 26;
     ctx.fillStyle = '#F2FDF9';
-    roundRect(ctx, box2X, boxY, boxW, boxH, 28);
+    roundRect(ctx, c3X, colY, c3W, colH, 28);
     ctx.fill();
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#10B981';
@@ -985,40 +1220,46 @@ window.renderFrameAtTime = function(globalT) {
     ctx.shadowBlur = 0;
 
     ctx.fillStyle = '#10B981';
-    roundRect(ctx, box2X + 40, boxY + 34, 310, 40, 20);
+    roundRect(ctx, c3X + (c3W - 330) / 2, colY + 30, 330, 38, 19);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 16px "Segoe UI", sans-serif';
+    ctx.font = '800 15px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('TELÉFONO Y ATENCIÓN COMERCIAL', box2X + 40 + 155, boxY + 60);
-
-    ctx.fillStyle = '#0A193A';
-    ctx.font = '900 52px "Segoe UI", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('5511404767', box2X + 40, boxY + 145);
+    ctx.fillText('TELÉFONO Y ATENCIÓN COMERCIAL', c3X + c3W / 2, colY + 55);
 
     ctx.fillStyle = '#047857';
-    ctx.font = '700 22px "Segoe UI", sans-serif';
-    ctx.fillText('Línea Directa: 55 1140 4767', box2X + 365, boxY + 143);
+    ctx.font = '800 16.5px "Segoe UI", sans-serif';
+    ctx.fillText('WHATSAPP Y ATENCIÓN MÓVIL DIRECTA:', c3X + c3W / 2, colY + 112);
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 44px "Segoe UI", sans-serif';
+    ctx.fillText('56 1140 4767', c3X + c3W / 2, colY + 158);
+
+    ctx.fillStyle = '#047857';
+    ctx.font = '800 16.5px "Segoe UI", sans-serif';
+    ctx.fillText('LÍNEA TELEFÓNICA EJECUTIVA:', c3X + c3W / 2, colY + 220);
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 44px "Segoe UI", sans-serif';
+    ctx.fillText('55 1140 4767', c3X + c3W / 2, colY + 266);
 
     ctx.fillStyle = '#475569';
-    ctx.font = '600 20px "Segoe UI", sans-serif';
-    ctx.fillText('Agendamiento inmediato para Directores y Colegios', box2X + 40, boxY + 188);
+    ctx.font = '600 18px "Segoe UI", sans-serif';
+    ctx.fillText('Agendamiento inmediato para Directores', c3X + c3W / 2, colY + 322);
 
     // Bottom Institutional Tagline Pill
     ctx.fillStyle = '#0A193A';
-    roundRect(ctx, 960 - 520, cy + 690, 1040, 74, 37);
+    roundRect(ctx, 960 - 540, cy + 836, 1080, 52, 26);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 24px "Segoe UI", sans-serif';
+    ctx.font = '800 21px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('iSkool®  •  El Futuro de la Educación y la Gestión Escolar, Hoy.', 960, cy + 736);
+    ctx.fillText('iSkool®  •  El Futuro de la Educación y la Gestión Escolar, Hoy.', 960, cy + 869);
 
     ctx.restore();
 
-    // Animated signaling arrows pointing to the email and phone number
-    drawSignalArrow(220, 780, box1X + 80, boxY + 135, 'Escríbenos Ahora', 'contacto@iskool.mx', '#1D68FF', (localT - 1.0) / 0.5, globalT);
-    drawSignalArrow(1700, 780, box2X + boxW - 80, boxY + 135, 'Llámanos o Agenda Cita', '5511404767', '#10B981', (localT - 2.0) / 0.5, globalT);
+    // Clean Signaling Arrows pointing squarely up to the 3 Contact Cards without overlapping the top logo or text
+    drawSignalArrow(370, 855, c1X + c1W / 2, colY + colH - 12, 'Escríbenos Ahora', 'contacto@iskool.mx', '#1D68FF', (localT - 0.8) / 0.5, globalT);
+    drawSignalArrow(960, 855, 960, colY + colH + 4, 'Escanea el Código QR', 'WhatsApp Directo: 56 1140 4767', '#0A193A', (localT - 1.5) / 0.5, globalT);
+    drawSignalArrow(1550, 855, c3X + c3W / 2, colY + colH - 12, 'Llámanos o Agenda Cita', '56 1140 4767 / 55 1140 4767', '#10B981', (localT - 2.2) / 0.5, globalT);
   }
 };
 </script>
@@ -1028,11 +1269,24 @@ window.renderFrameAtTime = function(globalT) {
   await page.setContent(htmlContent, { waitUntil: 'domcontentloaded' });
   await page.evaluate((rawAssets, manifestData) => window.initAssets(rawAssets, manifestData), assets, manifest);
 
-  // Save 4 high-res preview frames for the Forensic Audit Report artifact
+  // Save forensic preview snapshots across ALL key scenes so every single arrow can be verified visually
   const previewSnapshots = [
-    { t: 4.8, file: path.join(artifactDir, 'preview_sales_cortinilla_ceo.jpg') },
-    { t: 33.0, file: path.join(artifactDir, 'preview_sales_triage_cognitivo.jpg') },
-    { t: 54.0, file: path.join(artifactDir, 'preview_sales_teacher_daylight.jpg') },
+    { t: 6.5, file: path.join(artifactDir, 'preview_sales_01_cinco_pilares_beneficios.jpg') },
+    { t: 10.8, file: path.join(artifactDir, 'preview_sales_cortinilla_ceo.jpg') },
+    { t: 16.5, file: path.join(artifactDir, 'preview_sales_01b_resumen_ejecutivo.jpg') },
+    { t: 28.5, file: path.join(artifactDir, 'preview_sales_02_admision_360.jpg') },
+    { t: 39.5, file: path.join(artifactDir, 'preview_sales_triage_cognitivo.jpg') },
+    { t: 48.5, file: path.join(artifactDir, 'preview_sales_04_espejo_vivo.jpg') },
+    { t: 60.0, file: path.join(artifactDir, 'preview_sales_teacher_daylight.jpg') },
+    { t: 69.5, file: path.join(artifactDir, 'preview_sales_06a_planeacion_sep.jpg') },
+    { t: 75.5, file: path.join(artifactDir, 'preview_sales_06b_estudio_bloques.jpg') },
+    { t: 83.0, file: path.join(artifactDir, 'preview_sales_07_libro_magico.jpg') },
+    { t: 92.0, file: path.join(artifactDir, 'preview_sales_08a_estudiante_misiones.jpg') },
+    { t: 96.5, file: path.join(artifactDir, 'preview_sales_08b_estudiante_avatar.jpg') },
+    { t: 101.5, file: path.join(artifactDir, 'preview_sales_09a_idiomas_mentora_fixed.jpg') },
+    { t: 107.5, file: path.join(artifactDir, 'preview_sales_09b_idiomas_karaoke_fixed.jpg') },
+    { t: 126.0, file: path.join(artifactDir, 'preview_sales_11a_padres_muro_avisos.jpg') },
+    { t: 131.0, file: path.join(artifactDir, 'preview_sales_11b_padres_pagos_sat.jpg') },
     { t: totalDuration - 3.0, file: path.join(artifactDir, 'preview_sales_cta_contacto.jpg') }
   ];
   for (const snap of previewSnapshots) {
@@ -1040,7 +1294,13 @@ window.renderFrameAtTime = function(globalT) {
     const b64 = await page.evaluate(() => canvas.toDataURL('image/jpeg', 0.94).split(',')[1]);
     fs.writeFileSync(snap.file, Buffer.from(b64, 'base64'));
   }
-  console.log('📸 Saved 4 forensic preview snapshots to artifacts.');
+  console.log(`📸 Saved ${previewSnapshots.length} forensic preview snapshots to artifacts.`);
+
+  if (process.argv.includes('--preview-only')) {
+    await browser.close();
+    console.log('✅ Preview-only mode completed.');
+    return;
+  }
 
   // Spawn FFmpeg to encode the master visual stream directly from piped JPEG frames
   const visualMasterMp4 = path.join(rootDir, 'temp_sales_video_assets', 'visual_master_stream.mp4');

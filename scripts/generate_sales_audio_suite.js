@@ -10,103 +10,103 @@ const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio');
 const artifactDir = 'C:/Users/kami-/.gemini/antigravity/brain/fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b';
 fs.mkdirSync(audioDir, { recursive: true });
 
-// 12 Surgical Conversational Sales Scenes aligned with the 143.8s Visual Master Timeline
+// 12 Surgical Conversational Sales Scenes aligned with the 147.6s Visual Master Timeline (120s - 150s range)
 const SCENES = [
   {
     id: 'scene01',
-    title: 'Intro Oficial iSkool® + Cortinilla CEO + Resumen Ejecutivo Consolidado',
+    title: 'Intro Oficial iSkool® (Ískul) + 5 Pilares y Beneficios Reales + Cortinilla CEO + Resumen Ejecutivo',
     startTime: 0.0,
-    endTime: 16.33,
-    preWait: 2.0,
-    ssmlText: 'Bienvenido a Aiskul, el ecosistema educativo que transforma la dirección, la docencia y el aprendizaje. En el Portal de Dirección General, controla en tiempo real matrícula, asistencia y el avance de cada plantel desde un solo tablero ejecutivo.'
+    endTime: 22.80,
+    preWait: 0.60,
+    ssmlText: 'Bienvenido a Ískul: el ecosistema educativo integral que conecta en tiempo real a los cinco pilares de tu institución: Directivos, Coordinadores, Docentes, Alumnos y Tutores. Con Ískul multiplicas tu captación, automatizas la planeación pedagógica y elevas la cobranza. En el Portal de Dirección General, controla desde un solo tablero matrícula, asistencia, cobertura curricular y el desempeño de cada plantel.'
   },
   {
     id: 'scene02',
     title: 'Admisión 360° CRM Kanban — Embudo de Captación a Inscripción',
-    startTime: 16.33,
-    endTime: 27.66,
-    preWait: 0.25,
-    ssmlText: 'Con Admisión trescientos sesenta, multiplica tu captación escolar. Sigue a cada aspirante desde el primer contacto y diagnóstico hasta su inscripción, sin perder un solo prospecto.'
+    startTime: 22.80,
+    endTime: 34.40,
+    preWait: 0.20,
+    ssmlText: 'Con Admisión trescientos sesenta, impulsa tu crecimiento escolar. Visualiza cómo cada aspirante avanza desde su registro, visita al campus y diagnóstico psicopedagógico hasta su inscripción pagada, sin perder un solo prospecto.'
   },
   {
     id: 'scene03',
     title: 'Consola de Correo Inteligente & Triage Cognitivo CEO',
-    startTime: 27.66,
-    endTime: 37.93,
-    preWait: 0.25,
-    ssmlText: 'Nuestro Triage Cognitivo de Correo filtra cientos de mensajes diarios, destaca los asuntos críticos y delega el resto a tu equipo, ahorrándote horas de gestión operativa.'
+    startTime: 34.40,
+    endTime: 44.40,
+    preWait: 0.20,
+    ssmlText: 'Nuestra Consola de Correo con Triage Cognitivo analiza cientos de mensajes diarios, filtra solo los asuntos críticos para dirección y delega el resto a tu equipo, ahorrándote casi cuatro horas cada día.'
   },
   {
     id: 'scene04',
     title: 'Supervisión Docente & Modo Espejo CEO en Tiempo Real',
-    startTime: 37.93,
-    endTime: 46.90,
-    preWait: 0.25,
-    ssmlText: 'Y con el Modo Espejo Ejecutivo, supervisa en vivo qué planeación, Taxonomía de Bloom y sellos de libreta se aplican en cada salón sin interrumpir la clase.'
+    startTime: 44.40,
+    endTime: 52.60,
+    preWait: 0.20,
+    ssmlText: 'Y con el Modo Espejo en Vivo, supervisa en tiempo real el avance de cada profesor, su cronómetro pedagógico y la sesión activa en el aula sin interrumpir la clase.'
   },
   {
     id: 'scene05',
     title: 'Cortinilla Portal del Profesor + Daylight Studio Pro en Aula',
-    startTime: 46.90,
-    endTime: 61.76,
-    preWait: 1.8,
-    ssmlText: 'En el Portal del Profesor, Daylight Studio Pro ofrece una experiencia intuitiva. El docente guía su clase con cronómetro pedagógico, Taxonomía de Bloom, calendario de asistencia, sellado digital de libreta y avisos al instante.'
+    startTime: 52.60,
+    endTime: 66.40,
+    preWait: 1.10,
+    ssmlText: 'En el Portal del Profesor, Ískul ofrece una interfaz clara y sin curva de aprendizaje. Desde su barra lateral, el docente guía su clase con los seis niveles de la Taxonomía de Bloom, calendario histórico de asistencia, sellado digital de libreta y avisos en un clic.'
   },
   {
     id: 'scene06',
     title: 'Generador Curricular SEP NEM 360° & Estudio iSkool de Bloques',
-    startTime: 61.76,
-    endTime: 73.10,
-    preWait: 0.25,
-    ssmlText: 'El Generador Curricular crea planeaciones oficiales de la Nueva Escuela Mexicana en segundos y las sincroniza con tu agenda. Y en el Estudio Aiskul, diseña actividades interactivas por bloques.'
+    startTime: 66.40,
+    endTime: 78.60,
+    preWait: 0.20,
+    ssmlText: 'El Generador Curricular permite planear clases en horarios o días diferidos y crear secuencias oficiales de la Nueva Escuela Mexicana en segundos. Y en el Estudio Ískul, el maestro diseña actividades interactivas por bloques listas para proyectar.'
   },
   {
     id: 'scene07',
     title: 'Libro Mágico Interactivo & Personajes Históricos en 1ª Persona',
-    startTime: 73.10,
-    endTime: 80.92,
-    preWait: 0.25,
-    ssmlText: 'Con el Libro Mágico Interactivo, tus alumnos conversan en primera persona con personajes históricos respaldados por rigor documental.'
+    startTime: 78.60,
+    endTime: 86.90,
+    preWait: 0.20,
+    ssmlText: 'Además, con el Libro Mágico Interactivo, los alumnos exploran novelas gráficas e interrogan en primera persona a personajes históricos con absoluto rigor documental.'
   },
   {
     id: 'scene08',
     title: 'Cortinilla Portal del Estudiante + Misiones Épicas & Avatares',
-    startTime: 80.92,
-    endTime: 93.59,
-    preWait: 1.8,
-    ssmlText: 'En el Portal del Estudiante, cada tarea y tema visto en clase se transforma en una misión épica. Los alumnos ganan experiencia, suben de rango y evolucionan su avatar mediante su mérito académico.'
+    startTime: 86.90,
+    endTime: 98.20,
+    preWait: 1.10,
+    ssmlText: 'En el Portal del Estudiante, cada clase y tarea se convierte en una misión épica. Los alumnos ganan puntos de experiencia, suben de rango y personalizan su avatar exclusivamente mediante su mérito académico.'
   },
   {
     id: 'scene09',
     title: 'Enseñanza de Idiomas & Karaoke Fonético (Cambridge / DELF-DALF / CELTA-DELTA)',
-    startTime: 93.59,
-    endTime: 104.63,
-    preWait: 0.25,
-    ssmlText: 'Nuestro Laboratorio de Idiomas integra conversación viva y karaoke fonético palabra por palabra, preparando a tus alumnos para certificaciones Cambridge, DELF y DALF.'
+    startTime: 98.20,
+    endTime: 110.80,
+    preWait: 0.20,
+    ssmlText: 'Nuestro Laboratorio de Idiomas combina conversación interactiva con velocidad gradual y karaoke de fluidez fonética palabra por palabra, preparando a tus alumnos en inglés para certificación Cambridge y en francés para DELF y DALF bajo metodología CELTA y DELTA.'
   },
   {
     id: 'scene10',
     title: 'Carrusel Dinámico de 20 Diseños de Gamificación por Nivel Académico',
-    startTime: 104.63,
-    endTime: 115.75,
-    preWait: 0.25,
-    ssmlText: 'Más de veinte universos visuales se adaptan a cada etapa: desde preescolar y primaria hasta duelos de conocimiento en secundaria y simuladores preuniversitarios en preparatoria.'
+    startTime: 110.80,
+    endTime: 121.30,
+    preWait: 0.20,
+    ssmlText: 'Contamos con veinte diseños interactivos adaptados a cada etapa escolar: desde experiencias táctiles para preescolar y aventuras en primaria, hasta duelos sincronizados en secundaria y retos preuniversitarios en preparatoria.'
   },
   {
     id: 'scene11',
     title: 'Cortinilla Portal del Padre de Familia + Avisos, Estado de Cuenta y Pagos',
-    startTime: 115.75,
-    endTime: 127.05,
-    preWait: 1.8,
-    ssmlText: 'En el Portal para Padres, las familias consultan logros, firman avisos escolares de enterado y pagan colegiaturas en línea con factura fiscal automática al instante.'
+    startTime: 121.30,
+    endTime: 133.00,
+    preWait: 1.10,
+    ssmlText: 'En el Portal del Padre de Familia, los tutores consultan el muro de logros de sus hijos, firman avisos escolares de enterado y liquidan colegiaturas en línea con tarjeta o transferencia y facturación fiscal automática al instante.'
   },
   {
     id: 'scene12',
-    title: 'Cierre de Ventas & Agendamiento de Citas (contacto@iskool.mx / 5511404767)',
-    startTime: 127.05,
-    endTime: 143.80,
-    preWait: 0.35,
-    ssmlText: 'Lleva hoy tu institución al estándar mundial. Agenda tu demostración ejecutiva en contacto arroba iskool punto eme equis, o llámanos al cincuenta y cinco, once cuarenta, cuarenta y siete, sesenta y siete. Aiskul: el futuro de la educación, hoy.'
+    title: 'Cierre de Ventas & Agendamiento de Citas con QR Oficial (contacto@iskool.mx / 5611404767 / 5511404767)',
+    startTime: 133.00,
+    endTime: 148.50,
+    preWait: 0.25,
+    ssmlText: 'Lleva hoy tu institución educativa al estándar mundial. Escanea el código Q R en pantalla para escribirnos por WhatsApp al cincuenta y seis, once cuarenta, cuarenta y siete, sesenta y siete; llámanos al cincuenta y cinco, once cuarenta, cuarenta y siete, sesenta y siete, o escríbenos a contacto arroba iskool punto eme equis. Ískul: el futuro de la educación, hoy.'
   }
 ];
 
@@ -265,20 +265,20 @@ async function main() {
       if (fs.existsSync(payloadPath)) fs.unlinkSync(payloadPath);
     }
 
-    // 1. Convert to 44.1kHz stereo WAV with gentle silence trim at start/end only (preserving internal human breaths)
+    // 1. Convert to 44.1kHz stereo WAV with gentle silence trim at start/end and compact internal pause tightening (>0.24s)
     execFileSync(ffmpegPath, [
       '-y', '-i', rawMp3,
-      '-af', 'silenceremove=start_periods=1:start_duration=0.05:start_threshold=-48dB,areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-48dB,areverse',
+      '-af', 'silenceremove=start_periods=1:start_duration=0.04:start_threshold=-42dB:stop_periods=-1:stop_duration=0.24:stop_threshold=-42dB',
       '-ar', '44100', '-ac', '2',
       wavTrimmed
     ], { stdio: 'ignore' });
 
     const rawDur = getAudioDuration(wavTrimmed);
-    const slotWindow = (s.endTime - s.startTime) - s.preWait - 0.25;
-    // Apply only gentle tempo adjustment if the natural recording exceeds its visual scene slot
+    const slotWindow = (s.endTime - s.startTime) - s.preWait - 0.20;
+    // Apply dynamic commercial tempo adjustment so the recording fits its visual scene slot cleanly without clipping
     let tempoFactor = 1.0;
     if (rawDur > slotWindow && slotWindow > 2.0) {
-      tempoFactor = Math.min(1.18, Number((rawDur / slotWindow).toFixed(3)));
+      tempoFactor = Math.min(1.42, Number((rawDur / slotWindow).toFixed(3)));
     }
 
     const afFilter = tempoFactor > 1.005 ? `atempo=${tempoFactor}` : 'anull';
@@ -316,7 +316,7 @@ async function main() {
     console.log(`  ✓ [${s.id}] Natural Voice: ${rawDur.toFixed(2)}s -> Fitted: ${voiceDur.toFixed(2)}s (tempo=${tempoFactor.toFixed(2)}x) | Slot: ${s.startTime.toFixed(2)}s..${s.endTime.toFixed(2)}s`);
   }
 
-  const totalDuration = 143.8;
+  const totalDuration = 148.5;
   const manifestPath = path.join(audioDir, 'timeline_manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify({ totalDuration, scenes: timeline }, null, 2));
 
