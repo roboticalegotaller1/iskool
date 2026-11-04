@@ -68,7 +68,7 @@ def _resolve_ffmpeg() -> str | None:
 FFMPEG_BINARY = _resolve_ffmpeg()
 _STUDIO_HTTP_CLIENT = None
 _STUDIO_API_KEY = None
-_STUDIO_AI_CIRCUIT_OPEN = False
+_STUDIO_AI_CIRCUIT_OPEN = os.environ.get("ENABLE_CLOUD_STUDIO_TTS", "0") != "1"
 _MODEL_COOLDOWN_UNTIL: dict[str, float] = {}
 
 

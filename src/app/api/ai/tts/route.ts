@@ -468,7 +468,7 @@ export async function POST(req: NextRequest) {
 
     const cacheKey = crypto
       .createHash('sha256')
-      .update(`v6_studio_human_conv::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
+      .update(`v7_neural_latam_24voices::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
       .digest('hex');
 
     const cachedBuffer = getAudioFromCache(cacheKey);
@@ -480,6 +480,7 @@ export async function POST(req: NextRequest) {
           'Content-Length': cachedBuffer.length.toString(),
           'X-Cache': 'HIT',
           'X-Voice-Resolved': targetVoice,
+          'X-TTS-Engine': 'Neural-Continuo-24-Voces-LatAm-Ilimitado',
           'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
         },
       });
@@ -534,6 +535,7 @@ export async function POST(req: NextRequest) {
         'Content-Length': audioBuffer.length.toString(),
         'X-Cache': 'MISS',
         'X-Voice-Resolved': targetVoice,
+        'X-TTS-Engine': 'Neural-Continuo-24-Voces-LatAm-Ilimitado',
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
       },
     });

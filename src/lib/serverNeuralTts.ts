@@ -35,7 +35,7 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
-const WORKER_ENGINE_GENERATION = 'v6_neural_latam_unlimited_r1';
+const WORKER_ENGINE_GENERATION = 'v7_neural_latam_24voices_r1';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
 let daemonGeneration = '';
 let daemonStdoutBuffer = '';
@@ -169,10 +169,10 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     throw new Error('Texto vacío para síntesis');
   }
 
-  // Clave de caché v6 (Motor Acústico Generativo Conversacional Humano + Diseño de Voz a Medida + Biblioteca Extendida)
+  // Clave de caché v7 (Respaldo Neural Continuo de 24 Voces LatAm Ilimitadas Exclusivo)
   const cacheKey = crypto
     .createHash('sha256')
-    .update(`v6_studio_human_conv::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
+    .update(`v7_neural_latam_24voices::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
     .digest('hex');
 
   // 1. Verificar caché en memoria
@@ -248,7 +248,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     execFile(
       pythonBin,
       [workerScript, '--json', payloadFile],
-      { timeout: 30000 },
+      { timeout: 30000, env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' } },
       (err, _stdout, stderr) => {
         // Limpieza de payload
         try {
