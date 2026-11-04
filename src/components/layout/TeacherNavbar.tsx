@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 
 export function TeacherNavbar() {
   const pathname = usePathname();
@@ -35,11 +36,31 @@ export function TeacherNavbar() {
   const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
   const whiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
   const schoolSettings = useSchoolAdminStore(state => state.schoolSettings);
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
 
   const isSuperUser = isPlatformSuperUser(user);
-  const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director';
+  const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director' || user?.role === 'ceo';
+
+  const resolvedSchoolId = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const qId = params.get('school_id') || params.get('schoolId');
+      if (qId) return qId === 'ibime' ? 'sch-ibime' : qId;
+    }
+    if (activeSchoolId) return activeSchoolId;
+    if (user?.school_id) return user.school_id;
+    return '';
+  }, [activeSchoolId, user?.school_id, pathname]);
+
+  const matchedInstitution = useMemo(() => {
+    if (!resolvedSchoolId) return null;
+    return institutionsList.find(inst => inst.id === resolvedSchoolId) || null;
+  }, [institutionsList, resolvedSchoolId]);
 
   const isIbime = useMemo(() => {
+    if (resolvedSchoolId === 'sch-ibime') return true;
+    if (resolvedSchoolId && resolvedSchoolId !== 'sch-ibime') return false;
     if (isSuperUser) {
       const activeId = useSchoolAdminStore.getState().activeSchoolId;
       return activeId === 'sch-ibime';
@@ -57,7 +78,7 @@ export function TeacherNavbar() {
       if (window.location.hostname.includes('ibime')) return true;
     }
     return false;
-  }, [user, schoolSettings, whiteLabelSchoolName, isSuperUser]);
+  }, [resolvedSchoolId, user, schoolSettings, whiteLabelSchoolName, isSuperUser]);
 
   const navLinks = [
     { href: '/teacher', label: 'Hub Docente', icon: BookOpen, exact: true },
@@ -73,8 +94,8 @@ export function TeacherNavbar() {
     : '';
   const schoolName = isIbime 
     ? 'Instituto Bilingüe IBIME' 
-    : (customSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
-  const showISkoolLogo = !isIbime && isISkoolHouseBrand(whiteLabelLogo, customSchoolName || (user ? schoolName : ''));
+    : (matchedInstitution?.name || customSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
+  const showISkoolLogo = !isIbime && !matchedInstitution && isISkoolHouseBrand(whiteLabelLogo, customSchoolName || (user ? schoolName : ''));
 
   return (
     <header className={`sticky top-0 z-40 transition-colors ${
@@ -102,6 +123,17 @@ export function TeacherNavbar() {
             {isIbime ? (
               <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
                 <IbimeOfficialLogo size={40} showText={false} />
+              </div>
+            ) : matchedInstitution ? (
+              <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 dark:border-slate-800 shadow-2xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+                <SchoolOfficialLogo
+                  schoolId={matchedInstitution.id}
+                  name={matchedInstitution.name}
+                  logoUrl={matchedInstitution.logoUrl}
+                  themeColors={matchedInstitution.settings?.themeColors}
+                  size={34}
+                  variant="shield_only"
+                />
               </div>
             ) : showISkoolLogo ? null : whiteLabelLogo ? (
               <img
@@ -142,12 +174,19 @@ export function TeacherNavbar() {
                   {showISkoolLogo ? (
                     <ISkoolOfficialLogo variant="horizontal" size={24} showTagline={false} className="self-start mb-0.5" />
                   ) : (
-                    <span className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
-                      {schoolName}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight truncate">
+                        {schoolName}
+                      </span>
+                      {matchedInstitution?.cct && (
+                        <span className="hidden lg:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                          CCT {matchedInstitution.cct}
+                        </span>
+                      )}
+                    </div>
                   )}
-                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
-                    Portal Docente <span className="text-slate-300 dark:text-slate-600">•</span> Gestión Pedagógica
+                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1 truncate max-w-[320px]">
+                    Portal Docente <span className="text-slate-300 dark:text-slate-600">•</span> {matchedInstitution?.tagline || 'Gestión Pedagógica'}
                   </span>
                 </>
               )}

@@ -38,7 +38,7 @@ import {
   playUniversalIskoolVoice,
   stopAllIskoolAudio
 } from '@/lib/historicalVoiceEngine';
-import { IMailInitialDraftPayload } from './CEOEmailCommunicationsModal';
+import { IMailInitialDraftPayload, getSchoolDomain, getTenantId } from './CEOEmailCommunicationsModal';
 
 // ============================================================================
 // DIRECTORIO INSTITUCIONAL DEL SEGUNDO CEREBRO (0 TOKENS · RESOLUCIÓN INMEDIATA)
@@ -409,8 +409,12 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       holding.id.toLowerCase().includes('ibime') ||
       holding.name.toLowerCase().includes('ibime');
 
+    const resolvedSchoolId = isIbime
+      ? 'sch-ibime'
+      : activeSchoolId || holding.id.replace('org-', '').replace('-holding', '') || 'sch-ibime';
+
     return {
-      schoolId: isIbime ? 'sch-ibime' : activeSchoolId || 'sch-ibime',
+      schoolId: resolvedSchoolId,
       isSuperUser: false,
       institutionsList,
       detailedStudents: studentsCatalog,
@@ -445,6 +449,23 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
   // ============================================================================
   // DESPACHO REAL Y PERSISTENTE DE CORREO INSTITUCIONAL (API + BÓVEDA + IMAIL)
   // ============================================================================
+  const isIbimeHolding = Boolean(
+    holding.id.toLowerCase().includes('ibime') ||
+    holding.name.toLowerCase().includes('ibime') ||
+    activeSchoolId === 'sch-ibime'
+  );
+  const effectiveSchoolId = isIbimeHolding
+    ? 'sch-ibime'
+    : (activeSchoolId || holding.id.replace('org-', '').replace('-holding', '') || 'sch-ibime');
+  const schoolDomain = useMemo(
+    () => getSchoolDomain(holding.name, holding.slug, effectiveSchoolId),
+    [holding.name, holding.slug, effectiveSchoolId]
+  );
+  const resolvedTenantId = useMemo(
+    () => getTenantId(effectiveSchoolId, holding.id, isIbimeHolding),
+    [effectiveSchoolId, holding.id, isIbimeHolding]
+  );
+
   const dispatchRealInstitutionalEmail = useCallback(
     (params: {
       folio: string;
@@ -457,8 +478,8 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       studentEnrollmentId: string;
       campusName: string;
     }) => {
-      const tenantId = 'ibime';
-      const senderEmail = 'direccion.general@ibime.edu.mx';
+      const tenantId = isIbimeHolding ? 'ibime' : resolvedTenantId;
+      const senderEmail = `direccion.general@${schoolDomain}`;
       const nowTimeStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
       // 1. Pre-cargar en el estado del Dashboard por si el usuario abre el Redactor
@@ -769,8 +790,8 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         ) {
           score += 5;
         }
-        // Priorizar alumnos del colegio activo (IBIME) en caso de empate
-        if (score > 0 && std.school_id === 'sch-ibime') {
+        // Priorizar alumnos del colegio activo en caso de empate
+        if (score > 0 && std.school_id === effectiveSchoolId) {
           score += 1;
         }
         if (score > highestStudentScore && score >= 3) {
@@ -845,6 +866,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       if (isSendMessageIntent) {
         const targetStudent =
           matchedStudent ||
+          studentsCatalog.find(s => s.school_id === effectiveSchoolId) ||
           studentsCatalog.find(s => s.id === 'std-ibime-montes-01') ||
           studentsCatalog[0];
         const fullStudentName = `${targetStudent.first_name} ${targetStudent.last_name_1} ${targetStudent.last_name_2 || ''}`.trim();
@@ -853,27 +875,27 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
           ? {
               name: matchedDept.headName,
               department: matchedDept.department,
-              email: matchedDept.email,
+              email: matchedDept.email.replace('@ibime.edu.mx', `@${schoolDomain}`),
               extension: matchedDept.extension
             }
           : norm.includes('tutor') || norm.includes('familia') || norm.includes('padre')
           ? {
               name: targetStudent.tutor_name || `Tutor de ${fullStudentName}`,
               department: 'Comunidad de Padres de Familia y Tutores',
-              email: `familia.${normalizeText(targetStudent.last_name_1)}@comunidad.ibime.edu.mx`,
+              email: `familia.${normalizeText(targetStudent.last_name_1)}@comunidad.${schoolDomain}`,
               extension: 'Notificación EducApp + iMail'
             }
           : matchedTeacher
           ? {
               name: `Prof. ${matchedTeacher.first_name} ${matchedTeacher.last_name}`,
-              department: `Cuerpo Docente · ${matchedTeacher.campus_name || 'Campus Montes'}`,
+              department: `Cuerpo Docente · ${matchedTeacher.campus_name || holding.campuses[0]?.name || 'Plantel Central'}`,
               email: matchedTeacher.email,
               extension: 'Ext. Docente 142'
             }
           : {
               name: SECOND_BRAIN_DIRECTORY[0].headName,
               department: SECOND_BRAIN_DIRECTORY[0].department,
-              email: SECOND_BRAIN_DIRECTORY[0].email,
+              email: SECOND_BRAIN_DIRECTORY[0].email.replace('@ibime.edu.mx', `@${schoolDomain}`),
               extension: SECOND_BRAIN_DIRECTORY[0].extension
             };
 

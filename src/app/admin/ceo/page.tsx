@@ -48,7 +48,7 @@ function CEOExecutiveDashboardContent() {
   return (
     <CEOExecutiveDashboard 
       holding={dynamicHolding}
-      schoolId={currentInstitution?.id}
+      schoolId={currentInstitution?.id || effectiveId || user?.school_id}
       isSuperUser={isSuperUser}
       onSwitchToOperational={() => {
         const target = popBackUrl('/admin/ceo', user?.role, '/admin');

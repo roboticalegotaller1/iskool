@@ -611,6 +611,15 @@ export default function DirectorPortalPage() {
               </Link>
 
               <Link
+                href={`/teacher?school_id=${encodeURIComponent(directorSchoolId || '')}&role=admin`}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-300 text-xs font-black transition-all cursor-pointer shadow-xs"
+                title="Supervisar Aula en Vivo y Portal Docente (Espejo Ejecutivo CEO)"
+              >
+                <GraduationCap className="h-4 w-4 text-indigo-600" />
+                <span>Aula en Vivo / Docente</span>
+              </Link>
+
+              <Link
                 href="/coordinator/billing"
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black transition-all cursor-pointer shadow-xs"
               >

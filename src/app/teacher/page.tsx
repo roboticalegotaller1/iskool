@@ -226,8 +226,16 @@ function TeacherDashboardContent() {
   const groupsList = useSchoolAdminStore(state => state.groupsList);
   const attendanceList = useSchoolAdminStore(state => state.attendanceList);
   const parentMessages = useSchoolAdminStore(state => state.parentMessages);
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
   const saveAttendanceList = useSchoolAdminStore(state => state.saveAttendanceList);
   const sendParentMessage = useSchoolAdminStore(state => state.sendParentMessage);
+
+  const effectiveSchoolId = querySchoolId || activeSchoolId || user?.school_id || (isIbime ? 'sch-ibime' : '');
+  const currentInstitution = useMemo(
+    () => institutionsList.find(inst => inst.id === effectiveSchoolId) || null,
+    [institutionsList, effectiveSchoolId]
+  );
 
   const missions = useGamificationStore(state => state.missionsList);
   const saveQuest = useGamificationStore(state => state.saveQuest);
@@ -283,8 +291,9 @@ function TeacherDashboardContent() {
   // Grupos disponibles para este profesor con estricto aislamiento
   const availableTeacherGroups = useMemo(() => {
     if (isAdminSupervisor) {
-      const schoolGroups = querySchoolId 
-        ? groupsList.filter(g => g.school_id === querySchoolId || !g.school_id)
+      const targetSchool = querySchoolId || activeSchoolId || user?.school_id;
+      const schoolGroups = targetSchool 
+        ? groupsList.filter(g => g.school_id === targetSchool)
         : groupsList;
       return schoolGroups.length > 0 ? schoolGroups : groupsList;
     }
@@ -295,8 +304,21 @@ function TeacherDashboardContent() {
       );
     }
     const scheduled = groupsList.filter(g => schedulesList.some(s => s.groupId === g.id && s.teacherId === normalizedTeacherId));
-    return scheduled.length > 0 ? scheduled : groupsList;
-  }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId, isAdminSupervisor, querySchoolId]);
+    if (scheduled.length > 0) return scheduled;
+    if (effectiveSchoolId) {
+      const bySchool = groupsList.filter(g => g.school_id === effectiveSchoolId);
+      if (bySchool.length > 0) return bySchool;
+    }
+    return groupsList;
+  }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId, isAdminSupervisor, querySchoolId, activeSchoolId, user?.school_id, effectiveSchoolId]);
+
+  const availableTeacherStudents = useMemo(() => {
+    if (effectiveSchoolId) {
+      const bySchool = detailedStudents.filter(s => s.school_id === effectiveSchoolId);
+      if (bySchool.length > 0) return bySchool;
+    }
+    return detailedStudents;
+  }, [detailedStudents, effectiveSchoolId]);
 
   // Navegación principal del portal del profesor (Unificado en iSkool Daylight Studio Pro)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
@@ -974,7 +996,7 @@ function TeacherDashboardContent() {
                       <span>Espejo Ejecutivo CEO en Tiempo Real</span>
                     </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-                      {isIbime ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Red Institucional iSkool')}
+                      {currentInstitution?.name || (isIbime ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Red Institucional iSkool'))}
                     </span>
                     {ceoMirrorTelemetry.ceoEndorsed && (
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -1011,7 +1033,7 @@ function TeacherDashboardContent() {
 
                 <button
                   type="button"
-                  onClick={() => router.push(isIbime ? '/ibime/portal?view=ceo' : '/admin/ceo')}
+                  onClick={() => router.push(isIbime ? '/ibime/portal?view=ceo' : (effectiveSchoolId ? `/admin/ceo?schoolId=${encodeURIComponent(effectiveSchoolId)}` : '/admin/ceo'))}
                   className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <ArrowLeft size={14} />
@@ -1135,7 +1157,7 @@ function TeacherDashboardContent() {
           <div className="w-full rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800/80 overflow-x-clip">
             <TeacherMasterCopilot
               teacher={currentTeacher}
-              students={detailedStudents}
+              students={availableTeacherStudents}
               groups={availableTeacherGroups}
               portfolioItems={portfolioItems}
               onOpenPlanning={() => setCurrentMenuTab('planning')}

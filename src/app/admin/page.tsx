@@ -2331,7 +2331,7 @@ export default function SuperUserAdminPage() {
               </button>
 
               <Link
-                href="/teacher"
+                href={`/teacher?school_id=${encodeURIComponent(currentSchool?.id || effectiveSchoolId || '')}&role=admin`}
                 className="flex items-center gap-1 px-3 sm:px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 shrink-0"
               >
                 <span><span className="hidden xs:inline">Ir a</span> Portal Académico</span> <ChevronRight className="h-4 w-4" />

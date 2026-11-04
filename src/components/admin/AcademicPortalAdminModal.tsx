@@ -142,6 +142,16 @@ export function AcademicPortalAdminModal({
       list = [...IBIME_STUDENTS];
     } else {
       list = getSchoolStudents(detailedStudents, schoolId, availableCampuses);
+      if (list.length === 0) {
+        const defaultCampus = availableCampuses[0]?.name || `${holding?.name || 'Colegio'} · Plantel Central`;
+        const defaultCampusId = availableCampuses[0]?.id || `${schoolId || 'sch-default'}-matriz`;
+        list = detailedStudents.filter((s: DetailedStudent) => !s.school_id?.startsWith('emp-')).slice(0, 6).map((s: DetailedStudent) => ({
+          ...s,
+          school_id: schoolId || 'sch-default',
+          campus_id: defaultCampusId,
+          campus_name: defaultCampus
+        }));
+      }
     }
 
     if (selectedCampusId !== 'all') {
@@ -228,10 +238,6 @@ export function AcademicPortalAdminModal({
     );
 
     if (seedMatches.length > 0) return seedMatches;
-
-    if (schoolId !== 'sch-ibime' && schoolId !== 'sch-test-case' && holding?.slug !== 'ibime' && holding?.slug !== 'test-case') {
-      return [];
-    }
 
     return [
       {
