@@ -105,13 +105,15 @@ def _save_persisted_cooldowns():
 def _get_studio_client():
     """
     Inicializa y mantiene en memoria el cliente HTTP de baja latencia del Motor Acústico
-    Generativo Institucional (sin bloqueos por Retry-After en errores 429).
-    Activo por defecto siempre que exista MOTOR_IA_API_KEY o AI_API_KEY en el entorno o .env.local.
+    Generativo Institucional.
+    Por instrucción explícita de sesión, permanece desactivado por defecto (usando
+    exclusivamente el Respaldo Neural Continuo de 24 voces LatAm ilimitadas) hasta que
+    se solicite explícitamente mediante ENABLE_CLOUD_STUDIO_TTS=1.
     """
     global _STUDIO_HTTP_CLIENT, _STUDIO_API_KEY, _STUDIO_AI_CIRCUIT_OPEN
     if _STUDIO_AI_CIRCUIT_OPEN:
         return None
-    if os.environ.get("ENABLE_CLOUD_STUDIO_TTS") == "0":
+    if os.environ.get("ENABLE_CLOUD_STUDIO_TTS", "0") != "1":
         return None
     if _STUDIO_HTTP_CLIENT is not None and _STUDIO_API_KEY:
         return (_STUDIO_HTTP_CLIENT, _STUDIO_API_KEY)

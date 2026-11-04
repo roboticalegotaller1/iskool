@@ -547,7 +547,7 @@ export default function MetropolisDeInventoresPage() {
               </span>
               <span className="flex items-center gap-1 text-cyan-300" title="Presupuesto Municipal de Ingeniería">
                 <Coins className="w-3.5 h-3.5 text-cyan-400" />
-                ${activeStudent.municipalBudget.toLocaleString()}
+                ${activeStudent.municipalBudget.toLocaleString('en-US')}
               </span>
             </div>
 
@@ -631,7 +631,7 @@ export default function MetropolisDeInventoresPage() {
               <span>{activeStudent.avatarIcon} Metrópolis Steampunk de {activeStudent.name}</span>
             </h2>
             <p className="text-xs text-slate-300 mt-1">
-              Distrito Prioritario: <strong className="text-amber-400">{activeStudent.priorityDistrict}</strong> · {activeStudent.cityPopulation.toLocaleString()} Ciudadanos · {districts.length} Distritos en Red
+              Distrito Prioritario: <strong className="text-amber-400">{activeStudent.priorityDistrict}</strong> · {activeStudent.cityPopulation.toLocaleString('en-US')} Ciudadanos · {districts.length} Distritos en Red
             </p>
           </div>
 

@@ -630,7 +630,7 @@ export default function LibroAventurasPage() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 rounded-xl bg-amber-400 border-2 border-amber-600 text-slate-950 font-black text-xs shadow-sm">
               <Coins className="w-3.5 h-3.5 text-amber-900" />
-              <span>{activeStudent.coins.toLocaleString()}</span>
+              <span>{activeStudent.coins.toLocaleString('en-US')}</span>
             </div>
 
             <div className="flex items-center gap-1 px-3 py-1 rounded-xl bg-purple-500 border-2 border-purple-700 text-white font-black text-xs shadow-sm">
@@ -1165,7 +1165,7 @@ export default function LibroAventurasPage() {
                   </span>
                   <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-sm">
                     <span>🪙</span>
-                    <span>{activeStudent.coins.toLocaleString()} GC</span>
+                    <span>{activeStudent.coins.toLocaleString('en-US')} GC</span>
                   </div>
                 </div>
               </div>

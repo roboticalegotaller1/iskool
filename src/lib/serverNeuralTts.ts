@@ -35,7 +35,7 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
-const WORKER_ENGINE_GENERATION = 'v6_studio_human_conv_r3';
+const WORKER_ENGINE_GENERATION = 'v6_neural_latam_unlimited_r1';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
 let daemonGeneration = '';
 let daemonStdoutBuffer = '';
@@ -64,7 +64,7 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
     const pythonBin = resolvePythonExecutable();
     const child = spawn(pythonBin, ['-u', workerScript, '--daemon'], {
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' }
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' }
     });
     daemonGeneration = WORKER_ENGINE_GENERATION;
 

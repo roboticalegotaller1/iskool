@@ -41,6 +41,19 @@ import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 // ==========================================
 // MODELO DE PERFILES ESTUDIANTILES (3 PERFILES INDEPENDIENTES)
 // ==========================================
+type HeroEquippedItemKey =
+  | 'base'
+  | 'capa_fuego'
+  | 'baculo_sabiduria'
+  | 'mascota_fenix'
+  | 'corona_100'
+  | 'bebe_robot'
+  | 'panda_barro'
+  | 'chaqueta_cyber'
+  | 'bata_laboratorio'
+  | 'escudo_tactico'
+  | 'pocion_mana';
+
 interface GuardianStudent {
   id: string;
   name: string;
@@ -53,7 +66,7 @@ interface GuardianStudent {
   hp: number;
   maxHp: number;
   element: 'Luz' | 'Fuego' | 'Cristal';
-  equippedItem: 'base' | 'capa_fuego' | 'baculo_sabiduria' | 'mascota_fenix' | 'corona_100';
+  equippedItem: HeroEquippedItemKey;
   unlockedItems: string[];
   achievementsUnlocked: number; // sobre 6
   missionsCompleted: { math: number; spanish: number };
@@ -73,7 +86,7 @@ const INITIAL_GUARDIAN_STUDENTS: GuardianStudent[] = [
     maxHp: 100,
     element: 'Luz',
     equippedItem: 'base',
-    unlockedItems: ['base', 'capa_fuego', 'baculo_sabiduria'],
+    unlockedItems: ['base', 'capa_fuego', 'baculo_sabiduria', 'baby_robot', 'bebe_robot', 'flame_cloak'],
     achievementsUnlocked: 4,
     missionsCompleted: { math: 3, spanish: 1 }
   },
@@ -90,7 +103,7 @@ const INITIAL_GUARDIAN_STUDENTS: GuardianStudent[] = [
     maxHp: 100,
     element: 'Fuego',
     equippedItem: 'mascota_fenix',
-    unlockedItems: ['base', 'capa_fuego', 'mascota_fenix', 'corona_100'],
+    unlockedItems: ['base', 'capa_fuego', 'mascota_fenix', 'corona_100', 'phoenix_chick', 'flame_cloak'],
     achievementsUnlocked: 5,
     missionsCompleted: { math: 5, spanish: 3 }
   },
@@ -113,37 +126,146 @@ const INITIAL_GUARDIAN_STUDENTS: GuardianStudent[] = [
   }
 ];
 
-// Catálogo de ítems de la Tienda de Recompensas (Imagen 4)
+// Catálogo de ítems de la Tienda de Recompensas (Imagen 4) con Gráficos 3D Nano Banana 2.1
 interface StoreItem {
   id: string;
   name: string;
   category: 'companions' | 'skins' | 'powerups' | 'badges';
   price: number;
   icon: string;
+  image: string;
   description: string;
-  avatarItemKey?: 'capa_fuego' | 'baculo_sabiduria' | 'mascota_fenix' | 'corona_100';
+  avatarItemKey: HeroEquippedItemKey;
 }
 
 const REWARD_STORE_ITEMS: StoreItem[] = [
   // Magical Floating Companions
-  { id: 'phoenix_chick', name: 'Pollito Fénix', category: 'companions', price: 500, icon: '🔥', description: 'Compañero ígneo que otorga +10% de maná en desafíos aritméticos.', avatarItemKey: 'mascota_fenix' },
-  { id: 'baby_robot', name: 'Bebé Robot', category: 'companions', price: 450, icon: '🤖', description: 'Asistente de lógica que sugiere patrones en ecuaciones complejas.' },
-  { id: 'clay_panda', name: 'Panda de Barro', category: 'companions', price: 400, icon: '🐼', description: 'Símbolo de calma y concentración durante los exámenes de comprensión.' },
+  {
+    id: 'phoenix_chick',
+    name: 'Pollito Fénix',
+    category: 'companions',
+    price: 500,
+    icon: '🔥',
+    image: '/redisenos_assets/guardianes/store_phoenix_chick.jpg',
+    description: 'Compañero ígneo que otorga +10% de maná en desafíos aritméticos.',
+    avatarItemKey: 'mascota_fenix'
+  },
+  {
+    id: 'baby_robot',
+    name: 'Bebé Robot',
+    category: 'companions',
+    price: 450,
+    icon: '🤖',
+    image: '/redisenos_assets/guardianes/store_baby_robot.jpg',
+    description: 'Asistente de lógica que sugiere patrones en ecuaciones complejas.',
+    avatarItemKey: 'bebe_robot'
+  },
+  {
+    id: 'clay_panda',
+    name: 'Panda de Barro',
+    category: 'companions',
+    price: 400,
+    icon: '🐼',
+    image: '/redisenos_assets/guardianes/store_clay_panda.jpg',
+    description: 'Símbolo de calma y concentración durante los exámenes de comprensión.',
+    avatarItemKey: 'panda_barro'
+  },
   
   // Wearable Avatar Skins
-  { id: 'flame_cloak', name: 'Capa Elemental de Fuego', category: 'skins', price: 750, icon: '🔥', description: 'Manto tejido con fuego arcano que ondea con energía elemental.', avatarItemKey: 'capa_fuego' },
-  { id: 'cyber_jacket', name: 'Chaqueta Urbana Anime Cyber', category: 'skins', price: 650, icon: '🧥', description: 'Estilo contemporáneo para guardianes de la era digital.' },
-  { id: 'lab_coat', name: 'Bata de Laboratorio con Broches Dorados', category: 'skins', price: 550, icon: '🥼', description: 'Atuendo ceremonial para maestros de ciencias experimentales.' },
+  {
+    id: 'flame_cloak',
+    name: 'Capa Elemental de Fuego',
+    category: 'skins',
+    price: 750,
+    icon: '🔥',
+    image: '/redisenos_assets/guardianes/store_flame_cloak.jpg',
+    description: 'Manto tejido con fuego arcano que ondea con energía elemental.',
+    avatarItemKey: 'capa_fuego'
+  },
+  {
+    id: 'cyber_jacket',
+    name: 'Chaqueta Urbana Anime Cyber',
+    category: 'skins',
+    price: 650,
+    icon: '🧥',
+    image: '/redisenos_assets/guardianes/store_cyber_jacket.jpg',
+    description: 'Estilo contemporáneo con circuitos de neón para guardianes de la era digital.',
+    avatarItemKey: 'chaqueta_cyber'
+  },
+  {
+    id: 'lab_coat',
+    name: 'Bata de Laboratorio con Broches Dorados',
+    category: 'skins',
+    price: 550,
+    icon: '🥼',
+    image: '/redisenos_assets/guardianes/store_lab_coat.jpg',
+    description: 'Atuendo ceremonial para maestros de ciencias experimentales.',
+    avatarItemKey: 'bata_laboratorio'
+  },
   
   // Tactical Power-Ups
-  { id: 'hourglass', name: 'Reloj de Arena de la Sabiduría', category: 'powerups', price: 300, icon: '⏳', description: 'Otorga 30 segundos adicionales para reflexionar sin presión.' },
-  { id: 'mana_potion', name: 'Poción de Maná Lógico', category: 'powerups', price: 250, icon: '🧪', description: 'Elimina 1 opción incorrecta en la arena de combate didáctico.' },
-  { id: 'streak_shield', name: 'Escudo de Racha Continua', category: 'powerups', price: 200, icon: '🛡️', description: 'Protege tu multiplicador de racha si cometes un desliz.' },
+  {
+    id: 'hourglass',
+    name: 'Reloj de Arena de la Sabiduría',
+    category: 'powerups',
+    price: 300,
+    icon: '⏳',
+    image: '/redisenos_assets/guardianes/store_hourglass.jpg',
+    description: 'Otorga 30 segundos adicionales para reflexionar sin presión.',
+    avatarItemKey: 'escudo_tactico'
+  },
+  {
+    id: 'mana_potion',
+    name: 'Poción de Maná Lógico',
+    category: 'powerups',
+    price: 250,
+    icon: '🧪',
+    image: '/redisenos_assets/guardianes/store_mana_potion.jpg',
+    description: 'Elimina 1 opción incorrecta en la arena de combate didáctico.',
+    avatarItemKey: 'pocion_mana'
+  },
+  {
+    id: 'streak_shield',
+    name: 'Escudo de Racha Continua',
+    category: 'powerups',
+    price: 200,
+    icon: '🛡️',
+    image: '/redisenos_assets/guardianes/store_streak_shield.jpg',
+    description: 'Protege tu multiplicador de racha si cometes un desliz.',
+    avatarItemKey: 'escudo_tactico'
+  },
   
   // Holographic Achievement Badges
-  { id: 'master_scholar', name: 'Insignia Erudito Maestro', category: 'badges', price: 1000, icon: '🏅', description: 'Acreditación SEP al completar todas las misiones del bimestre.' },
-  { id: 'coding_expert', name: 'Insignia Experto en Código', category: 'badges', price: 900, icon: '💻', description: 'Habilidad demostrada en pensamiento computacional algorítmico.' },
-  { id: 'team_leader', name: 'Insignia Líder de Equipo', category: 'badges', price: 800, icon: '🤝', description: 'Reconocimiento por colaboración y ayuda a compañeros de aula.' }
+  {
+    id: 'master_scholar',
+    name: 'Insignia Erudito Maestro',
+    category: 'badges',
+    price: 1000,
+    icon: '🏅',
+    image: '/redisenos_assets/guardianes/store_badge_scholar.jpg',
+    description: 'Acreditación SEP al completar todas las misiones del bimestre.',
+    avatarItemKey: 'corona_100'
+  },
+  {
+    id: 'coding_expert',
+    name: 'Insignia Experto en Código',
+    category: 'badges',
+    price: 900,
+    icon: '💻',
+    image: '/redisenos_assets/guardianes/store_badge_coding.jpg',
+    description: 'Habilidad demostrada en pensamiento computacional algorítmico.',
+    avatarItemKey: 'chaqueta_cyber'
+  },
+  {
+    id: 'team_leader',
+    name: 'Insignia Líder de Equipo',
+    category: 'badges',
+    price: 800,
+    icon: '🤝',
+    image: '/redisenos_assets/guardianes/store_badge_leader.jpg',
+    description: 'Reconocimiento por colaboración y ayuda a compañeros de aula.',
+    avatarItemKey: 'corona_100'
+  }
 ];
 
 // Logros del Álbum (Imagen 1 - Izquierda)
@@ -181,7 +303,7 @@ export default function GuardianesElementalesPage() {
   const [notification, setNotification] = useState<string | null>(null);
 
   // Estados de Personalizador de Héroe (Imagen 1)
-  const [selectedHeroItem, setSelectedHeroItem] = useState<'base' | 'capa_fuego' | 'baculo_sabiduria' | 'mascota_fenix' | 'corona_100'>('base');
+  const [selectedHeroItem, setSelectedHeroItem] = useState<HeroEquippedItemKey>('base');
   const [achievements, setAchievements] = useState<AchievementBadge[]>(INITIAL_ACHIEVEMENTS);
   const [activeBadgeDetail, setActiveBadgeDetail] = useState<AchievementBadge | null>(null);
 
@@ -219,9 +341,24 @@ export default function GuardianesElementalesPage() {
     speakNaturalFemaleSpanish(text, { rate: 0.98, pitch: 1.04 });
   };
 
-  // Mapeo dinámico del render de Liam generado en Nano Banana
-  const getLiamRender = () => {
-    switch (selectedHeroItem) {
+  const HERO_ITEM_LABELS: Record<HeroEquippedItemKey, string> = {
+    base: '⚔️ Túnica de Explorador Base',
+    capa_fuego: '🔥 Capa Elemental de Fuego Equipada',
+    baculo_sabiduria: '🦉 Báculo de Sabiduría Equipado',
+    mascota_fenix: '🦅 Pollito Fénix Solar Equipado',
+    corona_100: '👑 Corona Real & Medalla de Honor Equipada',
+    bebe_robot: '🤖 Bebé Robot Mecatrónico Equipado',
+    panda_barro: '🐼 Panda de Barro Mágico Equipado',
+    chaqueta_cyber: '🧥 Chaqueta Urbana Anime Cyber Equipada',
+    bata_laboratorio: '🥼 Bata de Laboratorio con Broches Dorados Equipada',
+    escudo_tactico: '🛡️ Escudo de Racha & Reloj de Sabiduría Equipados',
+    pocion_mana: '🧪 Poción de Maná Lógico Equipada'
+  };
+
+  // Mapeo dinámico del render de Liam generado en Nano Banana 2.1
+  const getLiamRender = (overrideKey?: HeroEquippedItemKey) => {
+    const key = overrideKey || selectedHeroItem;
+    switch (key) {
       case 'capa_fuego':
         return '/redisenos_assets/guardianes/liam_capa_fuego.jpg';
       case 'baculo_sabiduria':
@@ -230,6 +367,18 @@ export default function GuardianesElementalesPage() {
         return '/redisenos_assets/guardianes/liam_mascota_fenix.jpg';
       case 'corona_100':
         return '/redisenos_assets/guardianes/liam_corona_100.jpg';
+      case 'bebe_robot':
+        return '/redisenos_assets/guardianes/liam_bebe_robot.jpg';
+      case 'panda_barro':
+        return '/redisenos_assets/guardianes/liam_panda_barro.jpg';
+      case 'chaqueta_cyber':
+        return '/redisenos_assets/guardianes/liam_chaqueta_cyber.jpg';
+      case 'bata_laboratorio':
+        return '/redisenos_assets/guardianes/liam_bata_laboratorio.jpg';
+      case 'escudo_tactico':
+        return '/redisenos_assets/guardianes/liam_escudo_tactico.jpg';
+      case 'pocion_mana':
+        return '/redisenos_assets/guardianes/liam_pocion_mana.jpg';
       case 'base':
       default:
         return '/redisenos_assets/guardianes/liam_base_pedestal.jpg';
@@ -237,22 +386,18 @@ export default function GuardianesElementalesPage() {
   };
 
   // Manejo de clic en Ítem del Personalizador (Imagen 1)
-  const handleSelectHeroItem = (itemKey: 'capa_fuego' | 'baculo_sabiduria' | 'mascota_fenix' | 'corona_100') => {
+  const handleSelectHeroItem = (itemKey: HeroEquippedItemKey) => {
     if (soundEnabled) gamificationAudio.playClickSound();
     
     // Toggle: Si ya está seleccionado, vuelve a base
-    const nextItem = selectedHeroItem === itemKey ? 'base' : itemKey;
+    const nextItem: HeroEquippedItemKey = selectedHeroItem === itemKey ? 'base' : itemKey;
     setSelectedHeroItem(nextItem);
+    setStudents(prev => prev.map(s => (s.id === activeStudent.id ? { ...s, equippedItem: nextItem } : s)));
 
     if (nextItem !== 'base') {
-      const itemNames = {
-        capa_fuego: 'Capa Elemental de Fuego',
-        baculo_sabiduria: 'Báculo de Sabiduría del Búho',
-        mascota_fenix: 'Mascota Fénix Radiante',
-        corona_100: 'Corona Real de 100 Puntos'
-      };
-      showToast(`¡Equipaste: ${itemNames[itemKey]}!`);
-      speakText(`Has equipado ${itemNames[itemKey]}`);
+      const cleanName = HERO_ITEM_LABELS[nextItem].replace(/^[^\s]+\s/, '');
+      showToast(`¡${cleanName} en el Avatar de ${activeStudent.name}!`);
+      speakText(`Has equipado ${cleanName} en tu avatar.`);
     }
   };
 
@@ -270,7 +415,22 @@ export default function GuardianesElementalesPage() {
     speakText(`Héroe guardado con éxito.`);
   };
 
-  // Comprar Ítem en la Tienda (Imagen 4)
+  // Equipar directamente un artículo desde la Tienda en el Avatar del Alumno
+  const handleEquipStoreItem = (item: StoreItem) => {
+    if (soundEnabled) gamificationAudio.playLevelUpSound();
+    setSelectedHeroItem(item.avatarItemKey);
+    setStudents(prev => prev.map(s => {
+      if (s.id !== activeStudent.id) return s;
+      return {
+        ...s,
+        equippedItem: item.avatarItemKey
+      };
+    }));
+    showToast(`¡"${item.name}" generado y equipado en el Avatar de ${activeStudent.name}!`);
+    speakText(`Has equipado ${item.name} directamente en el avatar de ${activeStudent.name}.`);
+  };
+
+  // Comprar Ítem en la Tienda y Equiparlo Automáticamente en el Avatar (Imagen 4)
   const handleBuyStoreItem = (item: StoreItem) => {
     if (activeStudent.coins < item.price) {
       if (soundEnabled) gamificationAudio.playErrorSound();
@@ -280,18 +440,20 @@ export default function GuardianesElementalesPage() {
     }
 
     if (soundEnabled) gamificationAudio.playCoinSound();
+    setSelectedHeroItem(item.avatarItemKey);
     setStudents(prev => prev.map(s => {
       if (s.id !== activeStudent.id) return s;
-      const nextUnlocked = Array.from(new Set([...s.unlockedItems, item.id, ...(item.avatarItemKey ? [item.avatarItemKey] : [])]));
+      const nextUnlocked = Array.from(new Set([...s.unlockedItems, item.id, item.avatarItemKey]));
       return {
         ...s,
         coins: s.coins - item.price,
-        unlockedItems: nextUnlocked
+        unlockedItems: nextUnlocked,
+        equippedItem: item.avatarItemKey
       };
     }));
 
-    showToast(`¡Compraste "${item.name}" por ${item.price} Monedas!`);
-    speakText(`¡Excelente compra! Has adquirido ${item.name}`);
+    showToast(`¡Compraste y equipaste "${item.name}" en el Avatar de ${activeStudent.name}!`);
+    speakText(`¡Excelente compra! Has adquirido y equipado ${item.name} en tu avatar.`);
   };
 
   // Manejar respuesta de la batalla didáctica con Forest Golem (Imagen 5)
@@ -415,7 +577,7 @@ export default function GuardianesElementalesPage() {
             {/* Monedas */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-extrabold">
               <Coins className="w-3.5 h-3.5 text-amber-400" />
-              <span>{activeStudent.coins.toLocaleString()}</span>
+              <span>{activeStudent.coins.toLocaleString('en-US')}</span>
             </div>
 
             {/* Estrellas */}
@@ -611,7 +773,7 @@ export default function GuardianesElementalesPage() {
                   <div className="mt-4 bg-gradient-to-r from-amber-400 to-yellow-400 p-3 rounded-2xl border-2 border-amber-700 flex items-center justify-center gap-2 shadow-md">
                     <Coins className="w-6 h-6 text-amber-950" />
                     <span className="text-lg font-black text-amber-950">
-                      {activeStudent.coins.toLocaleString()} MONEDAS
+                      {activeStudent.coins.toLocaleString('en-US')} MONEDAS
                     </span>
                   </div>
 
@@ -873,7 +1035,7 @@ export default function GuardianesElementalesPage() {
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-sm shadow-md">
                 <Coins className="w-5 h-5 text-amber-400" />
-                <span>{activeStudent.coins.toLocaleString()} MONEDAS</span>
+                <span>{activeStudent.coins.toLocaleString('en-US')} MONEDAS</span>
               </div>
 
               <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 font-black text-sm shadow-md">
@@ -966,7 +1128,7 @@ export default function GuardianesElementalesPage() {
                   PERSONALIZADOR DE HÉROE
                 </h2>
                 <p className="text-xs text-emerald-300 font-bold">
-                  Equipa artefactos mágicos creados con Nano Banana
+                  Equipa artefactos mágicos y compañeros 3D en tiempo real
                 </p>
               </div>
 
@@ -987,89 +1149,45 @@ export default function GuardianesElementalesPage() {
 
                 {/* Indicador del Atuendo Activo */}
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-xl bg-black/80 backdrop-blur-md border border-amber-400/60 text-[11px] font-black text-amber-300 whitespace-nowrap shadow-lg">
-                  {selectedHeroItem === 'base' && '⚔️ Túnica de Explorador Base'}
-                  {selectedHeroItem === 'capa_fuego' && '🔥 Capa Elemental de Fuego Equipada'}
-                  {selectedHeroItem === 'baculo_sabiduria' && '🦉 Báculo de Sabiduría Equipado'}
-                  {selectedHeroItem === 'mascota_fenix' && '🦅 Mascota Fénix Radiante Equipada'}
-                  {selectedHeroItem === 'corona_100' && '👑 Corona Real de 100 Puntos Equipada'}
+                  {HERO_ITEM_LABELS[selectedHeroItem]}
                 </div>
               </div>
 
-              {/* 4 Botones de Ítems (Como en Imagen 1) */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                
-                {/* 1. CAPA DE FUEGO */}
-                <button
-                  onClick={() => handleSelectHeroItem('capa_fuego')}
-                  className={`p-2.5 rounded-2xl border-2 flex items-center gap-2 font-black text-xs transition-all hover:scale-102 ${
-                    selectedHeroItem === 'capa_fuego'
-                      ? 'bg-rose-600 border-amber-300 text-white shadow-lg ring-2 ring-rose-400'
-                      : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-amber-500'
-                  }`}
-                >
-                  <span className="text-xl">🔥</span>
-                  <div className="text-left">
-                    <span className="block leading-tight text-[11px]">CAPA DE FUEGO</span>
-                    <span className="text-[9px] text-amber-300">
-                      {selectedHeroItem === 'capa_fuego' ? 'Equipada' : 'Tocar para vestir'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 2. BÁCULO DE SABIDURÍA */}
-                <button
-                  onClick={() => handleSelectHeroItem('baculo_sabiduria')}
-                  className={`p-2.5 rounded-2xl border-2 flex items-center gap-2 font-black text-xs transition-all hover:scale-102 ${
-                    selectedHeroItem === 'baculo_sabiduria'
-                      ? 'bg-sky-600 border-amber-300 text-white shadow-lg ring-2 ring-sky-400'
-                      : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-amber-500'
-                  }`}
-                >
-                  <span className="text-xl">🦉</span>
-                  <div className="text-left">
-                    <span className="block leading-tight text-[11px]">BÁCULO DE SABIDURÍA</span>
-                    <span className="text-[9px] text-sky-300">
-                      {selectedHeroItem === 'baculo_sabiduria' ? 'Equipado' : 'Tocar para empuñar'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 3. MASCOTA FÉNIX */}
-                <button
-                  onClick={() => handleSelectHeroItem('mascota_fenix')}
-                  className={`p-2.5 rounded-2xl border-2 flex items-center gap-2 font-black text-xs transition-all hover:scale-102 ${
-                    selectedHeroItem === 'mascota_fenix'
-                      ? 'bg-amber-600 border-amber-300 text-white shadow-lg ring-2 ring-amber-400'
-                      : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-amber-500'
-                  }`}
-                >
-                  <span className="text-xl">🦅</span>
-                  <div className="text-left">
-                    <span className="block leading-tight text-[11px]">MASCOTA FÉNIX</span>
-                    <span className="text-[9px] text-yellow-300">
-                      {selectedHeroItem === 'mascota_fenix' ? 'Equipada' : 'Tocar para llamar'}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 4. CORONA DE 100 PUNTOS */}
-                <button
-                  onClick={() => handleSelectHeroItem('corona_100')}
-                  className={`p-2.5 rounded-2xl border-2 flex items-center gap-2 font-black text-xs transition-all hover:scale-102 ${
-                    selectedHeroItem === 'corona_100'
-                      ? 'bg-yellow-500 border-white text-slate-950 shadow-lg ring-2 ring-yellow-300'
-                      : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-amber-500'
-                  }`}
-                >
-                  <span className="text-xl">👑</span>
-                  <div className="text-left">
-                    <span className="block leading-tight text-[11px]">CORONA DE 100 PUNTOS</span>
-                    <span className="text-[9px] text-slate-400">
-                      {selectedHeroItem === 'corona_100' ? 'Equipada' : 'Tocar para coronar'}
-                    </span>
-                  </div>
-                </button>
-
+              {/* Botones de Equipamiento del Héroe (Todos los Compañeros, Atuendos y Artefactos) */}
+              <div className="grid grid-cols-2 gap-2 mb-4 max-h-56 overflow-y-auto pr-1">
+                {[
+                  { key: 'capa_fuego' as HeroEquippedItemKey, icon: '🔥', title: 'CAPA DE FUEGO', sub: 'Atuendo Elemental' },
+                  { key: 'bebe_robot' as HeroEquippedItemKey, icon: '🤖', title: 'BEBÉ ROBOT', sub: 'Compañero Flotante' },
+                  { key: 'mascota_fenix' as HeroEquippedItemKey, icon: '🦅', title: 'POLLITO FÉNIX', sub: 'Compañero Solar' },
+                  { key: 'panda_barro' as HeroEquippedItemKey, icon: '🐼', title: 'PANDA DE BARRO', sub: 'Compañero Mágico' },
+                  { key: 'chaqueta_cyber' as HeroEquippedItemKey, icon: '🧥', title: 'CHAQUETA CYBER', sub: 'Atuendo Anime Neón' },
+                  { key: 'bata_laboratorio' as HeroEquippedItemKey, icon: '🥼', title: 'BATA LABORATORIO', sub: 'Broches Dorados' },
+                  { key: 'baculo_sabiduria' as HeroEquippedItemKey, icon: '🦉', title: 'BÁCULO SABIDURÍA', sub: 'Artefacto Arcano' },
+                  { key: 'corona_100' as HeroEquippedItemKey, icon: '👑', title: 'CORONA & INSIGNIA', sub: 'Honor 100 Puntos' },
+                  { key: 'escudo_tactico' as HeroEquippedItemKey, icon: '🛡️', title: 'ESCUDO & RELOJ', sub: 'Poder Táctico' },
+                  { key: 'pocion_mana' as HeroEquippedItemKey, icon: '🧪', title: 'POCIÓN DE MANÁ', sub: 'Alquimia Lógica' }
+                ].map(btn => {
+                  const isActive = selectedHeroItem === btn.key;
+                  return (
+                    <button
+                      key={btn.key}
+                      onClick={() => handleSelectHeroItem(btn.key)}
+                      className={`p-2 rounded-2xl border-2 flex items-center gap-2 font-black text-xs transition-all hover:scale-102 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-amber-500 to-yellow-500 border-white text-slate-950 shadow-lg ring-2 ring-amber-300'
+                          : 'bg-slate-900/90 border-slate-700 text-slate-200 hover:border-amber-500'
+                      }`}
+                    >
+                      <span className="text-lg">{btn.icon}</span>
+                      <div className="text-left min-w-0">
+                        <span className="block leading-tight text-[10px] truncate">{btn.title}</span>
+                        <span className={`text-[9px] truncate block ${isActive ? 'text-slate-900 font-extrabold' : 'text-amber-300'}`}>
+                          {isActive ? '✓ En Avatar' : btn.sub}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Botones de Acción Inferiores (Imagen 1) */}
@@ -1136,24 +1254,73 @@ export default function GuardianesElementalesPage() {
       )}
 
       {/* ============================================================ */}
-      {/* 5. VISTA 3: TIENDA DE RECOMPENSAS (IMAGEN 4)                 */}
+      {/* 5. VISTA 3: TIENDA DE RECOMPENSAS (IMAGEN 4 + AVATAR EN VIVO) */}
       {/* ============================================================ */}
       {currentView === 'store' && (
         <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 space-y-6 animate-fadeIn">
           
-          {/* Header de la Tienda según Imagen 4 */}
-          <div className="bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 p-6 rounded-3xl border-2 border-amber-500/50 shadow-2xl text-center relative overflow-hidden">
-            <h2 className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wide uppercase">
-              TIENDA DE RECOMPENSAS MÁGICAS
-            </h2>
-            <p className="text-xs font-bold text-amber-200 mt-1">
-              Catálogo Curricular de Coleccionables y Potenciadores Tácticos
-            </p>
+          {/* Header de la Tienda + Pedestal del Avatar en Vivo */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            
+            {/* Banner Principal de la Tienda */}
+            <div className="lg:col-span-8 bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 p-6 rounded-3xl border-2 border-amber-500/50 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+              <div>
+                <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-widest inline-block mb-2">
+                  Ilustraciones 3D de Alta Fidelidad · Equipamiento Instantáneo en Avatar
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black text-amber-300 tracking-wide uppercase">
+                  TIENDA DE RECOMPENSAS MÁGICAS
+                </h2>
+                <p className="text-xs sm:text-sm font-semibold text-amber-100/90 mt-1 max-w-2xl">
+                  Compra cualquier compañero mágico, atuendo o artefacto y presiona <strong>&ldquo;Equipar en Héroe&rdquo;</strong> para generarlo en vivo sobre el avatar de <strong>{activeStudent.name}</strong>.
+                </p>
+              </div>
 
-            <div className="inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-2xl bg-amber-500/20 border border-amber-400 text-amber-300 font-black text-sm shadow-md">
-              <Coins className="w-5 h-5 text-amber-400" />
-              <span>MONEDAS DISPONIBLES: {activeStudent.coins.toLocaleString()}</span>
+              <div className="flex flex-wrap items-center gap-3 mt-5">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500/20 border-2 border-amber-400 text-amber-300 font-black text-sm shadow-md">
+                  <Coins className="w-5 h-5 text-amber-400" />
+                  <span>MONEDAS DISPONIBLES: {activeStudent.coins.toLocaleString('en-US')}</span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playClickSound();
+                    setCurrentView('customizer');
+                  }}
+                  className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-2 shadow-lg transition-all hover:scale-105"
+                >
+                  <Shirt className="w-4 h-4" />
+                  <span>Ver Avatar en Pantalla Completa</span>
+                </button>
+              </div>
             </div>
+
+            {/* Pedestal en Vivo del Avatar del Alumno dentro de la Tienda */}
+            <div className="lg:col-span-4 bg-gradient-to-b from-sky-950 via-slate-900 to-emerald-950 p-4 rounded-3xl border-2 border-amber-400/70 shadow-2xl flex items-center gap-4">
+              <div className="relative w-32 h-36 sm:w-36 sm:h-40 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-xl bg-slate-950 shrink-0">
+                <Image
+                  src={getLiamRender()}
+                  alt={`Avatar de ${activeStudent.name}`}
+                  fill
+                  className="object-cover transition-all duration-500"
+                />
+              </div>
+              <div className="min-w-0 flex-1 space-y-2">
+                <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black uppercase inline-block">
+                  Avatar Activo en Vivo
+                </span>
+                <h3 className="text-base font-black text-white truncate">
+                  {activeStudent.name} · Nivel {activeStudent.level}
+                </h3>
+                <div className="p-2.5 rounded-xl bg-black/60 border border-amber-400/40 text-xs font-extrabold text-amber-300 leading-snug">
+                  {HERO_ITEM_LABELS[selectedHeroItem]}
+                </div>
+                <p className="text-[11px] text-slate-300 leading-tight">
+                  Al presionar <strong>Equipar en Héroe</strong> abajo, tu avatar cambia aquí y en todo el mundo.
+                </p>
+              </div>
+            </div>
+
           </div>
 
           {/* Filtros de Categoría */}
@@ -1182,181 +1349,113 @@ export default function GuardianesElementalesPage() {
             ))}
           </div>
 
-          {/* 4 Categorías en Estantes de Cristal (Imagen 4) */}
+          {/* 4 Categorías en Estantes de Cristal con Gráficos 3D Nano Banana 2.1 */}
           <div className="space-y-8">
-            
-            {/* 1. Magical Floating Companions */}
-            {(storeCategory === 'all' || storeCategory === 'companions') && (
-              <section className="space-y-3">
-                <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>🦅</span> Compañeros Mágicos Flotantes
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {REWARD_STORE_ITEMS.filter(it => it.category === 'companions').map(item => {
-                    const isUnlocked = activeStudent.unlockedItems.includes(item.id) || (item.avatarItemKey && activeStudent.unlockedItems.includes(item.avatarItemKey));
-                    return (
-                      <div key={item.id} className="p-5 rounded-3xl bg-slate-900/90 border-2 border-amber-500/30 hover:border-amber-400 transition-all shadow-xl flex flex-col justify-between">
-                        <div className="text-center mb-3">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-yellow-500/30 border border-amber-400/50 mx-auto flex items-center justify-center text-3xl shadow-inner mb-2">
-                            {item.icon}
-                          </div>
-                          <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
-                        </div>
-                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                          <span className="text-xs font-black text-amber-300">{item.price} Monedas</span>
-                          {isUnlocked ? (
-                            <button
-                              onClick={() => {
-                                if (item.avatarItemKey) {
-                                  setSelectedHeroItem(item.avatarItemKey);
-                                  setCurrentView('customizer');
-                                  showToast(`¡Equipaste ${item.name}!`);
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-black text-xs"
-                            >
-                              Equipar en Héroe
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleBuyStoreItem(item)}
-                              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md"
-                            >
-                              Comprar
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+            {[
+              { id: 'companions', title: 'Compañeros Mágicos Flotantes', emoji: '🦅' },
+              { id: 'skins', title: 'Atuendos y Capas de Héroe', emoji: '🧥' },
+              { id: 'powerups', title: 'Poderes Tácticos', emoji: '🧪' },
+              { id: 'badges', title: 'Insignias Holográficas de Logro', emoji: '🏅' }
+            ]
+              .filter(sec => storeCategory === 'all' || storeCategory === sec.id)
+              .map(sec => (
+                <section key={sec.id} className="space-y-3">
+                  <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                    <span>{sec.emoji}</span> {sec.title}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {REWARD_STORE_ITEMS.filter(it => it.category === sec.id).map(item => {
+                      const isUnlocked =
+                        activeStudent.unlockedItems.includes(item.id) ||
+                        activeStudent.unlockedItems.includes(item.avatarItemKey);
+                      const isCurrentlyEquipped = selectedHeroItem === item.avatarItemKey;
 
-            {/* 2. Wearable Avatar Skins */}
-            {(storeCategory === 'all' || storeCategory === 'skins') && (
-              <section className="space-y-3">
-                <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>🧥</span> Atuendos y Capas de Héroe
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {REWARD_STORE_ITEMS.filter(it => it.category === 'skins').map(item => {
-                    const isUnlocked = activeStudent.unlockedItems.includes(item.id) || (item.avatarItemKey && activeStudent.unlockedItems.includes(item.avatarItemKey));
-                    return (
-                      <div key={item.id} className="p-5 rounded-3xl bg-slate-900/90 border-2 border-amber-500/30 hover:border-amber-400 transition-all shadow-xl flex flex-col justify-between">
-                        <div className="text-center mb-3">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-purple-500/30 border border-rose-400/50 mx-auto flex items-center justify-center text-3xl shadow-inner mb-2">
-                            {item.icon}
-                          </div>
-                          <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
-                        </div>
-                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                          <span className="text-xs font-black text-amber-300">{item.price} Monedas</span>
-                          {isUnlocked ? (
-                            <button
-                              onClick={() => {
-                                if (item.avatarItemKey) {
-                                  setSelectedHeroItem(item.avatarItemKey);
-                                  setCurrentView('customizer');
-                                  showToast(`¡Equipaste ${item.name}!`);
-                                }
-                              }}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-black text-xs"
-                            >
-                              Equipar en Héroe
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleBuyStoreItem(item)}
-                              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md"
-                            >
-                              Comprar
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                      return (
+                        <div
+                          key={item.id}
+                          className={`group p-4 rounded-3xl bg-slate-900/95 border-2 transition-all shadow-xl flex flex-col justify-between ${
+                            isCurrentlyEquipped
+                              ? 'border-emerald-400 ring-2 ring-emerald-400/40 bg-gradient-to-b from-slate-900 to-emerald-950/40'
+                              : 'border-amber-500/30 hover:border-amber-400'
+                          }`}
+                        >
+                          <div>
+                            {/* Ilustración 3D Nano Banana 2.1 + Miniatura del Avatar Equipado */}
+                            <div className="relative w-full h-52 rounded-2xl overflow-hidden mb-3.5 bg-slate-950 border border-amber-500/30 shadow-inner">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-black/80 backdrop-blur-md border border-amber-400/40 text-[10px] font-black text-amber-300 flex items-center gap-1">
+                                <span>{item.icon}</span>
+                                <span>Arte 3D</span>
+                              </div>
 
-            {/* 3. Tactical Power-Ups */}
-            {(storeCategory === 'all' || storeCategory === 'powerups') && (
-              <section className="space-y-3">
-                <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>🧪</span> Poderes Tácticos
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {REWARD_STORE_ITEMS.filter(it => it.category === 'powerups').map(item => {
-                    const isUnlocked = activeStudent.unlockedItems.includes(item.id);
-                    return (
-                      <div key={item.id} className="p-5 rounded-3xl bg-slate-900/90 border-2 border-amber-500/30 hover:border-amber-400 transition-all shadow-xl flex flex-col justify-between">
-                        <div className="text-center mb-3">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500/20 to-teal-500/30 border border-sky-400/50 mx-auto flex items-center justify-center text-3xl shadow-inner mb-2">
-                            {item.icon}
-                          </div>
-                          <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
-                        </div>
-                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                          <span className="text-xs font-black text-amber-300">{item.price} Monedas</span>
-                          <button
-                            onClick={() => handleBuyStoreItem(item)}
-                            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md"
-                          >
-                            {isUnlocked ? 'Comprar Más (+1)' : 'Comprar'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                              {/* Miniatura en vivo de cómo luce equipado en el Avatar */}
+                              <div
+                                onClick={() => {
+                                  if (isUnlocked) handleEquipStoreItem(item);
+                                }}
+                                title="Vista previa en el Avatar del Alumno"
+                                className="absolute bottom-2.5 right-2.5 w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-300 shadow-2xl bg-slate-900 cursor-pointer hover:scale-110 transition-transform"
+                              >
+                                <Image
+                                  src={getLiamRender(item.avatarItemKey)}
+                                  alt={`Avatar con ${item.name}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
 
-            {/* 4. Holographic Achievement Badges */}
-            {(storeCategory === 'all' || storeCategory === 'badges') && (
-              <section className="space-y-3">
-                <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>🏅</span> Insignias Holográficas de Logro
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {REWARD_STORE_ITEMS.filter(it => it.category === 'badges').map(item => {
-                    const isUnlocked = activeStudent.unlockedItems.includes(item.id);
-                    return (
-                      <div key={item.id} className="p-5 rounded-3xl bg-slate-900/90 border-2 border-amber-500/30 hover:border-amber-400 transition-all shadow-xl flex flex-col justify-between">
-                        <div className="text-center mb-3">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-yellow-500/20 to-amber-500/30 border border-yellow-400/50 mx-auto flex items-center justify-center text-3xl shadow-inner mb-2">
-                            {item.icon}
+                              {isCurrentlyEquipped && (
+                                <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-xl bg-emerald-500 text-slate-950 font-black text-[10px] uppercase shadow-lg">
+                                  ✓ En tu Avatar
+                                </div>
+                              )}
+                            </div>
+
+                            <h4 className="font-black text-white text-base">{item.name}</h4>
+                            <p className="text-xs text-slate-300 mt-1 leading-relaxed">{item.description}</p>
                           </div>
-                          <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
-                        </div>
-                        <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                          <span className="text-xs font-black text-amber-300">{item.price} Monedas</span>
-                          {isUnlocked ? (
-                            <span className="px-3 py-1.5 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-500 text-xs font-bold">
-                              En Colección
+
+                          <div className="pt-3.5 mt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                            <span className="text-xs font-black text-amber-300 flex items-center gap-1">
+                              <Coins className="w-4 h-4 text-amber-400" />
+                              {item.price} Monedas
                             </span>
-                          ) : (
-                            <button
-                              onClick={() => handleBuyStoreItem(item)}
-                              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md"
-                            >
-                              Comprar
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
 
+                            {isCurrentlyEquipped ? (
+                              <button
+                                onClick={() => setCurrentView('customizer')}
+                                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 border border-emerald-400 text-emerald-300 font-black text-xs flex items-center gap-1.5 hover:bg-emerald-500/30 transition-all"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Equipado (Ver Héroe)</span>
+                              </button>
+                            ) : isUnlocked ? (
+                              <button
+                                onClick={() => handleEquipStoreItem(item)}
+                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95"
+                              >
+                                Equipar en Héroe
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleBuyStoreItem(item)}
+                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
+                              >
+                                Comprar y Equipar
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
           </div>
 
         </main>

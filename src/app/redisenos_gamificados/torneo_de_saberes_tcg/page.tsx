@@ -2265,7 +2265,7 @@ export default function TorneoDeSaberesTcgPage() {
                 <div className="flex items-center gap-3">
                   <div className="px-3.5 py-1.5 rounded-2xl bg-slate-900 border border-amber-500/40 flex items-center gap-2 text-xs font-black text-amber-300 shadow-inner">
                     <Coins className="w-4 h-4 text-amber-400" />
-                    <span>{activeStudent.gems.toLocaleString()} Gemas</span>
+                    <span>{activeStudent.gems.toLocaleString('en-US')} Gemas</span>
                   </div>
                   <button
                     onClick={() => {

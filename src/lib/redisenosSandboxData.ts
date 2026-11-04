@@ -82,6 +82,8 @@ export interface StoreItem {
   category: 'companions' | 'outfits' | 'powerups' | 'badges';
   price: number;
   icon: string;
+  image: string;
+  equippedAvatarImage: string;
   description: string;
   ageTier: 'all' | 'preescolar' | 'primaria' | 'secundaria' | 'preparatoria';
   badgeLabel?: string;
@@ -194,6 +196,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'companions',
     price: 500,
     icon: '🔥',
+    image: '/redisenos_assets/guardianes/store_phoenix_chick.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_mascota_fenix.jpg',
     description: 'Polluelo fénix que vuela junto a tu avatar y otorga un +5% de bonificación en multiplicador de racha.',
     ageTier: 'all',
     badgeLabel: 'Mascota Mágica'
@@ -204,6 +208,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'companions',
     price: 450,
     icon: '🤖',
+    image: '/redisenos_assets/guardianes/store_baby_robot.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_bebe_robot.jpg',
     description: 'Compañero mecatrónico que emite luces LED según tu precisión en cálculo y ciencias.',
     ageTier: 'secundaria',
     badgeLabel: 'Compañero Tecnológico'
@@ -214,6 +220,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'companions',
     price: 400,
     icon: '🐼',
+    image: '/redisenos_assets/guardianes/store_clay_panda.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_panda_barro.jpg',
     description: 'Pandita de plastilina táctil que aplaude alegremente cuando resuelves tareas preescolares.',
     ageTier: 'preescolar',
     badgeLabel: 'Amiguito de Peluche'
@@ -226,6 +234,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'outfits',
     price: 750,
     icon: '🧣',
+    image: '/redisenos_assets/guardianes/store_flame_cloak.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_capa_fuego.jpg',
     description: 'Tejida con flamas místicas de aprendizaje. Resalta tu rango en las batallas de primaria.',
     ageTier: 'primaria',
     badgeLabel: 'Legendario'
@@ -236,6 +246,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'outfits',
     price: 650,
     icon: '🧥',
+    image: '/redisenos_assets/guardianes/store_cyber_jacket.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_chaqueta_cyber.jpg',
     description: 'Chamarra futurista con ribetes luminosos y emblema del escuadrón bordado con fibra óptica.',
     ageTier: 'secundaria',
     badgeLabel: 'Épico 3D'
@@ -246,6 +258,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'outfits',
     price: 550,
     icon: '🥼',
+    image: '/redisenos_assets/guardianes/store_lab_coat.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_bata_laboratorio.jpg',
     description: 'Bata formal de investigador con pines conmemorativos de ferias de ciencias internacionales.',
     ageTier: 'preparatoria',
     badgeLabel: 'Científico Pro'
@@ -258,6 +272,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'powerups',
     price: 300,
     icon: '⏳',
+    image: '/redisenos_assets/guardianes/store_hourglass.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_escudo_tactico.jpg',
     description: 'Otorga +15 segundos adicionales en preguntas de alta complejidad o exámenes cronometrados.',
     ageTier: 'all',
     badgeLabel: 'Utilidad Táctica'
@@ -268,6 +284,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'powerups',
     price: 250,
     icon: '🧪',
+    image: '/redisenos_assets/guardianes/store_mana_potion.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_pocion_mana.jpg',
     description: 'Restaura instantáneamente 50 puntos de energía para continuar resolviendo expediciones.',
     ageTier: 'all',
     badgeLabel: 'Poción Mágica'
@@ -278,6 +296,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'powerups',
     price: 200,
     icon: '🛡️',
+    image: '/redisenos_assets/guardianes/store_streak_shield.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_escudo_tactico.jpg',
     description: 'Protege tu racha de días consecutivos si un día no puedes conectarte por causas de fuerza mayor.',
     ageTier: 'all',
     badgeLabel: 'Salva-Racha'
@@ -290,6 +310,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'badges',
     price: 1000,
     icon: '🏅',
+    image: '/redisenos_assets/guardianes/store_badge_scholar.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_corona_100.jpg',
     description: 'Distintivo dorado que certifica excelencia académica integral en el Colegio Montessori.',
     ageTier: 'all',
     badgeLabel: 'Honor Máximo'
@@ -300,6 +322,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'badges',
     price: 900,
     icon: '💻',
+    image: '/redisenos_assets/guardianes/store_badge_coding.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_chaqueta_cyber.jpg',
     description: 'Acredita dominio de estructuras de pensamiento computacional y robótica educativa.',
     ageTier: 'secundaria',
     badgeLabel: 'Tecnología'
@@ -310,6 +334,8 @@ export const STORE_CATALOG: StoreItem[] = [
     category: 'badges',
     price: 800,
     icon: '🤝',
+    image: '/redisenos_assets/guardianes/store_badge_leader.jpg',
+    equippedAvatarImage: '/redisenos_assets/guardianes/liam_corona_100.jpg',
     description: 'Reconocimiento otorgado por profesores y pares por liderazgo positivo y apoyo mutuo.',
     ageTier: 'all',
     badgeLabel: 'Valores NEM'

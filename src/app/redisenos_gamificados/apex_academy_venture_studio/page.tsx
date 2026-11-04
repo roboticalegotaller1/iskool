@@ -449,7 +449,7 @@ export default function ApexAcademyVentureStudioPage() {
               </span>
               <span className="flex items-center gap-1 text-indigo-300" title="Venture Funding Credits">
                 <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                ${activeStudent.ventureCredits.toLocaleString()} VF
+                ${activeStudent.ventureCredits.toLocaleString('en-US')} VF
               </span>
               <span className="flex items-center gap-1 text-cyan-300" title="GPA Oficial Ponderado">
                 <Award className="w-3.5 h-3.5 text-cyan-400" />
@@ -627,7 +627,7 @@ export default function ApexAcademyVentureStudioPage() {
                 <span className="text-slate-500">|</span>
                 <span className="text-xs font-black text-indigo-300 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-indigo-400" />
-                  ${activeStudent.ventureCredits.toLocaleString()} VF
+                  ${activeStudent.ventureCredits.toLocaleString('en-US')} VF
                 </span>
               </div>
 
@@ -735,7 +735,7 @@ export default function ApexAcademyVentureStudioPage() {
               title="Contador de Créditos de Capital Semilla: $4,250 Créditos VF"
             >
               <div className="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 text-[9px] font-black shadow-md">
-                💰 Créditos VF: ${activeStudent.ventureCredits.toLocaleString()}
+                💰 Créditos VF: ${activeStudent.ventureCredits.toLocaleString('en-US')}
               </div>
             </div>
 
@@ -1697,7 +1697,7 @@ export default function ApexAcademyVentureStudioPage() {
 
               <div className="flex items-center gap-3">
                 <span className="text-xs font-black text-amber-300 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
-                  Saldo: ${activeStudent.ventureCredits.toLocaleString()} VF
+                  Saldo: ${activeStudent.ventureCredits.toLocaleString('en-US')} VF
                 </span>
                 <button
                   onClick={() => setActiveModal('none')}
