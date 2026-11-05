@@ -137,6 +137,8 @@ export default function VideoQrLandingPage() {
       sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
       sendPlayerCommand("unloadModule", ["captions"]);
       sendPlayerCommand("unloadModule", ["cc"]);
+      sendPlayerCommand("setOption", ["captions", "track", {}]);
+      sendPlayerCommand("setOption", ["cc", "track", {}]);
       if (forceUnmute && !hasUserToggledAudioRef.current) {
         sendPlayerCommand("unMute");
         sendPlayerCommand("setVolume", [100]);
@@ -168,9 +170,14 @@ export default function VideoQrLandingPage() {
             isPlayingRef.current = true;
             sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
             sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+            sendPlayerCommand("unloadModule", ["captions"]);
+            sendPlayerCommand("unloadModule", ["cc"]);
+            sendPlayerCommand("setOption", ["captions", "track", {}]);
+            sendPlayerCommand("setOption", ["cc", "track", {}]);
             if (!hasUserToggledAudioRef.current) {
               sendPlayerCommand("unMute");
               sendPlayerCommand("setVolume", [100]);
+              setIsMuted(false);
             }
           }
         }
@@ -213,20 +220,22 @@ export default function VideoQrLandingPage() {
 
   const handleIframeLoad = useCallback(() => {
     enforceMaxQualityAndPlay(true);
-    const t1 = setTimeout(() => enforceMaxQualityAndPlay(true), 180);
-    const t2 = setTimeout(() => enforceMaxQualityAndPlay(true), 550);
-    const t3 = setTimeout(() => enforceMaxQualityAndPlay(true), 1150);
+    const t1 = setTimeout(() => enforceMaxQualityAndPlay(true), 220);
+    const t2 = setTimeout(() => enforceMaxQualityAndPlay(true), 650);
+    const t3 = setTimeout(() => enforceMaxQualityAndPlay(true), 1300);
     const t4 = setTimeout(() => {
-      // Si el navegador bloqueó el inicio directo con audio por políticas de autoplay sin interacción previa,
-      // iniciar reproducción en HD de inmediato y reactivar audio al instante
-      if (!isPlayingRef.current && !hasUserToggledAudioRef.current) {
-        sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
-        sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-        sendPlayerCommand("playVideo");
+      // Asegurar ocultamiento de subtítulos automáticos una vez que el módulo de subtítulos cargue
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+      sendPlayerCommand("unloadModule", ["captions"]);
+      sendPlayerCommand("unloadModule", ["cc"]);
+      sendPlayerCommand("setOption", ["captions", "track", {}]);
+      sendPlayerCommand("setOption", ["cc", "track", {}]);
+      if (!hasUserToggledAudioRef.current) {
         sendPlayerCommand("unMute");
         sendPlayerCommand("setVolume", [100]);
       }
-    }, 1650);
+    }, 2400);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
