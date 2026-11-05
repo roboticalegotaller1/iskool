@@ -6,7 +6,8 @@ import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlock, StudioBlockType, FlowConnection, FlowNodePosition } from '@/types/studioBlocks';
 import { 
   MEXICAN_INDEPENDENCE_BLOCKS, 
-  MEXICAN_INDEPENDENCE_METADATA 
+  MEXICAN_INDEPENDENCE_METADATA,
+  HISTORICAL_FIGURES_PRESET_CATALOG
 } from '@/data/mexicanIndependenceStudioFlow';
 import { BLOCK_META } from './SortableBlockWrapper';
 import { 
@@ -44,7 +45,11 @@ import {
   ExternalLink,
   GraduationCap,
   Theater,
-  ClipboardCheck
+  ClipboardCheck,
+  Volume2,
+  Loader2,
+  MapPin,
+  CheckCircle2
 } from 'lucide-react';
 
 interface DraggingNodeState {
@@ -83,19 +88,76 @@ export const NodeGraphBoard: React.FC = () => {
     setIsExtendedMenuOpen,
     addBlock,
     loadPresetBlocks,
-    autoLayoutNodes
+    autoLayoutNodes,
+    switchHistoricalFigureOnBlock
   } = useActivityBuilderStore();
 
   const boardRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Estados de arrastre de nodo y de creación de conexión
   const [draggingNode, setDraggingNode] = useState<DraggingNodeState | null>(null);
   const [pendingConn, setPendingConn] = useState<PendingConnectionState | null>(null);
   const [hoveredConnId, setHoveredConnId] = useState<string | null>(null);
+  const [speakingNodeId, setSpeakingNodeId] = useState<string | null>(null);
+
+  // Reproducir Voz Neural LatAm directamente desde cualquier tarjeta del lienzo (Respaldo Neural Continuo - 24 Voces LatAm)
+  const playNodeNeuralTts = async (e: React.MouseEvent, node: StudioBlock, textToSpeak: string, voiceGender?: 'male' | 'female') => {
+    e.stopPropagation();
+    if (speakingNodeId === node.id) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setSpeakingNodeId(null);
+      return;
+    }
+
+    setSpeakingNodeId(node.id);
+    try {
+      const res = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: textToSpeak,
+          lang: 'es-MX',
+          gender: voiceGender || (node.data as Record<string, any>)?.voiceGender || 'female',
+          characterName: (node.data as Record<string, any>)?.characterOrSiteName || (node.data as Record<string, any>)?.characterName || node.title
+        })
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        if (audioRef.current) audioRef.current.pause();
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => setSpeakingNodeId(null);
+        audio.onerror = () => setSpeakingNodeId(null);
+        await audio.play();
+        return;
+      }
+    } catch (_) {
+      // Fallback en caso de red offline
+    }
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(textToSpeak);
+      utter.lang = 'es-MX';
+      utter.onend = () => setSpeakingNodeId(null);
+      utter.onerror = () => setSpeakingNodeId(null);
+      window.speechSynthesis.speak(utter);
+    } else {
+      setSpeakingNodeId(null);
+    }
+  };
 
   // Dimensiones del nodo para cálculo de puertos
-  const NODE_WIDTH = 280;
+  const NODE_WIDTH = 285;
   const NODE_HEADER_HEIGHT = 44;
 
   // Calcular dimensiones dinámicas para las barras de desplazamiento (garantizar que ningún nodo se corte)
@@ -153,7 +215,12 @@ export const NodeGraphBoard: React.FC = () => {
 
   // Manejar inicio de arrastre de un nodo con Pointer Events (Touch, Mouse, Stylus)
   const handleNodePointerDown = (e: React.PointerEvent, node: StudioBlock) => {
-    if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.port-handle')) {
+    if (
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).closest('select') ||
+      (e.target as HTMLElement).closest('input') ||
+      (e.target as HTMLElement).closest('.port-handle')
+    ) {
       return;
     }
     // Solo responder al botón principal del ratón o toques
@@ -286,7 +353,7 @@ export const NodeGraphBoard: React.FC = () => {
           {/* Capa de Flechas SVG de Conexión */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
             <defs>
-              {/* Marcador de punta de flecha normal */}
+              {/* Marcador de punta de flecha normal (Esmeralda) */}
               <marker
                 id="flow-arrowhead"
                 markerWidth="12"
@@ -296,6 +363,18 @@ export const NodeGraphBoard: React.FC = () => {
                 orient="auto"
               >
                 <path d="M 0 2 L 10 6 L 0 10 Z" fill="#10b981" />
+              </marker>
+
+              {/* Marcador de punta de flecha ruta refuerzo (Ámbar) */}
+              <marker
+                id="flow-arrowhead-amber"
+                markerWidth="12"
+                markerHeight="12"
+                refX="9"
+                refY="6"
+                orient="auto"
+              >
+                <path d="M 0 2 L 10 6 L 0 10 Z" fill="#f59e0b" />
               </marker>
 
               {/* Marcador de punta de flecha resaltada */}
@@ -325,6 +404,26 @@ export const NodeGraphBoard: React.FC = () => {
               const midX = (startPos.x + endPos.x) / 2;
               const midY = (startPos.y + endPos.y) / 2;
 
+              // Detectar si viene de una Bifurcación Condicional (logic_branch) para mostrar etiquetas de Ruta Maestría vs Ruta Refuerzo
+              const siblingConns = connections.filter(c => c.sourceNodeId === sourceBlock.id);
+              const siblingIdx = siblingConns.findIndex(c => c.id === conn.id);
+              const isLogicSource = sourceBlock.type === 'logic_branch';
+              const thresholdVal = (sourceBlock.data as Record<string, any>)?.thresholdScore || (sourceBlock.data as Record<string, any>)?.thresholdValue || 70;
+              const isLowBranch = conn.condition === 'score_low' || conn.condition === 'if_false' || (isLogicSource && siblingIdx === 1);
+              const isHighBranch = conn.condition === 'score_high' || conn.condition === 'if_true' || (isLogicSource && siblingIdx === 0 && siblingConns.length > 1);
+
+              const strokeColor = isHovered
+                ? '#2dd4bf'
+                : isLowBranch
+                  ? '#f59e0b'
+                  : '#10b981';
+
+              const markerUrl = isHovered
+                ? 'url(#flow-arrowhead-active)'
+                : isLowBranch
+                  ? 'url(#flow-arrowhead-amber)'
+                  : 'url(#flow-arrowhead)';
+
               return (
                 <g 
                   key={conn.id} 
@@ -344,12 +443,48 @@ export const NodeGraphBoard: React.FC = () => {
                   <path
                     d={pathD}
                     fill="none"
-                    stroke={isHovered ? '#2dd4bf' : '#10b981'}
-                    strokeWidth={isHovered ? '3.5' : '2.5'}
-                    strokeDasharray="6,4"
-                    markerEnd={isHovered ? 'url(#flow-arrowhead-active)' : 'url(#flow-arrowhead)'}
+                    stroke={strokeColor}
+                    strokeWidth={isHovered ? '3.5' : '2.8'}
+                    strokeDasharray={isLowBranch ? '5,4' : 'none'}
+                    markerEnd={markerUrl}
                     className="transition-all duration-200"
                   />
+
+                  {/* Etiqueta de Bifurcación Real en el lienzo (Vista 1.1: >= 70% Ruta Maestría / < 70% Ruta Refuerzo) */}
+                  {(isHighBranch || isLowBranch) && (
+                    <g transform={`translate(${midX}, ${midY - 14})`} className="pointer-events-none">
+                      <rect
+                        x="-58"
+                        y="-13"
+                        width="116"
+                        height="24"
+                        rx="8"
+                        fill={isLowBranch ? '#fffbeb' : '#ecfdf5'}
+                        stroke={isLowBranch ? '#f59e0b' : '#10b981'}
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="0"
+                        y="-2"
+                        textAnchor="middle"
+                        fill={isLowBranch ? '#b45309' : '#047857'}
+                        fontSize="9.5"
+                        fontWeight="900"
+                      >
+                        {isLowBranch ? `< ${thresholdVal}%` : `≥ ${thresholdVal}%`}
+                      </text>
+                      <text
+                        x="0"
+                        y="7.5"
+                        textAnchor="middle"
+                        fill={isLowBranch ? '#d97706' : '#059669'}
+                        fontSize="8"
+                        fontWeight="800"
+                      >
+                        {isLowBranch ? 'Ruta Refuerzo' : 'Ruta Maestría'}
+                      </text>
+                    </g>
+                  )}
 
                   {/* Botón flotante para eliminar conexión (X) */}
                   <g 
@@ -560,13 +695,24 @@ export const NodeGraphBoard: React.FC = () => {
 
                   {/* 3. Texto Narrativa */}
                   {block.type === 'text_narrative' && (
-                    <div className="space-y-1">
-                      {block.data.speakerName && (
-                        <div className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 dark:text-blue-400">
-                          <span>{block.data.speakerAvatar || '👤'}</span>
-                          <span>{block.data.speakerName}</span>
-                        </div>
-                      )}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-1">
+                        {block.data.speakerName && (
+                          <div className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 dark:text-blue-400 truncate">
+                            <span>{block.data.speakerAvatar || '👤'}</span>
+                            <span className="truncate">{block.data.speakerName}</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => playNodeNeuralTts(e, block, block.data.content || block.title, 'male')}
+                          className="px-1.5 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 text-[9px] font-black flex items-center gap-1 shrink-0 cursor-pointer"
+                          title="Escuchar con Voz Neural LatAm"
+                        >
+                          <Volume2 className="w-2.5 h-2.5" />
+                          <span>{speakingNodeId === block.id ? 'Detener' : 'Voz IA'}</span>
+                        </button>
+                      </div>
                       <p className="text-[11px] text-slate-600 dark:text-zinc-400 line-clamp-2 italic">
                         &ldquo;{block.data.content || 'Instrucción o narrativa pedagógica...'}&rdquo;
                       </p>
@@ -599,15 +745,29 @@ export const NodeGraphBoard: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 6. Completar Espacios */}
+                  {/* 6. Completar Espacios (Vista 1.1: Píldoras interactivas verdes + Validación) */}
                   {block.type === 'fill_in_blanks' && (
-                    <div className="p-2 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200/50 text-[11px] space-y-1">
-                      <span className="font-bold text-teal-800 dark:text-teal-300 line-clamp-1">
-                        ✍️ {block.data.textWithBlanks || 'Texto con [palabras clave]...'}
+                    <div className="p-2.5 rounded-xl bg-slate-50/90 dark:bg-teal-950/40 border border-slate-200/80 dark:border-teal-800/50 text-[11px] space-y-2">
+                      <span className="text-[10px] font-semibold text-slate-600 dark:text-teal-300 line-clamp-1 block">
+                        Oración interactiva con espacios:
                       </span>
-                      <span className="text-[9px] text-teal-600 dark:text-teal-400 block">
-                        Banco: {block.data.wordBank?.length || 3} opciones
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {(block.data.wordBank || ['Querétaro', 'Ignacio Pérez', 'Dolores']).slice(0, 3).map((word: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded-lg bg-emerald-100/90 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300/80 font-black text-[9.5px]"
+                          >
+                            {word}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between text-[9.5px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/90 dark:bg-emerald-950/50 px-2 py-1 rounded-lg border border-emerald-200/70">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                          <span>Banco de {block.data.wordBank?.length || 4} palabras validado</span>
+                        </span>
+                        <span>✓</span>
+                      </div>
                     </div>
                   )}
 
@@ -618,7 +778,7 @@ export const NodeGraphBoard: React.FC = () => {
                         🤖 {block.data.prompt || 'Pregunta de reflexión formativa...'}
                       </span>
                       <span className="text-[9px] text-cyan-600 dark:text-cyan-400 block font-semibold">
-                        Retroalimentación cualitativa NEM
+                        Retroalimentación contextual + Nube en vivo
                       </span>
                     </div>
                   )}
@@ -631,13 +791,24 @@ export const NodeGraphBoard: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 9. Combate Boss Pixi */}
+                  {/* 9. Combate Boss Pixi (Vista 1.1: Barra HP visual + 5 Reactivos Curriculares) */}
                   {block.type === 'boss_enemy' && (
-                    <div className="flex items-center justify-between text-[11px] font-bold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 p-2 rounded-xl border border-rose-200/50">
-                      <span className="truncate">⚔️ {block.data.bossName || 'Jefe de Saberes'}</span>
-                      <span className="text-[10px] bg-rose-200/80 dark:bg-rose-900/60 px-1.5 py-0.5 rounded-md shrink-0">
-                        {block.data.maxHp || 100} HP
-                      </span>
+                    <div className="p-2.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200/70 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10.5px] font-black text-rose-800 dark:text-rose-300 truncate">
+                          ⚔️ {block.data.bossName || 'Duelo Boss Curricular'}
+                        </span>
+                        <span className="text-[9.5px] font-black text-rose-700 dark:text-rose-300 shrink-0">
+                          {block.data.maxHp || 1200} HP
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-rose-200/80 overflow-hidden">
+                        <div className="h-full w-4/5 rounded-full bg-gradient-to-r from-rose-600 to-red-500" />
+                      </div>
+                      <div className="flex items-center justify-between text-[9px] font-black text-emerald-700 bg-white/90 px-2 py-0.5 rounded-lg border border-emerald-200">
+                        <span>✓ Avatar & 5 Reactivos</span>
+                        <span className="text-rose-600">-350 HP/acierto</span>
+                      </div>
                     </div>
                   )}
 
@@ -680,16 +851,23 @@ export const NodeGraphBoard: React.FC = () => {
                     </div>
                   )}
 
-                  {/* 14. Bifurcación Adaptativa */}
+                  {/* 14. Bifurcación Adaptativa (Vista 1.1: Bifurcación Condicional Real) */}
                   {block.type === 'logic_branch' && (
-                    <div className="p-2 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200/50 text-[11px] font-bold text-indigo-800 dark:text-indigo-300 space-y-0.5">
+                    <div className="p-2.5 rounded-xl bg-teal-50/80 dark:bg-indigo-950/40 border border-teal-200/80 dark:border-indigo-800/50 text-[11px] font-bold text-teal-900 dark:text-indigo-200 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span>🔀 Ruta Condicional</span>
-                        <span className="text-[9px] bg-indigo-200/70 dark:bg-indigo-900/60 px-1.5 py-0.5 rounded-md">≥ 75%</span>
+                        <span>🔀 Bifurcación Condicional Real</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black border border-emerald-300">
+                          ≥ {block.data.thresholdScore || 70}%
+                        </span>
                       </div>
-                      <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-normal">
-                        Ruta de refuerzo vs avanzada
-                      </p>
+                      <div className="grid grid-cols-2 gap-1 text-[8.5px] font-black">
+                        <div className="px-1.5 py-0.5 rounded bg-emerald-100/80 text-emerald-800 border border-emerald-300/70 truncate">
+                          ✓ Ruta Maestría
+                        </div>
+                        <div className="px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-800 border border-amber-300/70 truncate">
+                          ↺ Ruta Refuerzo
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -881,6 +1059,114 @@ export const NodeGraphBoard: React.FC = () => {
                       </span>
                     </div>
                   )}
+
+                  {/* 28. Personaje o Sitio Histórico 3D (Vista 1.1: Tarjeta Rica con Retrato, Cita en 1ª Persona, 4 Viñetas, GPS, Voz Neural LatAm y Selector Dinámico de 22+ Personajes de la Bóveda) */}
+                  {block.type === 'historical_figure_block' && (
+                    <div className="space-y-2">
+                      {/* Selector Rápido de Personaje o Sitio Histórico de la Bóveda Curricular (Cero dependencia de Josefa Ortiz) */}
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={block.data.characterName || block.data.characterOrSiteName || 'Miguel Hidalgo y Costilla'}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            const val = e.target.value;
+                            const isSite = val.toLowerCase().includes('querétaro') || val.toLowerCase().includes('alhóndiga') || val.toLowerCase().includes('chapultepec') || val.toLowerCase().includes('teotihuacán') || val.toLowerCase().includes('chichén');
+                            switchHistoricalFigureOnBlock(block.id, val, isSite);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full px-2 py-1 rounded-lg bg-amber-50/90 dark:bg-amber-950/50 border border-amber-300/80 dark:border-amber-700 text-[10px] font-black text-amber-950 dark:text-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+                          title="Cambiar Personaje o Sitio Histórico al instante desde la Bóveda Curricular"
+                        >
+                          {HISTORICAL_FIGURES_PRESET_CATALOG.map((fig) => {
+                            const fName = fig.characterName || fig.characterOrSiteName || 'Personaje Histórico';
+                            return (
+                              <option key={fName} value={fName}>
+                                {fig.isGeographicSite ? '🗺️ ' : '🏛️ '}{fName}
+                              </option>
+                            );
+                          })}
+                          <option value="Ignacio Allende">🏛️ Ignacio Allende (1769–1811)</option>
+                          <option value="Francisco I. Madero">🏛️ Francisco I. Madero (1873–1913)</option>
+                          <option value="Carmen Serdán Alatriste">🏛️ Carmen Serdán Alatriste (1873–1948)</option>
+                          <option value="Aquiles Serdán">🏛️ Aquiles Serdán (1877–1910)</option>
+                          <option value="Guadalupe Victoria">🏛️ Guadalupe Victoria (1786–1843)</option>
+                          <option value="Felipe Ángeles">🏛️ Felipe Ángeles (1868–1919)</option>
+                          <option value="Belisario Domínguez">🏛️ Belisario Domínguez (1863–1913)</option>
+                          <option value="Ricardo Flores Magón">🏛️ Ricardo Flores Magón (1873–1922)</option>
+                          <option value="José Guadalupe Posada">🏛️ José Guadalupe Posada (1852–1913)</option>
+                          <option value="Andrés Quintana Roo">🏛️ Andrés Quintana Roo (1787–1851)</option>
+                          <option value="Plutarco Elías Calles">🏛️ Plutarco Elías Calles (1877–1945)</option>
+                          <option value="Gustavo Díaz Ordaz">🏛️ Gustavo Díaz Ordaz (1911–1979)</option>
+                        </select>
+                      </div>
+
+                      {/* Retrato Ilustrado del Personaje / Sitio */}
+                      <div className="relative w-full h-28 rounded-2xl overflow-hidden border border-amber-200/80 bg-gradient-to-b from-amber-900/20 to-stone-900/80 shadow-inner">
+                        <img
+                          src={block.data.avatarImageUrl || '/images/history/hidalgo_avatar.png'}
+                          alt={block.data.characterName || block.data.characterOrSiteName || block.title}
+                          className="w-full h-full object-cover object-top"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                          }}
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-2.5 py-1.5 flex items-center justify-between">
+                          <span className="text-[9px] font-black text-amber-200 truncate">
+                            {block.data.birthDeathDates || 'Bóveda Curricular SEP'}
+                          </span>
+                          <span className="text-[8.5px] font-bold text-white/90 bg-amber-600/80 px-1.5 py-0.5 rounded">
+                            1ª Persona
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Fechas y Época */}
+                      <div className="text-center">
+                        <span className="text-[9.5px] font-black text-slate-600 dark:text-zinc-300 block truncate">
+                          {block.data.historicalEra || 'Historia de México • SEP NEM'}
+                        </span>
+                      </div>
+
+                      {/* Cita en Primera Persona */}
+                      <p className="text-[10.5px] text-slate-700 dark:text-zinc-300 italic line-clamp-2 bg-amber-50/60 dark:bg-amber-950/30 px-2.5 py-1.5 rounded-xl border border-amber-200/60 leading-snug">
+                        &ldquo;{block.data.firstPersonGreeting || block.data.introDialogue || block.data.shortBio || 'Hablo en primera persona con rigor histórico verificado...' }&rdquo;
+                      </p>
+
+                      {/* Píldoras de 4 Viñetas Cómic + Mapa GPS y Voz Neural LatAm Activa */}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-slate-100/90 dark:bg-zinc-800/80 text-[9.5px] font-bold text-slate-700 dark:text-zinc-300 border border-slate-200/80">
+                          <span>📖 {block.data.moments?.length || 4} Viñetas Cómic + Mapa GPS</span>
+                          <MapPin className="w-3 h-3 text-amber-600 shrink-0" />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            const cName = block.data.characterName || block.data.characterOrSiteName || 'Personaje Histórico';
+                            const isFemale = /Josefa|Sor Juana|Carmen|Leona|Frida|Querétaro/i.test(cName);
+                            playNodeNeuralTts(
+                              e,
+                              block,
+                              block.data.firstPersonGreeting || block.data.introDialogue || block.data.shortBio || `Soy ${cName}.`,
+                              block.data.voiceGender || (isFemale ? 'female' : 'male')
+                            );
+                          }}
+                          className={`w-full px-2.5 py-1.5 rounded-xl font-black text-[10px] flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                            speakingNodeId === block.id
+                              ? 'bg-emerald-600 text-white border-emerald-700 shadow-md animate-pulse'
+                              : 'bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 border-emerald-300/80'
+                          }`}
+                        >
+                          <Volume2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            {speakingNodeId === block.id
+                              ? '🔊 Hablando en 1ª Persona...'
+                              : '🔊 Voz Neural LatAm Activa'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Barra de Acciones del Nodo */}
@@ -997,6 +1283,98 @@ export const NodeGraphBoard: React.FC = () => {
           <span className="hidden sm:inline font-black text-[11px]">Organizar</span>
         </button>
       </div>
+
+      {/* 2D Radar Minimap (Nuevo Rediseño 1 - Vista 1.1: Navegación Topológica en Vivo) */}
+      {blocks.length > 0 && (
+        <div className="hidden md:flex flex-col absolute bottom-4 right-4 z-30 w-44 h-28 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-xl p-2 select-none">
+          <div className="flex items-center justify-between mb-1 px-0.5">
+            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+              2D Radar Minimap
+            </span>
+            <span className="text-[8.5px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">
+              {blocks.length} Nodos
+            </span>
+          </div>
+          <div className="relative flex-1 w-full rounded-xl bg-slate-50/90 dark:bg-zinc-950/80 border border-slate-200/70 dark:border-zinc-800 overflow-hidden">
+            {(() => {
+              const allX = blocks.map(b => b.position?.x || 80);
+              const allY = blocks.map(b => b.position?.y || 150);
+              const minX = Math.min(...allX, 40);
+              const minY = Math.min(...allY, 40);
+              const maxX = Math.max(...allX.map(x => x + NODE_WIDTH), minX + 900);
+              const maxY = Math.max(...allY.map(y => y + 200), minY + 520);
+              const spanX = Math.max(400, maxX - minX + 80);
+              const spanY = Math.max(260, maxY - minY + 80);
+
+              return (
+                <>
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 160 80" preserveAspectRatio="none">
+                    {connections.map((conn) => {
+                      const s = blocks.find(b => b.id === conn.sourceNodeId);
+                      const t = blocks.find(b => b.id === conn.targetNodeId);
+                      if (!s || !t) return null;
+                      const sx = (((s.position?.x || 80) + NODE_WIDTH - minX + 20) / spanX) * 160;
+                      const sy = (((s.position?.y || 150) + 60 - minY + 20) / spanY) * 80;
+                      const tx = (((t.position?.x || 80) - minX + 20) / spanX) * 160;
+                      const ty = (((t.position?.y || 150) + 60 - minY + 20) / spanY) * 80;
+                      const isAmber = conn.condition === 'score_low';
+                      return (
+                        <line
+                          key={conn.id}
+                          x1={sx}
+                          y1={sy}
+                          x2={tx}
+                          y2={ty}
+                          stroke={isAmber ? '#f59e0b' : '#10b981'}
+                          strokeWidth="1.8"
+                        />
+                      );
+                    })}
+                  </svg>
+                  {blocks.map((b) => {
+                    const leftPct = Math.min(82, Math.max(4, (((b.position?.x || 80) - minX + 20) / spanX) * 100));
+                    const topPct = Math.min(76, Math.max(6, (((b.position?.y || 150) - minY + 20) / spanY) * 100));
+                    const isSel = selectedBlockId === b.id;
+                    const isHist = b.type === 'historical_figure_block';
+                    const isBoss = b.type === 'boss_enemy';
+                    const isLogic = b.type === 'logic_branch';
+                    return (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBlockId(b.id);
+                          if (scrollContainerRef.current) {
+                            scrollContainerRef.current.scrollTo({
+                              left: Math.max(0, ((b.position?.x || 80) - 80) * zoomLevel),
+                              top: Math.max(0, ((b.position?.y || 150) - 80) * zoomLevel),
+                              behavior: 'smooth'
+                            });
+                          }
+                        }}
+                        style={{ left: `${leftPct}%`, top: `${topPct}%` }}
+                        title={b.title}
+                        className={`absolute w-5 h-3 rounded-sm transition-transform cursor-pointer ${
+                          isSel
+                            ? 'ring-2 ring-emerald-500 scale-125 z-20 bg-emerald-500'
+                            : isHist
+                              ? 'bg-amber-500/90'
+                              : isBoss
+                                ? 'bg-rose-500/90'
+                                : isLogic
+                                  ? 'bg-teal-500/90'
+                                  : 'bg-indigo-500/80'
+                        }`}
+                      />
+                    );
+                  })}
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

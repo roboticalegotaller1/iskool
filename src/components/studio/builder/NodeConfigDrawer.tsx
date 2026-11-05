@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
@@ -100,7 +101,7 @@ export const NodeConfigDrawer: React.FC = () => {
     setIsNodeConfigDrawerOpen(false);
   };
 
-  if (!isNodeConfigDrawerOpen || !selectedBlock) return null;
+  if (!isNodeConfigDrawerOpen || !selectedBlock || typeof document === 'undefined') return null;
 
   const meta = BLOCK_META[selectedBlock.type] || BLOCK_META.text_narrative;
   const isStart = startNodeId === selectedBlock.id || selectedBlock.isStartNode;
@@ -112,16 +113,16 @@ export const NodeConfigDrawer: React.FC = () => {
   // Otros nodos disponibles para conectar
   const availableTargetNodes = blocks.filter(b => b.id !== selectedBlock.id);
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] overflow-hidden flex justify-end">
+      <div className="fixed inset-0 z-[9995] overflow-hidden flex justify-end">
         {/* Telón de Fondo Difuminado */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={handleAttemptClose}
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity cursor-pointer z-[90]"
+          className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs transition-opacity cursor-pointer z-[9994]"
         />
 
         {/* Panel Lateral Deslizante */}
@@ -130,7 +131,7 @@ export const NodeConfigDrawer: React.FC = () => {
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-          className="relative w-full max-w-xl bg-white dark:bg-zinc-900 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col z-[100]"
+          className="relative w-full max-w-xl bg-white dark:bg-zinc-900 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col z-[9995]"
         >
           {/* Cabecera del Panel */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3 bg-slate-50/80 dark:bg-zinc-850/80">
@@ -313,6 +314,7 @@ export const NodeConfigDrawer: React.FC = () => {
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

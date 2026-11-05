@@ -289,7 +289,7 @@ export function AcademicPortalAdminModal({
       try {
         const stored = localStorage.getItem('iskool_academic_audit_log');
         if (stored) return JSON.parse(stored);
-      } catch (e) {}
+      } catch (e) { }
     }
     return [
       {
@@ -344,7 +344,7 @@ export function AcademicPortalAdminModal({
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('iskool_academic_audit_log', JSON.stringify(updated));
       }
-    } catch (err) {}
+    } catch (err) { }
 
     if (studentEvidences.length > 0) {
       addPortfolioFeedback(
@@ -398,7 +398,7 @@ export function AcademicPortalAdminModal({
       if (typeof localStorage !== 'undefined') {
         localStorage.setItem('iskool_academic_audit_log', JSON.stringify(updated));
       }
-    } catch (err) {}
+    } catch (err) { }
 
     showPortalToast(`✍️ Firma en Lote Ejecutada: ${batchRecords.length} portafolios sellados por ${adminName} a 0 Tokens.`);
   };
@@ -698,11 +698,10 @@ export function AcademicPortalAdminModal({
           <button
             type="button"
             onClick={() => setActivePortalTab('alumnos')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              activePortalTab === 'alumnos'
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${activePortalTab === 'alumnos'
                 ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-slate-700 hover:text-slate-900 hover:bg-white/70'
-            }`}
+              }`}
           >
             <span className={`w-2 h-2 rounded-full ${activePortalTab === 'alumnos' ? 'bg-white' : 'bg-slate-400'}`} />
             <Users size={15} />
@@ -712,11 +711,10 @@ export function AcademicPortalAdminModal({
           <button
             type="button"
             onClick={() => setActivePortalTab('profesor')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              activePortalTab === 'profesor'
+            className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${activePortalTab === 'profesor'
                 ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-slate-700 hover:text-slate-900 hover:bg-white/70'
-            }`}
+              }`}
           >
             <span className={`w-2 h-2 rounded-full ${activePortalTab === 'profesor' ? 'bg-white' : 'bg-slate-400'}`} />
             <GraduationCap size={15} />
@@ -816,22 +814,20 @@ export function AcademicPortalAdminModal({
                 <button
                   type="button"
                   onClick={() => setCohortRiskFilter('todos')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                    cohortRiskFilter === 'todos'
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${cohortRiskFilter === 'todos'
                       ? 'bg-slate-900 text-white border-slate-900'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   Todos ({cohortCounts.total})
                 </button>
                 <button
                   type="button"
                   onClick={() => setCohortRiskFilter('destacados')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${
-                    cohortRiskFilter === 'destacados'
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${cohortRiskFilter === 'destacados'
                       ? 'bg-indigo-600 text-white border-indigo-600'
                       : 'bg-indigo-50/70 text-indigo-800 border-indigo-200 hover:bg-indigo-100'
-                  }`}
+                    }`}
                 >
                   <Star size={12} className={cohortRiskFilter === 'destacados' ? 'text-amber-300 fill-amber-300' : 'text-amber-500 fill-amber-500'} />
                   <span>Destacados ({cohortCounts.destacados})</span>
@@ -839,11 +835,10 @@ export function AcademicPortalAdminModal({
                 <button
                   type="button"
                   onClick={() => setCohortRiskFilter('regular')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${
-                    cohortRiskFilter === 'regular'
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${cohortRiskFilter === 'regular'
                       ? 'bg-emerald-600 text-white border-emerald-600'
                       : 'bg-emerald-50/70 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
-                  }`}
+                    }`}
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   <span>Regular ({cohortCounts.regular})</span>
@@ -851,11 +846,10 @@ export function AcademicPortalAdminModal({
                 <button
                   type="button"
                   onClick={() => setCohortRiskFilter('seguimiento')}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${
-                    cohortRiskFilter === 'seguimiento'
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1 ${cohortRiskFilter === 'seguimiento'
                       ? 'bg-amber-500 text-slate-950 border-amber-500'
                       : 'bg-amber-50/80 text-amber-900 border-amber-200 hover:bg-amber-100'
-                  }`}
+                    }`}
                 >
                   <AlertTriangle size={12} className="text-amber-600" />
                   <span>En Seguimiento ({cohortCounts.seguimiento})</span>
@@ -1076,11 +1070,10 @@ export function AcademicPortalAdminModal({
                           key={opt.id}
                           type="button"
                           onClick={() => setAuditVerdict(opt.id)}
-                          className={`px-3 py-2 rounded-xl text-xs font-black border text-left transition-all cursor-pointer flex items-center gap-2 ${
-                            active
+                          className={`px-3 py-2 rounded-xl text-xs font-black border text-left transition-all cursor-pointer flex items-center gap-2 ${active
                               ? 'bg-indigo-50 border-indigo-600 text-indigo-950 shadow-2xs'
                               : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                          }`}
+                            }`}
                         >
                           <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${active ? 'bg-indigo-600' : 'bg-slate-300'}`} />
                           <span className="truncate">{opt.label}</span>
@@ -1197,17 +1190,15 @@ export function AcademicPortalAdminModal({
                     <div
                       key={tea.id || idx}
                       onClick={() => setSelectedMirrorTeacherId(tea.id)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-3 ${
-                        isSelected
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-3 ${isSelected
                           ? 'bg-indigo-50/50 border-2 border-indigo-600 shadow-sm'
                           : 'bg-slate-50/60 border-slate-200 hover:bg-white hover:border-indigo-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm shrink-0 ${
-                            isSelected ? 'bg-indigo-600' : 'bg-slate-800'
-                          }`}>
+                          <div className={`w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm shrink-0 ${isSelected ? 'bg-indigo-600' : 'bg-slate-800'
+                            }`}>
                             {tea.first_name.charAt(0)}{tea.last_name.charAt(0)}
                           </div>
                           <div>
@@ -1256,11 +1247,10 @@ export function AcademicPortalAdminModal({
                             setSelectedMirrorTeacherId(tea.id);
                             setIsLessonPlanViewerOpen(true);
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 cursor-pointer transition-all border ${
-                            approvalRecord
+                          className={`px-3 py-1.5 rounded-xl text-[11px] font-black flex items-center gap-1.5 cursor-pointer transition-all border ${approvalRecord
                               ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
                               : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-2xs'
-                          }`}
+                            }`}
                           title="Haz clic para abrir y revisar la planeación didáctica completa antes de aprobarla"
                         >
                           <FileText size={13} className={approvalRecord ? 'text-emerald-600' : 'text-amber-600'} />
@@ -1277,11 +1267,10 @@ export function AcademicPortalAdminModal({
                             e.stopPropagation();
                             setSelectedMirrorTeacherId(tea.id);
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${
-                            isSelected
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors ${isSelected
                               ? 'bg-indigo-600 text-white'
                               : 'bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200'
-                          }`}
+                            }`}
                         >
                           <Eye size={13} />
                           <span>Inspeccionar en Modo Espejo</span>

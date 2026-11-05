@@ -58,6 +58,7 @@ export interface FlowConnection {
   sourceNodeId: string;
   targetNodeId: string;
   label?: string; // Para bifurcaciones: 'success' | 'failure' | 'next'
+  condition?: 'if_true' | 'if_false' | 'next' | 'score_high' | 'score_low';
 }
 
 /**
@@ -238,6 +239,8 @@ export interface LogicBranchBlock extends BaseStudioBlock {
   data: {
     condition: 'score_above_percentage' | 'has_lives_left' | 'item_collected';
     thresholdValue: number;
+    thresholdScore?: number;
+    conditionDescription?: string;
     ifTrueNextBlockId: string | null;
     ifFalseNextBlockId: string | null;
   };
@@ -404,9 +407,11 @@ export interface ConstraintSchedulerBlock extends BaseStudioBlock {
 export interface LanguagesPracticeBlock extends BaseStudioBlock {
   type: 'languages_practice_portal';
   data: {
-    language: 'en' | 'fr' | 'de' | 'it';
+    language: 'en' | 'fr' | 'de' | 'it' | 'es';
     mode: 'avatar' | 'karaoke' | 'both';
     targetPhrase?: string;
+    scenarioTitle?: string;
+    focusPhonemes?: string[];
     portalUrl: string;
     pedagogicalGoal?: string;
   };
@@ -418,9 +423,10 @@ export interface LanguagesPracticeBlock extends BaseStudioBlock {
 export interface LanguagesKaraokeBlock extends BaseStudioBlock {
   type: 'languages_karaoke_block';
   data: {
-    language: 'en' | 'fr';
+    language: 'en' | 'fr' | 'de' | 'it' | 'es';
     tempoWpm?: number;
     targetSentence?: string;
+    phoneticGuide?: string;
     portalUrl: string;
     difficulty?: 'principiante' | 'intermedio' | 'avanzado';
   };
@@ -432,7 +438,7 @@ export interface LanguagesKaraokeBlock extends BaseStudioBlock {
 export interface LanguagesSocraticTutorBlock extends BaseStudioBlock {
   type: 'languages_socratic_tutor';
   data: {
-    language: 'en' | 'fr';
+    language: 'en' | 'fr' | 'de' | 'it' | 'es';
     targetLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
     cenniTargetLevel?: number;
     scenarioTitle: string;
@@ -449,10 +455,13 @@ export interface LanguagesSocraticTutorBlock extends BaseStudioBlock {
 export interface LanguagesRoleplayMissionBlock extends BaseStudioBlock {
   type: 'languages_roleplay_mission';
   data: {
-    language: 'en' | 'fr';
+    language: 'en' | 'fr' | 'de' | 'it' | 'es';
     setting: 'cafe_paris' | 'london_airport' | 'job_interview' | 'eco_summit' | 'museum_tour';
     roleStudent: string;
     rolePartner: string;
+    studentRole?: string;
+    aiRole?: string;
+    scenarioTitle?: string;
     missionGoal: string;
     requiredExpressions: string[];
     portalUrl: string;
@@ -465,9 +474,13 @@ export interface LanguagesRoleplayMissionBlock extends BaseStudioBlock {
 export interface LanguagesEvaluationRubricBlock extends BaseStudioBlock {
   type: 'languages_evaluation_rubric';
   data: {
-    language: 'en' | 'fr';
+    language: 'en' | 'fr' | 'de' | 'it' | 'es';
     framework: 'CEFR' | 'CENNI' | 'DELF_DALF' | 'CAMBRIDGE';
     targetLevel: string;
+    fluencyWeight?: number;
+    pronunciationWeight?: number;
+    grammarWeight?: number;
+    vocabularyWeight?: number;
     criteria: Array<{
       dimension: 'oral_comprehension' | 'oral_production' | 'reading_comprehension' | 'written_production' | 'phonetics';
       weightPercentage: number;
@@ -521,11 +534,14 @@ export interface HistoricalVerificationQuestion {
 
 export interface HistoricalFigureBlockData {
   characterName: string;
+  characterOrSiteName?: string;
   isGeographicSite?: boolean;
   historicalEra?: string;
   birthDeathDates?: string;
   shortBio: string;
   detailedContext: string;
+  firstPersonGreeting?: string;
+  introDialogue?: string;
   avatarImageUrl: string;
   bookSpineStyle: BookSpineStyle;
   moments: HistoricalFigureMoment[];
@@ -538,9 +554,11 @@ export interface HistoricalFigureBlockData {
   };
   verificationQuestions: HistoricalVerificationQuestion[];
   qaCache?: Array<{ question: string; answer: string; timestamp?: number }>;
+  qaLibrary?: Array<{ question: string; answer: string; timestamp?: number }>;
   vaultNodeSlug?: string;
   isFromVault?: boolean;
   voiceId?: string;
+  voiceGender?: 'male' | 'female';
   voiceCohort?: 'child_male' | 'child_female' | 'teen_male' | 'teen_female' | 'young_adult_male' | 'young_adult_female' | 'adult_male' | 'adult_female' | 'elder_male' | 'elder_female';
   voiceRate?: string;
   voicePitch?: string;

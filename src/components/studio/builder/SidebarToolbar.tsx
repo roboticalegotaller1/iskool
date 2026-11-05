@@ -465,7 +465,9 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
   const { 
     blocks, 
     addBlock, 
-    setDraggedNewBlockType 
+    setDraggedNewBlockType,
+    isNodeConfigDrawerOpen,
+    isExtendedMenuOpen
   } = useActivityBuilderStore();
 
   // Estados de categorías desplegadas (acordeón múltiple o individual)
@@ -480,6 +482,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
   });
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [momentFilter, setMomentFilter] = useState<'all' | 'inicio' | 'desarrollo' | 'cierre'>('all');
 
   // Estados de Hover Tooltip Enriquecido
   const [hoveredTool, setHoveredTool] = useState<BlockToolItem | null>(null);
@@ -552,11 +555,45 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
     };
   }, [draggingTool, addBlock, setDraggedNewBlockType, onBlockAdded]);
 
-  // Filtrar bloques si hay búsqueda activa
+  // Filtrar bloques si hay búsqueda activa o filtro de momento pedagógico SEP NEM (Inicio 10m / Desarrollo 25m / Cierre 15m)
   const filteredCategories = SCRATCH_CATEGORIES.map(cat => {
-    if (!searchQuery.trim()) return cat;
+    let blocksList = cat.blocks;
+
+    if (momentFilter === 'inicio') {
+      blocksList = blocksList.filter(b =>
+        ['historical_figure_block', 'text_narrative', 'youtube_video', 'timed_reading_block', 'open_poll_wordcloud', 'languages_practice_portal'].includes(b.type)
+      );
+    } else if (momentFilter === 'desarrollo') {
+      blocksList = blocksList.filter(b =>
+        [
+          'fill_in_blanks',
+          'drag_drop_match',
+          'ordering_sequence',
+          'quiz_question',
+          'external_embed',
+          'logic_branch',
+          'logic_challenge_interactive',
+          'boolean_circuit_builder',
+          'graph_network_path',
+          'turing_step_simulator',
+          'constraint_scheduler',
+          'languages_karaoke_block',
+          'languages_socratic_tutor',
+          'languages_roleplay_mission',
+          'historical_figure_block'
+        ].includes(b.type)
+      );
+    } else if (momentFilter === 'cierre') {
+      blocksList = blocksList.filter(b =>
+        ['boss_enemy', 'reward_chest', 'badge_certificate', 'checkpoint_gate', 'secret_code_puzzle', 'minigame_action', 'languages_evaluation_rubric', 'audio_sfx'].includes(b.type)
+      );
+    }
+
+    if (!searchQuery.trim()) {
+      return { ...cat, blocks: blocksList };
+    }
     const q = searchQuery.toLowerCase();
-    const matchingBlocks = cat.blocks.filter(b => 
+    const matchingBlocks = blocksList.filter(b => 
       b.title.toLowerCase().includes(q) || 
       b.description.toLowerCase().includes(q) ||
       b.badge.toLowerCase().includes(q)
@@ -597,9 +634,32 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar bloque (ej. PhET, Quiz, Boss)..."
+          placeholder="Buscar bloque..."
           className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
         />
+      </div>
+
+      {/* Píldoras de Momento Didáctico SEP NEM (Nuevo Rediseño 1 - Vista 1.1: Todo | Inicio 10m | Desarrollo 25m | Cierre 15m) */}
+      <div className="grid grid-cols-4 gap-1 bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/70">
+        {[
+          { id: 'all', label: 'Todo' },
+          { id: 'inicio', label: 'Inicio 10m' },
+          { id: 'desarrollo', label: 'Desarrollo 25m' },
+          { id: 'cierre', label: 'Cierre 15m' }
+        ].map((pill) => (
+          <button
+            key={pill.id}
+            type="button"
+            onClick={() => setMomentFilter(pill.id as any)}
+            className={`py-1 px-1 rounded-lg text-[9.5px] font-black transition-all truncate cursor-pointer ${
+              momentFilter === pill.id
+                ? 'bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-300 shadow-xs border border-emerald-300/70'
+                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+            }`}
+          >
+            {pill.label}
+          </button>
+        ))}
       </div>
 
       {/* Lista de Agrupaciones (Acordeón Desplegable / Replegable) */}
@@ -662,9 +722,6 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                             if (!draggingTool) {
                               addBlock(tool.type);
                               onBlockAdded?.();
-                              if (isLanguageTool) {
-                                router.push('/teacher/idiomas');
-                              }
                             }
                           }}
                           onMouseEnter={() => setHoveredTool(tool)}
@@ -688,8 +745,8 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                               }`}>
                                 {tool.title}
                               </h5>
-                              <span className="text-[9px] font-bold text-slate-400 block truncate">
-                                {tool.badge}
+                              <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 block truncate">
+                                +1 Clic Insertar • {tool.badge}
                               </span>
                             </div>
                           </div>
@@ -727,13 +784,13 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
 
       {/* ================= POPOVER / TOOLTIP ENRIQUECIDO CON EJEMPLOS ================= */}
       <AnimatePresence>
-        {(hoveredTool || hoveredCategory) && (
+        {!isNodeConfigDrawerOpen && !isExtendedMenuOpen && (hoveredTool || hoveredCategory) && (
           <motion.div
             initial={{ opacity: 0, x: -10, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.12 }}
-            className="hidden lg:block fixed left-[340px] xl:left-[370px] top-28 z-[99999] pointer-events-none w-72 sm:w-80 shadow-2xl rounded-2xl overflow-hidden bg-slate-900/95 dark:bg-blue-950/95 text-white backdrop-blur-xl border border-emerald-500/30 dark:border-emerald-500/30 p-4 space-y-2.5 animate-fade-in"
+            className="hidden lg:block fixed left-[310px] xl:left-[330px] top-36 z-[9000] pointer-events-none w-72 sm:w-80 shadow-2xl rounded-2xl overflow-hidden bg-slate-900/95 dark:bg-blue-950/95 text-white backdrop-blur-xl border border-emerald-500/30 dark:border-emerald-500/30 p-4 space-y-2.5 animate-fade-in"
           >
             {hoveredTool ? (
               <>

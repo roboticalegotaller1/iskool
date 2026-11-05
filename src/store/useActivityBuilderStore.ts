@@ -28,7 +28,9 @@ import { StudioActivityJSON } from '@/types';
 import { 
   MEXICAN_INDEPENDENCE_BLOCKS, 
   MEXICAN_INDEPENDENCE_CONNECTIONS, 
-  MEXICAN_INDEPENDENCE_METADATA 
+  MEXICAN_INDEPENDENCE_METADATA,
+  HISTORICAL_FIGURES_PRESET_CATALOG,
+  buildDynamicHistoricalFigureData
 } from '@/data/mexicanIndependenceStudioFlow';
 
 interface ActivityBuilderState {
@@ -58,6 +60,7 @@ interface ActivityBuilderState {
   addBlock: (type: StudioBlockType, insertAtIndex?: number, customPos?: FlowNodePosition) => string;
   updateBlockData: (id: string, partialData: any) => void;
   updateBlockTitle: (id: string, title: string) => void;
+  switchHistoricalFigureOnBlock: (id: string, characterOrSiteName: string, isGeographicSite?: boolean) => Promise<void>;
   removeBlock: (id: string) => void;
   duplicateBlock: (id: string) => void;
   reorderBlocks: (activeId: string, overId: string) => void;
@@ -112,12 +115,12 @@ const DEFAULT_METADATA: ActivityBuilderMetadata = {
   streakMultiplier: true,
 };
 
-// Generador de bloques por defecto según el tipo
-const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlock => {
+// Generador de bloques por defecto según el tipo (con espaciado magnético anti-colisión de 380px)
+const createDefaultBlock = (type: StudioBlockType, index: number = 0, existingBlocks: StudioBlock[] = []): StudioBlock => {
   const id = `blk-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
   const position: FlowNodePosition = {
-    x: 80 + (index * 290),
-    y: 160 + ((index % 2) * 50),
+    x: 45 + (Math.floor(index / 2) * 380),
+    y: 45 + ((index % 2) * 235),
   };
 
   switch (type) {
@@ -608,158 +611,28 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
         }
       } as any;
 
-    case 'historical_figure_block':
+    case 'historical_figure_block': {
+      // Seleccionar automáticamente el siguiente personaje o sitio histórico del catálogo que aún no esté en el lienzo
+      const usedNames = new Set(
+        existingBlocks
+          .filter((b) => b.type === 'historical_figure_block')
+          .map((b: any) => (b.data?.characterName || '').toLowerCase())
+      );
+      const nextAvailableIdx = HISTORICAL_FIGURES_PRESET_CATALOG.findIndex(
+        (fig) => !usedNames.has(fig.characterName.toLowerCase())
+      );
+      const catalogIndex = nextAvailableIdx >= 0 ? nextAvailableIdx : existingBlocks.filter((b) => b.type === 'historical_figure_block').length;
+      const figureData = buildDynamicHistoricalFigureData(undefined, catalogIndex);
+
       return {
         id,
         type: 'historical_figure_block',
-        title: 'Josefa Ortiz de Domínguez',
+        title: figureData.characterName,
         isCollapsed: false,
         position,
-        data: {
-          characterName: 'Josefa Ortiz de Domínguez',
-          isGeographicSite: false,
-          historicalEra: 'Guerra de Independencia de México (1810)',
-          birthDeathDates: '1768 - 1829',
-          shortBio: 'Heroína e insurgente novohispana clave en la Conspiración de Querétaro de 1810. Su oportuno aviso a Ignacio Pérez permitió el inicio del movimiento de Independencia.',
-          detailedContext: 'Nacida en Valladolid (hoy Morelia), esposa del corregidor Miguel Domínguez. En su casa se organizaron las tertulias literarias que gestaron la insurgencia nacional.',
-          avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
-          bookSpineStyle: 'diario_republicano',
-          moments: [
-            {
-              id: 'm-1',
-              title: 'La Conspiración de Querétaro',
-              yearOrDate: 'Septiembre de 1810',
-              description: 'En la casa del Corregimiento se reúnen criollos insurgentes para trazar los planos de la soberanía nacional.',
-              imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
-              locationName: 'Casa de la Corregidora, Querétaro',
-              coordinates: { lat: 20.5931, lng: -100.3928 },
-              narrativeCaption: 'Bajo la penumbra de las velas, se trazan los destinos de una nación soberana.'
-            },
-            {
-              id: 'm-2',
-              title: 'El Mensaje a Caballo en la Noche',
-              yearOrDate: '13-15 de Septiembre de 1810',
-              description: 'Al ser descubierta la conspiración y encerrada en su alcoba, Josefa logra comunicarse con el alcaide Ignacio Pérez para enviar el correo urgente a San Miguel y Dolores.',
-              imageUrl: '/images/history/josefa_taconeo_comic_2.png',
-              locationName: 'Santiago de Querétaro a San Miguel el Grande',
-              coordinates: { lat: 20.9144, lng: -100.7452 },
-              narrativeCaption: 'Un golpe en el piso de la alcoba y una carta sellada desatan el galope de la libertad.'
-            },
-            {
-              id: 'm-3',
-              title: 'La Cabalgata Nocturna de Ignacio Pérez',
-              yearOrDate: '15 de Septiembre de 1810',
-              description: 'El mensajero Ignacio Pérez cabalga a toda prisa por veredas coloniales para advertir a Allende y Aldama antes del cateo realista.',
-              imageUrl: '/images/history/josefa_alerta_comic_3.png',
-              locationName: 'Ruta Querétaro - San Miguel de Allende - Dolores',
-              coordinates: { lat: 20.9144, lng: -100.7452 },
-              narrativeCaption: 'Cada legua acorta el tiempo hacia la libertad en medio de la noche colonial.'
-            },
-            {
-              id: 'm-4',
-              title: 'El Grito de Dolores',
-              yearOrDate: '16 de Septiembre de 1810',
-              description: 'El cura Miguel Hidalgo, alertado por el mensaje de Josefa, llama al pueblo con las campanas de la parroquia a levantarse en armas.',
-              imageUrl: '/images/history/hidalgo_grito_comic_4.png',
-              locationName: 'Parroquia de Nuestra Señora de los Dolores',
-              coordinates: { lat: 21.1561, lng: -100.9328 },
-              narrativeCaption: 'El llamado de la campana en la madrugada consuma la insurrección popular.'
-            }
-          ],
-          keyLocations: [
-            {
-              id: 'loc-1',
-              name: 'Casa de la Corregidora (Palacio de Gobierno de Querétaro)',
-              stateOrCountry: 'Querétaro, México',
-              coordinates: { lat: 20.5931, lng: -100.3928 },
-              significance: 'Sede de las tertulias secretas de la conspiración de 1810 y sitio del encierro donde Josefa dio aviso a la patria.',
-              imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
-            },
-            {
-              id: 'loc-2',
-              name: 'San Miguel de Allende (San Miguel el Grande)',
-              stateOrCountry: 'Guanajuato, México',
-              coordinates: { lat: 20.9144, lng: -100.7452 },
-              significance: 'Destino del correo a galope llevado por Ignacio Pérez para prevenir al capitán Ignacio Allende.',
-              imageUrl: '/images/history/san_miguel_allende.jpg'
-            },
-            {
-              id: 'loc-3',
-              name: 'Parroquia de Dolores Hidalgo',
-              stateOrCountry: 'Guanajuato, México',
-              coordinates: { lat: 21.1561, lng: -100.9328 },
-              significance: 'Cuna de la Independencia nacional donde Hidalgo proclamó el inicio de la gesta armada.',
-              imageUrl: '/images/history/parroquia_dolores.jpg'
-            },
-            {
-              id: 'loc-4',
-              name: 'Panteón de los Queretanos Ilustres',
-              stateOrCountry: 'Querétaro, México',
-              coordinates: { lat: 20.5975, lng: -100.3840 },
-              significance: 'Mausoleo cívico donde reposan con veneración nacional los restos de Doña Josefa Ortiz.',
-              imageUrl: '/images/history/panteon_queretanos_ilustres.jpg'
-            }
-          ],
-          videoClip: {
-            videoUrl: 'https://www.youtube.com/watch?v=25cq1V8AsTg',
-            durationSeconds: 15,
-            title: 'El Correo de la Libertad: Josefa Ortiz de Domínguez',
-            narratorScript: 'En septiembre de 1810, la conspiración de Querétaro fue descubierta. Encerrada en su alcoba, Josefa Ortiz de Domínguez logró enviar un mensaje urgente que cambió la historia de México para siempre.'
-          },
-          verificationQuestions: [
-            {
-              id: 'vq-1',
-              question: '¿Qué acción decisiva realizó Josefa Ortiz de Domínguez al enterarse de que la conspiración había sido descubierta?',
-              options: [
-                'Huyó de inmediato al extranjero',
-                'Alertó oportunamente a través de un mensajero a los líderes insurgentes',
-                'Entregó las armas al ejército realista',
-                'Se declaró neutral ante el conflicto'
-              ],
-              correctIndex: 1,
-              explanation: 'Josefa dio aviso a Ignacio Pérez, quien cabalgó de noche para alertar a Allende e Hidalgo, precipitando el Grito de Dolores.'
-            },
-            {
-              id: 'vq-2',
-              question: '¿En qué ciudad se llevaron a cabo las tertulias literarias que en realidad eran reuniones conspirativas?',
-              options: ['Guadalajara', 'Veracruz', 'Santiago de Querétaro', 'Puebla'],
-              correctIndex: 2,
-              explanation: 'Las tertulias se realizaban en la casa de los corregidores en la ciudad de Santiago de Querétaro.'
-            },
-            {
-              id: 'vq-3',
-              question: '¿Por qué Josefa Ortiz de Domínguez rechazó los honores ofrecidos por Agustín de Iturbide?',
-              options: [
-                'Porque defendía firmemente los ideales de una República y no de un Imperio',
-                'Porque prefería vivir en España',
-                'Por motivos de salud',
-                'Porque no le interesaban los asuntos de la nación'
-              ],
-              correctIndex: 0,
-              explanation: 'Fiel a los ideales de libertad e igualdad, rechazó servir como dama de honor en la corte del efímero Imperio de Iturbide.'
-            },
-            {
-              id: 'vq-4',
-              question: '¿Quién fue el mensajero que cabalgó desde Querétaro para llevar la advertencia de Josefa?',
-              options: ['Vicente Guerrero', 'Ignacio Pérez', 'Mariano Abasolo', 'José María Morelos'],
-              correctIndex: 1,
-              explanation: 'El alcaide Ignacio Pérez fue quien recibió la señal y montó a caballo para advertir a los insurgentes.'
-            },
-            {
-              id: 'vq-5',
-              question: '¿Cuál es el valor histórico y cívico del papel de las mujeres como Josefa Ortiz en la Independencia?',
-              options: [
-                'Demostraron liderazgo, valentía y convicción patriótica decisiva para el nacimiento de la nación',
-                'Su participación fue únicamente decorativa',
-                'Solo apoyaron con recursos económicos secundarios',
-                'No tuvieron impacto en las decisiones estratégicas'
-              ],
-              correctIndex: 0,
-              explanation: 'Su valentía y visión política fueron determinantes para que el movimiento de Independencia no fuera aniquilado antes de nacer.'
-            }
-          ]
-        }
+        data: figureData
       } as any;
+    }
 
     default:
       return {
@@ -772,6 +645,117 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
       } as TextNarrativeBlock;
   }
 };
+
+/**
+ * Calcula un auto-layout topológico / por columnas libre de colisiones (paso horizontal 380px, vertical 235px)
+ * preservando las ramas condicionales (Maestría >=70% y Refuerzo <70%).
+ */
+function computeAntiCollisionLayout(
+  blocks: StudioBlock[],
+  connections: FlowConnection[],
+  startNodeId: string | null
+): { blocks: StudioBlock[]; connections: FlowConnection[] } {
+  if (blocks.length === 0) return { blocks: [], connections: [] };
+
+  let activeConns = [...connections];
+  // Si no hay ninguna conexión, crear secuencia base conectando bifurcaciones si existen
+  if (activeConns.length === 0 && blocks.length > 1) {
+    for (let i = 0; i < blocks.length - 1; i++) {
+      activeConns.push({
+        id: `conn-auto-${i}`,
+        sourceNodeId: blocks[i].id,
+        targetNodeId: blocks[i + 1].id,
+        label: 'next',
+      });
+    }
+  }
+
+  // Asegurar que los bloques logic_branch tengan etiquetas claras en sus ramas salientes
+  blocks.forEach((b) => {
+    if (b.type === 'logic_branch') {
+      const outgoing = activeConns.filter((c) => c.sourceNodeId === b.id);
+      if (outgoing.length >= 2) {
+        if (!outgoing[0].label || outgoing[0].label === 'next') {
+          outgoing[0].label = `≥ ${b.data.thresholdScore || 70}% Ruta Maestría`;
+        }
+        if (!outgoing[1].label || outgoing[1].label === 'next') {
+          outgoing[1].label = `< ${b.data.thresholdScore || 70}% Ruta Refuerzo`;
+        }
+      }
+    }
+  });
+
+  // Calcular nivel de columna por BFS desde el nodo inicial
+  const rootId = startNodeId && blocks.some((b) => b.id === startNodeId) ? startNodeId : blocks[0].id;
+  const colMap = new Map<string, number>();
+  const rowOrderInCol = new Map<number, string[]>();
+
+  const queue: { id: string; col: number }[] = [{ id: rootId, col: 0 }];
+  colMap.set(rootId, 0);
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    const out = activeConns.filter((c) => c.sourceNodeId === curr.id);
+    out.forEach((conn) => {
+      if (!colMap.has(conn.targetNodeId)) {
+        const nextCol = curr.col + 1;
+        colMap.set(conn.targetNodeId, nextCol);
+        queue.push({ id: conn.targetNodeId, col: nextCol });
+      }
+    });
+  }
+
+  // Asignar columnas a nodos no alcanzados desde rootId
+  let maxCol = Math.max(0, ...Array.from(colMap.values()));
+  blocks.forEach((b) => {
+    if (!colMap.has(b.id)) {
+      const col = Math.floor(colMap.size / 2);
+      colMap.set(b.id, col);
+      if (col > maxCol) maxCol = col;
+    }
+  });
+
+  // Agrupar por columna (máximo 2 nodos por columna para visibilidad panorámica en 16:9)
+  const finalPosMap = new Map<string, FlowNodePosition>();
+  blocks.forEach((b) => {
+    const rawCol = colMap.get(b.id) ?? 0;
+    const list = rowOrderInCol.get(rawCol) || [];
+    list.push(b.id);
+    rowOrderInCol.set(rawCol, list);
+  });
+
+  // Si una columna lineal tiene solo 1 nodo tras otro en cadena larga (>4 columnas), compactar en grilla de 2 filas
+  const totalCols = rowOrderInCol.size;
+  if (totalCols > 4 && Array.from(rowOrderInCol.values()).every((arr) => arr.length === 1)) {
+    blocks.forEach((b, idx) => {
+      const col = Math.floor(idx / 2);
+      const row = idx % 2;
+      finalPosMap.set(b.id, {
+        x: 45 + col * 380,
+        y: 45 + row * 235,
+      });
+    });
+  } else {
+    Array.from(rowOrderInCol.entries())
+      .sort((a, b) => a[0] - b[0])
+      .forEach(([colIdx, nodeIds]) => {
+        nodeIds.forEach((id, rowIdx) => {
+          const yBase = nodeIds.length === 1 ? 110 : 40 + rowIdx * 235;
+          finalPosMap.set(id, {
+            x: 45 + colIdx * 380,
+            y: yBase,
+          });
+        });
+      });
+  }
+
+  const layoutedBlocks = blocks.map((b) => ({
+    ...b,
+    position: finalPosMap.get(b.id) || b.position || { x: 45, y: 80 },
+  }));
+
+  return { blocks: layoutedBlocks, connections: activeConns };
+}
 
 export const useActivityBuilderStore = create<ActivityBuilderState>()(
   persist(
@@ -791,14 +775,32 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
 
       setDraggedNewBlockType: (type: StudioBlockType | null) => set({ draggedNewBlockType: type }),
 
-      // Añadir bloque / nodo con conexión automática al nodo previo
+      // Añadir bloque / nodo con conexión automática al nodo previo y posicionamiento sin colisión
       addBlock: (type: StudioBlockType, insertAtIndex?: number, customPos?: FlowNodePosition) => {
         const state = get();
         const nextIndex = state.blocks.length;
-        const newBlock = createDefaultBlock(type, nextIndex);
+        const newBlock = createDefaultBlock(type, nextIndex, state.blocks);
         
         if (customPos) {
           newBlock.position = customPos;
+        } else {
+          // Garantizar que la posición calculada no colisione con ningún nodo existente
+          let candidateX = newBlock.position?.x || 45;
+          let candidateY = newBlock.position?.y || 45;
+          let attempts = 0;
+          while (
+            attempts < 20 &&
+            state.blocks.some(
+              (existing) =>
+                Math.abs((existing.position?.x || 0) - candidateX) < 320 &&
+                Math.abs((existing.position?.y || 0) - candidateY) < 190
+            )
+          ) {
+            attempts++;
+            candidateX = 45 + Math.floor((nextIndex + attempts) / 2) * 380;
+            candidateY = 45 + ((nextIndex + attempts) % 2) * 235;
+          }
+          newBlock.position = { x: candidateX, y: candidateY };
         }
 
         // Si es el primer nodo, marcarlo como nodo de inicio
@@ -868,6 +870,98 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
         }));
       },
 
+      // Cambia al instante el personaje o sitio histórico de un bloque (desde Catálogo, Bóveda Curricular o Motor IA)
+      switchHistoricalFigureOnBlock: async (id: string, characterOrSiteName: string, isGeographicSite: boolean = false) => {
+        const cleanName = characterOrSiteName.trim();
+        if (!cleanName) return;
+
+        // 1. Actualización optimista inmediata con el catálogo en memoria
+        const optimisticData = buildDynamicHistoricalFigureData(cleanName, 0, isGeographicSite);
+        set((state) => ({
+          blocks: state.blocks.map((b) =>
+            b.id === id && b.type === 'historical_figure_block'
+              ? ({
+                  ...b,
+                  title: optimisticData.characterName,
+                  data: {
+                    ...b.data,
+                    ...optimisticData,
+                  },
+                } as any)
+              : b
+          ),
+        }));
+
+        // 2. Consultar la Bóveda Curricular (22+ nodos completos) o generar con Motor IA Pedagógica y persistir en Bóveda
+        try {
+          const res = await fetch(`/api/vault/historical-figures?name=${encodeURIComponent(cleanName)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.found && json.figure) {
+              set((state) => ({
+                blocks: state.blocks.map((b) =>
+                  b.id === id && b.type === 'historical_figure_block'
+                    ? ({
+                        ...b,
+                        title: json.figure.characterName || cleanName,
+                        data: {
+                          ...b.data,
+                          ...json.figure,
+                          characterOrSiteName: json.figure.characterName || cleanName,
+                          firstPersonGreeting:
+                            json.figure.firstPersonGreeting ||
+                            json.figure.shortBio ||
+                            optimisticData.firstPersonGreeting,
+                          isFromVault: true,
+                        },
+                      } as any)
+                    : b
+                ),
+              }));
+              return;
+            }
+          }
+
+          // Fallback Pedagógico Vault-First: Si no existe aún en la Bóveda, generarlo en 1ª persona y persistirlo
+          const genRes = await fetch('/api/ai/historical-figure', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'generate_figure',
+              characterName: cleanName,
+              isGeographicSite,
+            }),
+          });
+          if (genRes.ok) {
+            const genJson = await genRes.json();
+            if (genJson.success && genJson.figure) {
+              set((state) => ({
+                blocks: state.blocks.map((b) =>
+                  b.id === id && b.type === 'historical_figure_block'
+                    ? ({
+                        ...b,
+                        title: genJson.figure.characterName || cleanName,
+                        data: {
+                          ...b.data,
+                          ...genJson.figure,
+                          characterOrSiteName: genJson.figure.characterName || cleanName,
+                          firstPersonGreeting:
+                            genJson.figure.firstPersonGreeting ||
+                            genJson.figure.shortBio ||
+                            optimisticData.firstPersonGreeting,
+                          isFromVault: true,
+                        },
+                      } as any)
+                    : b
+                ),
+              }));
+            }
+          }
+        } catch {
+          // Mantiene los datos optimistas del catálogo
+        }
+      },
+
       updateNodePosition: (id: string, position: FlowNodePosition) => {
         set((state) => ({
           blocks: state.blocks.map((b) => (b.id === id ? { ...b, position } : b)),
@@ -913,8 +1007,8 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
           title: `${blockToDup.title} (Copia)`,
           isStartNode: false,
           position: {
-            x: (blockToDup.position?.x || 100) + 60,
-            y: (blockToDup.position?.y || 150) + 60,
+            x: (blockToDup.position?.x || 100) + 360,
+            y: (blockToDup.position?.y || 100) + 40,
           }
         };
 
@@ -1009,11 +1103,19 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
           const exists = state.connections.some(c => c.sourceNodeId === sourceNodeId && c.targetNodeId === targetNodeId);
           if (exists) return state;
 
+          const sourceBlock = state.blocks.find((b) => b.id === sourceNodeId);
+          let resolvedLabel = label;
+          if (!resolvedLabel && sourceBlock?.type === 'logic_branch') {
+            const existingOut = state.connections.filter((c) => c.sourceNodeId === sourceNodeId);
+            const thresh = (sourceBlock as any).data?.thresholdScore || 70;
+            resolvedLabel = existingOut.length === 0 ? `≥ ${thresh}% Ruta Maestría` : `< ${thresh}% Ruta Refuerzo`;
+          }
+
           const newConn: FlowConnection = {
             id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
             sourceNodeId,
             targetNodeId,
-            label,
+            label: resolvedLabel,
           };
 
           return { connections: [...state.connections, newConn] };
@@ -1038,28 +1140,16 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
 
       autoLayoutNodes: () => {
         set((state) => {
-          const updatedBlocks = state.blocks.map((b, idx) => ({
-            ...b,
-            position: {
-              x: 80 + (idx * 290),
-              y: 160 + ((idx % 2) * 50),
-            }
-          }));
-
-          // Reconstruir conexiones lineales ordenadas
-          const newConnections: FlowConnection[] = [];
-          for (let i = 0; i < updatedBlocks.length - 1; i++) {
-            newConnections.push({
-              id: `conn-auto-${i}`,
-              sourceNodeId: updatedBlocks[i].id,
-              targetNodeId: updatedBlocks[i + 1].id,
-            });
-          }
+          const { blocks: layoutedBlocks, connections: layoutedConns } = computeAntiCollisionLayout(
+            state.blocks,
+            state.connections,
+            state.startNodeId
+          );
 
           return {
-            blocks: updatedBlocks,
-            connections: newConnections,
-            startNodeId: updatedBlocks[0]?.id || null,
+            blocks: layoutedBlocks,
+            connections: layoutedConns,
+            startNodeId: layoutedBlocks[0]?.id || null,
           };
         });
       },
@@ -1102,31 +1192,37 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
       setIsExtendedMenuOpen: (isOpen: boolean) => set({ isExtendedMenuOpen: isOpen }),
       setIsPreviewModalOpen: (isOpen: boolean) => set({ isPreviewModalOpen: isOpen }),
       setIsNodeConfigDrawerOpen: (isOpen: boolean) => set({ isNodeConfigDrawerOpen: isOpen }),
-      setZoomLevel: (zoom: number) => set({ zoomLevel: Math.min(1.3, Math.max(0.7, zoom)) }),
+      setZoomLevel: (zoom: number) => set({ zoomLevel: Math.min(1.3, Math.max(0.6, zoom)) }),
 
       loadPresetBlocks: (presetBlocks: StudioBlock[], meta?: Partial<ActivityBuilderMetadata>) => {
-        // Asignar posiciones y conexiones lineales al preset
-        const positioned = presetBlocks.map((b, idx) => ({
+        // Asignar posiciones anti-colisión de 380px y conexiones respetando bifurcaciones
+        const rawPositioned = presetBlocks.map((b, idx) => ({
           ...b,
           isStartNode: idx === 0,
           position: b.position || {
-            x: 80 + (idx * 290),
-            y: 160 + ((idx % 2) * 50),
+            x: 45 + Math.floor(idx / 2) * 380,
+            y: 45 + (idx % 2) * 235,
           }
         }));
 
         const presetConnections: FlowConnection[] = [];
-        for (let i = 0; i < positioned.length - 1; i++) {
+        for (let i = 0; i < rawPositioned.length - 1; i++) {
           presetConnections.push({
             id: `conn-preset-${i}`,
-            sourceNodeId: positioned[i].id,
-            targetNodeId: positioned[i + 1].id,
+            sourceNodeId: rawPositioned[i].id,
+            targetNodeId: rawPositioned[i + 1].id,
           });
         }
 
+        const { blocks: positioned, connections: finalConns } = computeAntiCollisionLayout(
+          rawPositioned,
+          presetConnections,
+          rawPositioned[0]?.id || null
+        );
+
         set((state) => ({
           blocks: positioned,
-          connections: presetConnections,
+          connections: finalConns,
           startNodeId: positioned[0]?.id || null,
           selectedBlockId: positioned[0]?.id || null,
           metadata: meta ? { ...state.metadata, ...meta } : state.metadata,
@@ -1145,14 +1241,54 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
             quizQuestions.push({
               question: qData.question,
               options: qData.options,
-              correctIndex: qData.correctIndex,
+              correctIndex: qData.correctIndex >= 0 ? qData.correctIndex : 0,
               explanation: qData.explanation,
               imageUrl: qData.imageUrl,
+            });
+          } else if (block.type === 'historical_figure_block') {
+            const hData = block.data;
+            if (hData.verificationQuestions && hData.verificationQuestions.length > 0) {
+              hData.verificationQuestions.forEach((vq) => {
+                quizQuestions.push({
+                  question: `🏛️ ${hData.characterName}: ${vq.question}`,
+                  options: vq.options,
+                  correctIndex: vq.correctIndex,
+                  explanation: vq.explanation,
+                });
+              });
+            } else {
+              quizQuestions.push({
+                question: `🏛️ Protagonista Histórico: ${hData.characterName} (${hData.birthDeathDates || hData.historicalEra})`,
+                options: ['Explorar Libro Mágico 3D y Mapa', 'Dialogar en 1ª Persona'],
+                correctIndex: 0,
+                explanation: hData.shortBio,
+              });
+            }
+          } else if (block.type === 'fill_in_blanks') {
+            quizQuestions.push({
+              question: `✍️ Completar Espacios: ${block.data.textWithBlanks.replace(/\[(.*?)\]/g, '_____')}`,
+              options: block.data.wordBank?.length >= 2 ? block.data.wordBank : ['Verificar banco de palabras', 'Continuar'],
+              correctIndex: 0,
+              explanation: `Texto completo: ${block.data.textWithBlanks.replace(/\[(.*?)\]/g, '$1')}`,
+            });
+          } else if (block.type === 'ordering_sequence') {
+            quizQuestions.push({
+              question: `🔢 Ordenar Secuencia: ${block.data.instructions}`,
+              options: block.data.stepsInCorrectOrder?.slice(0, 4) || ['Paso 1', 'Paso 2'],
+              correctIndex: 0,
+              explanation: `Orden correcto verificado (${block.data.stepsInCorrectOrder?.length || 0} etapas).`,
+            });
+          } else if (block.type === 'drag_drop_match') {
+            quizQuestions.push({
+              question: `🔗 Emparejamiento: ${block.data.instructions}`,
+              options: block.data.pairs?.map((p) => `${p.left} → ${p.right}`) || ['Parejas conectadas'],
+              correctIndex: 0,
+              explanation: 'Parejas conceptuales vinculadas correctamente.',
             });
           } else if (block.type === 'text_narrative') {
             quizQuestions.push({
               question: `📖 ${block.title}: ${block.data.content}`,
-              options: ['¡Entendido! Continuar', 'Revisar detalles'],
+              options: ['¡Entendido! Continuar', 'Escuchar con Voz Neural LatAm'],
               correctIndex: 0,
               explanation: block.data.content,
             });
@@ -1165,17 +1301,17 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
             });
           } else if (block.type === 'boss_enemy') {
             quizQuestions.push({
-              question: `⚔️ Desafío contra ${block.data.bossName}: ¡Responde rápido para atacar!`,
-              options: ['¡Atacar con Sabiduría!', 'Defenderse', 'Usar Poción', 'Estrategia de Equipo'],
+              question: `⚔️ Desafío contra ${block.data.bossName}: ¡Responde para realizar un golpe crítico!`,
+              options: ['¡Atacar con Sabiduría Curricular!', 'Defensa Estratégica', 'Usar Potenciador', 'Consulta de Equipo'],
               correctIndex: 0,
-              explanation: `¡Golpe crítico acertado al ${block.data.bossName}!`,
+              explanation: `¡Golpe crítico acertado a ${block.data.bossName}!`,
             });
           } else {
             quizQuestions.push({
-              question: `✨ Módulo Especial: ${block.title}`,
-              options: ['Continuar', 'Explorar'],
+              question: `✨ ${block.title}`,
+              options: ['Completar Bloque Interactivo', 'Explorar'],
               correctIndex: 0,
-              explanation: 'Actividad interactiva completada.',
+              explanation: 'Módulo interactivo completado satisfactoriamente.',
             });
           }
         });
@@ -1200,12 +1336,12 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
 
       resetWorkspace: () => {
         set({
-          metadata: DEFAULT_METADATA,
-          blocks: [],
-          connections: [],
-          startNodeId: null,
-          selectedBlockId: null,
-          history: [[]],
+          metadata: MEXICAN_INDEPENDENCE_METADATA,
+          blocks: MEXICAN_INDEPENDENCE_BLOCKS,
+          connections: MEXICAN_INDEPENDENCE_CONNECTIONS,
+          startNodeId: MEXICAN_INDEPENDENCE_BLOCKS[0].id,
+          selectedBlockId: MEXICAN_INDEPENDENCE_BLOCKS[0].id,
+          history: [MEXICAN_INDEPENDENCE_BLOCKS],
           historyIndex: 0,
           isExtendedMenuOpen: false,
           isPreviewModalOpen: false,
@@ -1216,6 +1352,20 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
     }),
     {
       name: 'iskool_activity_builder_state',
+      version: 3,
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 3) {
+          // Migrar al flujo evolucionado sin colisiones y con personajes diversificados
+          return {
+            metadata: MEXICAN_INDEPENDENCE_METADATA,
+            blocks: MEXICAN_INDEPENDENCE_BLOCKS,
+            connections: MEXICAN_INDEPENDENCE_CONNECTIONS,
+            startNodeId: MEXICAN_INDEPENDENCE_BLOCKS[0].id,
+            selectedBlockId: MEXICAN_INDEPENDENCE_BLOCKS[0].id,
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         metadata: state.metadata,
         blocks: state.blocks,

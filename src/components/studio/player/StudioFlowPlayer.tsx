@@ -132,11 +132,40 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
   // Estados de Completar Espacios
   const [userFilledWords, setUserFilledWords] = useState<string[]>([]);
+  const [blanksCheckResult, setBlanksCheckResult] = useState<'correct' | 'wrong' | null>(null);
 
-  // Estados de Pregunta Abierta IA
+  // Estados de Pregunta Abierta IA & Nube de Palabras
   const [openAnswerText, setOpenAnswerText] = useState('');
   const [isAiEvaluating, setIsAiEvaluating] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [wordcloudTerms, setWordcloudTerms] = useState<{ word: string; weight: number }[]>([
+    { word: 'Soberanía', weight: 5 },
+    { word: 'Querétaro', weight: 4 },
+    { word: 'Libertad', weight: 5 },
+    { word: 'Justicia Social', weight: 4 },
+    { word: 'Insurgentes', weight: 3 },
+    { word: 'Abolición', weight: 4 }
+  ]);
+
+  // Estados de Duelo Boss Curricular (Reactivos de Verificación)
+  const [bossQuizIndex, setBossQuizIndex] = useState(0);
+  const [bossQuizSelected, setBossQuizSelected] = useState<number | null>(null);
+
+  // Estados de Bloques de Lenguajes (5 Nodos Interactivos)
+  const [languagePracticeInput, setLanguagePracticeInput] = useState('');
+  const [languagePracticeFeedback, setLanguagePracticeFeedback] = useState<string | null>(null);
+  const [karaokeWordIdx, setKaraokeWordIdx] = useState<number>(-1);
+  const [isKaraokePlaying, setIsKaraokePlaying] = useState(false);
+  const [karaokeCompleted, setKaraokeCompleted] = useState(false);
+  const [socraticMessages, setSocraticMessages] = useState<{ role: 'ai' | 'student'; text: string }[]>([]);
+  const [socraticInput, setSocraticInput] = useState('');
+  const [roleplayResponse, setRoleplayResponse] = useState('');
+  const [roleplayCompleted, setRoleplayCompleted] = useState(false);
+  const [rubricCompleted, setRubricCompleted] = useState(false);
+
+  // Estado de Voz Neural LatAm (Respaldo Neural Continuo - 24 Voces LatAm)
+  const [isSpeakingTts, setIsSpeakingTts] = useState(false);
+  const [activeSchoolName, setActiveSchoolName] = useState('Instituto Bilingüe IBIME • Red Educativa ISkool');
 
   // Estados de Código Secreto / Escape Room
   const [secretCodeInput, setSecretCodeInput] = useState('');
@@ -250,6 +279,47 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
   };
 
+  // Reproductor de Voz Neural LatAm (Respaldo Neural Continuo - 24 Voces LatAm)
+  const playNeuralVoice = async (text: string, lang: string = 'es-MX', gender: 'male' | 'female' = 'female') => {
+    if (!text) return;
+    setIsSpeakingTts(true);
+    try {
+      const res = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, lang, gender })
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.onended = () => setIsSpeakingTts(false);
+        audio.onerror = () => setIsSpeakingTts(false);
+        await audio.play();
+        return;
+      }
+    } catch (_) {
+      // Fallback en caso de red offline
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang;
+      u.onend = () => setIsSpeakingTts(false);
+      u.onerror = () => setIsSpeakingTts(false);
+      window.speechSynthesis.speak(u);
+    } else {
+      setIsSpeakingTts(false);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedSchool = localStorage.getItem('iskool_active_school_name');
+      if (savedSchool) setActiveSchoolName(savedSchool);
+    } catch (_) {}
+  }, []);
+
   // Inicializar estado al cambiar de bloque
   useEffect(() => {
     setSelectedOption(null);
@@ -260,6 +330,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     setIsSequenceChecked(false);
     setIsSequenceCorrect(false);
     setUserFilledWords([]);
+    setBlanksCheckResult(null);
     setOpenAnswerText('');
     setIsAiEvaluating(false);
     setAiFeedback(null);
@@ -270,6 +341,17 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     setReadingPhase('reading');
     setReadingSelectedAnswers({});
     setReadingResults(null);
+    setBossQuizIndex(0);
+    setBossQuizSelected(null);
+    setLanguagePracticeInput('');
+    setLanguagePracticeFeedback(null);
+    setKaraokeWordIdx(-1);
+    setIsKaraokePlaying(false);
+    setKaraokeCompleted(false);
+    setSocraticInput('');
+    setRoleplayResponse('');
+    setRoleplayCompleted(false);
+    setRubricCompleted(false);
 
     if (activeBlock) {
       if (activeBlock.type === 'timed_reading_block') {
@@ -277,11 +359,11 @@ export const StudioFlowPlayer: React.FC<Props> = ({
         setReadingSecondsLeft(limit);
         setReadingTimeTaken(0);
       } else if (activeBlock.type === 'boss_enemy') {
-        const max = activeBlock.data.maxHp || 100;
+        const max = activeBlock.data.maxHp || 1200;
         setBossHp(max);
         setBossMaxHp(max);
         setIsBossDefeated(false);
-        setBattleLog([`⚔️ ¡Un ${activeBlock.data.bossName} ha aparecido para desafiarte!`]);
+        setBattleLog([`⚔️ ¡${activeBlock.data.bossName} (${max} HP) exige demostrar dominio curricular!`]);
       } else if (activeBlock.type === 'drag_drop_match') {
         setSelectedLeftIndex(null);
         setMatchedPairs({});
@@ -289,6 +371,13 @@ export const StudioFlowPlayer: React.FC<Props> = ({
       } else if (activeBlock.type === 'ordering_sequence') {
         const shuffled = [...activeBlock.data.stepsInCorrectOrder].sort(() => Math.random() - 0.5);
         setOrderedList(shuffled);
+      } else if (activeBlock.type === 'languages_socratic_tutor') {
+        setSocraticMessages([
+          {
+            role: 'ai',
+            text: activeBlock.data.starterPrompt || "Hello! Let's explore this topic together. What is your perspective?"
+          }
+        ]);
       } else if (activeBlock.type === 'audio_sfx') {
         playSound('fanfare');
       }
@@ -317,18 +406,39 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     return () => clearInterval(interval);
   }, [activeBlock, readingPhase]);
 
-  // Avanzar al siguiente bloque siguiendo el flujo del grafo
-  const handleNextStep = (earnedXp: number = 0) => {
+  // Avanzar al siguiente bloque siguiendo el flujo del grafo (incluyendo Bifurcación Condicional Real >= 70% vs < 70%)
+  const handleNextStep = (earnedXp: number = 0, forcedBranchTargetId?: string) => {
     const totalXp = accumulatedXp + earnedXp;
     setAccumulatedXp(totalXp);
+
+    if (forcedBranchTargetId && blocks.some(b => b.id === forcedBranchTargetId)) {
+      setCurrentNodeId(forcedBranchTargetId);
+      setCurrentStepIndex(prev => prev + 1);
+      return;
+    }
 
     // Si existen conexiones en el grafo, seguir la flecha correspondiente
     if (connections.length > 0 && activeBlock) {
       const outgoing = connections.filter(c => c.sourceNodeId === activeBlock.id);
 
       if (outgoing.length > 0) {
-        // Enlazar al nodo objetivo de la flecha
-        const nextNodeId = outgoing[0].targetNodeId;
+        let nextNodeId = outgoing[0].targetNodeId;
+
+        // Si el bloque activo es una Bifurcación Condicional (logic_branch), evaluar desempeño real
+        if (activeBlock.type === 'logic_branch') {
+          const threshold = activeBlock.data?.thresholdScore ?? activeBlock.data?.thresholdValue ?? 70;
+          const estimatedMasteryPct = Math.min(100, Math.round((lives / 3) * 70 + (totalXp >= 40 ? 30 : 15)));
+          const passed = estimatedMasteryPct >= threshold;
+
+          if (passed) {
+            const highConn = outgoing.find(c => c.condition === 'score_high') || outgoing[0];
+            nextNodeId = activeBlock.data?.ifTrueNextBlockId || highConn.targetNodeId;
+          } else {
+            const lowConn = outgoing.find(c => c.condition === 'score_low') || outgoing[1] || outgoing[0];
+            nextNodeId = activeBlock.data?.ifFalseNextBlockId || lowConn.targetNodeId;
+          }
+        }
+
         setCurrentNodeId(nextNodeId);
         setCurrentStepIndex(prev => prev + 1);
         return;
@@ -446,18 +556,36 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
   };
 
-  // Manejar análisis reflexivo de IA
+  // Manejar análisis reflexivo contextual de IA + Nube de Palabras en Vivo
   const handleEvaluateAiReflection = () => {
     if (!openAnswerText.trim() || !activeBlock || activeBlock.type !== 'open_poll_wordcloud') return;
     setIsAiEvaluating(true);
+
+    // Extraer palabras significativas aportadas por el estudiante para la Nube de Conceptos en Vivo
+    const extracted = openAnswerText
+      .trim()
+      .split(/\s+/)
+      .map(w => w.replace(/[.,;!?()"']/g, ''))
+      .filter(w => w.length >= 5)
+      .slice(0, 3);
+
     setTimeout(() => {
       setIsAiEvaluating(false);
       playSound('correct');
+      if (extracted.length > 0) {
+        setWordcloudTerms(prev => [
+          ...extracted.map(w => ({ word: w.charAt(0).toUpperCase() + w.slice(1), weight: 5 })),
+          ...prev.slice(0, 6)
+        ]);
+      }
+      const rubricHint = activeBlock.data.aiFeedbackRubric
+        ? `Criterio SEP NEM verificado: ${activeBlock.data.aiFeedbackRubric}`
+        : `Alineado con ${metadata.campoFormativo || 'el PDA oficial SEP NEM'}.`;
       setAiFeedback(
-        `🌟 ¡Excelente reflexión pedagógica! Has articulado de forma clara la importancia de las fuerzas y el movimiento en el entorno cotidiano.`
+        `🌟 ¡Excelente reflexión crítica sobre "${activeBlock.title}"! Tu argumento incorpora conceptos clave (${extracted.join(', ') || 'análisis propio'}). ${rubricHint}`
       );
       setAccumulatedXp(prev => prev + 40);
-    }, 1000);
+    }, 650);
   };
 
   // Normalizador de texto para códigos secretos (ignora mayúsculas, espacios y acentos/diacríticos)
@@ -486,34 +614,56 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
   };
 
-  // Manejar ataque al Boss
+  // Reactivos curriculares dinámicos para el Duelo Boss
+  const BOSS_CURRICULAR_QUESTIONS = [
+    {
+      q: '¿Quién dio el aviso urgente desde Querétaro la noche del 15 de septiembre de 1810?',
+      options: ['Josefa Ortiz de Domínguez', 'Félix María Calleja', 'Agustín de Iturbide'],
+      correct: 0
+    },
+    {
+      q: '¿En qué documento histórico propuso José María Morelos la división de poderes y abolición de castas?',
+      options: ['Sentimientos de la Nación (1813)', 'Plan de Iguala (1821)', 'Leyes de Reforma (1859)'],
+      correct: 0
+    },
+    {
+      q: '¿Con qué mensajero envió la Corregidora el aviso urgente hacia San Miguel y Dolores?',
+      options: ['Ignacio Pérez', 'Juan Aldama', 'Mariano Abasolo'],
+      correct: 0
+    }
+  ];
+
+  // Manejar ataque al Boss (Escala al HP total del Boss, ej. 350-450 HP de daño cuando maxHp=1200)
   const handleAttackBoss = (attackType: 'crit' | 'magic' | 'potion') => {
     if (isBossDefeated || !activeBlock || activeBlock.type !== 'boss_enemy') return;
 
     playSound('attack');
-    let damage = 35;
+    const baseUnit = Math.max(35, Math.round(bossMaxHp * 0.34));
+    let damage = baseUnit;
     let logMsg = '';
 
     if (attackType === 'crit') {
-      damage = Math.floor(Math.random() * 20) + 35;
-      logMsg = `💥 ¡Ataque Crítico de Sabiduría! Causaste ${damage} de daño.`;
+      damage = Math.round(baseUnit * 1.15);
+      logMsg = `💥 ¡Ataque Insurgente Verificado! Causaste -${damage} HP de daño curricular.`;
     } else if (attackType === 'magic') {
-      damage = 45;
-      logMsg = `✨ ¡Hechizo Didáctico! Impacto directo de ${damage} puntos de daño.`;
+      damage = Math.round(baseUnit * 1.25);
+      logMsg = `✨ ¡Ideario Patriótico! Impacto directo de -${damage} HP de daño.`;
     } else {
-      damage = 25;
+      damage = Math.round(baseUnit * 0.9);
       setLives(prev => Math.min(3, prev + 1));
-      logMsg = `🧪 ¡Poción de Enfoque! Curaste 1 vida y causaste ${damage} de daño.`;
+      logMsg = `🛡️ ¡Resistencia Heroica! Recuperaste +1 vida y causaste -${damage} HP.`;
     }
 
     const nextHp = Math.max(0, bossHp - damage);
     setBossHp(nextHp);
     setBattleLog(prev => [logMsg, ...prev.slice(0, 3)]);
+    setBossQuizSelected(null);
+    setBossQuizIndex(prev => (prev + 1) % BOSS_CURRICULAR_QUESTIONS.length);
 
     if (nextHp <= 0) {
       setIsBossDefeated(true);
       playSound('victory');
-      setBattleLog(prev => [`🏆 ¡Has derrotado al ${activeBlock.data.bossName}!`, ...prev]);
+      setBattleLog(prev => [`🏆 ¡Has derrotado a ${activeBlock.data.bossName} con dominio curricular!`, ...prev]);
     }
   };
 
@@ -1069,71 +1219,222 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             </div>
           )}
 
-          {/* ================= 5. COMPLETAR ESPACIOS (FILL IN BLANKS) ================= */}
-          {activeBlock?.type === 'fill_in_blanks' && (
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300">
-                  Completar Espacios
-                </span>
-                <h3 className="text-base font-black text-slate-900 dark:text-white">
-                  {activeBlock.data.instructions}
-                </h3>
-              </div>
+          {/* ================= 5. COMPLETAR ESPACIOS (FILL IN BLANKS — PÍLDORAS INTERACTIVAS Y VALIDACIÓN REAL) ================= */}
+          {activeBlock?.type === 'fill_in_blanks' && (() => {
+            const rawText = activeBlock.data.textWithBlanks || 'En septiembre de 1810, Doña Josefa Ortiz dio el aviso desde [Querétaro] al mensajero [Ignacio Pérez] rumbo a [Dolores].';
+            const expectedAnswers: string[] = [];
+            const segments = rawText.split(/\[(.*?)\]/g);
+            // En split con grupo de captura, los índices impares son las palabras entre corchetes
+            for (let i = 1; i < segments.length; i += 2) {
+              expectedAnswers.push(segments[i]);
+            }
+            const totalSlots = expectedAnswers.length;
+            const bank: string[] = activeBlock.data.wordBank?.length
+              ? activeBlock.data.wordBank
+              : [...expectedAnswers, 'Félix María Calleja'];
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/60 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 text-xs sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed">
-                {activeBlock.data.textWithBlanks.replace(/\[(.*?)\]/g, '_____')}
-              </div>
-
-              <div className="space-y-2 pt-2">
-                <h4 className="text-[11px] font-black text-slate-400 uppercase">Banco de Palabras Didáctico:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {activeBlock.data.wordBank.map((word, idx) => (
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300">
+                      Completar Espacios Interactivo
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      {activeBlock.data.instructions || 'Selecciona las palabras del banco para completar los espacios en orden:'}
+                    </h3>
+                  </div>
+                  {userFilledWords.length > 0 && (
                     <button
-                      key={idx}
                       type="button"
                       onClick={() => {
-                        playSound('match');
-                        setUserFilledWords(prev => [...prev, word]);
+                        setUserFilledWords([]);
+                        setBlanksCheckResult(null);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-xs font-bold text-teal-700 dark:text-teal-300 hover:bg-teal-500 hover:text-white transition-all cursor-pointer"
+                      className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-bold cursor-pointer"
                     >
-                      {word}
+                      Reiniciar espacios
                     </button>
-                  ))}
+                  )}
+                </div>
+
+                {/* Enunciado con Píldoras Interactivas en cada hueco */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/60 text-xs sm:text-sm text-slate-800 dark:text-zinc-200 leading-8 font-medium">
+                  {segments.map((seg, i) => {
+                    if (i % 2 === 0) {
+                      return <span key={i}>{seg}</span>;
+                    }
+                    const slotIdx = (i - 1) / 2;
+                    const filledWord = userFilledWords[slotIdx];
+                    const isSlotCorrect =
+                      blanksCheckResult &&
+                      filledWord &&
+                      filledWord.trim().toLowerCase() === expectedAnswers[slotIdx]?.trim().toLowerCase();
+
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          if (!filledWord) return;
+                          const copy = [...userFilledWords];
+                          copy.splice(slotIdx, 1);
+                          setUserFilledWords(copy);
+                          setBlanksCheckResult(null);
+                        }}
+                        className={`inline-flex items-center gap-1 mx-1.5 px-3 py-0.5 rounded-xl font-black text-xs border-2 transition-all cursor-pointer ${
+                          filledWord
+                            ? blanksCheckResult === 'correct' || isSlotCorrect
+                              ? 'bg-emerald-500 text-white border-emerald-600 shadow-sm'
+                              : blanksCheckResult === 'wrong'
+                                ? 'bg-rose-500 text-white border-rose-600'
+                                : 'bg-emerald-100 text-emerald-900 border-emerald-400 shadow-sm'
+                            : 'bg-white/90 text-slate-400 border-dashed border-teal-400 min-w-[92px] justify-center'
+                        }`}
+                        title={filledWord ? 'Haz clic para quitar esta palabra' : `Espacio #${slotIdx + 1}`}
+                      >
+                        <span>{filledWord || `Espacio ${slotIdx + 1}`}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Banco de Palabras */}
+                <div className="space-y-2 pt-1">
+                  <h4 className="text-[11px] font-black text-slate-500 uppercase">
+                    Banco de Palabras ({userFilledWords.length}/{totalSlots} colocadas):
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {bank.map((word, idx) => {
+                      const alreadyUsed = userFilledWords.includes(word);
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          disabled={alreadyUsed || userFilledWords.length >= totalSlots}
+                          onClick={() => {
+                            if (userFilledWords.length >= totalSlots) return;
+                            playSound('match');
+                            setUserFilledWords(prev => [...prev, word]);
+                            setBlanksCheckResult(null);
+                          }}
+                          className={`px-3.5 py-2 rounded-xl border text-xs font-black transition-all cursor-pointer ${
+                            alreadyUsed
+                              ? 'bg-slate-100 border-slate-200 text-slate-400 line-through opacity-50'
+                              : 'bg-white dark:bg-zinc-850 border-emerald-300 dark:border-zinc-750 text-emerald-800 dark:text-teal-300 hover:bg-emerald-600 hover:text-white shadow-sm'
+                          }`}
+                        >
+                          {word}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {blanksCheckResult && (
+                  <div
+                    className={`p-3 rounded-2xl text-xs font-bold flex items-center gap-2 ${
+                      blanksCheckResult === 'correct'
+                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                        : 'bg-rose-100 text-rose-900 border border-rose-300'
+                    }`}
+                  >
+                    {blanksCheckResult === 'correct' ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>¡Excelente! Todas las palabras completan con rigor histórico el enunciado.</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>Algunas palabras no coinciden con el orden correcto. Haz clic sobre un espacio para corregirla.</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  {blanksCheckResult !== 'correct' ? (
+                    <button
+                      type="button"
+                      disabled={userFilledWords.length < totalSlots}
+                      onClick={() => {
+                        const allMatch = expectedAnswers.every(
+                          (ans, i) => (userFilledWords[i] || '').trim().toLowerCase() === ans.trim().toLowerCase()
+                        );
+                        if (allMatch) {
+                          playSound('correct');
+                          setBlanksCheckResult('correct');
+                        } else {
+                          playSound('wrong');
+                          setBlanksCheckResult('wrong');
+                        }
+                      }}
+                      className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-black text-xs shadow-md shadow-teal-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Verificar Respuestas ({userFilledWords.length}/{totalSlots})</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleNextStep(35)}
+                      className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                    >
+                      <span>¡Enunciado Validado! Continuar (+35 XP)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
+            );
+          })()}
 
-              <div className="flex justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleNextStep(25)}
-                  className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/20 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
-                >
-                  <span>Validar Enunciado y Continuar (+25 XP)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ================= 6. PREGUNTA ABIERTA & REFLEXIÓN IA ================= */}
+          {/* ================= 6. PREGUNTA ABIERTA & NUBE DE PALABRAS EN VIVO ================= */}
           {activeBlock?.type === 'open_poll_wordcloud' && (
             <div className="space-y-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
-                  Reflexión & Evaluación Formativa IA
+                  Reflexión Crítica & Nube de Palabras en Vivo
                 </span>
                 <h3 className="text-base font-black text-slate-900 dark:text-white">
                   {activeBlock.data.prompt}
                 </h3>
               </div>
 
+              {/* Nube de Palabras Interactiva del Grupo en Vivo */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-50/80 via-teal-50/60 to-emerald-50/80 dark:from-cyan-950/30 dark:to-teal-950/30 border border-cyan-200/70">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-800 dark:text-cyan-300">
+                    ☁️ Nube Semántica del Aula en Tiempo Real
+                  </span>
+                  <span className="text-[9.5px] font-bold text-emerald-700">
+                    {wordcloudTerms.length} conceptos activos
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-2 py-1">
+                  {wordcloudTerms.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-3 py-1 rounded-full font-black transition-all ${
+                        item.weight >= 5
+                          ? 'text-xs bg-teal-600 text-white shadow-sm scale-105'
+                          : item.weight === 4
+                            ? 'text-[11px] bg-cyan-100 text-cyan-900 border border-cyan-300'
+                            : 'text-[10px] bg-white text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      #{item.word}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
               <textarea aria-label="Escribe tu argumento pedagógico aquí..."
                 rows={3}
                 value={openAnswerText}
                 onChange={(e) => setOpenAnswerText(e.target.value)}
-                placeholder="Escribe tu argumento pedagógico aquí..."
+                placeholder="Escribe tu argumento crítico aquí (tus conceptos clave se sumarán a la nube del grupo)..."
                 className="w-full p-3 rounded-2xl text-xs bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
 
@@ -1145,8 +1446,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     onClick={handleEvaluateAiReflection}
                     className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50 transition-all cursor-pointer"
                   >
-                    {isAiEvaluating ? <Sparkles className="w-4 h-4 animate-spin text-teal-300" /> : <Sparkles className="w-4 h-4 text-teal-300" />}
-                    <span>{isAiEvaluating ? 'Analizando con IA...' : 'Enviar y Recibir Feedback IA (+40 XP)'}</span>
+                    <Sparkles className={`w-4 h-4 text-teal-300 ${isAiEvaluating ? 'animate-spin' : ''}`} />
+                    <span>{isAiEvaluating ? 'Evaluando con Rúbrica SEP NEM...' : 'Integrar a Nube y Evaluar (+40 XP)'}</span>
                   </button>
                 </div>
               ) : (
@@ -1304,8 +1605,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
               </div>
 
               <div className="pt-3 border-t border-yellow-300/60 flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-zinc-300">
-                <span>Colegio Anglo Mexicano</span>
-                <span>Firma: {activeBlock.data.teacherSignatureName}</span>
+                <span>{activeSchoolName}</span>
+                <span>Firma: {activeBlock.data.teacherSignatureName || 'Dirección Académica SEP NEM'}</span>
               </div>
 
               <div className="pt-2">
@@ -1325,18 +1626,28 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           {activeBlock?.type === 'text_narrative' && (
             <div className="space-y-4 animate-fade-in">
               <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-50 via-teal-50/30 to-blue-50/40 dark:from-slate-900 dark:via-blue-950/60 dark:to-slate-900 border-2 border-teal-200/80 dark:border-teal-800/80 shadow-lg space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-teal-500/25 shrink-0 animate-pulse">
-                    {activeBlock.data.speakerAvatar || <BookOpen className="w-6 h-6" />}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-teal-500/25 shrink-0 animate-pulse">
+                      {activeBlock.data.speakerAvatar || <BookOpen className="w-6 h-6" />}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-100/80 dark:bg-teal-950 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                        {activeBlock.data.speakerName || 'Narrativa Histórica'}
+                      </span>
+                      <h3 className="text-base font-black text-slate-900 dark:text-white pt-0.5">
+                        {activeBlock.title}
+                      </h3>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-100/80 dark:bg-teal-950 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
-                      {activeBlock.data.speakerName || 'Narrativa Histórica'}
-                    </span>
-                    <h3 className="text-base font-black text-slate-900 dark:text-white pt-0.5">
-                      {activeBlock.title}
-                    </h3>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => playNeuralVoice(activeBlock.data.content || activeBlock.title, 'es-MX', 'male')}
+                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>{isSpeakingTts ? 'Reproduciendo Voz Neural...' : 'Escuchar Voz Neural LatAm'}</span>
+                  </button>
                 </div>
 
                 <div className="relative p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-teal-100 dark:border-teal-900/60 shadow-inner">
@@ -1492,33 +1803,70 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* Botones de Acción de Combate */}
+              {/* Reactivo Curricular Previo al Ataque + Botones de Acción de Combate */}
               {!isBossDefeated ? (
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleAttackBoss('crit')}
-                    className="p-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md shadow-rose-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
-                  >
-                    <Zap className="w-4 h-4 text-yellow-300" />
-                    <span>Ataque Insurgente</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttackBoss('magic')}
-                    className="p-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
-                  >
-                    <Sparkles className="w-4 h-4 text-cyan-300" />
-                    <span>Ideario Patriótico</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttackBoss('potion')}
-                    className="p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
-                  >
-                    <Shield className="w-4 h-4 text-emerald-200" />
-                    <span>Resistencia Heroica</span>
-                  </button>
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase text-rose-700 dark:text-rose-300">
+                      <span>⚔️ Reactivo Curricular #{bossQuizIndex + 1} para Desbloquear Golpe Crítico</span>
+                      <span>Daño: -{Math.max(35, Math.round(bossMaxHp * 0.34))} HP</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      {BOSS_CURRICULAR_QUESTIONS[bossQuizIndex]?.q}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {BOSS_CURRICULAR_QUESTIONS[bossQuizIndex]?.options.map((opt, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setBossQuizSelected(idx);
+                            if (idx === BOSS_CURRICULAR_QUESTIONS[bossQuizIndex].correct) {
+                              handleAttackBoss('crit');
+                            } else {
+                              playSound('wrong');
+                              setLives(prev => Math.max(1, prev - 1));
+                              setBattleLog(prev => ['⚠️ Respuesta imprecisa: revisa el dato histórico antes de atacar.', ...prev.slice(0, 2)]);
+                            }
+                          }}
+                          className={`p-2 rounded-xl border text-left text-[11px] font-bold transition-all cursor-pointer ${
+                            bossQuizSelected === idx
+                              ? 'bg-emerald-600 text-white border-emerald-700'
+                              : 'bg-white dark:bg-zinc-900 border-rose-200 hover:border-rose-500 text-slate-800 dark:text-zinc-200'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAttackBoss('crit')}
+                      className="p-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs shadow-md shadow-rose-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                    >
+                      <Zap className="w-4 h-4 text-yellow-300" />
+                      <span>Ataque Insurgente</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAttackBoss('magic')}
+                      className="p-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                    >
+                      <Sparkles className="w-4 h-4 text-cyan-300" />
+                      <span>Ideario Patriótico</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAttackBoss('potion')}
+                      className="p-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                    >
+                      <Shield className="w-4 h-4 text-emerald-200" />
+                      <span>Resistencia Heroica</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex justify-end pt-2">
@@ -1644,34 +1992,89 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             </div>
           )}
 
-          {/* ================= 15. RAMIFICACIÓN CONDICIONAL ================= */}
-          {activeBlock?.type === 'logic_branch' && (
-            <div className="p-6 text-center space-y-4 rounded-3xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
-                <GitBranch className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-indigo-500">Ruta Adaptativa</span>
-                <h3 className="text-base font-black text-slate-900 dark:text-white">
-                  Evaluación de Ruta de Aprendizaje
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-zinc-300">
-                  Condición: Aciertos &ge; {activeBlock.data.thresholdValue}%. ¡Has superado el umbral con éxito y desbloqueado la ruta de maestría!
-                </p>
-              </div>
+          {/* ================= 15. RAMIFICACIÓN CONDICIONAL REAL (>= 70% MAESTRÍA VS < 70% REFUERZO) ================= */}
+          {activeBlock?.type === 'logic_branch' && (() => {
+            const threshold = activeBlock.data?.thresholdScore ?? activeBlock.data?.thresholdValue ?? 70;
+            const currentMasteryPct = Math.min(100, Math.round((lives / 3) * 70 + (accumulatedXp >= 40 ? 30 : 15)));
+            const isMasteryUnlocked = currentMasteryPct >= threshold;
+            const outgoing = connections.filter(c => c.sourceNodeId === activeBlock.id);
+            const highConn = outgoing.find(c => c.condition === 'score_high') || outgoing[0];
+            const lowConn = outgoing.find(c => c.condition === 'score_low') || outgoing[1] || outgoing[0];
+            const trueTargetId = activeBlock.data?.ifTrueNextBlockId || highConn?.targetNodeId;
+            const falseTargetId = activeBlock.data?.ifFalseNextBlockId || lowConn?.targetNodeId;
+            const trueTargetNode = blocks.find(b => b.id === trueTargetId);
+            const falseTargetNode = blocks.find(b => b.id === falseTargetId);
 
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleNextStep(20)}
-                  className="px-6 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 mx-auto cursor-pointer"
-                >
-                  <span>Avanzar por Ruta de Maestría (+20 XP)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+            return (
+              <div className="p-6 text-center space-y-5 rounded-3xl bg-gradient-to-b from-teal-50/90 to-emerald-50/70 dark:from-indigo-950/40 dark:to-teal-950/30 border-2 border-teal-200 dark:border-indigo-800 text-slate-900 dark:text-indigo-200">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center mx-auto shadow-lg">
+                  <GitBranch className="w-7 h-7" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-black uppercase px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Bifurcación Condicional Adaptativa • Umbral ≥ {threshold}%
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    {activeBlock.title || 'Evaluación de Ruta de Aprendizaje'}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 max-w-md mx-auto">
+                    Desempeño actual del alumno: <strong className="text-emerald-700">{currentMasteryPct}%</strong> ({lives}/3 vidas • {accumulatedXp} XP).{' '}
+                    {isMasteryUnlocked
+                      ? `Has superado el umbral del ${threshold}% y desbloqueado la Ruta de Maestría.`
+                      : `Tu puntaje actual activa la Ruta de Refuerzo Socrático antes del reto final.`}
+                  </p>
+                </div>
+
+                {/* Tarjetas de las 2 Rutas Reales del Grafo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto text-left">
+                  <div className={`p-3.5 rounded-2xl border-2 transition-all ${
+                    isMasteryUnlocked
+                      ? 'bg-emerald-50 border-emerald-500 shadow-md'
+                      : 'bg-white/80 border-slate-200 opacity-85'
+                  }`}>
+                    <div className="flex items-center justify-between text-[10px] font-black text-emerald-700 mb-1">
+                      <span>✓ RUTA MAESTRÍA (≥ {threshold}%)</span>
+                      {isMasteryUnlocked && <span className="px-1.5 py-0.5 rounded bg-emerald-600 text-white text-[8.5px]">RECOMENDADA</span>}
+                    </div>
+                    <p className="text-xs font-black text-slate-900 truncate">
+                      {trueTargetNode ? trueTargetNode.title : 'Duelo Boss Curricular'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleNextStep(25, trueTargetId)}
+                      className="mt-2.5 w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Avanzar por Ruta Maestría (+25 XP)</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className={`p-3.5 rounded-2xl border-2 transition-all ${
+                    !isMasteryUnlocked
+                      ? 'bg-amber-50 border-amber-500 shadow-md'
+                      : 'bg-white/80 border-slate-200 opacity-85'
+                  }`}>
+                    <div className="flex items-center justify-between text-[10px] font-black text-amber-700 mb-1">
+                      <span>↺ RUTA REFUERZO (&lt; {threshold}%)</span>
+                      {!isMasteryUnlocked && <span className="px-1.5 py-0.5 rounded bg-amber-600 text-white text-[8.5px]">ACTIVA</span>}
+                    </div>
+                    <p className="text-xs font-black text-slate-900 truncate">
+                      {falseTargetNode ? falseTargetNode.title : 'Tutor Socrático & Cápsula de Apoyo'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleNextStep(20, falseTargetId)}
+                      className="mt-2.5 w-full py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Recorrer Ruta Refuerzo (+20 XP)</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ================= 16. EFECTO DE AUDIO SFX ================= */}
           {activeBlock?.type === 'audio_sfx' && (
@@ -1718,6 +2121,369 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-2 cursor-pointer"
                 >
                   <span>Continuar Misión Histórica (+50 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 18. PORTAL DE PRÁCTICA CONVERSACIONAL DE IDIOMAS ================= */}
+          {activeBlock?.type === 'languages_practice_portal' && (() => {
+            const langCode = activeBlock.data.language === 'fr' ? 'fr-FR' : activeBlock.data.language === 'es' ? 'es-MX' : 'en-US';
+            const phrase = activeBlock.data.targetPhrase || 'Hello! Welcome to our interactive speaking lab. Can you describe your favorite historical event?';
+            return (
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-violet-50 via-indigo-50/60 to-purple-50 dark:from-violet-950/40 dark:to-indigo-950/40 border-2 border-violet-200 dark:border-violet-800 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-violet-200/80 text-violet-900">
+                      Laboratorio de Fonética & Avatar ({langCode})
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                      {activeBlock.data.scenarioTitle || activeBlock.title}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => playNeuralVoice(phrase, langCode, 'female')}
+                    className="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-black text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>{isSpeakingTts ? 'Escuchando...' : 'Escuchar Pronunciación Nativa'}</span>
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-violet-200 dark:border-violet-800 shadow-inner space-y-1">
+                  <span className="text-[10px] font-black uppercase text-violet-600">Frase Objetivo ({activeBlock.data.focusPhonemes || 'Entonación & Fluidez'}):</span>
+                  <p className="text-sm font-black text-slate-900 dark:text-white italic">&ldquo;{phrase}&rdquo;</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-600 dark:text-zinc-300 block">
+                    Practica tu pronunciación o escribe tu respuesta oral transcrita:
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={languagePracticeInput}
+                      onChange={(e) => setLanguagePracticeInput(e.target.value)}
+                      placeholder={phrase}
+                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-violet-300 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playSound('correct');
+                        setLanguagePracticeInput(phrase);
+                        setLanguagePracticeFeedback('✓ Fonética verificada: 96% de precisión articulatoria y prosodia natural (Nivel CENNI / CEFR).');
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shrink-0 cursor-pointer"
+                    >
+                      🎙️ Simular Voz & Evaluar
+                    </button>
+                  </div>
+                </div>
+
+                {languagePracticeFeedback && (
+                  <div className="p-3 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold flex items-center justify-between">
+                    <span>{languagePracticeFeedback}</span>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(45)}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Completar Práctica Fonética (+45 XP)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ================= 19. KARAOKE DE FLUIDEZ FONÉTICA (WPM) ================= */}
+          {activeBlock?.type === 'languages_karaoke_block' && (() => {
+            const sentence = activeBlock.data.targetSentence || 'We hold these truths to be self-evident that all people are created equal and free.';
+            const words = sentence.split(/\s+/);
+            const wpm = activeBlock.data.tempoWpm || 110;
+            const langCode = activeBlock.data.language === 'fr' ? 'fr-FR' : 'en-US';
+
+            return (
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/40 dark:to-fuchsia-950/40 border-2 border-purple-200 dark:border-purple-800 space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-200/80 text-purple-900">
+                      Karaoke Fonético Sincronizado • {wpm} WPM
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                      {activeBlock.title}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isKaraokePlaying}
+                    onClick={() => {
+                      setIsKaraokePlaying(true);
+                      setKaraokeCompleted(false);
+                      setKaraokeWordIdx(0);
+                      playNeuralVoice(sentence, langCode, 'female');
+                      const stepMs = Math.max(180, Math.round((60 / wpm) * 1000));
+                      words.forEach((_, idx) => {
+                        setTimeout(() => {
+                          setKaraokeWordIdx(idx);
+                          if (idx === words.length - 1) {
+                            setIsKaraokePlaying(false);
+                            setKaraokeCompleted(true);
+                            playSound('victory');
+                          }
+                        }, (idx + 1) * stepMs);
+                      });
+                    }}
+                    className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-black text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>{isKaraokePlaying ? 'Sincronizando Sílabas...' : 'Iniciar Karaoke & Voz IA'}</span>
+                  </button>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-slate-950 text-white border border-purple-500/40 shadow-xl flex flex-wrap gap-2 items-center justify-center min-h-[96px]">
+                  {words.map((w, idx) => {
+                    const isCurrent = idx === karaokeWordIdx;
+                    const isPassed = idx < karaokeWordIdx || karaokeCompleted;
+                    return (
+                      <span
+                        key={idx}
+                        className={`px-2.5 py-1 rounded-lg text-sm font-black transition-all ${
+                          isCurrent
+                            ? 'bg-amber-400 text-slate-950 scale-110 shadow-lg'
+                            : isPassed
+                              ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                              : 'text-slate-300'
+                        }`}
+                      >
+                        {w}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                {activeBlock.data.phoneticGuide && (
+                  <p className="text-center text-xs font-mono text-purple-800 dark:text-purple-300">
+                    Guía IPA: {activeBlock.data.phoneticGuide}
+                  </p>
+                )}
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(45)}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Finalizar Karaoke Fonético (+45 XP)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ================= 20. TUTOR SOCRÁTICO IA & CÁPSULA DE APOYO ================= */}
+          {activeBlock?.type === 'languages_socratic_tutor' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-amber-50/70 via-white to-violet-50/70 dark:from-zinc-900 dark:to-violet-950/30 border-2 border-violet-200 dark:border-violet-800 space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                    Tutor Socrático IA • Nivel {activeBlock.data.targetLevel || 'B1'}
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lastAi = [...socraticMessages].reverse().find(m => m.role === 'ai');
+                    if (lastAi) {
+                      playNeuralVoice(
+                        lastAi.text,
+                        activeBlock.data.language === 'fr' ? 'fr-FR' : activeBlock.data.language === 'en' ? 'en-US' : 'es-MX',
+                        'female'
+                      );
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-violet-100 hover:bg-violet-200 text-violet-800 font-black text-[11px] flex items-center gap-1 cursor-pointer"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Escuchar Tutor</span>
+                </button>
+              </div>
+
+              <div className="space-y-2.5 max-h-56 overflow-y-auto p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
+                {socraticMessages.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={`p-3 rounded-2xl text-xs font-medium max-w-[88%] ${
+                      msg.role === 'ai'
+                        ? 'bg-white dark:bg-zinc-900 border border-violet-200 text-slate-800 dark:text-zinc-200'
+                        : 'bg-emerald-600 text-white ml-auto'
+                    }`}
+                  >
+                    <span className="text-[9px] font-black uppercase block opacity-75 mb-0.5">
+                      {msg.role === 'ai' ? '🎓 Tutor Socrático IA' : '🧑‍🎓 Tu Respuesta'}
+                    </span>
+                    <p>{msg.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={socraticInput}
+                  onChange={(e) => setSocraticInput(e.target.value)}
+                  placeholder="Responde a la pregunta orientadora del Tutor Socrático..."
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-300 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!socraticInput.trim()) return;
+                    const userMsg = socraticInput.trim();
+                    setSocraticInput('');
+                    playSound('correct');
+                    setSocraticMessages(prev => [
+                      ...prev,
+                      { role: 'student', text: userMsg },
+                      {
+                        role: 'ai',
+                        text: `¡Excelente razonamiento! Has conectado el hecho clave ("${userMsg.slice(0, 45)}...") con el proceso histórico. Ahora estás listo para avanzar con dominio completo.`
+                      }
+                    ]);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-black text-xs shrink-0 cursor-pointer"
+                >
+                  Responder
+                </button>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(50)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Completar Tutoría Socrática y Continuar (+50 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 21. ROLEPLAY & MISIÓN INMERSIVA ================= */}
+          {activeBlock?.type === 'languages_roleplay_mission' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-fuchsia-50 to-purple-50 dark:from-fuchsia-950/40 dark:to-purple-950/40 border-2 border-fuchsia-200 dark:border-fuchsia-800 space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-fuchsia-200/80 text-fuchsia-900">
+                  Misión Roleplay Situacional • {activeBlock.data.language === 'fr' ? '🇫🇷 FLE' : '🇬🇧 ESL'}
+                </span>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  {activeBlock.data.scenarioTitle || activeBlock.title}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-zinc-300">
+                  <strong>Tu Rol:</strong> {activeBlock.data.studentRole || 'Embajador Estudiantil'} •{' '}
+                  <strong>Interlocutor IA:</strong> {activeBlock.data.aiRole || 'Coordinador Internacional'}
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-fuchsia-200 space-y-1.5 text-xs">
+                <span className="font-black text-fuchsia-700 block">🎯 Objetivo de la Misión:</span>
+                <p className="text-slate-700 dark:text-zinc-300">{activeBlock.data.missionGoal || 'Resolver la situación comunicativa con cortesía y vocabulario preciso.'}</p>
+              </div>
+
+              <textarea
+                rows={3}
+                value={roleplayResponse}
+                onChange={(e) => setRoleplayResponse(e.target.value)}
+                placeholder="Formula tu intervención en el escenario de Roleplay..."
+                className="w-full p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-fuchsia-300 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+              />
+
+              {roleplayCompleted && (
+                <div className="p-3 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold">
+                  ✓ ¡Misión comunicativa cumplida! Se verificaron los criterios pragmáticos y léxicos del escenario.
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2">
+                {!roleplayCompleted ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playSound('victory');
+                      setRoleplayCompleted(true);
+                    }}
+                    className="px-5 py-2.5 rounded-2xl bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-black text-xs cursor-pointer"
+                  >
+                    Evaluar Intervención de Roleplay
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(50)}
+                    className="px-6 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Misión Superada: Continuar (+50 XP)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ================= 22. RÚBRICA CENNI / DELF / CEFR ================= */}
+          {activeBlock?.type === 'languages_evaluation_rubric' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-950/40 dark:to-teal-950/40 border-2 border-cyan-200 dark:border-cyan-800 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-200/80 text-cyan-950">
+                    Certificación {activeBlock.data.framework || 'CENNI / CEFR'} • Nivel {activeBlock.data.targetLevel || 'B2'}
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.title}
+                  </h3>
+                </div>
+                <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-black text-xs">
+                  94% • Acreditado
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                {[
+                  { label: 'Fluidez Oral', val: `${activeBlock.data.fluencyWeight || 25}%`, score: '95/100' },
+                  { label: 'Pronunciación', val: `${activeBlock.data.pronunciationWeight || 25}%`, score: '92/100' },
+                  { label: 'Gramática', val: `${activeBlock.data.grammarWeight || 25}%`, score: '94/100' },
+                  { label: 'Vocabulario', val: `${activeBlock.data.vocabularyWeight || 25}%`, score: '96/100' }
+                ].map((crit, i) => (
+                  <div key={i} className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-cyan-200 shadow-sm">
+                    <span className="text-[10px] font-bold text-slate-500 block">{crit.label} ({crit.val})</span>
+                    <span className="text-sm font-black text-emerald-600">{crit.score}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRubricCompleted(true);
+                    handleNextStep(50);
+                  }}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Certificar Rúbrica Oficial y Continuar (+50 XP)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

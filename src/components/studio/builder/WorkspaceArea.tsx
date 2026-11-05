@@ -179,22 +179,6 @@ export const WorkspaceArea: React.FC = () => {
 
       {/* Panel Lateral Deslizante de Configuración de Nodo */}
       <NodeConfigDrawer />
-
-      {/* Botón Flotante Principal (+) en la esquina inferior derecha */}
-      <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-30">
-        <button
-          type="button"
-          onClick={() => setIsExtendedMenuOpen(!isExtendedMenuOpen)}
-          aria-label="Abrir catálogo de bloques lúdicos"
-          className="px-5 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-2xl shadow-amber-500/35 ring-4 ring-amber-400/30 border border-amber-300/40 flex items-center gap-2.5 transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer"
-        >
-          <div className="w-6 h-6 rounded-full bg-slate-950/20 flex items-center justify-center">
-            <Plus className={`w-4 h-4 text-slate-950 font-black transition-transform duration-200 ${isExtendedMenuOpen ? 'rotate-45' : ''}`} />
-          </div>
-          <span className="hidden sm:inline font-black tracking-wide">Añadir Bloque</span>
-          <span className="font-black">(+)</span>
-        </button>
-      </div>
     </div>
   );
 };

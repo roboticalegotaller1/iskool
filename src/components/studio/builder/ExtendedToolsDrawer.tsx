@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
@@ -314,7 +315,9 @@ export const ExtendedToolsDrawer: React.FC = () => {
     setIsExtendedMenuOpen(false);
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isExtendedMenuOpen && (
         <motion.div
@@ -322,7 +325,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-          className="fixed bottom-0 inset-x-0 z-50 max-w-7xl mx-auto px-2 sm:px-6 pointer-events-none"
+          className="fixed bottom-0 inset-x-0 z-[9990] max-w-7xl mx-auto px-2 sm:px-6 pointer-events-none"
         >
           <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border-t-2 sm:border-x-2 border-emerald-500/80 dark:border-emerald-500/80 rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.25)] p-4 sm:p-6 space-y-4 pointer-events-auto max-h-[82vh] sm:max-h-[62vh] flex flex-col">
             
@@ -463,6 +466,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
