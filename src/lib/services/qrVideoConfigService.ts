@@ -25,31 +25,31 @@ export interface QrVideoPreset {
 
 export const QR_VIDEO_PRESETS: QrVideoPreset[] = [
   {
-    id: 'preset-nature-4k',
-    label: 'Vídeo Genérico de Prueba 1 (Ultra HD 4K)',
-    description: 'Vídeo genérico de prueba de alta definición con soporte universal de reproducción automática.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
-    youtubeId: 'LXb3EKWsInQ',
-    title: 'Presentación Institucional ISkool (Vídeo de Prueba 1)',
-    subtitle: 'La plataforma integral para colegios privados en México. Este vídeo se reproduce automáticamente desde el código QR permanente.'
-  },
-  {
-    id: 'preset-animation-60fps',
-    label: 'Vídeo Genérico de Prueba 2 (Animación 60 FPS)',
-    description: 'Segundo vídeo genérico para comprobar que al cambiar el enlace el código QR (iskool.mx/video) se mantiene intacto.',
-    youtubeUrl: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
-    youtubeId: 'aqz-KE-bpKQ',
-    title: 'Experiencia Educativa Gamificada ISkool (Vídeo de Prueba 2)',
-    subtitle: 'Comprobación de actualización dinámica: el vídeo ha cambiado sin modificar la URL iskool.mx/video del código QR.'
+    id: 'preset-iskool-comercial-oficial',
+    label: 'Vídeo Comercial Oficial iSkool® (Con Voz)',
+    description: 'Presentación ejecutiva oficial de iSkool® en alta definición para directivos y colegios privados.',
+    youtubeUrl: 'https://youtu.be/lFdsXx5lPhE',
+    youtubeId: 'lFdsXx5lPhE',
+    title: 'iSkool® — El Cerebro Vivo de tu Escuela',
+    subtitle: 'Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.'
   },
   {
     id: 'preset-iskool-demo',
-    label: 'Vídeo Demo Institucional ISkool',
+    label: 'Vídeo Demo Institucional iSkool®',
     description: 'Vídeo demostrativo registrado previamente en el canal oficial.',
     youtubeUrl: 'https://youtu.be/TvHe4phSYKc',
     youtubeId: 'TvHe4phSYKc',
-    title: 'Demostración de Plataforma ISkool',
+    title: 'Demostración de Plataforma iSkool®',
     subtitle: 'Recorrido por las funciones de gestión escolar, planeaciones curriculares y comunicación institucional.'
+  },
+  {
+    id: 'preset-nature-4k',
+    label: 'Vídeo de Respaldo Ultra HD',
+    description: 'Vídeo de respaldo en alta definición con soporte universal de reproducción automática.',
+    youtubeUrl: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
+    youtubeId: 'LXb3EKWsInQ',
+    title: 'Presentación Institucional iSkool®',
+    subtitle: 'La plataforma integral para colegios privados en México.'
   }
 ];
 
@@ -125,14 +125,14 @@ function getNodeFs() {
 }
 
 const DEFAULT_CONFIG: QrVideoConfig = {
-  youtubeUrl: initialConfig.youtubeUrl || 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
-  youtubeId: initialConfig.youtubeId || 'LXb3EKWsInQ',
-  title: initialConfig.title || 'Presentación Institucional ISkool',
+  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/lFdsXx5lPhE',
+  youtubeId: initialConfig.youtubeId || 'lFdsXx5lPhE',
+  title: initialConfig.title || 'iSkool® — El Cerebro Vivo de tu Escuela',
   subtitle:
     initialConfig.subtitle ||
-    'La plataforma integral para colegios privados en México. Escanea, conoce nuestra visión y descubre cómo transformamos la gestión escolar.',
-  badgeText: initialConfig.badgeText || 'Vídeo Oficial · Acceso QR Directo',
-  ctaText: initialConfig.ctaText || 'Explorar Plataforma ISkool',
+    'Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.',
+  badgeText: initialConfig.badgeText || 'Presentación Ejecutiva Oficial · Alta Definición',
+  ctaText: initialConfig.ctaText || 'Agendar Demostración',
   ctaUrl: initialConfig.ctaUrl || 'https://iskool.mx',
   autoplay: initialConfig.autoplay ?? true,
   loop: initialConfig.loop ?? true,

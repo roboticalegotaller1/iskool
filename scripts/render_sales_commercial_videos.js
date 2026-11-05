@@ -10,13 +10,14 @@ const FPS = 30;
 
 const rootDir = path.join(__dirname, '..');
 const cleanScreensDir = path.join(rootDir, 'temp_sales_video_assets', 'clean_screens');
-const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio');
+const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio_v2');
 const artifactDir = 'C:/Users/kami-/.gemini/antigravity/brain/fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b';
 
-const officialLogoPath = path.join(artifactDir, '.user_uploaded', 'media_1793750185112_1ff778c5.jpg');
-const qrWhatsappPath = path.join(artifactDir, '.user_uploaded', 'media_1793750252405_5e1a4f64.png');
-const bumperBgPath = path.join(artifactDir, 'iskool_bumper_daylight_bg_1793686782872.jpg');
-const ctaBgPath = path.join(artifactDir, 'iskool_cta_executive_bg_1793686795356.jpg');
+const officialLogoPath = path.join(artifactDir, '.user_uploaded', 'media_1793858758766_265c7960.jpg');
+const qrWhatsappPath = path.join(artifactDir, '.user_uploaded', 'media_1793859728185_a6c5dddf.jpg');
+const heroBrainBgPath = path.join(artifactDir, 'iskool_v2_hero_brain_bg_1793860464866.jpg');
+const bumperBgPath = path.join(artifactDir, 'iskool_v2_cortinilla_bg_1793860481647.jpg');
+const ctaBgPath = path.join(artifactDir, 'iskool_v2_cta_sales_bg_1793860499035.jpg');
 
 function toDataURI(filePath) {
   if (!fs.existsSync(filePath)) {
@@ -42,6 +43,7 @@ async function main() {
   const assets = {
     logo: toDataURI(officialLogoPath),
     qrWhatsapp: toDataURI(qrWhatsappPath),
+    heroBrainBg: toDataURI(heroBrainBgPath),
     bumperBg: toDataURI(bumperBgPath),
     ctaBg: toDataURI(ctaBgPath),
     screens: {}
@@ -98,6 +100,7 @@ window.initAssets = async function(rawAssets, manifestData) {
   const tasks = [
     loadImg('logo', rawAssets.logo),
     loadImg('qrWhatsapp', rawAssets.qrWhatsapp),
+    loadImg('heroBrainBg', rawAssets.heroBrainBg),
     loadImg('bumperBg', rawAssets.bumperBg),
     loadImg('ctaBg', rawAssets.ctaBg)
   ];
@@ -449,15 +452,32 @@ function drawFivePillarsAndBenefitsSlide(localT, duration) {
   if (logo) {
     const lh = 56;
     const lw = lh * (logo.width / logo.height);
-    ctx.drawImage(logo, 95, 42, lw, lh);
+    ctx.drawImage(logo, 95, 38, lw, lh);
   }
   ctx.textAlign = 'left';
   ctx.fillStyle = '#0A193A';
-  ctx.font = '900 36px "Segoe UI", sans-serif';
-  ctx.fillText('¿Qué es iSkool® y cómo transforma tu Institución?', 345, 74);
+  ctx.font = '900 34px "Segoe UI", sans-serif';
+  ctx.fillText('El Cerebro Vivo de tu Escuela — Potenciado con Inteligencia Artificial', 330, 68);
   ctx.fillStyle = '#1D68FF';
-  ctx.font = '700 20px "Segoe UI", sans-serif';
-  ctx.fillText('El ecosistema educativo integral que conecta en tiempo real a los 5 Pilares de la Educación con beneficios medibles', 345, 105);
+  ctx.font = '800 19px "Segoe UI", sans-serif';
+  ctx.fillText('Tecnología Creada en Canadá para Colegios Privados en México  •  Conecta los 5 Pilares de la Educación', 330, 100);
+
+  // Top-right Origin & Phonetics Badge
+  ctx.save();
+  ctx.fillStyle = '#0A193A';
+  roundRect(ctx, 1520, 38, 305, 58, 18);
+  ctx.fill();
+  ctx.strokeStyle = '#1D68FF';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#60A5FA';
+  ctx.font = '800 13px "Segoe UI", sans-serif';
+  ctx.fillText('TECNOLOGÍA CANADIENSE • IA', 1672, 61);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 17px "Segoe UI", sans-serif';
+  ctx.fillText('iSkool®  /ˈa͡ɪskˌuːl/', 1672, 84);
+  ctx.restore();
 
   // Connecting line behind the 5 Pillars
   ctx.strokeStyle = 'rgba(29, 104, 255, 0.35)';
@@ -704,33 +724,94 @@ window.renderFrameAtTime = function(globalT) {
   const p = clamp(localT / dur);
 
   // =========================================================================
-  // SCENE 1: Logo Intro (0..2.8s) -> 5 Pilares & Beneficios Reales (2.8..9.6s) -> Cortinilla CEO (9.6..12.0s) -> Resumen Ejecutivo (12.0..dur)
+  // SCENE 1: Keynote Intro (0..4.6s) -> 5 Pilares & Beneficios Reales (4.6..12.2s) -> Cortinilla CEO (12.2..14.4s) -> Resumen Ejecutivo (14.4..dur)
   // =========================================================================
   if (sc.id === 'scene01') {
-    if (localT < 2.8) {
-      // Official iSkool® Keynote Opening
+    if (localT < 4.6) {
+      // Official iSkool® (/ˈa͡ɪskˌuːl/) Keynote Opening: El Cerebro Vivo + IA + Tecnología Creada en Canadá
       const ep = easeOutCubic(localT / 0.8);
-      ctx.drawImage(IMAGES.bumperBg, 0, 0, 1920, 1080);
-      drawLogoBadge(960 - 380, 260, 760, 290, 0.88 + ep * 0.12);
+      ctx.drawImage(IMAGES.heroBrainBg, 0, 0, 1920, 1080);
+
+      // Luminous center radial veil so dark navy & cobalt text pops with crystal clarity
+      const rad = ctx.createRadialGradient(960, 490, 90, 960, 540, 960);
+      rad.addColorStop(0, 'rgba(255,255,255,0.94)');
+      rad.addColorStop(0.62, 'rgba(248,250,255,0.84)');
+      rad.addColorStop(1, 'rgba(224,238,255,0.42)');
+      ctx.fillStyle = rad;
+      ctx.fillRect(0, 0, 1920, 1080);
+
+      // Top Pill: Tecnología Creada en Canadá para Colegios Privados en México
+      ctx.save();
+      ctx.globalAlpha = ep;
       ctx.fillStyle = '#0A193A';
-      ctx.font = '900 46px "Segoe UI", sans-serif';
+      roundRect(ctx, 960 - 460, 108, 920, 52, 26);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#1D68FF';
+      ctx.stroke();
       ctx.textAlign = 'center';
-      ctx.fillText('El Ecosistema Educativo Integral que Conecta los 5 Pilares', 960, 650);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '800 20px "Segoe UI", sans-serif';
+      ctx.fillText('TECNOLOGÍA CREADA EN CANADÁ PARA COLEGIOS PRIVADOS EN MÉXICO', 960, 141);
+      ctx.restore();
+
+      // Official iSkool® Logo Badge + IPA Phonetics Pill
+      drawLogoBadge(960 - 380, 192, 760, 270, 0.90 + ep * 0.10);
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(29, 104, 255, 0.12)';
+      roundRect(ctx, 960 - 210, 482, 420, 42, 21);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(29, 104, 255, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.textAlign = 'center';
       ctx.fillStyle = '#1D68FF';
-      ctx.font = '800 28px "Segoe UI", sans-serif';
-      ctx.fillText('Directivos  •  Coordinadores  •  Docentes  •  Alumnos  •  Tutores', 960, 712);
-    } else if (localT < 9.6) {
-      drawFivePillarsAndBenefitsSlide(localT - 2.8, 6.8);
-    } else if (localT < 12.0) {
+      ctx.font = '800 18px "Segoe UI", sans-serif';
+      ctx.fillText('PRONUNCIACIÓN OFICIAL:  /ˈa͡ɪskˌuːl/  ("Áiskul")', 960, 509);
+      ctx.restore();
+
+      // Main Value Proposition Headline: El Cerebro Vivo de tu Escuela
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#0A193A';
+      ctx.font = '900 58px "Segoe UI", sans-serif';
+      ctx.fillText('El Cerebro Vivo de tu Escuela', 960, 605);
+
+      ctx.fillStyle = '#1D68FF';
+      ctx.font = '800 32px "Segoe UI", sans-serif';
+      ctx.fillText('Plataforma Educativa Integral Potenciada con Inteligencia Artificial', 960, 662);
+
+      // 5 Pillars Bottom Ribbon
+      const pNames = ['1. Directivos', '2. Coordinadores', '3. Docentes', '4. Alumnos', '5. Tutores'];
+      pNames.forEach((pn, idx) => {
+        const bx = 185 + idx * 315;
+        const by = 720;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = 'rgba(10, 25, 58, 0.12)';
+        ctx.shadowBlur = 18;
+        roundRect(ctx, bx, by, 290, 56, 28);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#1D68FF';
+        ctx.stroke();
+        ctx.fillStyle = '#0A193A';
+        ctx.font = '800 20px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(pn, bx + 145, by + 35);
+      });
+    } else if (localT < 12.2) {
+      drawFivePillarsAndBenefitsSlide(localT - 4.6, 7.6);
+    } else if (localT < 14.4) {
       drawCortinilla(
         'MÓDULO EJECUTIVO 01',
         'Portal de CEO',
         'Gobernanza Escolar, Admisión 360°, Triage Cognitivo & Supervisión en Vivo',
-        localT - 9.6,
-        2.4
+        localT - 12.2,
+        2.2
       );
     } else {
-      const uiT = localT - 12.0;
+      const uiT = localT - 14.4;
       drawStudioHeaderAndFooter(
         '1. Portal de CEO',
         'Consola de Mando Corporativo & Resumen Ejecutivo',
@@ -837,12 +918,13 @@ window.renderFrameAtTime = function(globalT) {
       const subT = localT - splitTime;
       drawStudioHeaderAndFooter(
         '2. Portal del Profesor',
-        'Estudio iSkool — Constructor Visual de Bloques Interactivos',
-        'Diseña actividades interactivas, trivias y entregables digitales mediante nodos visuales listos para proyectar.'
+        'Estudio iSkool — 34 Bloques Interactivos, Exámenes OMR & Simulador en Vivo',
+        'Diseña actividades interactivas, exámenes ópticos imprimibles OMR (0 Tokens) y simula la vista del alumno en tiempo real.'
       );
-      drawStudioScreen('img_08', { darkBg: true, zoom: 1.0 + (subT / (dur - splitTime)) * 0.015 });
-      drawSignalArrow(235, 385, 445, 520, 'Biblioteca de Bloques Pedagógicos', 'Arrastra actividades, retos y rúbricas al instante', '#1D68FF', (subT - 0.3) / 0.5, globalT);
-      drawSignalArrow(1135, 455, 1135, 620, 'Lienzo de Nodos Interactivos', 'Publica directo al Portal del Estudiante con recompensa XP', '#10B981', (subT - 1.3) / 0.5, globalT);
+      drawStudioScreen('img_08', { darkBg: false, zoom: 1.0 + (subT / (dur - splitTime)) * 0.012 });
+      drawSignalArrow(510, 420, 235, 420, '34 Bloques + Evaluación Óptica OMR', 'Exámenes imprimibles y reactivos interactivos', '#1D68FF', (subT - 0.25) / 0.45, globalT);
+      drawSignalArrow(885, 250, 885, 515, 'Constructor de Flujo por Nodos', 'Bifurcación condicional y tarjetas ricas 3D', '#10B981', (subT - 1.0) / 0.45, globalT);
+      drawSignalArrow(1310, 680, 1590, 680, 'Simulador de Alumno en Vivo', 'Previsualiza voz e interacción antes de publicar', '#8B5CF6', (subT - 1.75) / 0.45, globalT);
     }
   }
 
@@ -1247,12 +1329,12 @@ window.renderFrameAtTime = function(globalT) {
 
     // Bottom Institutional Tagline Pill
     ctx.fillStyle = '#0A193A';
-    roundRect(ctx, 960 - 540, cy + 836, 1080, 52, 26);
+    roundRect(ctx, 960 - 630, cy + 836, 1260, 52, 26);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 21px "Segoe UI", sans-serif';
+    ctx.font = '800 20px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('iSkool®  •  El Futuro de la Educación y la Gestión Escolar, Hoy.', 960, cy + 869);
+    ctx.fillText('iSkool® (/ˈa͡ɪskˌuːl/)  •  El Cerebro Vivo con IA  •  Tecnología Creada en Canadá para Colegios en México', 960, cy + 869);
 
     ctx.restore();
 
@@ -1271,23 +1353,25 @@ window.renderFrameAtTime = function(globalT) {
 
   // Save forensic preview snapshots across ALL key scenes so every single arrow can be verified visually
   const previewSnapshots = [
-    { t: 6.5, file: path.join(artifactDir, 'preview_sales_01_cinco_pilares_beneficios.jpg') },
-    { t: 10.8, file: path.join(artifactDir, 'preview_sales_cortinilla_ceo.jpg') },
-    { t: 16.5, file: path.join(artifactDir, 'preview_sales_01b_resumen_ejecutivo.jpg') },
-    { t: 28.5, file: path.join(artifactDir, 'preview_sales_02_admision_360.jpg') },
-    { t: 39.5, file: path.join(artifactDir, 'preview_sales_triage_cognitivo.jpg') },
-    { t: 48.5, file: path.join(artifactDir, 'preview_sales_04_espejo_vivo.jpg') },
-    { t: 60.0, file: path.join(artifactDir, 'preview_sales_teacher_daylight.jpg') },
-    { t: 69.5, file: path.join(artifactDir, 'preview_sales_06a_planeacion_sep.jpg') },
-    { t: 75.5, file: path.join(artifactDir, 'preview_sales_06b_estudio_bloques.jpg') },
-    { t: 83.0, file: path.join(artifactDir, 'preview_sales_07_libro_magico.jpg') },
-    { t: 92.0, file: path.join(artifactDir, 'preview_sales_08a_estudiante_misiones.jpg') },
-    { t: 96.5, file: path.join(artifactDir, 'preview_sales_08b_estudiante_avatar.jpg') },
-    { t: 101.5, file: path.join(artifactDir, 'preview_sales_09a_idiomas_mentora_fixed.jpg') },
-    { t: 107.5, file: path.join(artifactDir, 'preview_sales_09b_idiomas_karaoke_fixed.jpg') },
-    { t: 126.0, file: path.join(artifactDir, 'preview_sales_11a_padres_muro_avisos.jpg') },
-    { t: 131.0, file: path.join(artifactDir, 'preview_sales_11b_padres_pagos_sat.jpg') },
-    { t: totalDuration - 3.0, file: path.join(artifactDir, 'preview_sales_cta_contacto.jpg') }
+    { t: 2.2, file: path.join(artifactDir, 'preview_v2_00_keynote_cerebro_vivo_ia_canada.jpg') },
+    { t: 8.5, file: path.join(artifactDir, 'preview_v2_01_cinco_pilares_beneficios.jpg') },
+    { t: 13.3, file: path.join(artifactDir, 'preview_v2_cortinilla_ceo.jpg') },
+    { t: 19.0, file: path.join(artifactDir, 'preview_v2_01b_resumen_ejecutivo.jpg') },
+    { t: 28.5, file: path.join(artifactDir, 'preview_v2_02_admision_360.jpg') },
+    { t: 39.5, file: path.join(artifactDir, 'preview_v2_03_triage_cognitivo.jpg') },
+    { t: 48.5, file: path.join(artifactDir, 'preview_v2_04_espejo_vivo.jpg') },
+    { t: 60.0, file: path.join(artifactDir, 'preview_v2_05_teacher_daylight.jpg') },
+    { t: 68.0, file: path.join(artifactDir, 'preview_v2_06a_planeacion_sep.jpg') },
+    { t: 74.0, file: path.join(artifactDir, 'preview_v2_06b_estudio_bloques_omr.jpg') },
+    { t: 80.5, file: path.join(artifactDir, 'preview_v2_07_libro_magico.jpg') },
+    { t: 89.0, file: path.join(artifactDir, 'preview_v2_08a_estudiante_misiones.jpg') },
+    { t: 93.5, file: path.join(artifactDir, 'preview_v2_08b_estudiante_avatar.jpg') },
+    { t: 98.0, file: path.join(artifactDir, 'preview_v2_09a_idiomas_mentora.jpg') },
+    { t: 103.5, file: path.join(artifactDir, 'preview_v2_09b_idiomas_karaoke.jpg') },
+    { t: 111.5, file: path.join(artifactDir, 'preview_v2_10_gamificacion_20_mundos.jpg') },
+    { t: 121.5, file: path.join(artifactDir, 'preview_v2_11a_padres_muro_avisos.jpg') },
+    { t: 126.5, file: path.join(artifactDir, 'preview_v2_11b_padres_pagos_sat.jpg') },
+    { t: totalDuration - 3.0, file: path.join(artifactDir, 'preview_v2_12_cta_contacto_qr.jpg') }
   ];
   for (const snap of previewSnapshots) {
     await page.evaluate((t) => window.renderFrameAtTime(t), snap.t);

@@ -3,24 +3,24 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
-  Play,
   Volume2,
   VolumeX,
-  QrCode,
-  Settings2,
   CheckCircle2,
   RefreshCw,
-  ExternalLink,
   Copy,
   Check,
   Sparkles,
   ShieldCheck,
   Lock,
   Film,
-  X
+  X,
+  Mail,
+  MessageCircle,
+  Phone,
+  Maximize2,
+  RotateCcw
 } from "lucide-react";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
-import { PublicFooter } from "@/components/PublicLanding";
 import {
   QrVideoConfig,
   QrVideoPreset,
@@ -30,17 +30,23 @@ import {
 import initialConfig from "@/data/qrVideoConfig.json";
 
 const PERMANENT_QR_URL = "https://iskool.mx/video";
+const OFFICIAL_EMAIL = "contacto@iskool.mx";
+const WHATSAPP_NUMBER_DISPLAY = "56 1140 4767";
+const PHONE_EXEC_DISPLAY = "55 1140 4767";
+const WHATSAPP_DIRECT_URL =
+  "https://wa.me/525611404767?text=Hola%2C%20acabo%20de%20ver%20el%20video%20oficial%20de%20iSkool%C2%AE%20y%20me%20gustar%C3%ADa%20agendar%20una%20demostraci%C3%B3n%20para%20mi%20instituci%C3%B3n.";
 
 export default function VideoQrLandingPage() {
   const [config, setConfig] = useState<QrVideoConfig>({
-    youtubeUrl: initialConfig.youtubeUrl || "https://www.youtube.com/watch?v=LXb3EKWsInQ",
-    youtubeId: initialConfig.youtubeId || "LXb3EKWsInQ",
-    title: initialConfig.title || "Presentación Institucional ISkool",
+    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/lFdsXx5lPhE",
+    youtubeId: initialConfig.youtubeId || "lFdsXx5lPhE",
+    title: initialConfig.title || "iSkool® — El Cerebro Vivo de tu Escuela",
     subtitle:
       initialConfig.subtitle ||
-      "La plataforma integral para colegios privados en México. Escanea, conoce nuestra visión y descubre cómo transformamos la gestión escolar.",
-    badgeText: initialConfig.badgeText || "Vídeo Oficial · Acceso QR Directo",
-    ctaText: initialConfig.ctaText || "Explorar Plataforma ISkool",
+      "Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.",
+    badgeText:
+      initialConfig.badgeText || "Presentación Ejecutiva Oficial · Alta Definición",
+    ctaText: initialConfig.ctaText || "Agendar Demostración",
     ctaUrl: initialConfig.ctaUrl || "https://iskool.mx",
     autoplay: initialConfig.autoplay ?? true,
     loop: initialConfig.loop ?? true,
@@ -49,11 +55,10 @@ export default function VideoQrLandingPage() {
 
   const [presets, setPresets] = useState<QrVideoPreset[]>(QR_VIDEO_PRESETS);
   const [isMuted, setIsMuted] = useState<boolean>(true);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
-  const [copiedQrUrl, setCopiedQrUrl] = useState<boolean>(false);
+  const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
-  // Estados del formulario de cambio dinámico de vídeo
+  // Estados del formulario de administración (accesible mediante ?admin=1)
   const [formYoutubeUrl, setFormYoutubeUrl] = useState<string>(config.youtubeUrl);
   const [formTitle, setFormTitle] = useState<string>(config.title);
   const [formSubtitle, setFormSubtitle] = useState<string>(config.subtitle);
@@ -65,8 +70,9 @@ export default function VideoQrLandingPage() {
   } | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const playerWrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // Cargar la configuración activa desde el servidor (sin caché para que cualquier cambio en el QR sea instantáneo)
+  // Cargar configuración activa desde el servidor
   const fetchActiveConfig = useCallback(async () => {
     try {
       const res = await fetch(`/api/video-config?t=${Date.now()}`, {
@@ -84,9 +90,7 @@ export default function VideoQrLandingPage() {
         setPresets(data.presets);
       }
     } catch {
-      // Usa configuración inicial de respaldo si hay intermitencia de red
-    } finally {
-      setIsLoaded(true);
+      // Mantiene configuración inicial lFdsXx5lPhE en caso de intermitencia
     }
   }, []);
 
@@ -101,7 +105,7 @@ export default function VideoQrLandingPage() {
     }
   }, [fetchActiveConfig]);
 
-  // Enviar comandos a la API del reproductor embebido de YouTube sin recargar el iframe
+  // Enviar comandos a la API del reproductor embebido para forzar máxima definición (1080p/4K) y reproducción inmediata
   const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
@@ -115,19 +119,33 @@ export default function VideoQrLandingPage() {
     );
   }, []);
 
-  // Garantizar reproducción automática al cargar el reproductor
-  const handleIframeLoad = useCallback(() => {
+  const enforceMaxQualityAndPlay = useCallback(() => {
+    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+    sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+    sendPlayerCommand("unloadModule", ["captions"]);
+    sendPlayerCommand("unloadModule", ["cc"]);
     sendPlayerCommand("playVideo");
-    setTimeout(() => {
-      sendPlayerCommand("playVideo");
-    }, 350);
   }, [sendPlayerCommand]);
 
-  // Alternar sonido con un toque sin reiniciar el vídeo
+  const handleIframeLoad = useCallback(() => {
+    enforceMaxQualityAndPlay();
+    const t1 = setTimeout(enforceMaxQualityAndPlay, 180);
+    const t2 = setTimeout(enforceMaxQualityAndPlay, 550);
+    const t3 = setTimeout(enforceMaxQualityAndPlay, 1200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [enforceMaxQualityAndPlay]);
+
+  // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición
   const handleToggleAudio = useCallback(() => {
     if (isMuted) {
       sendPlayerCommand("unMute");
       sendPlayerCommand("setVolume", [100]);
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
       sendPlayerCommand("playVideo");
       setIsMuted(false);
     } else {
@@ -136,15 +154,33 @@ export default function VideoQrLandingPage() {
     }
   }, [isMuted, sendPlayerCommand]);
 
-  const handleCopyPermanentUrl = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(PERMANENT_QR_URL);
-      setCopiedQrUrl(true);
-      setTimeout(() => setCopiedQrUrl(false), 2500);
-    }
-  };
+  const handleRestartVideo = useCallback(() => {
+    sendPlayerCommand("seekTo", [0, true]);
+    sendPlayerCommand("unMute");
+    sendPlayerCommand("setVolume", [100]);
+    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+    sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+    sendPlayerCommand("playVideo");
+    setIsMuted(false);
+  }, [sendPlayerCommand]);
 
-  // Guardar y publicar un nuevo vídeo sin cambiar la URL iskool.mx/video
+  const handleFullscreen = useCallback(() => {
+    const el = playerWrapperRef.current || iframeRef.current;
+    if (!el) return;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  const handleCopyEmail = useCallback(() => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(OFFICIAL_EMAIL);
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2500);
+    }
+  }, []);
+
+  // Guardar y publicar un nuevo vídeo desde el modal administrativo (?admin=1)
   const handleSaveConfig = async (
     overridePreset?: {
       youtubeUrl: string;
@@ -191,7 +227,7 @@ export default function VideoQrLandingPage() {
       setIsMuted(true);
       setSaveFeedback({
         type: "success",
-        message: `¡Vídeo actualizado en vivo! ID activo: ${data.config.youtubeId}. La URL permanente (${PERMANENT_QR_URL}) y tu código QR siguen siendo exactamente los mismos.`
+        message: `¡Vídeo actualizado en vivo! ID activo: ${data.config.youtubeId}.`
       });
     } catch (error: any) {
       setSaveFeedback({
@@ -205,215 +241,309 @@ export default function VideoQrLandingPage() {
 
   const detectedFormVideoId = extractYouTubeId(formYoutubeUrl);
 
-  // URL de incrustación oficial de YouTube configurada para reproducción automática inmediata (autoplay=1 + playsinline=1 + enablejsapi=1)
-  const embedSrc = `https://www.youtube.com/embed/${config.youtubeId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&loop=${
+  // URL de incrustación optimizada: reproducción inmediata, máxima definición (hd1080/highres), sin subtítulos automáticos ni ruido visual
+  const embedSrc = `https://www.youtube.com/embed/${config.youtubeId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&hd=1&vq=hd1080&enablejsapi=1&loop=${
     config.loop ? 1 : 0
   }&playlist=${config.youtubeId}`;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white font-sans selection:bg-blue-500 selection:text-white">
-      {/* Barra superior institucional */}
-      <header className="w-full border-b border-white/10 bg-slate-950/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex flex-col">
-              <ISkoolOfficialLogo variant="horizontal" theme="dark" size={24} showTagline={false} className="mb-0.5" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-blue-400">
-                Canal QR Institucional
-              </span>
-            </div>
+    <div className="relative min-h-screen flex flex-col bg-[#040B1A] text-white font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden">
+      {/* Fondo Ambiental Cinematográfico generado con Nano Banana 2.1 */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-45"
+        style={{
+          backgroundImage: "url('/brand/iskool-video-cinema-backdrop.webp')"
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-[#040B1A]/75 via-[#061026]/65 to-[#040B1A]/95"
+        aria-hidden="true"
+      />
+
+      {/* Cabecera Ejecutiva Minimalista (Cero Ruido Visual, Optimizada para Celular, Tablet, Laptop y PC) */}
+      <header className="relative z-30 w-full border-b border-white/10 bg-[#040B1A]/80 backdrop-blur-xl sticky top-0">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <ISkoolOfficialLogo
+              variant="horizontal"
+              theme="dark"
+              size={24}
+              showTagline={false}
+            />
           </Link>
 
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => {
-                setSaveFeedback(null);
-                setShowAdminModal(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-slate-200 transition-all cursor-pointer"
-              title="Cambiar el vídeo de YouTube manteniendo la misma URL y código QR"
+          <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href={`mailto:${OFFICIAL_EMAIL}`}
+              className="hidden md:inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-bold text-slate-100 transition-all"
             >
-              <Settings2 className="h-3.5 w-3.5 text-blue-400" />
-              <span>Cambiar Vídeo del QR</span>
-            </button>
+              <Mail className="h-3.5 w-3.5 text-blue-400" />
+              <span>{OFFICIAL_EMAIL}</span>
+            </a>
 
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 hover:bg-blue-500 px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-blue-600/25 transition-all"
+            <a
+              href={WHATSAPP_DIRECT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 px-3.5 sm:px-4 py-1.5 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all"
             >
-              <span>Iniciar sesión</span>
-            </Link>
+              <MessageCircle className="h-3.5 w-3.5 fill-slate-950" />
+              <span>WhatsApp Directo</span>
+            </a>
           </div>
         </div>
       </header>
 
-      {/* Contenido principal con reproductor automático */}
-      <main className="flex-1 mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 sm:py-12 flex flex-col items-center justify-center">
-        {/* Insignia de estado y título */}
-        <div className="text-center max-w-3xl mx-auto mb-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1 text-xs font-bold text-blue-300 mb-3">
-            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+      {/* Escenario Principal: Reproductor en Alta Definición + Tarjeta Ejecutiva de Contacto & QR WhatsApp */}
+      <main className="relative z-10 flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col justify-center">
+        {/* Encabezado Compacto de Presentación */}
+        <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-[11px] sm:text-xs font-bold text-blue-200 mb-2">
+            <Sparkles className="h-3.5 w-3.5 text-blue-400 shrink-0" />
             <span>{config.badgeText}</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-emerald-300 font-semibold">Autoplay Activo</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
+          <h1 className="text-xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
             {config.title}
           </h1>
 
-          <p className="mt-2.5 text-sm sm:text-base text-slate-300 leading-relaxed">
+          <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm lg:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
             {config.subtitle}
           </p>
         </div>
 
-        {/* Contenedor 16:9 del Vídeo de YouTube con Reproducción Automática */}
-        <div className="relative w-full max-w-4xl rounded-2xl sm:rounded-3xl overflow-hidden border border-white/15 bg-black shadow-2xl shadow-blue-950/50">
-          {/* Botón flotante para activar/desactivar sonido en un toque (requerido por navegadores móviles al abrir desde QR) */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleToggleAudio}
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-bold shadow-xl backdrop-blur-md transition-all cursor-pointer ${
-                isMuted
-                  ? "bg-blue-600/95 hover:bg-blue-500 text-white ring-2 ring-white/30 animate-pulse"
-                  : "bg-slate-900/85 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40"
-              }`}
+        {/* Grid Responsivo: Celular/Tablet (Apilado Fluido) | Laptop/PC (Escenario Cine 8 col + Panel Contacto QR 4 col) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
+          {/* Columna Izquierda/Central: Reproductor 16:9 sin Ruido Visual */}
+          <div className="lg:col-span-8 flex flex-col">
+            <div
+              ref={playerWrapperRef}
+              className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-400/25 bg-black shadow-[0_20px_70px_rgba(29,104,255,0.28)]"
             >
-              {isMuted ? (
-                <>
-                  <VolumeX className="h-4 w-4" />
-                  <span>Toca para activar sonido</span>
-                </>
-              ) : (
-                <>
-                  <Volume2 className="h-4 w-4 text-emerald-400" />
-                  <span>Sonido activado</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="relative w-full pt-[56.25%] bg-slate-900">
-            <iframe
-              key={config.youtubeId}
-              ref={iframeRef}
-              onLoad={handleIframeLoad}
-              src={embedSrc}
-              title={config.title}
-              className="absolute inset-0 h-full w-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-
-          {/* Barra inferior informativa del reproductor */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900/95 border-t border-white/10 px-4 sm:px-6 py-3 text-xs text-slate-300">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-400">
-                <Play className="h-3.5 w-3.5 fill-emerald-400" />
-                Reproducción automática al escanear QR
-              </span>
-              <span className="text-slate-600">•</span>
-              <span className="font-mono text-[11px] text-slate-400">
-                ID YouTube: <strong className="text-slate-200">{config.youtubeId}</strong>
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <a
-                href={`https://www.youtube.com/watch?v=${config.youtubeId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2"
-              >
-                <span>Abrir en YouTube</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Tarjeta de Garantía de URL Permanente para Código QR + Acciones Rápidas */}
-        <div className="mt-8 w-full max-w-4xl rounded-2xl border border-white/10 bg-slate-900/60 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <a
-              href="/brand/iskool-qr-video.jpg"
-              download="ISkool_QR_Video_Oficial.jpg"
-              className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white p-1 border border-blue-500/40 shadow-md overflow-hidden"
-              title="Descargar Código QR Oficial de ISkool en formato JPG"
-            >
-              <img
-                src="/brand/iskool-qr-video.jpg"
-                alt="Código QR Oficial ISkool"
-                className="h-full w-full object-contain rounded-lg group-hover:scale-105 transition-transform"
-              />
-            </a>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm font-bold text-white">
-                  Enlace Permanente de tu Código QR:
-                </h2>
-                <code className="rounded-md bg-slate-950 border border-blue-500/30 px-2 py-0.5 text-xs font-mono font-bold text-blue-300">
-                  {PERMANENT_QR_URL}
-                </code>
+              {/* Controles Flotantes de Audio y Pantalla Completa */}
+              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleCopyPermanentUrl}
-                  className="inline-flex items-center gap-1 rounded-md bg-white/10 hover:bg-white/15 px-2 py-0.5 text-[11px] font-semibold text-slate-200 transition-colors cursor-pointer"
+                  onClick={handleToggleAudio}
+                  className={`inline-flex items-center gap-2 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-black shadow-2xl backdrop-blur-md transition-all cursor-pointer ${
+                    isMuted
+                      ? "bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-white/40 animate-pulse"
+                      : "bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-400/40"
+                  }`}
                 >
-                  {copiedQrUrl ? (
+                  {isMuted ? (
                     <>
-                      <Check className="h-3 w-3 text-emerald-400" />
-                      <span className="text-emerald-300">Copiado</span>
+                      <VolumeX className="h-4 w-4 shrink-0" />
+                      <span>Activar sonido</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="h-3 w-3" />
-                      <span>Copiar URL</span>
+                      <Volume2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <span>Sonido HD activo</span>
                     </>
                   )}
                 </button>
-                <a
-                  href="/brand/iskool-qr-video.jpg"
-                  download="ISkool_QR_Video_Oficial.jpg"
-                  className="inline-flex items-center gap-1 rounded-md bg-blue-600/25 hover:bg-blue-600/40 border border-blue-500/40 px-2.5 py-0.5 text-[11px] font-bold text-blue-300 transition-colors"
-                >
-                  <QrCode className="h-3 w-3" />
-                  <span>Descargar QR (.JPG)</span>
-                </a>
-              </div>
-              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
-                Puedes imprimir tu código QR con la dirección{" "}
-                <strong className="text-slate-200">{PERMANENT_QR_URL}</strong>. Cuando subas un nuevo vídeo a YouTube, solo cámbialo desde el botón{" "}
+
                 <button
                   type="button"
-                  onClick={() => {
-                    setSaveFeedback(null);
-                    setShowAdminModal(true);
-                  }}
-                  className="text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer"
+                  onClick={handleRestartVideo}
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
+                  title="Reiniciar vídeo desde el inicio con sonido"
+                  aria-label="Reiniciar vídeo"
                 >
-                  Cambiar Vídeo del QR
-                </button>{" "}
-                y el QR impreso mostrará el nuevo vídeo sin cambiar de enlace.
-              </p>
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleFullscreen}
+                  className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
+                  title="Pantalla completa"
+                  aria-label="Pantalla completa"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* IFrame 16:9 con Reproducción Inmediata en Alta Definición */}
+              <div className="relative w-full pt-[56.25%] bg-[#020611]">
+                <iframe
+                  key={config.youtubeId}
+                  ref={iframeRef}
+                  onLoad={handleIframeLoad}
+                  src={embedSrc}
+                  title={config.title}
+                  className="absolute inset-0 h-full w-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+
+            {/* Cintillo Inferior de Contacto Directo para Celular, Tablet, Laptop y PC */}
+            <div className="mt-3 sm:mt-4 rounded-2xl border border-white/10 bg-[#0A1633]/85 backdrop-blur-xl px-4 py-3 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-center sm:text-left">
+                <img
+                  src="/brand/iskool-video-concierge-orb.webp"
+                  alt=""
+                  className="hidden sm:block h-10 w-10 rounded-xl object-cover border border-blue-400/30 shrink-0"
+                />
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider font-extrabold text-blue-300">
+                    Atención Ejecutiva para Colegios
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
+                    <a
+                      href={`mailto:${OFFICIAL_EMAIL}`}
+                      className="text-sm sm:text-base font-black text-white hover:text-blue-300 transition-colors"
+                    >
+                      {OFFICIAL_EMAIL}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleCopyEmail}
+                      className="inline-flex items-center gap-1 rounded-lg bg-white/10 hover:bg-white/15 px-2 py-0.5 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer"
+                    >
+                      {copiedEmail ? (
+                        <>
+                          <Check className="h-3 w-3 text-emerald-400" />
+                          <span className="text-emerald-300">Correo copiado</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          <span>Copiar correo</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
+                <a
+                  href={`tel:+525511404767`}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-2 text-xs font-bold text-white transition-all flex-1 sm:flex-initial"
+                >
+                  <Phone className="h-3.5 w-3.5 text-blue-400" />
+                  <span>{PHONE_EXEC_DISPLAY}</span>
+                </a>
+                <a
+                  href={WHATSAPP_DIRECT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-all flex-1 sm:flex-initial"
+                >
+                  <MessageCircle className="h-3.5 w-3.5 fill-slate-950" />
+                  <span>WhatsApp {WHATSAPP_NUMBER_DISPLAY}</span>
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-            <Link
-              href={config.ctaUrl || "/"}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-950 hover:bg-slate-100 px-4 py-2.5 text-xs font-black transition-all shrink-0"
-            >
-              <span>{config.ctaText || "Ir a ISkool"}</span>
-            </Link>
+          {/* Columna Derecha: Código QR Oficial para Contacto por WhatsApp + Correo contacto@iskool.mx */}
+          <div className="lg:col-span-4 flex flex-col">
+            <div className="h-full rounded-2xl sm:rounded-3xl border border-blue-400/25 bg-gradient-to-b from-[#0C1B3D]/95 to-[#061026]/95 backdrop-blur-xl p-4 sm:p-6 shadow-2xl flex flex-col items-center justify-between text-center">
+              <div className="w-full">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Contacto Directo por WhatsApp
+                </span>
+
+                <h2 className="mt-2.5 text-lg sm:text-xl font-black text-white leading-snug">
+                  Agenda tu Demostración Ejecutiva
+                </h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  Escanea el código QR con tu celular o toca para abrir WhatsApp de inmediato
+                </p>
+              </div>
+
+              {/* Código QR Oficial de iSkool® (Optimizado WebP/JPG de Alta Nitidez) */}
+              <a
+                href={WHATSAPP_DIRECT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group my-3 sm:my-4 relative flex items-center justify-center rounded-2xl bg-white p-3 sm:p-4 shadow-[0_12px_40px_rgba(255,255,255,0.12)] ring-4 ring-blue-500/30 hover:ring-emerald-400/60 transition-all"
+                title="Escanear o tocar para contactar por WhatsApp (56 1140 4767)"
+              >
+                <picture>
+                  <source
+                    srcSet="/brand/iskool-qr-whatsapp-oficial.webp"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/brand/iskool-qr-whatsapp-oficial.jpg"
+                    alt="Código QR Oficial de WhatsApp iSkool® — 56 1140 4767 y contacto@iskool.mx"
+                    className="h-44 w-44 sm:h-48 sm:w-48 lg:h-52 lg:w-52 object-contain rounded-lg group-hover:scale-[1.02] transition-transform"
+                    loading="eager"
+                  />
+                </picture>
+              </a>
+
+              {/* Datos Oficiales de Contacto (WhatsApp + Correo contacto@iskool.mx) */}
+              <div className="w-full space-y-2.5">
+                <a
+                  href={WHATSAPP_DIRECT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs sm:text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all"
+                >
+                  <MessageCircle className="h-4 w-4 fill-slate-950" />
+                  <span>WhatsApp: {WHATSAPP_NUMBER_DISPLAY}</span>
+                </a>
+
+                <div className="rounded-xl border border-blue-400/30 bg-[#040B1A]/85 px-3.5 py-2.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mail className="h-4 w-4 text-blue-400 shrink-0" />
+                    <a
+                      href={`mailto:${OFFICIAL_EMAIL}`}
+                      className="text-xs sm:text-sm font-black text-white hover:text-blue-300 truncate transition-colors"
+                    >
+                      correo: {OFFICIAL_EMAIL}
+                    </a>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyEmail}
+                    className="shrink-0 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-400/30 px-2.5 py-1 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer"
+                  >
+                    {copiedEmail ? "Copiado" : "Copiar"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Modal de Administración Dinámica del Vídeo QR (sin cambiar la URL iskool.mx/video) */}
+      {/* Pie Minimalista Institucional sin Ruido Visual */}
+      <footer className="relative z-10 w-full border-t border-white/10 bg-[#040B1A]/90 py-3 px-4 text-center text-[11px] text-slate-400">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>
+            © {new Date().getFullYear()} <strong>iSkool®</strong> — Tecnología Creada en Canadá para Colegios Privados en México.
+          </span>
+          <div className="flex items-center gap-4">
+            <a
+              href={`mailto:${OFFICIAL_EMAIL}`}
+              className="text-blue-300 hover:text-white font-bold transition-colors"
+            >
+              {OFFICIAL_EMAIL}
+            </a>
+            <span>•</span>
+            <a
+              href={WHATSAPP_DIRECT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-300 hover:text-white font-bold transition-colors"
+            >
+              WhatsApp {WHATSAPP_NUMBER_DISPLAY}
+            </a>
+          </div>
+        </div>
+      </footer>
+
+      {/* Modal Administrativo Oculto (Accesible vía ?admin=1 para actualizar el vídeo manteniendo la URL fija) */}
       {showAdminModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
@@ -429,12 +559,11 @@ export default function VideoQrLandingPage() {
                 </div>
                 <div>
                   <h2 id="qr-video-modal-title" className="text-lg font-black text-white">
-                    Cambiar Vídeo de YouTube del QR
+                    Configuración de Vídeo QR Institucional
                   </h2>
                   <p className="text-xs text-slate-400">
-                    La URL pública{" "}
-                    <span className="font-mono text-blue-300 font-bold">{PERMANENT_QR_URL}</span>{" "}
-                    jamás se modifica.
+                    URL permanente:{" "}
+                    <span className="font-mono text-blue-300 font-bold">{PERMANENT_QR_URL}</span>
                   </p>
                 </div>
               </div>
@@ -449,10 +578,9 @@ export default function VideoQrLandingPage() {
               </button>
             </div>
 
-            {/* Sección 1: Prueba Rápida con 1 Clic para comprobar que el QR conserva la misma URL */}
             <div className="mt-5">
               <label className="block text-xs font-bold uppercase tracking-wider text-blue-400 mb-2">
-                1. Prueba Rápida (Cambia el vídeo con 1 clic para comprobar que la URL no cambia)
+                Vídeos Preconfigurados
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {presets.map((preset) => {
@@ -491,35 +619,25 @@ export default function VideoQrLandingPage() {
                       <span className="font-mono text-[10px] text-blue-300">
                         ID: {preset.youtubeId}
                       </span>
-                      <p className="mt-1 text-[11px] text-slate-400 line-clamp-2">
-                        {preset.description}
-                      </p>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Sección 2: Pegar cualquier enlace de YouTube personalizado */}
             <div className="mt-6 space-y-4 border-t border-white/10 pt-5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-blue-400">
-                2. O pega aquí el enlace de tu nuevo vídeo de YouTube cuando lo subas
-              </label>
-
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label htmlFor="youtube-url-input" className="text-xs font-semibold text-slate-200">
-                    URL o ID del Vídeo de YouTube
+                    URL o ID del Vídeo
                   </label>
                   {detectedFormVideoId ? (
                     <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400">
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                      ID detectado: <strong>{detectedFormVideoId}</strong>
+                      ID: <strong>{detectedFormVideoId}</strong>
                     </span>
                   ) : (
-                    <span className="text-[11px] text-amber-400">
-                      Ingresa un enlace válido de YouTube
-                    </span>
+                    <span className="text-[11px] text-amber-400">Enlace inválido</span>
                   )}
                 </div>
                 <input
@@ -527,23 +645,21 @@ export default function VideoQrLandingPage() {
                   type="text"
                   value={formYoutubeUrl}
                   onChange={(e) => setFormYoutubeUrl(e.target.value)}
-                  placeholder="Ej. https://www.youtube.com/watch?v=... o https://youtu.be/..."
-                  className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label htmlFor="video-title-input" className="block text-xs font-semibold text-slate-200 mb-1">
-                    Título en la página
+                    Título
                   </label>
                   <input
                     id="video-title-input"
                     type="text"
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="Título del vídeo"
-                    className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
 
@@ -559,22 +675,21 @@ export default function VideoQrLandingPage() {
                     type="password"
                     value={formAdminKey}
                     onChange={(e) => setFormAdminKey(e.target.value)}
-                    placeholder="Clave institucional (ISKOOL2026)"
-                    className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="video-subtitle-input" className="block text-xs font-semibold text-slate-200 mb-1">
-                  Descripción / Subtítulo debajo del título
+                  Subtítulo
                 </label>
                 <textarea
                   id="video-subtitle-input"
                   rows={2}
                   value={formSubtitle}
                   onChange={(e) => setFormSubtitle(e.target.value)}
-                  className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-white/15 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
@@ -594,8 +709,7 @@ export default function VideoQrLandingPage() {
                 <div className="flex items-center gap-2 text-[11px] text-slate-400">
                   <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
                   <span>
-                    URL fija garantizada:{" "}
-                    <strong className="text-white font-mono">{PERMANENT_QR_URL}</strong>
+                    URL fija: <strong className="text-white font-mono">{PERMANENT_QR_URL}</strong>
                   </span>
                 </div>
 
@@ -621,7 +735,7 @@ export default function VideoQrLandingPage() {
                     ) : (
                       <>
                         <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Guardar y Actualizar Vídeo del QR</span>
+                        <span>Guardar Vídeo</span>
                       </>
                     )}
                   </button>
@@ -631,10 +745,6 @@ export default function VideoQrLandingPage() {
           </div>
         </div>
       )}
-
-      {/* Pie de página legal homologado con contacto@iskool.mx */}
-      <PublicFooter />
     </div>
   );
 }
-

@@ -6,225 +6,256 @@ const pythonBin = path.join(process.cwd(), '.venv', 'Scripts', 'python.exe');
 const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
 
 const rootDir = path.join(__dirname, '..');
-const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio');
-const artifactDir = 'C:/Users/kami-/.gemini/antigravity/brain/fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b';
+const audioDir = path.join(rootDir, 'temp_sales_video_assets', 'audio_v2');
 fs.mkdirSync(audioDir, { recursive: true });
 
-// 12 Surgical Conversational Sales Scenes aligned with the 147.6s Visual Master Timeline (120s - 150s range)
-const SCENES = [
+// ============================================================================
+// GUION COMERCIAL DE ALTO IMPACTO PARA GENERACIÓN DE CITAS DE VENTAS (B2B)
+// - Fonética estricta AFI /ˈa͡ɪskˌuːl/ -> "Áiskul" en todo el video
+// - Tecnología creada en Canadá con Inteligencia Artificial para Colegios Privados en México
+// - "El cerebro vivo de tu escuela" + Los 5 Pilares de la Educación + Beneficios Reales
+// - Cero referencias a IBIME, cero URLs, voz femenina 3.8-flash-lite-tts (es-419-advisor-7)
+// - Cadencia 100% uniforme (mismo factor en las 12 escenas) y Volumen 100% constante (-15.2 dBFS RMS activo)
+// ============================================================================
+const SCENE_DEFS = [
   {
     id: 'scene01',
-    title: 'Intro Oficial iSkool® (Ískul) + 5 Pilares y Beneficios Reales + Cortinilla CEO + Resumen Ejecutivo',
-    startTime: 0.0,
-    endTime: 22.80,
-    preWait: 0.60,
-    ssmlText: 'Bienvenido a Ískul: el ecosistema educativo integral que conecta en tiempo real a los cinco pilares de tu institución: Directivos, Coordinadores, Docentes, Alumnos y Tutores. Con Ískul multiplicas tu captación, automatizas la planeación pedagógica y elevas la cobranza. En el Portal de Dirección General, controla desde un solo tablero matrícula, asistencia, cobertura curricular y el desempeño de cada plantel.'
+    title: 'Intro Oficial iSkool® (/ˈa͡ɪskˌuːl/) + IA Canadiense + Cerebro Vivo + 5 Pilares y Beneficios Reales + Cortinilla CEO + Resumen Ejecutivo',
+    preWait: 0.40,
+    postWait: 0.35,
+    ssmlText: 'Bienvenido a Áiskul: el cerebro vivo de tu escuela. Una plataforma educativa potenciada con Inteligencia Artificial, con tecnología creada en Canadá especialmente para colegios privados en México. Áiskul conecta en tiempo real a los cinco pilares de la educación: Directivos, Coordinadores, Docentes, Alumnos y Tutores, con beneficios reales desde el primer día. En el Portal de Dirección General, controla desde un solo tablero matrícula, asistencia, cobertura curricular y el desempeño de cada plantel.'
   },
   {
     id: 'scene02',
-    title: 'Admisión 360° CRM Kanban — Embudo de Captación a Inscripción',
-    startTime: 22.80,
-    endTime: 34.40,
-    preWait: 0.20,
-    ssmlText: 'Con Admisión trescientos sesenta, impulsa tu crecimiento escolar. Visualiza cómo cada aspirante avanza desde su registro, visita al campus y diagnóstico psicopedagógico hasta su inscripción pagada, sin perder un solo prospecto.'
+    title: 'Admisión 360° CRM Kanban — Cómo avanza un alumno en el proceso de admisión',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'En la sección de Admisión trescientos sesenta, impulsa tu matrícula sin perder un solo prospecto. Observa cómo cada aspirante avanza paso a paso: desde su captación y visita al campus, pasando por su evaluación psicopedagógica y carta de asignación, hasta su inscripción pagada.'
   },
   {
     id: 'scene03',
     title: 'Consola de Correo Inteligente & Triage Cognitivo CEO',
-    startTime: 34.40,
-    endTime: 44.40,
-    preWait: 0.20,
-    ssmlText: 'Nuestra Consola de Correo con Triage Cognitivo analiza cientos de mensajes diarios, filtra solo los asuntos críticos para dirección y delega el resto a tu equipo, ahorrándote casi cuatro horas cada día.'
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'Nuestro Triage Cognitivo con Inteligencia Artificial analiza cientos de mensajes diarios, filtra únicamente los asuntos urgentes para Dirección General, detecta patrones de familias para responder en un clic y te ahorra casi cuatro horas cada día.'
   },
   {
     id: 'scene04',
-    title: 'Supervisión Docente & Modo Espejo CEO en Tiempo Real',
-    startTime: 44.40,
-    endTime: 52.60,
-    preWait: 0.20,
-    ssmlText: 'Y con el Modo Espejo en Vivo, supervisa en tiempo real el avance de cada profesor, su cronómetro pedagógico y la sesión activa en el aula sin interrumpir la clase.'
+    title: 'Supervisión Espejo en Tiempo Real (Portal Académico)',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'Y con la Supervisión Espejo en tiempo real, audita el desempeño docente e inspecciona en vivo el cronómetro pedagógico, la planeación activa y el avance de cada salón sin interrumpir la clase.'
   },
   {
     id: 'scene05',
-    title: 'Cortinilla Portal del Profesor + Daylight Studio Pro en Aula',
-    startTime: 52.60,
-    endTime: 66.40,
-    preWait: 1.10,
-    ssmlText: 'En el Portal del Profesor, Ískul ofrece una interfaz clara y sin curva de aprendizaje. Desde su barra lateral, el docente guía su clase con los seis niveles de la Taxonomía de Bloom, calendario histórico de asistencia, sellado digital de libreta y avisos en un clic.'
+    title: 'Cortinilla Portal del Profesor + Gestión de Clase en Vivo',
+    preWait: 1.15,
+    postWait: 0.30,
+    ssmlText: 'En el Portal del Profesor, Áiskul ofrece una experiencia ágil y sin curva de aprendizaje. El docente conduce su sesión en vivo apoyado por los seis niveles de la Taxonomía de Bloom, pase de lista visual, sellado digital de libreta y envío de evidencias en un clic.'
   },
   {
     id: 'scene06',
-    title: 'Generador Curricular SEP NEM 360° & Estudio iSkool de Bloques',
-    startTime: 66.40,
-    endTime: 78.60,
-    preWait: 0.20,
-    ssmlText: 'El Generador Curricular permite planear clases en horarios o días diferidos y crear secuencias oficiales de la Nueva Escuela Mexicana en segundos. Y en el Estudio Ískul, el maestro diseña actividades interactivas por bloques listas para proyectar.'
+    title: 'Generación de Planeaciones SEP NEM + Estudio iSkool (34 Bloques & Evaluación Óptica OMR)',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'El Generador de Planeaciones crea secuencias didácticas oficiales listas para clase o fechas programadas. Y en el Estudio Áiskul, el maestro diseña flujos interactivos con treinta y cuatro bloques, exámenes ópticos imprimibles y simulador de alumno en vivo.'
   },
   {
     id: 'scene07',
-    title: 'Libro Mágico Interactivo & Personajes Históricos en 1ª Persona',
-    startTime: 78.60,
-    endTime: 86.90,
-    preWait: 0.20,
-    ssmlText: 'Además, con el Libro Mágico Interactivo, los alumnos exploran novelas gráficas e interrogan en primera persona a personajes históricos con absoluto rigor documental.'
+    title: 'Libro Mágico Interactivo & Diálogo con Personajes Históricos en 1ª Persona',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'Además, con el Libro Mágico Interactivo, tus alumnos exploran novelas gráficas ilustradas y conversan en primera persona con personajes históricos respaldados por rigor documental.'
   },
   {
     id: 'scene08',
-    title: 'Cortinilla Portal del Estudiante + Misiones Épicas & Avatares',
-    startTime: 86.90,
-    endTime: 98.20,
-    preWait: 1.10,
-    ssmlText: 'En el Portal del Estudiante, cada clase y tarea se convierte en una misión épica. Los alumnos ganan puntos de experiencia, suben de rango y personalizan su avatar exclusivamente mediante su mérito académico.'
+    title: 'Cortinilla Portal del Estudiante + Tablero de Misiones y Personalización de Avatares',
+    preWait: 1.15,
+    postWait: 0.30,
+    ssmlText: 'En el Portal del Estudiante, el aprendizaje se convierte en una aventura épica. Cada tarea superada otorga experiencia y monedas de mérito con las que el alumno sube de rango y personaliza su propio avatar en tres dimensiones.'
   },
   {
     id: 'scene09',
-    title: 'Enseñanza de Idiomas & Karaoke Fonético (Cambridge / DELF-DALF / CELTA-DELTA)',
-    startTime: 98.20,
-    endTime: 110.80,
-    preWait: 0.20,
-    ssmlText: 'Nuestro Laboratorio de Idiomas combina conversación interactiva con velocidad gradual y karaoke de fluidez fonética palabra por palabra, preparando a tus alumnos en inglés para certificación Cambridge y en francés para DELF y DALF bajo metodología CELTA y DELTA.'
+    title: 'Enseñanza de Idiomas & Karaoke Fonético (Certificación Cambridge y CELTA/DELTA)',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'Nuestro Centro de Idiomas integra conversación interactiva con velocidad graduada y un Karaoke de Fluidez Fonética palabra por palabra, preparando a tus estudiantes en inglés para certificación Cambridge y en francés bajo los estándares internacionales CELTA y DELTA.'
   },
   {
     id: 'scene10',
-    title: 'Carrusel Dinámico de 20 Diseños de Gamificación por Nivel Académico',
-    startTime: 110.80,
-    endTime: 121.30,
-    preWait: 0.20,
-    ssmlText: 'Contamos con veinte diseños interactivos adaptados a cada etapa escolar: desde experiencias táctiles para preescolar y aventuras en primaria, hasta duelos sincronizados en secundaria y retos preuniversitarios en preparatoria.'
+    title: 'Carrusel de 20 Diseños de Gamificación Adaptados por Nivel Académico',
+    preWait: 0.25,
+    postWait: 0.30,
+    ssmlText: 'Áiskul adapta su interfaz visual a cada etapa formativa con veinte universos de gamificación: desde tableros sensoriales para preescolar y misiones en primaria, hasta duelos por clanes en secundaria y simuladores preuniversitarios en preparatoria.'
   },
   {
     id: 'scene11',
-    title: 'Cortinilla Portal del Padre de Familia + Avisos, Estado de Cuenta y Pagos',
-    startTime: 121.30,
-    endTime: 133.00,
-    preWait: 1.10,
-    ssmlText: 'En el Portal del Padre de Familia, los tutores consultan el muro de logros de sus hijos, firman avisos escolares de enterado y liquidan colegiaturas en línea con tarjeta o transferencia y facturación fiscal automática al instante.'
+    title: 'Cortinilla Portal del Padre de Familia + Muro de Logros, Mensajes, Estado de Cuenta y Pago Automatizado',
+    preWait: 1.15,
+    postWait: 0.30,
+    ssmlText: 'En el Portal del Padre de Familia, los tutores celebran el muro de logros de sus hijos, responden avisos y alertas escolares con confirmación de enterado, consultan su estado de cuenta y realizan el pago automatizado de colegiaturas con facturación fiscal inmediata.'
   },
   {
     id: 'scene12',
-    title: 'Cierre de Ventas & Agendamiento de Citas con QR Oficial (contacto@iskool.mx / 5611404767 / 5511404767)',
-    startTime: 133.00,
-    endTime: 148.50,
-    preWait: 0.25,
-    ssmlText: 'Lleva hoy tu institución educativa al estándar mundial. Escanea el código Q R en pantalla para escribirnos por WhatsApp al cincuenta y seis, once cuarenta, cuarenta y siete, sesenta y siete; llámanos al cincuenta y cinco, once cuarenta, cuarenta y siete, sesenta y siete, o escríbenos a contacto arroba iskool punto eme equis. Ískul: el futuro de la educación, hoy.'
+    title: 'Gran Cierre de Ventas & Agendamiento de Cita con QR Oficial (contacto@iskool.mx / 5611404767 / 5511404767)',
+    preWait: 0.30,
+    postWait: 1.00,
+    ssmlText: 'Transforma hoy tu colegio con el cerebro vivo de la educación. Agenda tu demostración personalizada escaneando el código Q R en pantalla al teléfono cincuenta y seis, once cuarenta, cuarenta y siete, sesenta y siete; llámanos al cincuenta y cinco, once cuarenta, cuarenta y siete, sesenta y siete, o escríbenos a contacto arroba iskool punto eme equis. Áiskul: tecnología canadiense que impulsa el futuro de tu institución.'
   }
 ];
 
-function getAudioDuration(filePath) {
-  try {
-    execFileSync(ffmpegPath, ['-i', filePath], { stdio: 'pipe' });
-    return 10;
-  } catch (err) {
-    const stderr = err.stderr ? err.stderr.toString() : '';
-    const m = stderr.match(/Duration:\s*(\d+):(\d+):(\d+\.\d+)/);
-    if (m) {
-      return parseInt(m[1], 10) * 3600 + parseInt(m[2], 10) * 60 + parseFloat(m[3]);
-    }
-    return 10;
-  }
+function findWavDataOffset(buf) {
+  const idx = buf.indexOf(Buffer.from('data'), 12);
+  return idx !== -1 ? idx + 8 : 44;
 }
 
-function generateWarmSalesSoundtrack(wavPath, totalDurationSec, duckWindows) {
+function getExactPcmWavDuration(filePath) {
+  const buf = fs.readFileSync(filePath);
+  const dataOff = findWavDataOffset(buf);
+  return (buf.length - dataOff) / (44100 * 4);
+}
+
+function measureRmsDb(pcmInt16Buffer, startByte) {
+  let sumSq = 0;
+  let count = 0;
+  for (let i = startByte; i <= pcmInt16Buffer.length - 2; i += 2) {
+    const sample = pcmInt16Buffer.readInt16LE(i) / 32768.0;
+    if (Math.abs(sample) > 0.008) {
+      sumSq += sample * sample;
+      count++;
+    }
+  }
+  if (count === 0) return -60;
+  const rms = Math.sqrt(sumSq / count);
+  return 20 * Math.log10(rms);
+}
+
+function normalizeWavToTargetActiveRms(wavPath, targetRmsDb = -14.8) {
+  const buf = fs.readFileSync(wavPath);
+  const dataOff = findWavDataOffset(buf);
+  const currentDb = measureRmsDb(buf, dataOff);
+  const gainDb = targetRmsDb - currentDb;
+  const linearGain = Math.pow(10, gainDb / 20);
+
+  for (let i = dataOff; i <= buf.length - 2; i += 2) {
+    const s = (buf.readInt16LE(i) / 32768.0) * linearGain;
+    const limited = Math.tanh(s / 0.92) * 0.92;
+    buf.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(limited * 32767))), i);
+  }
+  fs.writeFileSync(wavPath, buf);
+  return measureRmsDb(buf, dataOff);
+}
+
+function createWavBuffer(totalSamples, sampleRate = 44100, numChannels = 2) {
+  const dataBytes = totalSamples * numChannels * 2;
+  const buf = Buffer.alloc(44 + dataBytes);
+  buf.write('RIFF', 0);
+  buf.writeUInt32LE(36 + dataBytes, 4);
+  buf.write('WAVE', 8);
+  buf.write('fmt ', 12);
+  buf.writeUInt32LE(16, 16);
+  buf.writeUInt16LE(1, 20);
+  buf.writeUInt16LE(numChannels, 22);
+  buf.writeUInt32LE(sampleRate, 24);
+  buf.writeUInt32LE(sampleRate * numChannels * 2, 28);
+  buf.writeUInt16LE(numChannels * 2, 32);
+  buf.writeUInt16LE(16, 34);
+  buf.write('data', 36);
+  buf.writeUInt32LE(dataBytes, 40);
+  return buf;
+}
+
+function generateDynamicExplainerSoundtrack(wavPath, totalDurationSec, duckWindows) {
   const sampleRate = 44100;
   const totalSamples = Math.floor(sampleRate * totalDurationSec);
-  const numChannels = 2;
-  const buffer = Buffer.alloc(44 + totalSamples * numChannels * 2);
+  const buffer = createWavBuffer(totalSamples, sampleRate, 2);
 
-  buffer.write('RIFF', 0);
-  buffer.writeUInt32LE(36 + totalSamples * numChannels * 2, 4);
-  buffer.write('WAVE', 8);
-  buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(numChannels, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(sampleRate * numChannels * 2, 28);
-  buffer.writeUInt16LE(numChannels * 2, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write('data', 36);
-  buffer.writeUInt32LE(totalSamples * numChannels * 2, 40);
-
-  const bpm = 118;
+  const bpm = 122;
   const beatSec = 60 / bpm;
   const measureSec = beatSec * 4;
 
   const chords = [
-    { root: 73.42, notes: [146.83, 185.00, 220.00, 277.18, 329.63] },
-    { root: 69.30, notes: [138.59, 164.81, 220.00, 277.18, 329.63] },
-    { root: 61.74, notes: [123.47, 146.83, 185.00, 220.00, 293.66] },
-    { root: 49.00, notes: [98.00, 123.47, 146.83, 196.00, 246.94] }
+    { root: 73.42, notes: [146.83, 185.00, 220.00, 293.66, 369.99] },
+    { root: 61.74, notes: [123.47, 146.83, 185.00, 246.94, 329.63] },
+    { root: 49.00, notes: [98.00,  123.47, 146.83, 196.00, 293.66] },
+    { root: 55.00, notes: [110.00, 138.59, 164.81, 220.00, 329.63] }
   ];
 
-  function pianoNote(freq, dt) {
+  function pluckNote(freq, dt) {
     if (dt < 0) return 0;
-    const env = Math.exp(-dt * 2.4) * 0.7 + Math.exp(-dt * 0.85) * 0.3;
-    const h1 = Math.sin(2 * Math.PI * freq * dt) * 0.58;
+    const env = Math.exp(-dt * 3.2) * 0.72 + Math.exp(-dt * 0.95) * 0.28;
+    const h1 = Math.sin(2 * Math.PI * freq * dt) * 0.62;
     const h2 = Math.sin(2 * Math.PI * freq * 2.0 * dt) * 0.24;
-    const h3 = Math.sin(2 * Math.PI * freq * 3.0 * dt) * 0.10;
+    const h3 = Math.sin(2 * Math.PI * freq * 3.0 * dt) * 0.08;
     return (h1 + h2 + h3) * env;
   }
 
   let offset = 44;
   for (let i = 0; i < totalSamples; i++) {
     const t = i / sampleRate;
-    let masterVol = 0.78;
-    if (t < 1.2) masterVol *= (t / 1.2);
-    if (t > totalDurationSec - 2.2) masterVol *= Math.max(0, (totalDurationSec - t) / 2.2);
+    let masterVol = 0.76;
+    if (t < 1.0) masterVol *= (t / 1.0);
+    if (t > totalDurationSec - 2.0) masterVol *= Math.max(0, (totalDurationSec - t) / 2.0);
 
     if (duckWindows) {
-      let duckFactor = 0.68;
+      let duckFactor = 0.50;
       for (const w of duckWindows) {
-        if (t >= w.start - 0.28 && t <= w.end + 0.28) {
+        if (t >= w.start - 0.25 && t <= w.end + 0.25) {
           if (t < w.start) {
-            const p = (w.start - t) / 0.28;
-            duckFactor = 0.16 + p * 0.52;
+            const p = (w.start - t) / 0.25;
+            duckFactor = 0.12 + p * 0.38;
           } else if (t > w.end) {
-            const p = (t - w.end) / 0.28;
-            duckFactor = 0.16 + p * 0.52;
+            const p = (t - w.end) / 0.25;
+            duckFactor = 0.12 + p * 0.38;
           } else {
-            duckFactor = 0.16;
+            duckFactor = 0.12;
           }
           break;
         }
       }
       masterVol *= duckFactor;
     } else {
-      masterVol *= 0.80;
+      masterVol *= 0.78;
     }
 
     const measureIdx = Math.floor(t / measureSec) % chords.length;
     const chord = chords[measureIdx];
     const chordAge = t % measureSec;
     const beatAge = t % beatSec;
-    const eighthAge = t % (beatSec / 2);
+    const sixteenthAge = t % (beatSec / 4);
 
     let left = 0;
     let right = 0;
 
     for (let n = 0; n < chord.notes.length; n++) {
-      const noteDt = chordAge - n * 0.022;
-      const sig = pianoNote(chord.notes[n], noteDt) * 0.22;
-      const pan = 0.3 + (n / chord.notes.length) * 0.4;
+      const noteDt = chordAge - n * 0.018;
+      const sig = pluckNote(chord.notes[n], noteDt) * 0.20;
+      const pan = 0.28 + (n / chord.notes.length) * 0.44;
       left += sig * (1 - pan);
       right += sig * pan;
     }
 
-    const arpIdx = Math.floor(t / (beatSec / 2)) % chord.notes.length;
-    const arpFreq = chord.notes[arpIdx] * 2;
-    const arpEnv = Math.exp(-eighthAge * 7.5);
-    const arpSig = Math.sin(2 * Math.PI * arpFreq * eighthAge) * arpEnv * 0.085;
-    left += arpSig * 0.55;
-    right += arpSig * 0.45;
+    const step16 = Math.floor(t / (beatSec / 4));
+    const arpIdx = step16 % chord.notes.length;
+    const arpFreq = chord.notes[arpIdx] * (step16 % 8 === 0 ? 2 : 1);
+    const arpEnv = Math.exp(-sixteenthAge * 11.5);
+    const arpSig = Math.sin(2 * Math.PI * arpFreq * sixteenthAge) * arpEnv * 0.095;
+    left += arpSig * (step16 % 2 === 0 ? 0.62 : 0.38);
+    right += arpSig * (step16 % 2 === 0 ? 0.38 : 0.62);
 
-    const bassEnv = Math.exp(-beatAge * 3.8) * Math.min(1, beatAge * 45);
-    const bassSig = (Math.sin(2 * Math.PI * chord.root * t) * 0.75 + Math.sin(2 * Math.PI * chord.root * 2 * t) * 0.25) * bassEnv * 0.24;
+    const bassEnv = Math.exp(-beatAge * 4.2) * Math.min(1, beatAge * 50);
+    const bassSig = (Math.sin(2 * Math.PI * chord.root * t) * 0.78 + Math.sin(2 * Math.PI * chord.root * 2 * t) * 0.22) * bassEnv * 0.24;
     left += bassSig;
     right += bassSig;
 
-    for (let n = 0; n < 3; n++) {
-      const padFreq = chord.notes[n];
-      left += Math.sin(2 * Math.PI * padFreq * t + 0.2) * 0.045;
-      right += Math.sin(2 * Math.PI * (padFreq * 1.001) * t + 0.9) * 0.045;
+    const halfBeatAge = t % (beatSec / 2);
+    if (halfBeatAge < 0.025) {
+      const tickEnv = Math.exp(-halfBeatAge * 140);
+      const pseudoNoise = Math.sin(i * 12.9898) * 43758.5453;
+      const noise = (pseudoNoise - Math.floor(pseudoNoise)) * 2 - 1;
+      const tick = noise * tickEnv * 0.032;
+      left += tick;
+      right += tick;
     }
 
     left = Math.tanh(left * masterVol);
@@ -239,25 +270,27 @@ function generateWarmSalesSoundtrack(wavPath, totalDurationSec, duckWindows) {
 }
 
 async function main() {
-  console.log('🎙️ Synthesizing 12 Conversational Human Sales Scenes (v6 Studio Generative Voice)...');
+  console.log('🎙️ Mastering 12 Sales Scenes with Uniform Cadence & Constant Loudness (-14.8 dBFS Active RMS)...');
+
   const timeline = [];
   const duckWindows = [];
+  let cursorTime = 0.0;
 
-  for (let i = 0; i < SCENES.length; i++) {
-    const s = SCENES[i];
-    const rawMp3 = path.join(audioDir, `${s.id}_v6_raw.mp3`);
-    const wavTrimmed = path.join(audioDir, `${s.id}_trimmed.wav`);
+  for (let i = 0; i < SCENE_DEFS.length; i++) {
+    const s = SCENE_DEFS[i];
+    const rawMp3 = path.join(audioDir, `${s.id}_v8_raw.mp3`);
     const wavNorm = path.join(audioDir, `${s.id}.wav`);
 
-    if (!fs.existsSync(rawMp3) || fs.statSync(rawMp3).size < 10000) {
+    if (!fs.existsSync(rawMp3) || fs.statSync(rawMp3).size < 8000) {
       const payloadPath = path.join(audioDir, `${s.id}_payload.json`);
       fs.writeFileSync(payloadPath, JSON.stringify({
         text: s.ssmlText,
-        voice: 'es-US-PalomaNeural',
-        rate: '+2%',
-        pitch: '+0Hz',
-        characterName: 'Sofía Ejecutiva',
-        role: 'comercial',
+        voice: 'es-419-advisor-7',
+        rate: '+18%',
+        pitch: '+1Hz',
+        characterName: 'Sofía CEO',
+        role: 'presentadora comercial',
+        gender: 'female',
         output: rawMp3
       }), 'utf8');
 
@@ -265,58 +298,49 @@ async function main() {
       if (fs.existsSync(payloadPath)) fs.unlinkSync(payloadPath);
     }
 
-    // 1. Convert to 44.1kHz stereo WAV with gentle silence trim at start/end and compact internal pause tightening (>0.24s)
+    // Apply uniform 1.14x commercial explainer cadence across ALL 12 scenes (zero speed change between scenes!)
     execFileSync(ffmpegPath, [
       '-y', '-i', rawMp3,
-      '-af', 'silenceremove=start_periods=1:start_duration=0.04:start_threshold=-42dB:stop_periods=-1:stop_duration=0.24:stop_threshold=-42dB',
-      '-ar', '44100', '-ac', '2',
-      wavTrimmed
-    ], { stdio: 'ignore' });
-
-    const rawDur = getAudioDuration(wavTrimmed);
-    const slotWindow = (s.endTime - s.startTime) - s.preWait - 0.20;
-    // Apply dynamic commercial tempo adjustment so the recording fits its visual scene slot cleanly without clipping
-    let tempoFactor = 1.0;
-    if (rawDur > slotWindow && slotWindow > 2.0) {
-      tempoFactor = Math.min(1.42, Number((rawDur / slotWindow).toFixed(3)));
-    }
-
-    const afFilter = tempoFactor > 1.005 ? `atempo=${tempoFactor}` : 'anull';
-    execFileSync(ffmpegPath, [
-      '-y', '-i', wavTrimmed,
-      '-af', afFilter,
+      '-af', 'silenceremove=start_periods=1:start_duration=0.03:start_threshold=-42dB:stop_periods=-1:stop_duration=0.16:stop_threshold=-42dB,atempo=1.14,loudnorm=I=-14.0:TP=-1.0:LRA=5.0',
       '-ar', '44100', '-ac', '2',
       wavNorm
     ], { stdio: 'ignore' });
 
-    const voiceDur = getAudioDuration(wavNorm);
-    const sceneDur = Number((s.endTime - s.startTime).toFixed(2));
-    const voiceStartGlobal = Number((s.startTime + s.preWait).toFixed(2));
-    const voiceEndGlobal = Number(Math.min(s.endTime - 0.1, voiceStartGlobal + voiceDur).toFixed(2));
-    const postWait = Number(Math.max(0.1, s.endTime - voiceEndGlobal).toFixed(2));
+    const finalRmsDb = normalizeWavToTargetActiveRms(wavNorm, -14.8);
+    const voiceDur = getExactPcmWavDuration(wavNorm);
 
+    const startTime = Number(cursorTime.toFixed(2));
+    const voiceStartGlobal = Number((startTime + s.preWait).toFixed(2));
+    const voiceEndGlobal = Number((voiceStartGlobal + voiceDur).toFixed(2));
+    const endTime = Number((voiceEndGlobal + s.postWait).toFixed(2));
+    const sceneDur = Number((endTime - startTime).toFixed(2));
+
+    cursorTime = endTime;
     duckWindows.push({ start: voiceStartGlobal, end: voiceEndGlobal });
 
     timeline.push({
       index: i + 1,
       id: s.id,
       title: s.title,
-      startTime: s.startTime,
-      endTime: s.endTime,
+      startTime,
+      endTime,
       duration: sceneDur,
       preWait: s.preWait,
       voiceDuration: Number(voiceDur.toFixed(2)),
-      postWait,
+      postWait: s.postWait,
       voiceStartGlobal,
       voiceEndGlobal,
+      rmsDb: Number(finalRmsDb.toFixed(2)),
       wavPath: wavNorm,
       text: s.ssmlText
     });
 
-    console.log(`  ✓ [${s.id}] Natural Voice: ${rawDur.toFixed(2)}s -> Fitted: ${voiceDur.toFixed(2)}s (tempo=${tempoFactor.toFixed(2)}x) | Slot: ${s.startTime.toFixed(2)}s..${s.endTime.toFixed(2)}s`);
+    console.log(`  ✓ [${s.id}] Slot: ${startTime.toFixed(2)}s..${endTime.toFixed(2)}s (${sceneDur.toFixed(2)}s) | Voice: ${voiceDur.toFixed(2)}s | Active RMS: ${finalRmsDb.toFixed(2)} dBFS`);
   }
 
-  const totalDuration = 148.5;
+  const totalDuration = Number(cursorTime.toFixed(2));
+  console.log(`\n⏱️ Total Audio-First Timeline Duration: ${totalDuration.toFixed(2)}s (Target: 120s - 150s)`);
+
   const manifestPath = path.join(audioDir, 'timeline_manifest.json');
   fs.writeFileSync(manifestPath, JSON.stringify({ totalDuration, scenes: timeline }, null, 2));
 
@@ -324,59 +348,41 @@ async function main() {
   const bgDuckedPath = path.join(audioDir, 'bg_ducked.wav');
   const masterConVozPath = path.join(audioDir, 'master_audio_con_voz.wav');
 
-  console.log('🎵 Generating Master Soundtrack (Sin Voz)...');
-  generateWarmSalesSoundtrack(bgSinVozPath, totalDuration, null);
+  console.log('🎵 Generating Master Dynamic Soundtrack (Sin Voz)...');
+  generateDynamicExplainerSoundtrack(bgSinVozPath, totalDuration, null);
 
-  console.log('🎵 Generating Ducked Soundtrack + Mixing Conversational Human Voiceover (Con Voz)...');
-  generateWarmSalesSoundtrack(bgDuckedPath, totalDuration, duckWindows);
+  console.log('🎵 Generating Ducked Soundtrack + Sample-Accurate Constant-Volume PCM Master (Con Voz)...');
+  generateDynamicExplainerSoundtrack(bgDuckedPath, totalDuration, duckWindows);
 
-  const inputs = ['-i', bgDuckedPath];
-  const delayFilters = [];
-  const mixLabels = ['[0:a]'];
+  // Sample-accurate direct PCM mixing in Node.js (ZERO FFmpeg amix dynamic volume scaling!)
+  const masterBuf = Buffer.from(fs.readFileSync(bgDuckedPath));
+  const sampleRate = 44100;
 
-  timeline.forEach((sc, idx) => {
-    inputs.push('-i', sc.wavPath);
-    const delayMs = Math.round(sc.voiceStartGlobal * 1000);
-    const label = `[v${idx + 1}]`;
-    delayFilters.push(`[${idx + 1}:a]adelay=${delayMs}|${delayMs},volume=1.45${label}`);
-    mixLabels.push(label);
-  });
+  for (const sc of timeline) {
+    const clipBuf = fs.readFileSync(sc.wavPath);
+    const clipDataOff = findWavDataOffset(clipBuf);
+    const startSample = Math.floor(sc.voiceStartGlobal * sampleRate);
+    const startByte = 44 + startSample * 4;
 
-  const filterComplex = `${delayFilters.join(';')};${mixLabels.join('')}amix=inputs=${timeline.length + 1}:duration=first:dropout_transition=0,alimiter=limit=0.95[outa]`;
+    for (let b = clipDataOff; b <= clipBuf.length - 4; b += 4) {
+      const targetByte = startByte + (b - clipDataOff);
+      if (targetByte > masterBuf.length - 4) break;
 
-  execFileSync(ffmpegPath, [
-    '-y',
-    ...inputs,
-    '-filter_complex', filterComplex,
-    '-map', '[outa]',
-    '-ar', '44100', '-ac', '2',
-    masterConVozPath
-  ], { stdio: 'ignore' });
+      const bgL = masterBuf.readInt16LE(targetByte) / 32768.0;
+      const bgR = masterBuf.readInt16LE(targetByte + 2) / 32768.0;
+      const vL = (clipBuf.readInt16LE(b) / 32768.0) * 1.12;
+      const vR = (clipBuf.readInt16LE(b + 2) / 32768.0) * 1.12;
 
-  // If ISkool_Video_Comercial_Ventas_Sin_Voz.mp4 exists, remux its 1080p visual stream with the new human voiceover
-  const sinVozMp4 = path.join(rootDir, 'ISkool_Video_Comercial_Ventas_Sin_Voz.mp4');
-  const conVozMp4 = path.join(rootDir, 'ISkool_Video_Comercial_Ventas_Con_Voz.mp4');
-  if (fs.existsSync(sinVozMp4)) {
-    console.log('🎬 Remuxing 1080p Visual Stream into ISkool_Video_Comercial_Ventas_Con_Voz.mp4 with v6 Studio Human Voice...');
-    execFileSync(ffmpegPath, [
-      '-y',
-      '-i', sinVozMp4,
-      '-i', masterConVozPath,
-      '-map', '0:v:0',
-      '-map', '1:a:0',
-      '-c:v', 'copy',
-      '-c:a', 'aac',
-      '-b:a', '192k',
-      '-shortest',
-      '-movflags', '+faststart',
-      conVozMp4
-    ], { stdio: 'ignore' });
+      const mixL = Math.tanh((bgL + vL) / 0.96) * 0.96;
+      const mixR = Math.tanh((bgR + vR) / 0.96) * 0.96;
 
-    if (fs.existsSync(artifactDir)) {
-      fs.copyFileSync(conVozMp4, path.join(artifactDir, 'ISkool_Video_Comercial_Ventas_Con_Voz.mp4'));
+      masterBuf.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(mixL * 32767))), targetByte);
+      masterBuf.writeInt16LE(Math.max(-32767, Math.min(32767, Math.round(mixR * 32767))), targetByte + 2);
     }
-    console.log('✅ Updated ISkool_Video_Comercial_Ventas_Con_Voz.mp4 with ElevenLabs-grade Human Voiceover!');
   }
+
+  fs.writeFileSync(masterConVozPath, masterBuf);
+  console.log('✅ Sample-accurate constant-volume master audio tracks generated!');
 }
 
 main().catch((err) => {

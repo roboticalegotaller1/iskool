@@ -35,8 +35,8 @@ export const GlobalHelpFab: React.FC = () => {
   const isExtendedMenuOpen = useActivityBuilderStore((s) => s.isExtendedMenuOpen);
   const isPreviewModalOpen = useActivityBuilderStore((s) => s.isPreviewModalOpen);
 
-  // No mostrar en la propia página de guía para evitar redundancia
-  if (pathname === '/guide') return null;
+  // No mostrar en la página de guía ni en la sala ejecutiva de vídeo (/video) para evitar ruido visual
+  if (pathname === '/guide' || pathname === '/video' || pathname?.startsWith('/video/')) return null;
 
   const shouldHideFab = isOpen || isNodeConfigDrawerOpen || isExtendedMenuOpen || isPreviewModalOpen;
 

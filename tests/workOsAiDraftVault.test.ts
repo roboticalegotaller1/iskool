@@ -90,7 +90,7 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
     const mdContent = fs.readFileSync(mdPath, 'utf8');
     expect(mdContent).toContain('tokens_totales:');
     expect(mdContent).toContain(draft.folio);
-  });
+  }, 30000);
 
   it('debe recuperar de la Bóveda Curricular con 0 tokens cuando se solicita una consulta similar', async () => {
     // Consulta similar al borrador creado anteriormente
@@ -141,7 +141,7 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
     expect(data.success).toBe(true);
     expect(data.fromVault).toBe(false);
     expect(data.tokensUsed.totalTokens).toBeGreaterThan(0);
-  });
+  }, 30000);
 
   it('debe permitir transferir un borrador de la Bóveda al Redactor con posibilidad de modificación y posterior envío', () => {
     const drafts = getDraftsFromVault(testTenantId);

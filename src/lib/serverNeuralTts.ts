@@ -55,7 +55,7 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
   if (daemonProcess && !daemonProcess.killed) {
     try {
       daemonProcess.kill();
-    } catch {}
+    } catch { }
     daemonProcess = null;
   }
 
@@ -90,7 +90,7 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
                 pending.reject(new Error(msg.error || 'Error en worker daemon TTS'));
               }
             }
-          } catch {}
+          } catch { }
         }
         newlineIdx = daemonStdoutBuffer.indexOf('\n');
       }
@@ -194,7 +194,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
         memoryAudioCache.set(cacheKey, diskBuffer);
         return diskBuffer;
       }
-    } catch {}
+    } catch { }
   }
 
   // 3. Intento primario ultrarrápido en memoria mediante el Daemon Persistente (sin cold-start ni disco temporal)
@@ -210,7 +210,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     if (daemonBuffer && daemonBuffer.length > 0) {
       try {
         fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, daemonBuffer);
-      } catch {}
+      } catch { }
       if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
         const firstKey = memoryAudioCache.keys().next().value;
         if (firstKey) memoryAudioCache.delete(firstKey);
@@ -253,12 +253,12 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
         // Limpieza de payload
         try {
           if (fs.existsSync(/*turbopackIgnore: true*/ payloadFile)) fs.unlinkSync(/*turbopackIgnore: true*/ payloadFile);
-        } catch {}
+        } catch { }
 
         if (err) {
           try {
             if (fs.existsSync(/*turbopackIgnore: true*/ tempOutputFile)) fs.unlinkSync(/*turbopackIgnore: true*/ tempOutputFile);
-          } catch {}
+          } catch { }
           return reject(new Error(`Fallo en síntesis neural: ${stderr || err.message}`));
         }
 
@@ -277,7 +277,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
           // Guardar en caché de disco y memoria
           try {
             fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, audioBuffer);
-          } catch {}
+          } catch { }
 
           if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
             const firstKey = memoryAudioCache.keys().next().value;
