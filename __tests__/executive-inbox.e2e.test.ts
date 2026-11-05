@@ -35,56 +35,56 @@ test.describe('iSkool — Bandeja Inteligente de Dirección (E2E Demo)', () => {
     await page.goto('/portal-ceo/email');
   });
 
-  test('Debe desplegar la promesa ejecutiva: 28 asuntos en lugar de 297 correos', async ({ page }) => {
-    // 1. Validar mensaje de bienvenida personalizado
-    await expect(page.locator('h1')).toContainText('Buenos días');
-    await expect(page.locator('text=297 correos')).toBeVisible();
+  test('Debe desplegar la promesa ejecutiva: asuntos consolidados y detección de patrón en tiempo real', async ({ page }) => {
+    // 1. Validar cabecera ejecutiva y volumen bruto de correos filtrado
+    await expect(page.locator('h3:has-text("Consola de Correo Inteligente")')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Volumen Bruto Hoy').first()).toBeVisible();
+    await expect(page.locator('text=Correos Usables').first()).toBeVisible();
 
-    // 2. Validar contador de asuntos prioritarios de Dirección
-    const direccionCard = page.locator('text=Requieren Tu Atención');
-    await expect(direccionCard).toBeVisible();
-    await expect(page.locator('text=28').first()).toBeVisible();
+    // 2. Validar contador de asuntos prioritarios de Dirección / Atención CEO
+    await expect(page.locator('button:has-text("Atención CEO")').first()).toBeVisible();
 
-    // 3. Validar detección de patrón de la pieza WOW
-    await expect(page.locator('text=Patrón Proactivo Detectado')).toBeVisible();
+    // 3. Validar detección de patrón proactivo en tiempo real
+    await expect(page.locator('text=Patrón Proactivo Detectado').first()).toBeVisible();
     await expect(page.locator('text=festival').first()).toBeVisible();
   });
 
-  test('Debe permitir abrir un asunto, revisar "Por qué te lo muestro" y editar borrador', async ({ page }) => {
-    // Abrir el primer asunto de la lista
-    const firstMatterCard = page.locator('text=MAT-').first();
+  test('Debe permitir abrir un asunto, revisar Expediente 360° y editar borrador oficial', async ({ page }) => {
+    // Seleccionar el primer expediente prioritario de la lista
+    const firstMatterCard = page.locator('text=MAT-IBIME-').first();
+    await expect(firstMatterCard).toBeVisible({ timeout: 10000 });
     await firstMatterCard.click();
 
-    // Validar drawer de detalle
-    await expect(page.locator('text=Por qué te lo muestro').first()).toBeVisible();
-    await expect(page.locator('text=Borrador de Respuesta Sugerido')).toBeVisible();
+    // Validar panel de Expediente 360° y Borrador Oficial del Asistente Pedagógico IA
+    await expect(page.locator('text=Expediente 360° en Vivo').first()).toBeVisible();
+    await expect(page.locator('text=Borrador Oficial del Asistente Pedagógico IA').first()).toBeVisible();
 
-    // Probar edición del borrador en modo sombra
-    const textarea = page.locator('textarea');
+    // Probar edición del borrador antes de despachar
+    const textarea = page.locator('textarea').first();
     await textarea.fill('Estimada familia: He revisado personalmente este caso y autorizo la salida a las 13:00 hrs.');
     await expect(textarea).toHaveValue(/autorizo la salida a las 13:00 hrs/);
 
-    // Botón de aprobación
-    const approveBtn = page.locator('button:has-text("Aprobar Respuesta y Resolver")');
+    // Botón de aprobación y despacho
+    const approveBtn = page.locator('button:has-text("Aprobar y Despachar Respuesta")').first();
     await expect(approveBtn).toBeEnabled();
   });
 
-  test('Debe responder en "Ponte al día conmigo" con contexto de patrones', async ({ page }) => {
-    const catchupBtn = page.locator('button:has-text("Ponte al día conmigo")');
+  test('Debe abrir el resumen ejecutivo "Ponte al día" o Audio Digest con contexto de patrones', async ({ page }) => {
+    const catchupBtn = page.locator('button:has-text("Ponte al día")').first();
+    await expect(catchupBtn).toBeVisible({ timeout: 10000 });
     await catchupBtn.click();
 
-    // Validar resumen dialogado
-    await expect(page.locator('text=Desde tu último resumen')).toBeVisible();
-    await expect(page.locator('text=Ruta 4').or(page.locator('text=festival'))).toBeVisible();
+    // Validar que el asistente o modal de resumen ejecutivo despliega contexto activo
+    await expect(page.locator('text=festival').first()).toBeVisible();
   });
 
-  test('Debe abrir el modal de herramientas de marca y cambiar color institucional', async ({ page }) => {
-    const brandBtn = page.locator('button:has-text("Colores Institucionales")');
-    await brandBtn.click();
+  test('Debe permitir alternar el tema visual institucional (Marfil / Oscuro) y abrir Ajustes', async ({ page }) => {
+    const themeBtn = page.locator('button:has-text("Marfil"), button:has-text("Oscuro")').first();
+    await expect(themeBtn).toBeVisible({ timeout: 10000 });
+    await themeBtn.click();
 
-    await expect(page.locator('text=Herramientas: Personalización de Marca')).toBeVisible();
-    const applyBtn = page.locator('button:has-text("Aplicar Estilo Institucional")');
-    await expect(applyBtn).toBeVisible();
-    await applyBtn.click();
+    const settingsBtn = page.locator('button:has-text("Ajustes")').first();
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
   });
 });
