@@ -153,7 +153,7 @@ def _get_studio_client():
     try:
         _load_persisted_cooldowns()
         _STUDIO_API_KEY = api_key
-        _STUDIO_HTTP_CLIENT = httpx.Client(timeout=14.0)
+        _STUDIO_HTTP_CLIENT = httpx.Client(timeout=45.0)
         return (_STUDIO_HTTP_CLIENT, _STUDIO_API_KEY)
     except Exception:
         _STUDIO_AI_CIRCUIT_OPEN = True

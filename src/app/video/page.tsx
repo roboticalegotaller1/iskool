@@ -32,14 +32,13 @@ import initialConfig from "@/data/qrVideoConfig.json";
 const PERMANENT_QR_URL = "https://iskool.mx/video";
 const OFFICIAL_EMAIL = "contacto@iskool.mx";
 const WHATSAPP_NUMBER_DISPLAY = "56 1140 4767";
-const PHONE_EXEC_DISPLAY = "55 1140 4767";
 const WHATSAPP_DIRECT_URL =
   "https://wa.me/525611404767?text=Hola%2C%20acabo%20de%20ver%20el%20video%20oficial%20de%20iSkool%C2%AE%20y%20me%20gustar%C3%ADa%20agendar%20una%20demostraci%C3%B3n%20para%20mi%20instituci%C3%B3n.";
 
 export default function VideoQrLandingPage() {
   const [config, setConfig] = useState<QrVideoConfig>({
-    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/lFdsXx5lPhE",
-    youtubeId: initialConfig.youtubeId || "lFdsXx5lPhE",
+    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/R-mLJbVsC1M",
+    youtubeId: initialConfig.youtubeId || "R-mLJbVsC1M",
     title: initialConfig.title || "iSkool® — El Cerebro Vivo de tu Escuela",
     subtitle:
       initialConfig.subtitle ||
@@ -54,7 +53,7 @@ export default function VideoQrLandingPage() {
   });
 
   const [presets, setPresets] = useState<QrVideoPreset[]>(QR_VIDEO_PRESETS);
-  const [isMuted, setIsMuted] = useState<boolean>(true);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
@@ -71,6 +70,8 @@ export default function VideoQrLandingPage() {
 
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerWrapperRef = useRef<HTMLDivElement | null>(null);
+  const hasUserToggledAudioRef = useRef<boolean>(false);
+  const isPlayingRef = useRef<boolean>(false);
 
   // Cargar configuración activa desde el servidor
   const fetchActiveConfig = useCallback(async () => {
@@ -90,7 +91,7 @@ export default function VideoQrLandingPage() {
         setPresets(data.presets);
       }
     } catch {
-      // Mantiene configuración inicial lFdsXx5lPhE en caso de intermitencia
+      // Mantiene configuración inicial R-mLJbVsC1M en caso de intermitencia
     }
   }, []);
 
@@ -105,7 +106,7 @@ export default function VideoQrLandingPage() {
     }
   }, [fetchActiveConfig]);
 
-  // Enviar comandos a la API del reproductor embebido para forzar máxima definición (1080p/4K) y reproducción inmediata
+  // Enviar comandos a la API del reproductor embebido para forzar máxima definición (1080p/4K), audio activo y reproducción inmediata
   const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
@@ -119,28 +120,124 @@ export default function VideoQrLandingPage() {
     );
   }, []);
 
-  const enforceMaxQualityAndPlay = useCallback(() => {
-    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
-    sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-    sendPlayerCommand("unloadModule", ["captions"]);
-    sendPlayerCommand("unloadModule", ["cc"]);
-    sendPlayerCommand("playVideo");
-  }, [sendPlayerCommand]);
+  const enforceMaxQualityAndPlay = useCallback(
+    (forceUnmute = true) => {
+      const win = iframeRef.current?.contentWindow;
+      if (win) {
+        win.postMessage(
+          JSON.stringify({
+            event: "listening",
+            id: 1,
+            channel: "widget"
+          }),
+          "*"
+        );
+      }
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+      sendPlayerCommand("unloadModule", ["captions"]);
+      sendPlayerCommand("unloadModule", ["cc"]);
+      if (forceUnmute && !hasUserToggledAudioRef.current) {
+        sendPlayerCommand("unMute");
+        sendPlayerCommand("setVolume", [100]);
+        setIsMuted(false);
+      }
+      sendPlayerCommand("playVideo");
+    },
+    [sendPlayerCommand]
+  );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleYouTubeMessage = (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "string") return;
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload?.event === "onReady") {
+          enforceMaxQualityAndPlay(true);
+        } else if (
+          payload?.event === "onStateChange" ||
+          payload?.event === "infoDelivery"
+        ) {
+          const state =
+            typeof payload?.info === "number"
+              ? payload.info
+              : payload?.info?.playerState;
+          if (state === 1 || state === 3) {
+            isPlayingRef.current = true;
+            sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+            sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+            if (!hasUserToggledAudioRef.current) {
+              sendPlayerCommand("unMute");
+              sendPlayerCommand("setVolume", [100]);
+            }
+          }
+        }
+      } catch {
+        // Ignorar mensajes de terceros no JSON
+      }
+    };
+
+    const unlockAudioOnFirstGesture = () => {
+      if (hasUserToggledAudioRef.current) return;
+      sendPlayerCommand("unMute");
+      sendPlayerCommand("setVolume", [100]);
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+      sendPlayerCommand("playVideo");
+      setIsMuted(false);
+    };
+
+    window.addEventListener("message", handleYouTubeMessage);
+    window.addEventListener("pointerdown", unlockAudioOnFirstGesture, {
+      passive: true,
+      once: true
+    });
+    window.addEventListener("keydown", unlockAudioOnFirstGesture, {
+      passive: true,
+      once: true
+    });
+    window.addEventListener("touchstart", unlockAudioOnFirstGesture, {
+      passive: true,
+      once: true
+    });
+
+    return () => {
+      window.removeEventListener("message", handleYouTubeMessage);
+      window.removeEventListener("pointerdown", unlockAudioOnFirstGesture);
+      window.removeEventListener("keydown", unlockAudioOnFirstGesture);
+      window.removeEventListener("touchstart", unlockAudioOnFirstGesture);
+    };
+  }, [enforceMaxQualityAndPlay, sendPlayerCommand]);
 
   const handleIframeLoad = useCallback(() => {
-    enforceMaxQualityAndPlay();
-    const t1 = setTimeout(enforceMaxQualityAndPlay, 180);
-    const t2 = setTimeout(enforceMaxQualityAndPlay, 550);
-    const t3 = setTimeout(enforceMaxQualityAndPlay, 1200);
+    enforceMaxQualityAndPlay(true);
+    const t1 = setTimeout(() => enforceMaxQualityAndPlay(true), 180);
+    const t2 = setTimeout(() => enforceMaxQualityAndPlay(true), 550);
+    const t3 = setTimeout(() => enforceMaxQualityAndPlay(true), 1150);
+    const t4 = setTimeout(() => {
+      // Si el navegador bloqueó el inicio directo con audio por políticas de autoplay sin interacción previa,
+      // iniciar reproducción en HD de inmediato y reactivar audio al instante
+      if (!isPlayingRef.current && !hasUserToggledAudioRef.current) {
+        sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+        sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+        sendPlayerCommand("playVideo");
+        sendPlayerCommand("unMute");
+        sendPlayerCommand("setVolume", [100]);
+      }
+    }, 1650);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
     };
-  }, [enforceMaxQualityAndPlay]);
+  }, [enforceMaxQualityAndPlay, sendPlayerCommand]);
 
   // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición
   const handleToggleAudio = useCallback(() => {
+    hasUserToggledAudioRef.current = true;
     if (isMuted) {
       sendPlayerCommand("unMute");
       sendPlayerCommand("setVolume", [100]);
@@ -155,6 +252,7 @@ export default function VideoQrLandingPage() {
   }, [isMuted, sendPlayerCommand]);
 
   const handleRestartVideo = useCallback(() => {
+    hasUserToggledAudioRef.current = true;
     sendPlayerCommand("seekTo", [0, true]);
     sendPlayerCommand("unMute");
     sendPlayerCommand("setVolume", [100]);
@@ -224,7 +322,7 @@ export default function VideoQrLandingPage() {
       setFormYoutubeUrl(data.config.youtubeUrl);
       setFormTitle(data.config.title);
       setFormSubtitle(data.config.subtitle);
-      setIsMuted(true);
+      setIsMuted(false);
       setSaveFeedback({
         type: "success",
         message: `¡Vídeo actualizado en vivo! ID activo: ${data.config.youtubeId}.`
@@ -241,8 +339,8 @@ export default function VideoQrLandingPage() {
 
   const detectedFormVideoId = extractYouTubeId(formYoutubeUrl);
 
-  // URL de incrustación optimizada: reproducción inmediata, máxima definición (hd1080/highres), sin subtítulos automáticos ni ruido visual
-  const embedSrc = `https://www.youtube.com/embed/${config.youtubeId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&hd=1&vq=hd1080&enablejsapi=1&loop=${
+  // URL de incrustación optimizada: reproducción inmediata con audio activo (mute=0), máxima definición (hd=1, vq=hd1080), sin subtítulos automáticos ni ruido visual
+  const embedSrc = `https://www.youtube.com/embed/${config.youtubeId}?autoplay=1&mute=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&hd=1&vq=hd1080&enablejsapi=1&loop=${
     config.loop ? 1 : 0
   }&playlist=${config.youtubeId}`;
 
@@ -423,11 +521,11 @@ export default function VideoQrLandingPage() {
 
               <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
                 <a
-                  href={`tel:+525511404767`}
+                  href={`tel:+525611404767`}
                   className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-2 text-xs font-bold text-white transition-all flex-1 sm:flex-initial"
                 >
                   <Phone className="h-3.5 w-3.5 text-blue-400" />
-                  <span>{PHONE_EXEC_DISPLAY}</span>
+                  <span>Tel: {WHATSAPP_NUMBER_DISPLAY}</span>
                 </a>
                 <a
                   href={WHATSAPP_DIRECT_URL}

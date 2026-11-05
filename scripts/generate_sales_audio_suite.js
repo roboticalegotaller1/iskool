@@ -97,10 +97,10 @@ const SCENE_DEFS = [
   },
   {
     id: 'scene12',
-    title: 'Gran Cierre de Ventas & Agendamiento de Cita con QR Oficial (contacto@iskool.mx / 5611404767 / 5511404767)',
+    title: 'Gran Cierre de Ventas & Agendamiento de Cita con QR Oficial (contacto@iskool.mx / 5611404767)',
     preWait: 0.30,
     postWait: 1.00,
-    ssmlText: 'Transforma hoy tu colegio con el cerebro vivo de la educación. Agenda tu demostración personalizada escaneando el código Q R en pantalla al teléfono cincuenta y seis, once cuarenta, cuarenta y siete, sesenta y siete; llámanos al cincuenta y cinco, once cuarenta, cuarenta y siete, sesenta y siete, o escríbenos a contacto arroba iskool punto eme equis. Áiskul: tecnología canadiense que impulsa el futuro de tu institución.'
+    ssmlText: 'Transforma hoy tu colegio con el cerebro vivo de la educación. Agenda tu demostración ejecutiva escaneando el código Q R en pantalla, llámanos o escríbenos por WhatsApp al teléfono cincuenta y seis, once cuarenta, cuarenta y siete, sesenta y siete, o al correo contacto arroba iskool punto eme equis. Áiskul: tecnología canadiense que impulsa el futuro de tu institución.'
   }
 ];
 
@@ -278,7 +278,8 @@ async function main() {
 
   for (let i = 0; i < SCENE_DEFS.length; i++) {
     const s = SCENE_DEFS[i];
-    const rawMp3 = path.join(audioDir, `${s.id}_v8_raw.mp3`);
+    const rawMp3 = path.join(audioDir, `${s.id}_v9_studio.mp3`);
+    const matchedWav = path.join(audioDir, `${s.id}_v9_matched.wav`);
     const wavNorm = path.join(audioDir, `${s.id}.wav`);
 
     if (!fs.existsSync(rawMp3) || fs.statSync(rawMp3).size < 8000) {
@@ -286,22 +287,28 @@ async function main() {
       fs.writeFileSync(payloadPath, JSON.stringify({
         text: s.ssmlText,
         voice: 'es-419-advisor-7',
-        rate: '+18%',
-        pitch: '+1Hz',
-        characterName: 'Sofía CEO',
-        role: 'presentadora comercial',
+        rate: '+0%',
+        pitch: '+0Hz',
+        characterName: 'Sofía Directora Comercial',
+        role: 'presentadora ejecutiva comercial cálida, carismática, clara y humana',
         gender: 'female',
         output: rawMp3
       }), 'utf8');
 
-      execFileSync(pythonBin, [workerScript, '--json', payloadPath], { stdio: 'ignore' });
+      execFileSync(pythonBin, [workerScript, '--json', payloadPath], {
+        stdio: 'ignore',
+        env: { ...process.env, ENABLE_CLOUD_STUDIO_TTS: '1' }
+      });
       if (fs.existsSync(payloadPath)) fs.unlinkSync(payloadPath);
     }
 
-    // Apply uniform 1.14x commercial explainer cadence across ALL 12 scenes (zero speed change between scenes!)
+    const sourceAudio = fs.existsSync(matchedWav) ? matchedWav : rawMp3;
+
+    // Master with natural, unhurried cadence (atempo=1.06, zero internal stop_periods chopping)
+    // and reference-locked spectral balance matched 100% to scene12 (es-419-advisor-7)
     execFileSync(ffmpegPath, [
-      '-y', '-i', rawMp3,
-      '-af', 'silenceremove=start_periods=1:start_duration=0.03:start_threshold=-42dB:stop_periods=-1:stop_duration=0.16:stop_threshold=-42dB,atempo=1.14,loudnorm=I=-14.0:TP=-1.0:LRA=5.0',
+      '-y', '-i', sourceAudio,
+      '-af', 'atempo=1.06,highpass=f=75,equalizer=f=240:t=q:w=1.2:g=1.2,equalizer=f=3550:t=q:w=1.4:g=1.2,loudnorm=I=-14.0:TP=-1.0:LRA=6.0',
       '-ar', '44100', '-ac', '2',
       wavNorm
     ], { stdio: 'ignore' });

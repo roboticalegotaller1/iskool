@@ -299,6 +299,8 @@ function drawStudioScreen(imgKey, opts = {}) {
   const dx = x + (w - dw) / 2 + panX;
   const dy = y + (h - dh) / 2 + panY;
 
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, dx, dy, dw, dh);
 
   // Surgically mask bottom-left 54x54px of the drawn image if it had a dev badge
@@ -679,7 +681,7 @@ function drawStudioHeaderAndFooter(portalName, stepBadge, captionText) {
   ctx.textAlign = 'right';
   ctx.fillStyle = '#0A193A';
   ctx.font = '800 15.5px "Segoe UI", sans-serif';
-  ctx.fillText('contacto@iskool.mx  •  WA 56 1140 4767  •  Tel. 55 1140 4767', 1864, 48);
+  ctx.fillText('contacto@iskool.mx  •  Tel. y WhatsApp: 56 1140 4767', 1864, 48);
 
   // Bottom Executive Caption Bar
   if (captionText) {
@@ -1155,7 +1157,7 @@ window.renderFrameAtTime = function(globalT) {
           'Pago de colegiaturas en línea con tarjeta, transferencia SPEI o referencia y timbrado fiscal CFDI 4.0 al instante.'
         );
         drawStudioScreen('img_36', { x: 70, y: 112, w: 1010, h: 845 });
-        drawStudioScreen('img_37', { x: 1110, y: 112, w: 740, h: 845 });
+        drawStudioScreen('img_37', { x: 1110, y: 112, w: 740, h: 845, darkBg: true });
 
         drawSignalArrow(575, 225, 855, 415, 'Timbrado Automático SAT CFDI 4.0', 'Factura enviada al instante tras confirmar el pago', '#1D68FF', (subT - 0.2) / 0.4, globalT);
         drawSignalArrow(1480, 225, 1310, 395, 'Pasarela Multipago (Tarjeta / SPEI)', 'Conciliación bancaria automática sin carga administrativa', '#10B981', (subT - 1.0) / 0.4, globalT);
@@ -1283,12 +1285,12 @@ window.renderFrameAtTime = function(globalT) {
 
     ctx.fillStyle = '#0A193A';
     ctx.font = '900 24px "Segoe UI", sans-serif';
-    ctx.fillText('Tel / WhatsApp: 5611404767', c2X + c2W / 2, colY + 338);
+    ctx.fillText('Tel / WhatsApp: 56 1140 4767', c2X + c2W / 2, colY + 338);
     ctx.fillStyle = '#1D68FF';
     ctx.font = '800 19px "Segoe UI", sans-serif';
     ctx.fillText('contacto@iskool.mx', c2X + c2W / 2, colY + 368);
 
-    // Column 3: Teléfonos de Atención Comercial (5611404767 / 5511404767)
+    // Column 3: Teléfono Oficial Único y Atención Comercial (56 1140 4767)
     const c3X = cx + 1150;
     const c3W = 525;
     ctx.shadowColor = 'rgba(16, 185, 129, 0.16)';
@@ -1302,7 +1304,7 @@ window.renderFrameAtTime = function(globalT) {
     ctx.shadowBlur = 0;
 
     ctx.fillStyle = '#10B981';
-    roundRect(ctx, c3X + (c3W - 330) / 2, colY + 30, 330, 38, 19);
+    roundRect(ctx, c3X + (c3W - 350) / 2, colY + 30, 350, 38, 19);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 15px "Segoe UI", sans-serif';
@@ -1310,22 +1312,20 @@ window.renderFrameAtTime = function(globalT) {
     ctx.fillText('TELÉFONO Y ATENCIÓN COMERCIAL', c3X + c3W / 2, colY + 55);
 
     ctx.fillStyle = '#047857';
-    ctx.font = '800 16.5px "Segoe UI", sans-serif';
-    ctx.fillText('WHATSAPP Y ATENCIÓN MÓVIL DIRECTA:', c3X + c3W / 2, colY + 112);
+    ctx.font = '800 17px "Segoe UI", sans-serif';
+    ctx.fillText('LÍNEA EJECUTIVA Y WHATSAPP OFICIAL:', c3X + c3W / 2, colY + 122);
     ctx.fillStyle = '#0A193A';
-    ctx.font = '900 44px "Segoe UI", sans-serif';
-    ctx.fillText('56 1140 4767', c3X + c3W / 2, colY + 158);
+    ctx.font = '900 54px "Segoe UI", sans-serif';
+    ctx.fillText('56 1140 4767', c3X + c3W / 2, colY + 188);
 
-    ctx.fillStyle = '#047857';
-    ctx.font = '800 16.5px "Segoe UI", sans-serif';
-    ctx.fillText('LÍNEA TELEFÓNICA EJECUTIVA:', c3X + c3W / 2, colY + 220);
-    ctx.fillStyle = '#0A193A';
-    ctx.font = '900 44px "Segoe UI", sans-serif';
-    ctx.fillText('55 1140 4767', c3X + c3W / 2, colY + 266);
+    ctx.fillStyle = '#10B981';
+    ctx.font = '800 20px "Segoe UI", sans-serif';
+    ctx.fillText('Atención Directa a Directores y Colegios', c3X + c3W / 2, colY + 242);
 
     ctx.fillStyle = '#475569';
     ctx.font = '600 18px "Segoe UI", sans-serif';
-    ctx.fillText('Agendamiento inmediato para Directores', c3X + c3W / 2, colY + 322);
+    ctx.fillText('Agendamiento inmediato de demostración', c3X + c3W / 2, colY + 292);
+    ctx.fillText('en vivo por llamada o WhatsApp.', c3X + c3W / 2, colY + 320);
 
     // Bottom Institutional Tagline Pill
     ctx.fillStyle = '#0A193A';
@@ -1341,7 +1341,7 @@ window.renderFrameAtTime = function(globalT) {
     // Clean Signaling Arrows pointing squarely up to the 3 Contact Cards without overlapping the top logo or text
     drawSignalArrow(370, 855, c1X + c1W / 2, colY + colH - 12, 'Escríbenos Ahora', 'contacto@iskool.mx', '#1D68FF', (localT - 0.8) / 0.5, globalT);
     drawSignalArrow(960, 855, 960, colY + colH + 4, 'Escanea el Código QR', 'WhatsApp Directo: 56 1140 4767', '#0A193A', (localT - 1.5) / 0.5, globalT);
-    drawSignalArrow(1550, 855, c3X + c3W / 2, colY + colH - 12, 'Llámanos o Agenda Cita', '56 1140 4767 / 55 1140 4767', '#10B981', (localT - 2.2) / 0.5, globalT);
+    drawSignalArrow(1550, 855, c3X + c3W / 2, colY + colH - 12, 'Llámanos o Agenda Cita', 'Tel. y WhatsApp: 56 1140 4767', '#10B981', (localT - 2.2) / 0.5, globalT);
   }
 };
 </script>
@@ -1396,7 +1396,7 @@ window.renderFrameAtTime = function(globalT) {
     '-i', '-',
     '-c:v', 'libx264',
     '-preset', 'fast',
-    '-crf', '17',
+    '-crf', '14',
     '-pix_fmt', 'yuv420p',
     '-movflags', '+faststart',
     visualMasterMp4
@@ -1410,7 +1410,7 @@ window.renderFrameAtTime = function(globalT) {
     const t = f / FPS;
     const b64 = await page.evaluate((timeSec) => {
       window.renderFrameAtTime(timeSec);
-      return canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+      return canvas.toDataURL('image/jpeg', 0.98).split(',')[1];
     }, t);
     const frameBuf = Buffer.from(b64, 'base64');
     const canWrite = ffmpegProc.stdin.write(frameBuf);

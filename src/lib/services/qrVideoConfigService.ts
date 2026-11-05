@@ -28,8 +28,8 @@ export const QR_VIDEO_PRESETS: QrVideoPreset[] = [
     id: 'preset-iskool-comercial-oficial',
     label: 'Vídeo Comercial Oficial iSkool® (Con Voz)',
     description: 'Presentación ejecutiva oficial de iSkool® en alta definición para directivos y colegios privados.',
-    youtubeUrl: 'https://youtu.be/lFdsXx5lPhE',
-    youtubeId: 'lFdsXx5lPhE',
+    youtubeUrl: 'https://youtu.be/R-mLJbVsC1M',
+    youtubeId: 'R-mLJbVsC1M',
     title: 'iSkool® — El Cerebro Vivo de tu Escuela',
     subtitle: 'Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.'
   },
@@ -125,8 +125,8 @@ function getNodeFs() {
 }
 
 const DEFAULT_CONFIG: QrVideoConfig = {
-  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/lFdsXx5lPhE',
-  youtubeId: initialConfig.youtubeId || 'lFdsXx5lPhE',
+  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/R-mLJbVsC1M',
+  youtubeId: initialConfig.youtubeId || 'R-mLJbVsC1M',
   title: initialConfig.title || 'iSkool® — El Cerebro Vivo de tu Escuela',
   subtitle:
     initialConfig.subtitle ||
@@ -144,25 +144,33 @@ function loadConfigFromDisk(): QrVideoConfig | null {
   if (!node) return null;
 
   try {
-    // 1. Priorizar el archivo de persistencia en tiempo de ejecución (.data/qr_video_config.json)
     const runtimePath = node.path.join(process.cwd(), '.data', 'qr_video_config.json');
+    const sourcePath = node.path.join(process.cwd(), 'src', 'data', 'qrVideoConfig.json');
+
+    let runtimeConfig: QrVideoConfig | null = null;
+    let sourceConfig: QrVideoConfig | null = null;
+
     if (node.fs.existsSync(runtimePath)) {
-      const raw = node.fs.readFileSync(runtimePath, 'utf8');
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(node.fs.readFileSync(runtimePath, 'utf8'));
       if (parsed && parsed.youtubeId) {
-        return { ...DEFAULT_CONFIG, ...parsed };
+        runtimeConfig = { ...DEFAULT_CONFIG, ...parsed };
       }
     }
 
-    // 2. Fallback al archivo fuente en src/data/qrVideoConfig.json
-    const sourcePath = node.path.join(process.cwd(), 'src', 'data', 'qrVideoConfig.json');
     if (node.fs.existsSync(sourcePath)) {
-      const raw = node.fs.readFileSync(sourcePath, 'utf8');
-      const parsed = JSON.parse(raw);
+      const parsed = JSON.parse(node.fs.readFileSync(sourcePath, 'utf8'));
       if (parsed && parsed.youtubeId) {
-        return { ...DEFAULT_CONFIG, ...parsed };
+        sourceConfig = { ...DEFAULT_CONFIG, ...parsed };
       }
     }
+
+    if (runtimeConfig && sourceConfig) {
+      const rtTime = Date.parse(runtimeConfig.updatedAt || '') || 0;
+      const srcTime = Date.parse(sourceConfig.updatedAt || '') || 0;
+      return rtTime > srcTime ? runtimeConfig : sourceConfig;
+    }
+
+    return sourceConfig || runtimeConfig;
   } catch (err) {
     console.warn('Aviso al leer configuración de video QR desde disco:', err);
   }
