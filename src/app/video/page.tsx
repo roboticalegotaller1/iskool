@@ -10,8 +10,6 @@ import {
   Copy,
   Check,
   Sparkles,
-  ShieldCheck,
-  Lock,
   Film,
   X,
   Mail,
@@ -34,6 +32,7 @@ const OFFICIAL_EMAIL = "contacto@iskool.mx";
 const WHATSAPP_NUMBER_DISPLAY = "56 1140 4767";
 const WHATSAPP_DIRECT_URL =
   "https://wa.me/525611404767?text=Hola%2C%20acabo%20de%20ver%20el%20video%20oficial%20de%20iSkool%C2%AE%20y%20me%20gustar%C3%ADa%20agendar%20una%20demostraci%C3%B3n%20para%20mi%20instituci%C3%B3n.";
+const DIRECT_1080P_VIDEO_ID = "WgeQVmHDNJ4";
 
 export default function VideoQrLandingPage() {
   const [config, setConfig] = useState<QrVideoConfig>({
@@ -44,7 +43,7 @@ export default function VideoQrLandingPage() {
       initialConfig.subtitle ||
       "Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.",
     badgeText:
-      initialConfig.badgeText || "Presentación Ejecutiva Oficial · Alta Definición",
+      initialConfig.badgeText || "Presentación Ejecutiva Oficial · 1080p Full HD",
     ctaText: initialConfig.ctaText || "Agendar Demostración",
     ctaUrl: initialConfig.ctaUrl || "https://iskool.mx",
     autoplay: initialConfig.autoplay ?? true,
@@ -54,6 +53,7 @@ export default function VideoQrLandingPage() {
 
   const [presets, setPresets] = useState<QrVideoPreset[]>(QR_VIDEO_PRESETS);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [iframeScale, setIframeScale] = useState<number>(0.5);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
@@ -68,10 +68,36 @@ export default function VideoQrLandingPage() {
     message: string;
   } | null>(null);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerWrapperRef = useRef<HTMLDivElement | null>(null);
+  const stageViewportRef = useRef<HTMLDivElement | null>(null);
   const hasUserToggledAudioRef = useRef<boolean>(false);
-  const isPlayingRef = useRef<boolean>(false);
+
+  const isDirect1080pStream = config.youtubeId === DIRECT_1080P_VIDEO_ID;
+
+  // Mantener el iframe de respaldo con viewport interno real de 1920x1080
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stageEl = stageViewportRef.current;
+    if (!stageEl) return;
+
+    const updateScale = () => {
+      const rect = stageEl.getBoundingClientRect();
+      if (rect.width > 0) {
+        setIframeScale(rect.width / 1920);
+      }
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(stageEl);
+    window.addEventListener("resize", updateScale);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateScale);
+    };
+  }, []);
 
   // Cargar configuración activa desde el servidor
   const fetchActiveConfig = useCallback(async () => {
@@ -106,7 +132,63 @@ export default function VideoQrLandingPage() {
     }
   }, [fetchActiveConfig]);
 
-  // Enviar comandos a la API del reproductor embebido para forzar máxima definición (1080p/4K), audio activo y reproducción inmediata
+  // Arranque inmediato en 1080p nativo con audio activo (y fallback inteligente si el navegador móvil bloquea audio sin gesto previo)
+  useEffect(() => {
+    if (!isDirect1080pStream) return;
+    const v = videoRef.current;
+    if (!v) return;
+
+    const startPlayback = async () => {
+      try {
+        v.muted = false;
+        v.volume = 1.0;
+        await v.play();
+        setIsMuted(false);
+      } catch {
+        // Si el navegador bloquea el autoplay con sonido en visita fría, arranca de inmediato en 1080p y activa el audio al primer toque
+        try {
+          v.muted = true;
+          setIsMuted(true);
+          await v.play();
+        } catch {
+          // Ignorar
+        }
+      }
+    };
+
+    startPlayback();
+
+    const unlockDirectAudioOnGesture = () => {
+      if (hasUserToggledAudioRef.current) return;
+      const el = videoRef.current;
+      if (!el) return;
+      el.muted = false;
+      el.volume = 1.0;
+      el.play().catch(() => {});
+      setIsMuted(false);
+    };
+
+    window.addEventListener("pointerdown", unlockDirectAudioOnGesture, {
+      passive: true,
+      once: true
+    });
+    window.addEventListener("keydown", unlockDirectAudioOnGesture, {
+      passive: true,
+      once: true
+    });
+    window.addEventListener("touchstart", unlockDirectAudioOnGesture, {
+      passive: true,
+      once: true
+    });
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockDirectAudioOnGesture);
+      window.removeEventListener("keydown", unlockDirectAudioOnGesture);
+      window.removeEventListener("touchstart", unlockDirectAudioOnGesture);
+    };
+  }, [isDirect1080pStream, config.youtubeId]);
+
+  // Enviar comandos a la API del reproductor embebido de respaldo
   const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
@@ -133,7 +215,7 @@ export default function VideoQrLandingPage() {
           "*"
         );
       }
-      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
       sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
       sendPlayerCommand("unloadModule", ["captions"]);
       sendPlayerCommand("unloadModule", ["cc"]);
@@ -149,108 +231,39 @@ export default function VideoQrLandingPage() {
     [sendPlayerCommand]
   );
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleYouTubeMessage = (event: MessageEvent) => {
-      if (!event.data || typeof event.data !== "string") return;
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload?.event === "onReady") {
-          enforceMaxQualityAndPlay(true);
-        } else if (
-          payload?.event === "onStateChange" ||
-          payload?.event === "infoDelivery"
-        ) {
-          const state =
-            typeof payload?.info === "number"
-              ? payload.info
-              : payload?.info?.playerState;
-          if (state === 1 || state === 3) {
-            isPlayingRef.current = true;
-            sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
-            sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-            sendPlayerCommand("unloadModule", ["captions"]);
-            sendPlayerCommand("unloadModule", ["cc"]);
-            sendPlayerCommand("setOption", ["captions", "track", {}]);
-            sendPlayerCommand("setOption", ["cc", "track", {}]);
-            if (!hasUserToggledAudioRef.current) {
-              sendPlayerCommand("unMute");
-              sendPlayerCommand("setVolume", [100]);
-              setIsMuted(false);
-            }
-          }
-        }
-      } catch {
-        // Ignorar mensajes de terceros no JSON
-      }
-    };
-
-    const unlockAudioOnFirstGesture = () => {
-      if (hasUserToggledAudioRef.current) return;
-      sendPlayerCommand("unMute");
-      sendPlayerCommand("setVolume", [100]);
-      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
-      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-      sendPlayerCommand("playVideo");
-      setIsMuted(false);
-    };
-
-    window.addEventListener("message", handleYouTubeMessage);
-    window.addEventListener("pointerdown", unlockAudioOnFirstGesture, {
-      passive: true,
-      once: true
-    });
-    window.addEventListener("keydown", unlockAudioOnFirstGesture, {
-      passive: true,
-      once: true
-    });
-    window.addEventListener("touchstart", unlockAudioOnFirstGesture, {
-      passive: true,
-      once: true
-    });
-
-    return () => {
-      window.removeEventListener("message", handleYouTubeMessage);
-      window.removeEventListener("pointerdown", unlockAudioOnFirstGesture);
-      window.removeEventListener("keydown", unlockAudioOnFirstGesture);
-      window.removeEventListener("touchstart", unlockAudioOnFirstGesture);
-    };
-  }, [enforceMaxQualityAndPlay, sendPlayerCommand]);
-
   const handleIframeLoad = useCallback(() => {
     enforceMaxQualityAndPlay(true);
-    const t1 = setTimeout(() => enforceMaxQualityAndPlay(true), 220);
-    const t2 = setTimeout(() => enforceMaxQualityAndPlay(true), 650);
-    const t3 = setTimeout(() => enforceMaxQualityAndPlay(true), 1300);
-    const t4 = setTimeout(() => {
-      // Asegurar ocultamiento de subtítulos automáticos una vez que el módulo de subtítulos cargue
-      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
-      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-      sendPlayerCommand("unloadModule", ["captions"]);
-      sendPlayerCommand("unloadModule", ["cc"]);
-      sendPlayerCommand("setOption", ["captions", "track", {}]);
-      sendPlayerCommand("setOption", ["cc", "track", {}]);
-      if (!hasUserToggledAudioRef.current) {
-        sendPlayerCommand("unMute");
-        sendPlayerCommand("setVolume", [100]);
-      }
-    }, 2400);
+    const t1 = setTimeout(() => enforceMaxQualityAndPlay(true), 200);
+    const t2 = setTimeout(() => enforceMaxQualityAndPlay(true), 600);
+    const t3 = setTimeout(() => enforceMaxQualityAndPlay(true), 1200);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
     };
-  }, [enforceMaxQualityAndPlay, sendPlayerCommand]);
+  }, [enforceMaxQualityAndPlay]);
 
-  // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición
+  // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición 1080p
   const handleToggleAudio = useCallback(() => {
     hasUserToggledAudioRef.current = true;
+    if (isDirect1080pStream && videoRef.current) {
+      const v = videoRef.current;
+      if (v.muted || isMuted) {
+        v.muted = false;
+        v.volume = 1.0;
+        v.play().catch(() => {});
+        setIsMuted(false);
+      } else {
+        v.muted = true;
+        setIsMuted(true);
+      }
+      return;
+    }
+
     if (isMuted) {
       sendPlayerCommand("unMute");
       sendPlayerCommand("setVolume", [100]);
-      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
       sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
       sendPlayerCommand("playVideo");
       setIsMuted(false);
@@ -258,21 +271,31 @@ export default function VideoQrLandingPage() {
       sendPlayerCommand("mute");
       setIsMuted(true);
     }
-  }, [isMuted, sendPlayerCommand]);
+  }, [isDirect1080pStream, isMuted, sendPlayerCommand]);
 
   const handleRestartVideo = useCallback(() => {
     hasUserToggledAudioRef.current = true;
+    if (isDirect1080pStream && videoRef.current) {
+      const v = videoRef.current;
+      v.currentTime = 0;
+      v.muted = false;
+      v.volume = 1.0;
+      v.play().catch(() => {});
+      setIsMuted(false);
+      return;
+    }
+
     sendPlayerCommand("seekTo", [0, true]);
     sendPlayerCommand("unMute");
     sendPlayerCommand("setVolume", [100]);
-    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "highres"]);
+    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
     sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
     sendPlayerCommand("playVideo");
     setIsMuted(false);
-  }, [sendPlayerCommand]);
+  }, [isDirect1080pStream, sendPlayerCommand]);
 
   const handleFullscreen = useCallback(() => {
-    const el = playerWrapperRef.current || iframeRef.current;
+    const el = videoRef.current || playerWrapperRef.current || iframeRef.current;
     if (!el) return;
     if (el.requestFullscreen) {
       el.requestFullscreen().catch(() => {});
@@ -402,7 +425,7 @@ export default function VideoQrLandingPage() {
         </div>
       </header>
 
-      {/* Escenario Principal: Reproductor en Alta Definición + Tarjeta Ejecutiva de Contacto & QR WhatsApp */}
+      {/* Escenario Principal: Reproductor en Alta Definición 1080p Nativo + Tarjeta Ejecutiva de Contacto & QR WhatsApp */}
       <main className="relative z-10 flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col justify-center">
         {/* Encabezado Compacto de Presentación */}
         <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-5">
@@ -422,32 +445,32 @@ export default function VideoQrLandingPage() {
 
         {/* Grid Responsivo: Celular/Tablet (Apilado Fluido) | Laptop/PC (Escenario Cine 8 col + Panel Contacto QR 4 col) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
-          {/* Columna Izquierda/Central: Reproductor 16:9 sin Ruido Visual */}
+          {/* Columna Izquierda/Central: Reproductor 16:9 1080p Full HD Directo sin Ruido Visual */}
           <div className="lg:col-span-8 flex flex-col">
             <div
               ref={playerWrapperRef}
               className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-400/25 bg-black shadow-[0_20px_70px_rgba(29,104,255,0.28)]"
             >
               {/* Controles Flotantes de Audio y Pantalla Completa */}
-              <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
+              <div className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-30 flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={handleToggleAudio}
-                  className={`inline-flex items-center gap-2 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-black shadow-2xl backdrop-blur-md transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-black shadow-2xl backdrop-blur-md transition-all cursor-pointer ${
                     isMuted
                       ? "bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-white/40 animate-pulse"
-                      : "bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-400/40"
+                      : "bg-slate-900/85 hover:bg-slate-800 text-emerald-300 border border-emerald-400/40"
                   }`}
                 >
                   {isMuted ? (
                     <>
-                      <VolumeX className="h-4 w-4 shrink-0" />
+                      <VolumeX className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                       <span>Activar sonido</span>
                     </>
                   ) : (
                     <>
-                      <Volume2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                      <span>Sonido HD activo</span>
+                      <Volume2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400 shrink-0" />
+                      <span>Sonido HD activo · 1080p</span>
                     </>
                   )}
                 </button>
@@ -455,11 +478,11 @@ export default function VideoQrLandingPage() {
                 <button
                   type="button"
                   onClick={handleRestartVideo}
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-1.5 sm:p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
                   title="Reiniciar vídeo desde el inicio con sonido"
                   aria-label="Reiniciar vídeo"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
 
                 <button
@@ -473,18 +496,46 @@ export default function VideoQrLandingPage() {
                 </button>
               </div>
 
-              {/* IFrame 16:9 con Reproducción Inmediata en Alta Definición */}
-              <div className="relative w-full pt-[56.25%] bg-[#020611]">
-                <iframe
-                  key={config.youtubeId}
-                  ref={iframeRef}
-                  onLoad={handleIframeLoad}
-                  src={embedSrc}
-                  title={config.title}
-                  className="absolute inset-0 h-full w-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
+              {/* Escenario 16:9: Reproducción Directa 1920x1080 (1080p Full HD Nativo desde el Segundo 0:00) */}
+              <div
+                ref={stageViewportRef}
+                className="relative w-full pt-[56.25%] bg-[#020611] overflow-hidden"
+              >
+                {isDirect1080pStream ? (
+                  <video
+                    key={config.youtubeId}
+                    ref={videoRef}
+                    src={`/api/video-stream?v=${config.youtubeId}`}
+                    poster="/brand/iskool-video-poster-1080p.webp"
+                    autoPlay
+                    playsInline
+                    loop={config.loop}
+                    controls
+                    preload="auto"
+                    onVolumeChange={(e) => {
+                      const v = e.currentTarget;
+                      setIsMuted(v.muted || v.volume === 0);
+                    }}
+                    className="absolute inset-0 h-full w-full object-contain bg-[#020611]"
+                  />
+                ) : (
+                  <iframe
+                    key={config.youtubeId}
+                    ref={iframeRef}
+                    onLoad={handleIframeLoad}
+                    src={embedSrc}
+                    title={config.title}
+                    style={{
+                      width: "1920px",
+                      height: "1080px",
+                      transform: `scale(${iframeScale})`,
+                      transformOrigin: "0 0"
+                    }}
+                    className="absolute top-0 left-0 border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
+                )}
               </div>
             </div>
 
@@ -772,10 +823,7 @@ export default function VideoQrLandingPage() {
 
                 <div>
                   <label htmlFor="admin-key-input" className="block text-xs font-semibold text-slate-200 mb-1">
-                    <span className="inline-flex items-center gap-1">
-                      <Lock className="h-3 w-3 text-blue-400" />
-                      Clave de Administración
-                    </span>
+                    Clave de Administración
                   </label>
                   <input
                     id="admin-key-input"
@@ -802,51 +850,42 @@ export default function VideoQrLandingPage() {
 
               {saveFeedback && (
                 <div
-                  className={`rounded-xl border p-3 text-xs leading-relaxed ${
+                  className={`rounded-xl border px-4 py-3 text-xs font-medium ${
                     saveFeedback.type === "success"
                       ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-200"
-                      : "border-rose-500/40 bg-rose-500/10 text-rose-200"
+                      : "border-red-500/40 bg-red-500/10 text-red-200"
                   }`}
                 >
                   {saveFeedback.message}
                 </div>
               )}
 
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                  <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-                  <span>
-                    URL fija: <strong className="text-white font-mono">{PERMANENT_QR_URL}</strong>
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setShowAdminModal(false)}
-                    className="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
-                  >
-                    Cerrar
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isSaving || !detectedFormVideoId}
-                    onClick={() => handleSaveConfig()}
-                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-5 py-2 text-xs font-black text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
-                  >
-                    {isSaving ? (
-                      <>
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                        <span>Actualizando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        <span>Guardar Vídeo</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdminModal(false)}
+                  className="rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-bold text-slate-300 transition-colors cursor-pointer"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  disabled={isSaving || !detectedFormVideoId}
+                  onClick={() => handleSaveConfig()}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-5 py-2 text-xs font-black text-white shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
+                >
+                  {isSaving ? (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>Guardar y Publicar</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

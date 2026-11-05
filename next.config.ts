@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
     '/api/**/*': [
       './planeaciones/**/*',
       './knowledge/**/*',
-      './.index/**/*'
+      './.index/**/*',
+      './src/data/video-1080p/**/*'
     ],
   },
   outputFileTracingExcludes: {
@@ -59,7 +60,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/(images|brand|icons)/(.*)",
+        source: "/(images|brand|icons|fonts)/(.*)",
         headers: [
           {
             key: "Cache-Control",

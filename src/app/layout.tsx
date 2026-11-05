@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
@@ -10,20 +9,6 @@ import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProv
 import { NavigationTracker } from "@/components/navigation/NavigationTracker";
 import { generateServerTenantCss } from "@/lib/branding/tenantThemeTokens";
 import { TenantId } from "@/lib/auth/multiTenantSession";
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-  display: "swap",
-  weight: ["400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "ISkool - Módulo Académico Gamificado",
@@ -67,7 +52,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
-      className={`h-full light antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
+      className="h-full light antialiased"
       data-tenant={resolvedTenant}
       suppressHydrationWarning
     >
@@ -93,5 +78,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-

@@ -38,6 +38,8 @@ body:has(.lp-root) {
 }
 
 .lp-root {
+  --font-lp-display-loaded: 'Poppins', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-lp-body-loaded: 'Instrument Sans', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   overflow-x: clip;
   letter-spacing: normal;
   text-rendering: optimizeLegibility;

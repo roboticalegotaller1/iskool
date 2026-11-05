@@ -1,6 +1,50 @@
 @import "tailwindcss";
 @import "../components/landing/landing.css";
 
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/poppins-600-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/poppins-700-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/instrument-sans-latin.woff2') format('woff2');
+}
+
+.font-wordmark-poppins {
+  font-family: 'Poppins', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
@@ -11,7 +55,9 @@
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
   
-  /* Fuente Institucional de Alta Precisión */
+  /* Fuente Institucional de Alta Precisión (Auto-hospedada Hermética) */
+  --font-plus-jakarta: 'Plus Jakarta Sans';
+  --font-jetbrains-mono: 'JetBrains Mono';
   --font-sans: var(--font-plus-jakarta, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-jetbrains-mono, 'JetBrains Mono'), monospace;
 

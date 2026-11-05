@@ -46,5 +46,44 @@ describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/WgeQVmHDNJ4
     expect(pageSrc).toContain('autoplay=1&mute=0');
     expect(pageSrc).toContain('vq=hd1080');
     expect(pageSrc).toContain('cc_load_policy=0');
+    expect(pageSrc).toContain('/api/video-stream');
+  });
+
+  it('debe garantizar el stream nativo directo en 1080p (1920x1080) sin caída a 144p', () => {
+    const manifestPath = path.join(process.cwd(), 'src', 'data', 'video-1080p', 'manifest.json');
+    expect(fs.existsSync(manifestPath)).toBe(true);
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(manifest.videoId).toBe('WgeQVmHDNJ4');
+    expect(manifest.width).toBe(1920);
+    expect(manifest.height).toBe(1080);
+    expect(manifest.chunks.length).toBeGreaterThan(20);
+    for (const chunk of manifest.chunks) {
+      const partPath = path.join(process.cwd(), 'src', 'data', 'video-1080p', chunk.name);
+      expect(fs.existsSync(partPath)).toBe(true);
+      expect(fs.statSync(partPath).size).toBeLessThan(1024 * 1024);
+    }
+  });
+
+  it('debe garantizar fuentes WOFF2 auto-hospedadas y cero importaciones de next/font/google para evitar fallos en Turbopack build', () => {
+    const expectedFonts = [
+      'plus-jakarta-sans-latin.woff2',
+      'jetbrains-mono-latin.woff2',
+      'poppins-600-latin.woff2',
+      'poppins-700-latin.woff2',
+      'instrument-sans-latin.woff2',
+    ];
+    for (const fontFile of expectedFonts) {
+      const fontPath = path.join(process.cwd(), 'public', 'fonts', fontFile);
+      expect(fs.existsSync(fontPath)).toBe(true);
+      expect(fs.statSync(fontPath).size).toBeGreaterThan(1000);
+    }
+
+    const layoutSrc = fs.readFileSync(path.join(process.cwd(), 'src', 'app', 'layout.tsx'), 'utf8');
+    const wordmarkSrc = fs.readFileSync(path.join(process.cwd(), 'src', 'components', 'brand', 'wordmarkFont.ts'), 'utf8');
+    const landingFontsSrc = fs.readFileSync(path.join(process.cwd(), 'src', 'components', 'landing', 'fonts.ts'), 'utf8');
+
+    expect(layoutSrc).not.toContain('next/font/google');
+    expect(wordmarkSrc).not.toContain('next/font/google');
+    expect(landingFontsSrc).not.toContain('next/font/google');
   });
 });

@@ -1,0 +1,144 @@
+{
+  "videoId": "WgeQVmHDNJ4",
+  "width": 1920,
+  "height": 1080,
+  "totalSize": 24197245,
+  "chunkSize": 921600,
+  "chunks": [
+    {
+      "name": "part-00.bin",
+      "offset": 0,
+      "size": 921600
+    },
+    {
+      "name": "part-01.bin",
+      "offset": 921600,
+      "size": 921600
+    },
+    {
+      "name": "part-02.bin",
+      "offset": 1843200,
+      "size": 921600
+    },
+    {
+      "name": "part-03.bin",
+      "offset": 2764800,
+      "size": 921600
+    },
+    {
+      "name": "part-04.bin",
+      "offset": 3686400,
+      "size": 921600
+    },
+    {
+      "name": "part-05.bin",
+      "offset": 4608000,
+      "size": 921600
+    },
+    {
+      "name": "part-06.bin",
+      "offset": 5529600,
+      "size": 921600
+    },
+    {
+      "name": "part-07.bin",
+      "offset": 6451200,
+      "size": 921600
+    },
+    {
+      "name": "part-08.bin",
+      "offset": 7372800,
+      "size": 921600
+    },
+    {
+      "name": "part-09.bin",
+      "offset": 8294400,
+      "size": 921600
+    },
+    {
+      "name": "part-10.bin",
+      "offset": 9216000,
+      "size": 921600
+    },
+    {
+      "name": "part-11.bin",
+      "offset": 10137600,
+      "size": 921600
+    },
+    {
+      "name": "part-12.bin",
+      "offset": 11059200,
+      "size": 921600
+    },
+    {
+      "name": "part-13.bin",
+      "offset": 11980800,
+      "size": 921600
+    },
+    {
+      "name": "part-14.bin",
+      "offset": 12902400,
+      "size": 921600
+    },
+    {
+      "name": "part-15.bin",
+      "offset": 13824000,
+      "size": 921600
+    },
+    {
+      "name": "part-16.bin",
+      "offset": 14745600,
+      "size": 921600
+    },
+    {
+      "name": "part-17.bin",
+      "offset": 15667200,
+      "size": 921600
+    },
+    {
+      "name": "part-18.bin",
+      "offset": 16588800,
+      "size": 921600
+    },
+    {
+      "name": "part-19.bin",
+      "offset": 17510400,
+      "size": 921600
+    },
+    {
+      "name": "part-20.bin",
+      "offset": 18432000,
+      "size": 921600
+    },
+    {
+      "name": "part-21.bin",
+      "offset": 19353600,
+      "size": 921600
+    },
+    {
+      "name": "part-22.bin",
+      "offset": 20275200,
+      "size": 921600
+    },
+    {
+      "name": "part-23.bin",
+      "offset": 21196800,
+      "size": 921600
+    },
+    {
+      "name": "part-24.bin",
+      "offset": 22118400,
+      "size": 921600
+    },
+    {
+      "name": "part-25.bin",
+      "offset": 23040000,
+      "size": 921600
+    },
+    {
+      "name": "part-26.bin",
+      "offset": 23961600,
+      "size": 235645
+    }
+  ]
+}
