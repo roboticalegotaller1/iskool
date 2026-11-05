@@ -53,6 +53,8 @@ export default function VideoQrLandingPage() {
 
   const [presets, setPresets] = useState<QrVideoPreset[]>(QR_VIDEO_PRESETS);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [useYtAudioBridge, setUseYtAudioBridge] = useState<boolean>(true);
+  const [nativeControlsReady, setNativeControlsReady] = useState<boolean>(false);
   const [iframeScale, setIframeScale] = useState<number>(0.5);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
@@ -70,9 +72,13 @@ export default function VideoQrLandingPage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const audioBridgeIframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerWrapperRef = useRef<HTMLDivElement | null>(null);
   const stageViewportRef = useRef<HTMLDivElement | null>(null);
   const hasUserToggledAudioRef = useRef<boolean>(false);
+  const useYtAudioBridgeRef = useRef<boolean>(true);
+  const ytBridgePlayingUnmutedRef = useRef<boolean>(false);
+  const userInteractedRef = useRef<boolean>(false);
 
   const isDirect1080pStream = config.youtubeId === DIRECT_1080P_VIDEO_ID;
 
@@ -132,61 +138,238 @@ export default function VideoQrLandingPage() {
     }
   }, [fetchActiveConfig]);
 
-  // Arranque inmediato en 1080p nativo con audio activo (y fallback inteligente si el navegador móvil bloquea audio sin gesto previo)
+  const triggerAudioBridgeUnmuteAndPlay = useCallback(() => {
+    if (!useYtAudioBridgeRef.current) return;
+    const targetWin = audioBridgeIframeRef.current?.contentWindow;
+    if (!targetWin) return;
+    targetWin.postMessage(
+      JSON.stringify({
+        event: "listening",
+        id: 1,
+        channel: "widget"
+      }),
+      "*"
+    );
+    const sendCmd = (func: string, args: unknown[] = []) => {
+      targetWin.postMessage(
+        JSON.stringify({
+          event: "command",
+          func,
+          args
+        }),
+        "*"
+      );
+    };
+    sendCmd("unloadModule", ["captions"]);
+    sendCmd("unloadModule", ["cc"]);
+    sendCmd("unMute");
+    sendCmd("setVolume", [100]);
+    sendCmd("playVideo");
+  }, []);
+
+  // Arranque inmediato en 1080p nativo con audio activo desde el segundo 0:00
+  // Si el navegador permite <video> con sonido directo, usa el audio nativo del MP4 1080p;
+  // si el navegador bloquea el audio de primer origen en visita fría, activa al instante el puente de audio pre-autorizado (MEI) sincronizado cuadro a cuadro con el video 1080p.
   useEffect(() => {
     if (!isDirect1080pStream) return;
     const v = videoRef.current;
     if (!v) return;
+
+    let cancelled = false;
+    let fallbackPlayTimer: ReturnType<typeof setTimeout> | null = null;
+    let bridgeAuditTimer: ReturnType<typeof setTimeout> | null = null;
 
     const startPlayback = async () => {
       try {
         v.muted = false;
         v.volume = 1.0;
         await v.play();
+        if (cancelled) return;
+        useYtAudioBridgeRef.current = false;
+        ytBridgePlayingUnmutedRef.current = false;
+        setUseYtAudioBridge(false);
+        setNativeControlsReady(true);
         setIsMuted(false);
       } catch {
-        // Si el navegador bloquea el autoplay con sonido en visita fría, arranca de inmediato en 1080p y activa el audio al primer toque
-        try {
-          v.muted = true;
-          setIsMuted(true);
-          await v.play();
-        } catch {
-          // Ignorar
+        if (cancelled) return;
+        if (userInteractedRef.current && !hasUserToggledAudioRef.current) {
+          try {
+            v.muted = false;
+            v.volume = 1.0;
+            await v.play();
+            useYtAudioBridgeRef.current = false;
+            setUseYtAudioBridge(false);
+            setNativeControlsReady(true);
+            setIsMuted(false);
+            return;
+          } catch {
+            // Continúa al puente
+          }
         }
+
+        // Activar puente de audio inmediato (MEI) + arranque instantáneo del video 1080p
+        v.muted = true;
+        useYtAudioBridgeRef.current = true;
+        setUseYtAudioBridge(true);
+        triggerAudioBridgeUnmuteAndPlay();
+        v.play().catch(() => {});
+
+        fallbackPlayTimer = setTimeout(() => {
+          if (!cancelled && videoRef.current && videoRef.current.paused) {
+            videoRef.current.play().catch(() => {});
+          }
+        }, 250);
+
+        bridgeAuditTimer = setTimeout(() => {
+          if (cancelled || hasUserToggledAudioRef.current) return;
+          const el = videoRef.current;
+          if (!el) return;
+          if (!el.muted && !el.paused) {
+            setIsMuted(false);
+          } else if (ytBridgePlayingUnmutedRef.current) {
+            setIsMuted(false);
+          } else {
+            setIsMuted(true);
+          }
+        }, 1800);
       }
     };
 
     startPlayback();
 
-    const unlockDirectAudioOnGesture = () => {
-      if (hasUserToggledAudioRef.current) return;
-      const el = videoRef.current;
-      if (!el) return;
-      el.muted = false;
-      el.volume = 1.0;
-      el.play().catch(() => {});
-      setIsMuted(false);
+    const handleBridgeMessage = (event: MessageEvent) => {
+      if (!useYtAudioBridgeRef.current) return;
+      if (typeof event.data !== "string") return;
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload?.event === "onReady" || payload?.event === "initialDelivery") {
+          triggerAudioBridgeUnmuteAndPlay();
+          return;
+        }
+
+        if (payload?.event === "onStateChange" || payload?.event === "infoDelivery") {
+          const info = payload?.info;
+          const state =
+            typeof info === "number" ? info : info?.playerState;
+
+          if ((state === 1 || state === 3) && !ytBridgePlayingUnmutedRef.current) {
+            triggerAudioBridgeUnmuteAndPlay();
+          }
+
+          const el = videoRef.current;
+          if (!el) return;
+
+          if (typeof info === "object" && info !== null) {
+            if (typeof info.currentTime === "number" && info.currentTime > 0) {
+              const wasAlreadySynced = ytBridgePlayingUnmutedRef.current;
+              ytBridgePlayingUnmutedRef.current = info.muted !== true;
+              if (!hasUserToggledAudioRef.current && info.muted !== true) {
+                setIsMuted(false);
+              }
+              if (el.paused) {
+                el.play().catch(() => {});
+              }
+              const drift = Math.abs(el.currentTime - info.currentTime);
+              if (!wasAlreadySynced || drift > 0.12) {
+                el.currentTime = info.currentTime;
+              }
+            } else if (state === 1) {
+              ytBridgePlayingUnmutedRef.current = true;
+              if (!hasUserToggledAudioRef.current) {
+                setIsMuted(false);
+              }
+              if (el.paused) {
+                el.play().catch(() => {});
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignorar mensajes externos
+      }
     };
 
-    window.addEventListener("pointerdown", unlockDirectAudioOnGesture, {
-      passive: true,
-      once: true
+    const handoverToNativeUnmutedAudio = (evt: Event) => {
+      userInteractedRef.current = true;
+      const target = evt.target as HTMLElement | null;
+      if (target?.closest?.('[data-audio-control="true"]')) {
+        return;
+      }
+
+      const el = videoRef.current;
+      if (!el) return;
+
+      if (useYtAudioBridgeRef.current) {
+        useYtAudioBridgeRef.current = false;
+        ytBridgePlayingUnmutedRef.current = false;
+        setUseYtAudioBridge(false);
+        setNativeControlsReady(true);
+        if (!hasUserToggledAudioRef.current) {
+          el.muted = false;
+          el.volume = 1.0;
+          el.play().catch(() => {});
+          setIsMuted(false);
+        }
+      } else if (!hasUserToggledAudioRef.current && el.muted) {
+        el.muted = false;
+        el.volume = 1.0;
+        el.play().catch(() => {});
+        setNativeControlsReady(true);
+        setIsMuted(false);
+      }
+    };
+
+    window.addEventListener("message", handleBridgeMessage);
+    window.addEventListener("click", handoverToNativeUnmutedAudio, {
+      capture: true,
+      passive: true
     });
-    window.addEventListener("keydown", unlockDirectAudioOnGesture, {
-      passive: true,
-      once: true
+    window.addEventListener("mousedown", handoverToNativeUnmutedAudio, {
+      capture: true,
+      passive: true
     });
-    window.addEventListener("touchstart", unlockDirectAudioOnGesture, {
-      passive: true,
-      once: true
+    window.addEventListener("pointerup", handoverToNativeUnmutedAudio, {
+      capture: true,
+      passive: true
+    });
+    window.addEventListener("keydown", handoverToNativeUnmutedAudio, {
+      capture: true,
+      passive: true
+    });
+    window.addEventListener("touchend", handoverToNativeUnmutedAudio, {
+      capture: true,
+      passive: true
     });
 
     return () => {
-      window.removeEventListener("pointerdown", unlockDirectAudioOnGesture);
-      window.removeEventListener("keydown", unlockDirectAudioOnGesture);
-      window.removeEventListener("touchstart", unlockDirectAudioOnGesture);
+      cancelled = true;
+      if (fallbackPlayTimer) clearTimeout(fallbackPlayTimer);
+      if (bridgeAuditTimer) clearTimeout(bridgeAuditTimer);
+      window.removeEventListener("message", handleBridgeMessage);
+      window.removeEventListener("click", handoverToNativeUnmutedAudio, {
+        capture: true
+      });
+      window.removeEventListener("mousedown", handoverToNativeUnmutedAudio, {
+        capture: true
+      });
+      window.removeEventListener("pointerup", handoverToNativeUnmutedAudio, {
+        capture: true
+      });
+      window.removeEventListener("keydown", handoverToNativeUnmutedAudio, {
+        capture: true
+      });
+      window.removeEventListener("touchend", handoverToNativeUnmutedAudio, {
+        capture: true
+      });
     };
-  }, [isDirect1080pStream, config.youtubeId]);
+  }, [isDirect1080pStream, config.youtubeId, triggerAudioBridgeUnmuteAndPlay]);
+
+  const handleAudioBridgeLoad = useCallback(() => {
+    triggerAudioBridgeUnmuteAndPlay();
+    setTimeout(triggerAudioBridgeUnmuteAndPlay, 180);
+    setTimeout(triggerAudioBridgeUnmuteAndPlay, 500);
+    setTimeout(triggerAudioBridgeUnmuteAndPlay, 1100);
+  }, [triggerAudioBridgeUnmuteAndPlay]);
 
   // Enviar comandos a la API del reproductor embebido de respaldo
   const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
@@ -246,9 +429,16 @@ export default function VideoQrLandingPage() {
   // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición 1080p
   const handleToggleAudio = useCallback(() => {
     hasUserToggledAudioRef.current = true;
+    userInteractedRef.current = true;
     if (isDirect1080pStream && videoRef.current) {
       const v = videoRef.current;
-      if (v.muted || isMuted) {
+      const wasBridgePlayingUnmuted = ytBridgePlayingUnmutedRef.current;
+      useYtAudioBridgeRef.current = false;
+      ytBridgePlayingUnmutedRef.current = false;
+      setUseYtAudioBridge(false);
+      setNativeControlsReady(true);
+
+      if (isMuted || (v.muted && !wasBridgePlayingUnmuted)) {
         v.muted = false;
         v.volume = 1.0;
         v.play().catch(() => {});
@@ -277,6 +467,9 @@ export default function VideoQrLandingPage() {
     hasUserToggledAudioRef.current = true;
     if (isDirect1080pStream && videoRef.current) {
       const v = videoRef.current;
+      useYtAudioBridgeRef.current = false;
+      setUseYtAudioBridge(false);
+      setNativeControlsReady(true);
       v.currentTime = 0;
       v.muted = false;
       v.volume = 1.0;
@@ -452,7 +645,10 @@ export default function VideoQrLandingPage() {
               className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-400/25 bg-black shadow-[0_20px_70px_rgba(29,104,255,0.28)]"
             >
               {/* Controles Flotantes de Audio y Pantalla Completa */}
-              <div className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-30 flex items-center gap-1.5 sm:gap-2">
+              <div
+                data-audio-control="true"
+                className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-30 flex items-center gap-1.5 sm:gap-2"
+              >
                 <button
                   type="button"
                   onClick={handleToggleAudio}
@@ -502,22 +698,36 @@ export default function VideoQrLandingPage() {
                 className="relative w-full pt-[56.25%] bg-[#020611] overflow-hidden"
               >
                 {isDirect1080pStream ? (
-                  <video
-                    key={config.youtubeId}
-                    ref={videoRef}
-                    src={`/api/video-stream?v=${config.youtubeId}`}
-                    poster="/brand/iskool-video-poster-1080p.webp"
-                    autoPlay
-                    playsInline
-                    loop={config.loop}
-                    controls
-                    preload="auto"
-                    onVolumeChange={(e) => {
-                      const v = e.currentTarget;
-                      setIsMuted(v.muted || v.volume === 0);
-                    }}
-                    className="absolute inset-0 h-full w-full object-contain bg-[#020611]"
-                  />
+                  <>
+                    <video
+                      key={config.youtubeId}
+                      ref={videoRef}
+                      src={`/api/video-stream?v=${config.youtubeId}`}
+                      poster="/brand/iskool-video-poster-1080p.webp"
+                      playsInline
+                      loop={config.loop}
+                      controls={nativeControlsReady}
+                      preload="auto"
+                      onVolumeChange={(e) => {
+                        if (useYtAudioBridgeRef.current) return;
+                        const v = e.currentTarget;
+                        setIsMuted(v.muted || v.volume === 0);
+                      }}
+                      className="absolute inset-0 z-10 h-full w-full object-contain bg-[#020611] cursor-pointer"
+                    />
+                    {useYtAudioBridge && (
+                      <iframe
+                        ref={audioBridgeIframeRef}
+                        onLoad={handleAudioBridgeLoad}
+                        src={embedSrc}
+                        title="Motor de Audio HD Sincronizado"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                        className="pointer-events-none absolute inset-0 z-0 h-full w-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      />
+                    )}
+                  </>
                 ) : (
                   <iframe
                     key={config.youtubeId}
