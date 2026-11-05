@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
+import { StudioCategoryIcon, StudioBlockIcon } from './StudioPremiumBlockIcon';
 import { 
   X, 
   Sparkles, 
@@ -335,9 +336,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
             {/* Barra de Título, Búsqueda y Filtros */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
-                  <Sparkles className="w-5 h-5" />
-                </div>
+                <StudioCategoryIcon categoryKey="studio_master" size="md" fallbackIcon={Sparkles} />
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
@@ -431,9 +430,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                       onClick={() => handleSelectTool(tool.type)}
                       className={`group p-3.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-slate-50/70 dark:bg-zinc-850/80 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 text-left transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md cursor-pointer flex items-start gap-3`}
                     >
-                      <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${tool.gradient} flex items-center justify-center shrink-0 shadow-md ${tool.glow} group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
+                      <StudioBlockIcon blockType={tool.type} size="lg" fallbackIcon={Icon} />
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">

@@ -4,10 +4,12 @@ import { SidebarToolbar } from './SidebarToolbar';
 import { WorkspaceArea } from './WorkspaceArea';
 import { StudioFlowPlayer } from '../player/StudioFlowPlayer';
 import { AssignToClassModal } from '@/components/AssignToClassModal';
+import { StudioOpticalExamSuiteModal } from '../exam/StudioOpticalExamSuiteModal';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { detectCurriculumPdasForTopic } from '@/lib/curriculumEngine';
 import { InstitutionalMemoryAdvisor } from '../InstitutionalMemoryAdvisor';
+import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Play, 
   Share2, 
@@ -50,7 +52,8 @@ import {
   Sliders,
   CheckCheck,
   Users,
-  Send
+  Send,
+  ScanLine
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { StudioBlock } from '@/types/studioBlocks';
@@ -141,6 +144,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isLiveClassModalOpen, setIsLiveClassModalOpen] = useState(false);
   const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
+  const [isExamSuiteModalOpen, setIsExamSuiteModalOpen] = useState(false);
   const [activeClassGroup, setActiveClassGroup] = useState('1°A Secundaria • Historia (08:00-08:50)');
   const [bloomLevel, setBloomLevel] = useState<number>(4);
   const [ttsSpeed, setTtsSpeed] = useState<number>(1.0);
@@ -324,8 +328,18 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     isSettingsOpen ||
     isAssignModalOpen ||
     isQuotaModalOpen ||
+    isExamSuiteModalOpen ||
     (duplicateConflicts && duplicateConflicts.length > 0)
   );
+
+  // Escuchar evento global desde nodos o cajones para abrir la Suite OMR & Variantes en 0 Tokens
+  React.useEffect(() => {
+    const handleOpenOmr = () => {
+      setIsExamSuiteModalOpen(true);
+    };
+    window.addEventListener('iskool:open-omr-exam-suite', handleOpenOmr);
+    return () => window.removeEventListener('iskool:open-omr-exam-suite', handleOpenOmr);
+  }, []);
 
   const BLOOM_LABELS: Record<number, string> = {
     1: '1. Recordar',
@@ -344,13 +358,26 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     setIsSimulatorSpeaking(true);
     recordTokenActivity('Síntesis Neural LatAm (Caché Bóveda 0 Tokens)', 180, true);
     try {
+      const blockData = (activeSelectedBlock?.data || {}) as Record<string, any>;
+      const resolvedCharacterName =
+        blockData.characterOrSiteName ||
+        blockData.characterName ||
+        (activeSelectedBlock?.type === 'historical_figure_block' ? activeSelectedBlock.title : '');
+      const resolvedGender: 'male' | 'female' =
+        blockData.voiceGender === 'male' || blockData.voiceGender === 'female'
+          ? blockData.voiceGender
+          : gender;
+
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
-          lang: 'es-MX',
-          gender
+          language: 'es-MX',
+          gender: resolvedGender,
+          characterName: resolvedCharacterName,
+          role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor',
+          rate: ttsSpeed
         })
       });
       if (res.ok) {
@@ -358,6 +385,10 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audio.playbackRate = ttsSpeed;
+        attachStudioBroadcastMaster(audio, {
+          isMale: resolvedGender === 'male',
+          role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
+        });
         audio.onended = () => setIsSimulatorSpeaking(false);
         audio.onerror = () => setIsSimulatorSpeaking(false);
         await audio.play();
@@ -984,6 +1015,20 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
             <span className="hidden sm:inline">Ajustes</span>
           </button>
 
+          {/* Suite de Exámenes Híbridos OMR & Variantes A/B/C/D (0 Tokens) */}
+          <button
+            type="button"
+            onClick={() => {
+              recordTokenActivity('Apertura de Suite de Exámenes OMR & Variantes A/B/C/D (Motor Determinista)', 4200, true);
+              setIsExamSuiteModalOpen(true);
+            }}
+            title="Generar variantes anti-copia A/B/C/D, imprimir hojas de burbujas OMR con corrección de error y escanear exámenes con 0 Tokens"
+            className="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200 font-black text-xs border border-rose-300/80 dark:border-rose-700 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+          >
+            <ScanLine className="w-3.5 h-3.5 text-rose-600" />
+            <span>Exámenes OMR &amp; Variantes</span>
+          </button>
+
           {/* Probar */}
           <button
             type="button"
@@ -1049,7 +1094,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
               : 'text-slate-600 dark:text-zinc-400'
           }`}
         >
-          📦 28 Nodos
+          📦 34 Nodos
         </button>
         <button
           type="button"
@@ -2412,6 +2457,23 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
         </div>,
         document.body
       )}
+
+      {/* Suite Completa de Exámenes Híbridos, Variantes A/B/C/D y Escáner Óptico OMR (0 Tokens) */}
+      <StudioOpticalExamSuiteModal
+        isOpen={isExamSuiteModalOpen}
+        onClose={() => setIsExamSuiteModalOpen(false)}
+        examTitle={metadata.title || 'Evaluación Bimestral SEP NEM'}
+        schoolName={activeSchoolBadge.fullName}
+        schoolShortName={activeSchoolBadge.shortName}
+        groupName={activeClassGroup}
+        notebookPage={notebookPage}
+        studioBlocks={blocks}
+        onStampAndSyncKardex={(report) => {
+          recordTokenActivity('Calificación Óptica OMR en Lote & Psicometría SEP (0 Tokens)', 6800, true);
+          setStampedCount((prev) => Math.max(prev, report.totalStudentsScanned));
+          showToast(`✅ ¡${report.totalStudentsScanned} hojas OMR calificadas en 0 Tokens! Promedio: ${report.averageGrade10}/10 sincronizado con Kardex SEP y Espejo CEO.`);
+        }}
+      />
 
       {/* Modal de Asignación a Clase */}
       <AssignToClassModal

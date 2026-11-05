@@ -171,7 +171,7 @@ export function resolveCertifiedPlatformVoice(
     return { voice: voiceId, lang: 'es', locale: 'es-MX' };
   }
 
-  // Mapeo Azure -> Edge para voces latinas
+  // Mapeo Azure & Arquetipos 3.8-flash-lite-tts (es-419-* / voice_*) -> Edge 24 Voces Latinas
   const AZURE_TO_EDGE_LATIN_MAP: Record<string, string> = {
     'es-MX-PelayoNeural': 'es-CO-GonzaloNeural',
     'es-MX-MarinaNeural': 'es-CO-SalomeNeural',
@@ -186,11 +186,31 @@ export function resolveCertifiedPlatformVoice(
     'es-MX-RenataNeural': 'es-MX-DaliaNeural',
     'es-MX-CarlotaNeural': 'es-MX-DaliaNeural',
     'es-MX-CandidoNeural': 'es-MX-JorgeNeural',
-    'es-MX-LucianoNeural': 'es-MX-JorgeNeural'
+    'es-MX-LucianoNeural': 'es-MX-JorgeNeural',
+    'es-419-advisor-7': 'es-US-PalomaNeural',
+    'es-419-advisor-4': 'es-MX-DaliaNeural',
+    'es-419-podcaster-2': 'es-MX-DaliaNeural',
+    'es-419-commercial-6': 'es-CO-SalomeNeural',
+    'es-419-tutor-3': 'es-CR-MariaNeural',
+    'es-419-assistant-1': 'es-PE-CamilaNeural',
+    'es-419-concierge-2': 'es-MX-JorgeNeural',
+    'es-419-concierge-7': 'es-CO-GonzaloNeural',
+    'es-419-concierge-8': 'es-US-AlonsoNeural',
+    'es-419-tutor-2': 'es-MX-JorgeNeural',
+    'es-419-tutor-4': 'es-US-AlonsoNeural',
+    'es-419-podcaster-1': 'es-CO-GonzaloNeural',
+    'es-419-podcaster-3': 'es-PE-AlexNeural',
+    'es-419-assistant-9': 'es-US-AlonsoNeural',
+    'voice_n1k681ufsc1y': 'es-US-PalomaNeural',
+    'voice_oqncq3e569jl': 'es-MX-DaliaNeural',
+    'voice_q79aaaxpz15o': 'es-CO-SalomeNeural',
+    'voice_vat8814ynez3': 'es-US-AlonsoNeural',
+    'voice_20glo3j2lyii': 'es-MX-JorgeNeural',
+    'voice_ffnov7sw7hon': 'es-PE-AlexNeural'
   };
 
-  if (voiceId && AZURE_TO_EDGE_LATIN_MAP[voiceId]) {
-    return { voice: AZURE_TO_EDGE_LATIN_MAP[voiceId], lang: 'es', locale: 'es-MX' };
+  if (voiceId && (AZURE_TO_EDGE_LATIN_MAP[voiceId] || AZURE_TO_EDGE_LATIN_MAP[lower])) {
+    return { voice: AZURE_TO_EDGE_LATIN_MAP[voiceId] || AZURE_TO_EDGE_LATIN_MAP[lower], lang: 'es', locale: 'es-MX' };
   }
 
   // Fallback por defecto en español
@@ -318,6 +338,8 @@ export async function POST(req: NextRequest) {
       text, 
       voice, 
       language,
+      lang: bodyLang,
+      gender: bodyGender,
       rate = 1.0, 
       pitch = 1.0, 
       characterName,
@@ -328,7 +350,10 @@ export async function POST(req: NextRequest) {
       narratorMode = 'wisdom_guide'
     } = body;
 
-    const characterGender = getPersonaGender(characterName);
+    const characterGender: 'female' | 'male' =
+      bodyGender === 'male' || bodyGender === 'female'
+        ? bodyGender
+        : getPersonaGender(characterName);
     let preliminaryVoice = voice;
     let targetSSML = '';
     let rawNormalizedText = '';
@@ -342,7 +367,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Detección de idioma y resolución de voz certificada
-    let explicitLang = language;
+    let explicitLang = language || bodyLang;
     if (!explicitLang && preliminaryVoice) {
       if (preliminaryVoice.startsWith('fr-')) explicitLang = 'fr';
       else if (preliminaryVoice.startsWith('en-')) explicitLang = 'en';
@@ -468,7 +493,7 @@ export async function POST(req: NextRequest) {
 
     const cacheKey = crypto
       .createHash('sha256')
-      .update(`v7_neural_latam_24voices::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
+      .update(`v8_neural_latam_38flash_calibrated::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
       .digest('hex');
 
     const cachedBuffer = getAudioFromCache(cacheKey);

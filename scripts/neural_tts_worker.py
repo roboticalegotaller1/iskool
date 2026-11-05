@@ -287,6 +287,27 @@ VOICE_MAPPING = {
     'epic_chronist': 'es-PE-AlexNeural',
     'wisdom_guide': 'es-MX-DaliaNeural',
     'time_chrononaut': 'es-CO-GonzaloNeural',
+    # Equivalencias directas de Arquetipos 3.8-flash-lite-tts (es-419-* y voice_*) -> 24 Voces Neurales LatAm
+    'es-419-advisor-7': 'es-US-PalomaNeural',
+    'es-419-advisor-4': 'es-MX-DaliaNeural',
+    'es-419-podcaster-2': 'es-MX-DaliaNeural',
+    'es-419-commercial-6': 'es-CO-SalomeNeural',
+    'es-419-tutor-3': 'es-CR-MariaNeural',
+    'es-419-assistant-1': 'es-PE-CamilaNeural',
+    'es-419-concierge-2': 'es-MX-JorgeNeural',
+    'es-419-concierge-7': 'es-CO-GonzaloNeural',
+    'es-419-concierge-8': 'es-US-AlonsoNeural',
+    'es-419-tutor-2': 'es-MX-JorgeNeural',
+    'es-419-tutor-4': 'es-US-AlonsoNeural',
+    'es-419-podcaster-1': 'es-CO-GonzaloNeural',
+    'es-419-podcaster-3': 'es-PE-AlexNeural',
+    'es-419-assistant-9': 'es-US-AlonsoNeural',
+    'voice_n1k681ufsc1y': 'es-US-PalomaNeural',
+    'voice_oqncq3e569jl': 'es-MX-DaliaNeural',
+    'voice_q79aaaxpz15o': 'es-CO-SalomeNeural',
+    'voice_vat8814ynez3': 'es-US-AlonsoNeural',
+    'voice_20glo3j2lyii': 'es-MX-JorgeNeural',
+    'voice_ffnov7sw7hon': 'es-PE-AlexNeural',
 }
 
 
@@ -482,7 +503,9 @@ def _is_male_voice_or_character(voice_name: str, character_name: str = "", role:
         "josefa", "sor juana", "juana inés", "juana ines", "leona", "carmen",
         "adelita", "frida", "malinche", "malintzin", "corregidora", "maestra",
         "tutora", "dalia", "salome", "camila", "paloma", "sofia", "sofía",
-        "claire", "sophie", "ada", "curie", "jeanne", "wisdom_guide"
+        "claire", "sophie", "ada", "curie", "jeanne", "wisdom_guide",
+        "rosario", "castellanos", "elvia", "carrillo puerto", "gertrudis",
+        "bocanegra", "tecuichpo", "alumna", "niña", "directora"
     )):
         return False
     if any(m in c_lower for m in (
@@ -490,14 +513,27 @@ def _is_male_voice_or_character(voice_name: str, character_name: str = "", role:
         "carranza", "allende", "guerrero", "cárdenas", "cardenas", "general",
         "caudillo", "cura", "presidente", "cuauhtemoc", "cuauhtémoc", "shakespeare",
         "lincoln", "napoleon", "napoléon", "victor hugo", "arthur", "henri",
-        "epic_chronist", "time_chrononaut"
+        "epic_chronist", "time_chrononaut", "nezahualcoyotl", "nezahualcóyotl",
+        "moctezuma", "xicohtencatl", "xicohténcatl", "zaragoza", "obregon",
+        "obregón", "angeles", "ángeles", "vasconcelos", "victoria", "escutia",
+        "melgar", "suarez", "suárez", "marquez", "márquez", "montes de oca",
+        "barrera", "cadete", "tlatoani", "magon", "magón", "belisario", "aquiles"
     )):
         return True
     v_lower = (voice_name or "").lower()
+    if any(f_v in v_lower for f_v in (
+        "es-419-advisor-7", "es-419-advisor-4", "es-419-podcaster-2",
+        "es-419-commercial-6", "es-419-tutor-3", "es-419-assistant-1",
+        "voice_n1k681ufsc1y", "voice_oqncq3e569jl", "voice_q79aaaxpz15o"
+    )):
+        return False
     return any(k in v_lower for k in (
         "jorge", "gonzalo", "alex", "alonso", "tomas", "lorenzo", "sebastian",
         "juan", "henri", "remy", "jean", "antoine", "guy", "ryan", "andrew",
-        "brian", "thomas"
+        "brian", "thomas", "es-419-concierge-2", "es-419-concierge-7",
+        "es-419-concierge-8", "es-419-tutor-2", "es-419-tutor-4",
+        "es-419-podcaster-1", "es-419-podcaster-3", "es-419-assistant-9",
+        "voice_vat8814ynez3", "voice_20glo3j2lyii", "voice_ffnov7sw7hon"
     ))
 
 
@@ -828,6 +864,360 @@ def _synthesize_studio_generative_wav(
     return None
 
 
+# =============================================================================
+# MATRIZ DE CALIBRACIÓN ACÚSTICA, FORMÁNTICA Y PROSÓDICA
+# Homologa "Respaldo Neural Continuo (24 voces LatAm)" al timbre, cadencia,
+# calidez armónica y expresividad de "3.8-flash-lite-tts (Voces MX es-419-*)"
+# =============================================================================
+ES_419_TO_NEURAL_LATAM_CALIBRATION = {
+    # Arquetipos Femeninos (es-419-* / voice_*)
+    "es-419-advisor-7": {
+        "neural_voice": "es-US-PalomaNeural",
+        "rate_offset_pct": 0,
+        "pitch_offset_hz": 0,
+        "warmth_freq": 138.0,
+        "warmth_gain": 1.45,
+        "box_cut_freq": 340.0,
+        "box_cut_gain": -1.15,
+        "presence_freq": 3560.0,
+        "presence_gain": 1.35,
+        "sibilance_freq": 6650.0,
+        "sibilance_cut": -1.80,
+        "air_gain": 1.35,
+        "harmonic_drive": 0.12,
+    },
+    "es-419-advisor-4": {
+        "neural_voice": "es-MX-DaliaNeural",
+        "rate_offset_pct": -2,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 134.0,
+        "warmth_gain": 1.60,
+        "box_cut_freq": 335.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3480.0,
+        "presence_gain": 1.30,
+        "sibilance_freq": 6550.0,
+        "sibilance_cut": -1.75,
+        "air_gain": 1.25,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-podcaster-2": {
+        "neural_voice": "es-MX-DaliaNeural",
+        "rate_offset_pct": 0,
+        "pitch_offset_hz": 0,
+        "warmth_freq": 140.0,
+        "warmth_gain": 1.40,
+        "box_cut_freq": 340.0,
+        "box_cut_gain": -1.10,
+        "presence_freq": 3580.0,
+        "presence_gain": 1.30,
+        "sibilance_freq": 6700.0,
+        "sibilance_cut": -1.70,
+        "air_gain": 1.35,
+        "harmonic_drive": 0.12,
+    },
+    "es-419-commercial-6": {
+        "neural_voice": "es-CO-SalomeNeural",
+        "rate_offset_pct": -3,
+        "pitch_offset_hz": 0,
+        "warmth_freq": 142.0,
+        "warmth_gain": 1.50,
+        "box_cut_freq": 342.0,
+        "box_cut_gain": -1.15,
+        "presence_freq": 3520.0,
+        "presence_gain": 1.25,
+        "sibilance_freq": 6600.0,
+        "sibilance_cut": -1.85,
+        "air_gain": 1.40,
+        "harmonic_drive": 0.13,
+    },
+    "es-419-tutor-3": {
+        "neural_voice": "es-CR-MariaNeural",
+        "rate_offset_pct": -3,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 135.0,
+        "warmth_gain": 1.65,
+        "box_cut_freq": 335.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3440.0,
+        "presence_gain": 1.25,
+        "sibilance_freq": 6500.0,
+        "sibilance_cut": -1.80,
+        "air_gain": 1.25,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-assistant-1": {
+        "neural_voice": "es-PE-CamilaNeural",
+        "rate_offset_pct": 1,
+        "pitch_offset_hz": 1,
+        "warmth_freq": 146.0,
+        "warmth_gain": 1.25,
+        "box_cut_freq": 350.0,
+        "box_cut_gain": -1.05,
+        "presence_freq": 3660.0,
+        "presence_gain": 1.35,
+        "sibilance_freq": 6800.0,
+        "sibilance_cut": -1.65,
+        "air_gain": 1.45,
+        "harmonic_drive": 0.10,
+    },
+    # Arquetipos Masculinos (es-419-* / voice_*)
+    "es-419-concierge-2": {
+        "neural_voice": "es-MX-JorgeNeural",
+        "rate_offset_pct": -4,
+        "pitch_offset_hz": -2,
+        "warmth_freq": 116.0,
+        "warmth_gain": 1.85,
+        "box_cut_freq": 325.0,
+        "box_cut_gain": -1.25,
+        "presence_freq": 3280.0,
+        "presence_gain": 1.30,
+        "sibilance_freq": 6400.0,
+        "sibilance_cut": -1.75,
+        "air_gain": 1.15,
+        "harmonic_drive": 0.15,
+    },
+    "es-419-concierge-7": {
+        "neural_voice": "es-CO-GonzaloNeural",
+        "rate_offset_pct": -3,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 120.0,
+        "warmth_gain": 1.70,
+        "box_cut_freq": 330.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3380.0,
+        "presence_gain": 1.35,
+        "sibilance_freq": 6450.0,
+        "sibilance_cut": -1.80,
+        "air_gain": 1.20,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-concierge-8": {
+        "neural_voice": "es-US-AlonsoNeural",
+        "rate_offset_pct": -1,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 118.0,
+        "warmth_gain": 1.80,
+        "box_cut_freq": 332.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3420.0,
+        "presence_gain": 1.40,
+        "sibilance_freq": 6500.0,
+        "sibilance_cut": -1.75,
+        "air_gain": 1.20,
+        "harmonic_drive": 0.15,
+    },
+    "es-419-tutor-2": {
+        "neural_voice": "es-MX-JorgeNeural",
+        "rate_offset_pct": -1,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 118.0,
+        "warmth_gain": 1.75,
+        "box_cut_freq": 330.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3440.0,
+        "presence_gain": 1.35,
+        "sibilance_freq": 6500.0,
+        "sibilance_cut": -1.75,
+        "air_gain": 1.20,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-tutor-4": {
+        "neural_voice": "es-US-AlonsoNeural",
+        "rate_offset_pct": -2,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 120.0,
+        "warmth_gain": 1.70,
+        "box_cut_freq": 330.0,
+        "box_cut_gain": -1.20,
+        "presence_freq": 3400.0,
+        "presence_gain": 1.35,
+        "sibilance_freq": 6480.0,
+        "sibilance_cut": -1.75,
+        "air_gain": 1.20,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-podcaster-1": {
+        "neural_voice": "es-CO-GonzaloNeural",
+        "rate_offset_pct": -1,
+        "pitch_offset_hz": 0,
+        "warmth_freq": 124.0,
+        "warmth_gain": 1.55,
+        "box_cut_freq": 334.0,
+        "box_cut_gain": -1.15,
+        "presence_freq": 3460.0,
+        "presence_gain": 1.30,
+        "sibilance_freq": 6550.0,
+        "sibilance_cut": -1.70,
+        "air_gain": 1.30,
+        "harmonic_drive": 0.13,
+    },
+    "es-419-podcaster-3": {
+        "neural_voice": "es-PE-AlexNeural",
+        "rate_offset_pct": 0,
+        "pitch_offset_hz": -1,
+        "warmth_freq": 122.0,
+        "warmth_gain": 1.65,
+        "box_cut_freq": 332.0,
+        "box_cut_gain": -1.15,
+        "presence_freq": 3480.0,
+        "presence_gain": 1.40,
+        "sibilance_freq": 6550.0,
+        "sibilance_cut": -1.70,
+        "air_gain": 1.25,
+        "harmonic_drive": 0.14,
+    },
+    "es-419-assistant-9": {
+        "neural_voice": "es-US-AlonsoNeural",
+        "rate_offset_pct": 2,
+        "pitch_offset_hz": 1,
+        "warmth_freq": 128.0,
+        "warmth_gain": 1.30,
+        "box_cut_freq": 342.0,
+        "box_cut_gain": -1.05,
+        "presence_freq": 3600.0,
+        "presence_gain": 1.40,
+        "sibilance_freq": 6700.0,
+        "sibilance_cut": -1.65,
+        "air_gain": 1.35,
+        "harmonic_drive": 0.11,
+    },
+}
+
+
+def _resolve_calibrated_neural_latam_profile(
+    voice_input: str,
+    target_voice: str,
+    character_name: str = "",
+    role: str = "",
+    lang: str = "es",
+    is_male: bool = False,
+    rate_raw: str = "+0%",
+    pitch_raw: str = "+0Hz",
+    text_sample: str = "",
+) -> dict:
+    """
+    Resuelve el perfil acústico, prosódico y formántico exacto para el Respaldo Neural
+    Continuo (24 voces LatAm), igualando la diferenciación de arquetipos, cadencia y
+    calidez espectral de 3.8-flash-lite-tts (es-419-*).
+    """
+    studio_archetype = _resolve_studio_voice_id(
+        voice_input or target_voice,
+        character_name=character_name,
+        role=role,
+        lang=lang,
+        is_male=is_male,
+    )
+    base_profile = dict(
+        ES_419_TO_NEURAL_LATAM_CALIBRATION.get(
+            studio_archetype,
+            ES_419_TO_NEURAL_LATAM_CALIBRATION["es-419-tutor-2" if is_male else "es-419-podcaster-2"],
+        )
+    )
+
+    # Seleccionar la voz neural LatAm específica de las 24 disponibles
+    raw_lower = (voice_input or "").strip().lower()
+    explicit_non_default = raw_lower not in (
+        "",
+        "es-mx-dalianeural",
+        "es-mx-jorgeneural",
+        "dalia",
+        "jorge",
+    ) and not raw_lower.startswith("es-419-") and not raw_lower.startswith("voice_")
+
+    if lang != "es":
+        actual_voice = target_voice
+    elif explicit_non_default:
+        actual_voice = target_voice
+    elif character_name or role or raw_lower.startswith("es-419-") or raw_lower.startswith("voice_"):
+        actual_voice = base_profile["neural_voice"]
+    else:
+        actual_voice = target_voice
+
+    # Blindaje de coherencia de género en español
+    female_tokens = ("dalia", "salome", "camila", "paloma", "elena", "maria", "catalina", "paola")
+    male_tokens = ("jorge", "gonzalo", "alex", "alonso", "tomas", "lorenzo", "sebastian", "juan")
+    if lang == "es" and is_male and any(f in actual_voice.lower() for f in female_tokens):
+        actual_voice = base_profile["neural_voice"] if any(m in base_profile["neural_voice"].lower() for m in male_tokens) else "es-MX-JorgeNeural"
+    elif lang == "es" and not is_male and any(m in actual_voice.lower() for m in male_tokens):
+        actual_voice = base_profile["neural_voice"] if any(f in base_profile["neural_voice"].lower() for f in female_tokens) else "es-MX-DaliaNeural"
+
+    # Combinar prosodia solicitada con el offset calibrado del arquetipo es-419-*
+    req_rate = 0
+    r_m = re.search(r"([+-]?\d+)", str(rate_raw or "+0%"))
+    if r_m:
+        req_rate = int(r_m.group(1))
+
+    req_pitch = 0
+    p_m = re.search(r"([+-]?\d+)", str(pitch_raw or "+0Hz"))
+    if p_m:
+        req_pitch = int(p_m.group(1))
+
+    # Micro-inflexión contextual según intención expresiva del texto (interrogativa / exclamativa / reflexiva)
+    context_rate_delta = 0
+    context_pitch_delta = 0
+    if text_sample:
+        q_count = text_sample.count("?")
+        ex_count = text_sample.count("!")
+        word_count = len(text_sample.split())
+        if ex_count > 0 and word_count <= 28:
+            context_rate_delta += 1
+            context_pitch_delta += 1
+        elif q_count > 0 and word_count <= 28:
+            context_pitch_delta += 1
+        elif word_count >= 45:
+            # En pasajes largos, una cadencia ligeramente más asentada evita fatiga y suena más reflexiva
+            context_rate_delta -= 1
+
+    final_rate = max(-7, min(6, req_rate + int(base_profile["rate_offset_pct"]) + context_rate_delta))
+    final_pitch = max(-4, min(4, req_pitch + int(base_profile["pitch_offset_hz"]) + context_pitch_delta))
+
+    base_profile["studio_archetype"] = studio_archetype
+    base_profile["actual_edge_voice"] = actual_voice
+    base_profile["rate_str"] = f"+{final_rate}%" if final_rate >= 0 else f"{final_rate}%"
+    base_profile["pitch_str"] = f"+{final_pitch}Hz" if final_pitch >= 0 else f"{final_pitch}Hz"
+    return base_profile
+
+
+def _shape_conversational_cadence_for_neural_latam(text: str, lang: str = "es") -> str:
+    """
+    Esculpe la puntuación rítmica y micro-pausas conversacionales para que el motor
+    Respaldo Neural Continuo (24 voces LatAm) reproduzca las inflexiones de frase,
+    respiraciones (<breath>) y pausas breves (<short pause>) de 3.8-flash-lite-tts
+    sin corromper acentos léxicos.
+    """
+    # 1. Garantizar pronunciación natural sin acentos artificiales ('pátria' -> 'patria')
+    clean = re.sub(r"\bpátria(s?)\b", r"patria\1", text, flags=re.IGNORECASE)
+    clean = re.sub(r"\bPátria(s?)\b", r"Patria\1", clean)
+
+    if lang == "es":
+        # 2. Asegurar micro-pausa prosódica tras conectores discursivos y vocativos
+        connectors = (
+            "sin embargo",
+            "no obstante",
+            "por ello",
+            "por lo tanto",
+            "así pues",
+            "en conclusión",
+            "en consecuencia",
+            "además",
+            "por otra parte",
+            "es decir",
+            "en primer lugar",
+            "finalmente",
+        )
+        for conn in connectors:
+            pattern = rf"(?<=[,;.]\s)({conn})\s+(?![,;:])"
+            clean = re.sub(pattern, r"\1, ", clean, flags=re.IGNORECASE)
+            pattern_start = rf"^({conn})\s+(?![,;:])"
+            clean = re.sub(pattern_start, r"\1, ", clean, flags=re.IGNORECASE)
+
+    # 3. Limpiar dobles comas o espacios redundantes
+    clean = re.sub(r"(?:,\s*){2,}", ", ", clean)
+    clean = re.sub(r"\s+", " ", clean).strip()
+    return clean
+
+
 def master_audio_bytes_with_ffmpeg(
     raw_audio: bytes,
     voice_name: str,
@@ -835,23 +1225,45 @@ def master_audio_bytes_with_ffmpeg(
     is_male_override: bool | None = None,
     character_name: str = "",
     role: str = "",
+    acoustic_profile: dict | None = None,
 ) -> bytes:
     """
-    Aplica masterización acústica transparente de estudio en memoria:
-    - Preserva al 100% las respiraciones humanas naturales (<breath>) y transiciones formánticas
-      (sin sustracción espectral destructiva ni puertas de ruido agresivas).
-    - Ecualización sutil de micrófono de condensador Neumann U87 (calidez de pecho + aire sedoso).
-    - Nivelación óptica suave (1.45:1) y normalización broadcast ITU-R BS.1770-4 a -14.0 LUFS.
-    - Codificación MP3 CBR 192 kbps a 24kHz.
+    Aplica masterización acústica y formántica calibrada al estándar 3.8-flash-lite-tts:
+    - Etapa 1: Eliminación de offset DC y filtro paso-alto subsónico suave (68 Hz) +
+      suavizado de ataque inicial (12ms) para eliminar transitorios digitales.
+    - Etapa 1.5: Excitador Armónico de Tubo/Cinta de 2º orden (100-2800 Hz) que aporta
+      la densidad de pecho y calidez orgánica de los modelos 3.8-flash-lite-tts (es-419-*).
+    - Etapa 1.8: De-Esser Dinámico de Banda Dividida (5400-7600 Hz) para suavizar la
+      sibilancia digital del MP3 sin apagar el brillo natural de las vocales.
+    - Etapa 2: Ecualización Formántica de 6 Bandas específica por arquetipo + Nivelación
+      Óptica Suave (1.45:1).
+    - Etapa 3 y 4: Normalización broadcast ITU-R BS.1770-4 a -14.0 LUFS y Limitador
+      True-Peak a -1.0 dBTP (MP3 CBR 192 kbps a 24kHz).
     """
     if not FFMPEG_BINARY or not raw_audio:
         return raw_audio
 
     is_male = is_male_override if is_male_override is not None else _is_male_voice_or_character(voice_name, character_name, role)
-    warmth_freq = 122.0 if is_male else 138.0
-    warmth_gain = 1.15 if is_male else 0.95
-    presence_freq = 3450.0 if is_male else 3600.0
-    presence_gain = 1.10
+    if acoustic_profile is None:
+        acoustic_profile = _resolve_calibrated_neural_latam_profile(
+            voice_name,
+            voice_name,
+            character_name=character_name,
+            role=role,
+            lang=detect_language_from_voice(voice_name),
+            is_male=is_male,
+        )
+
+    warmth_freq = float(acoustic_profile.get("warmth_freq", 120.0 if is_male else 138.0))
+    warmth_gain = float(acoustic_profile.get("warmth_gain", 1.65 if is_male else 1.40))
+    box_cut_freq = float(acoustic_profile.get("box_cut_freq", 330.0 if is_male else 340.0))
+    box_cut_gain = float(acoustic_profile.get("box_cut_gain", -1.20 if is_male else -1.10))
+    presence_freq = float(acoustic_profile.get("presence_freq", 3420.0 if is_male else 3560.0))
+    presence_gain = float(acoustic_profile.get("presence_gain", 1.35))
+    sibilance_freq = float(acoustic_profile.get("sibilance_freq", 6500.0 if is_male else 6650.0))
+    sibilance_cut = float(acoustic_profile.get("sibilance_cut", -1.75))
+    air_gain = float(acoustic_profile.get("air_gain", 1.25 if is_male else 1.35))
+    harmonic_drive = float(acoustic_profile.get("harmonic_drive", 0.13))
 
     intermediate_wav = None
     if HAS_STUDIO_DSP:
@@ -874,23 +1286,53 @@ def master_audio_bytes_with_ffmpeg(
                 data = np.mean(data, axis=1)
 
             if len(data) > int(sr * 0.12):
-                # Etapa 1: Eliminación de offset DC y filtro paso-alto subsónico suave (70 Hz)
+                # Etapa 1: Eliminación de offset DC, filtro paso-alto subsónico (68 Hz) y rampa suave de ataque (12ms)
                 data = data - np.mean(data)
-                sos_hp = signal.butter(2, 70.0 / (sr / 2.0), btype="highpass", output="sos")
+                sos_hp = signal.butter(2, 68.0 / (sr / 2.0), btype="highpass", output="sos")
                 data = signal.sosfiltfilt(sos_hp, data)
 
-                # Etapa 2: Cadena C++ Pedalboard transparente (sin NoiseGate ni noisereduce para proteger las respiraciones humanas)
+                fade_in_samples = min(int(sr * 0.012), len(data) // 8)
+                if fade_in_samples > 8:
+                    data[:fade_in_samples] *= np.linspace(0.0, 1.0, fade_in_samples)
+
+                # Etapa 1.5: Excitador Armónico de Tubo/Cinta (2º orden asimétrico en banda vocal 95-2800 Hz)
+                # Sólo se aplica con intensidad completa a fuentes MP3 neurales para igualar el cuerpo PCM de 3.8-flash-lite-tts
+                effective_drive = harmonic_drive if input_fmt != "wav" else (harmonic_drive * 0.45)
+                if effective_drive > 0.02:
+                    sos_body = signal.butter(2, [95.0 / (sr / 2.0), 2800.0 / (sr / 2.0)], btype="bandpass", output="sos")
+                    vocal_body = signal.sosfiltfilt(sos_body, data)
+                    # Saturación asimétrica suave (genera armónicos pares cálidos tipo válvula U87)
+                    drive_scale = 1.0 + effective_drive * 4.5
+                    harmonics = np.tanh(vocal_body * drive_scale) + 0.06 * (vocal_body ** 2)
+                    harmonics = harmonics - np.mean(harmonics)
+                    data = data + (effective_drive * 0.85) * harmonics
+
+                # Etapa 1.8: De-Esser Dinámico de Banda Dividida (5400-7800 Hz)
+                nyq = sr / 2.0
+                if nyq > 8200.0:
+                    sos_sib = signal.butter(2, [5400.0 / nyq, 7800.0 / nyq], btype="bandpass", output="sos")
+                    sib_band = signal.sosfiltfilt(sos_sib, data)
+                    # Envolvente RMS rápida de 8ms para detectar ráfagas de sibilancia
+                    win_len = max(16, int(sr * 0.008))
+                    sib_env = np.sqrt(np.convolve(sib_band ** 2, np.ones(win_len) / win_len, mode="same") + 1e-12)
+                    sib_thresh = np.percentile(sib_env, 82)
+                    if sib_thresh > 1e-5:
+                        excess = np.maximum(0.0, sib_env - sib_thresh) / (sib_thresh + 1e-6)
+                        reduction = np.clip(excess * 0.38, 0.0, 0.48)
+                        data = data - sib_band * reduction
+
+                # Etapa 2: Cadena C++ Pedalboard con perfil formántico calibrado por arquetipo es-419-*
                 if HAS_PEDALBOARD:
                     try:
                         board = Pedalboard([
-                            HighpassFilter(cutoff_frequency_hz=70.0),
-                            PeakFilter(cutoff_frequency_hz=float(warmth_freq), gain_db=float(warmth_gain), q=1.0),
-                            PeakFilter(cutoff_frequency_hz=330.0, gain_db=-0.75, q=1.5),
-                            PeakFilter(cutoff_frequency_hz=float(presence_freq), gain_db=float(presence_gain), q=1.1),
-                            PeakFilter(cutoff_frequency_hz=6800.0, gain_db=-1.1, q=2.2),
-                            HighShelfFilter(cutoff_frequency_hz=11000.0, gain_db=1.0, q=0.707),
-                            Compressor(threshold_db=-18.0, ratio=1.45, attack_ms=30.0, release_ms=180.0),
-                            Limiter(threshold_db=-1.0, release_ms=60.0),
+                            HighpassFilter(cutoff_frequency_hz=68.0),
+                            PeakFilter(cutoff_frequency_hz=warmth_freq, gain_db=warmth_gain, q=0.95),
+                            PeakFilter(cutoff_frequency_hz=box_cut_freq, gain_db=box_cut_gain, q=1.55),
+                            PeakFilter(cutoff_frequency_hz=presence_freq, gain_db=presence_gain, q=1.05),
+                            PeakFilter(cutoff_frequency_hz=sibilance_freq, gain_db=sibilance_cut, q=2.1),
+                            HighShelfFilter(cutoff_frequency_hz=10800.0, gain_db=air_gain, q=0.707),
+                            Compressor(threshold_db=-18.5, ratio=1.48, attack_ms=26.0, release_ms=170.0),
+                            Limiter(threshold_db=-1.0, release_ms=55.0),
                         ])
                         data = board(data.astype(np.float32), sr).astype(np.float64)
                     except Exception:
@@ -960,12 +1402,13 @@ def master_audio_bytes_with_ffmpeg(
             pass
 
     af_chain = (
-        f"highpass=f=70,"
-        f"equalizer=f={warmth_freq}:t=q:w=1.0:g={warmth_gain},"
-        f"equalizer=f=330:t=q:w=1.5:g=-0.8,"
-        f"equalizer=f=3550:t=q:w=1.1:g=1.1,"
-        f"treble=g=1.0:f=11000,"
-        f"acompressor=threshold=-18dB:ratio=1.5:attack=30:release=180:makeup=1.1,"
+        f"highpass=f=68,"
+        f"equalizer=f={warmth_freq}:t=q:w=0.95:g={warmth_gain},"
+        f"equalizer=f={box_cut_freq}:t=q:w=1.55:g={box_cut_gain},"
+        f"equalizer=f={presence_freq}:t=q:w=1.05:g={presence_gain},"
+        f"equalizer=f={sibilance_freq}:t=q:w=2.1:g={sibilance_cut},"
+        f"treble=g={air_gain}:f=10800,"
+        f"acompressor=threshold=-18.5dB:ratio=1.48:attack=26:release=170:makeup=1.12,"
         f"alimiter=limit=0.89:attack=5:release=50"
     )
 
@@ -977,7 +1420,7 @@ def master_audio_bytes_with_ffmpeg(
                 "-loglevel",
                 "error",
                 "-f",
-                "input_fmt" if False else input_fmt,
+                input_fmt,
                 "-i",
                 "pipe:0",
                 "-af",
@@ -1027,7 +1470,18 @@ async def synthesize_bytes(text: str, voice: str, rate: str, pitch: str, charact
     if not structured_text or len(structured_text) < 2:
         structured_text = "Listo." if lang == 'es' else ("Ready." if lang == 'en' else "Prêt.")
 
-    is_male = _is_male_voice_or_character(target_voice, character_name, role)
+    is_male = _is_male_voice_or_character(voice or target_voice, character_name, role)
+    calibrated_profile = _resolve_calibrated_neural_latam_profile(
+        voice_input=voice,
+        target_voice=target_voice,
+        character_name=character_name,
+        role=role,
+        lang=lang,
+        is_male=is_male,
+        rate_raw=rate,
+        pitch_raw=pitch,
+        text_sample=structured_text,
+    )
 
     # 1. Prioridad Principal (ES / EN / FR): Motor Acústico Generativo Institucional (Calidad Humana Conversacional)
     if lang in ('es', 'en', 'fr') and HAS_STUDIO_AI and not _STUDIO_AI_CIRCUIT_OPEN:
@@ -1049,20 +1503,15 @@ async def synthesize_bytes(text: str, voice: str, rate: str, pitch: str, charact
                 is_male_override=is_male,
                 character_name=character_name,
                 role=role,
+                acoustic_profile=calibrated_profile,
             )
 
-    # 2. Respaldo Neural Continuo de Pase Único (preservando la voz específica seleccionada sin cortes MP3)
-    edge_text = re.sub(r'\bpatria\b', 'pátria', structured_text, flags=re.IGNORECASE)
-    edge_text = re.sub(r'\bpatrias\b', 'pátrias', edge_text, flags=re.IGNORECASE)
+    # 2. Respaldo Neural Continuo (24 voces LatAm) homologado al perfil acústico y prosódico de 3.8-flash-lite-tts (es-419-*)
+    edge_text = _shape_conversational_cadence_for_neural_latam(structured_text, lang)
+    actual_edge_voice = calibrated_profile["actual_edge_voice"]
+    r_str = calibrated_profile["rate_str"]
+    p_str = calibrated_profile["pitch_str"]
 
-    # Respetar la voz específica seleccionada (Dalia, Jorge, Salomé, Gonzalo, Alex, Camila, Paloma, Alonso, etc.)
-    actual_edge_voice = target_voice
-    if lang == 'es' and is_male and any(f in actual_edge_voice.lower() for f in ('dalia', 'salome', 'camila', 'paloma', 'elena', 'maria', 'catalina', 'paola')):
-        actual_edge_voice = 'es-MX-JorgeNeural'
-    elif lang == 'es' and not is_male and any(m in actual_edge_voice.lower() for m in ('jorge', 'gonzalo', 'alex', 'alonso', 'tomas', 'lorenzo', 'sebastian', 'juan')):
-        actual_edge_voice = 'es-MX-DaliaNeural'
-
-    r_str, p_str = clamp_human_prosody(rate, pitch)
     raw_bytes = await _stream_edge_continuous(edge_text, actual_edge_voice, r_str, p_str)
 
     return master_audio_bytes_with_ffmpeg(
@@ -1072,6 +1521,7 @@ async def synthesize_bytes(text: str, voice: str, rate: str, pitch: str, charact
         is_male_override=is_male,
         character_name=character_name,
         role=role,
+        acoustic_profile=calibrated_profile,
     )
 
 

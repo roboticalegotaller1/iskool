@@ -152,13 +152,15 @@ export const useStudentStore = create<StudentStoreState>()(
     
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      const { error } = await supabase
-        .from('student_avatars')
-        .update(config)
-        .eq('student_id', dbStudentId);
-        
-      if (error) {
-        console.warn('Could not sync avatar in Supabase:', error.message);
+      if (isUuid(dbStudentId)) {
+        const { error } = await supabase
+          .from('student_avatars')
+          .update(config)
+          .eq('student_id', dbStudentId);
+          
+        if (error) {
+          console.warn('Could not sync avatar in Supabase:', error.message);
+        }
       }
     } catch (err) {
       console.warn('Unexpected error updating avatar in Supabase:', err);
@@ -195,16 +197,18 @@ export const useStudentStore = create<StudentStoreState>()(
     
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      const { error } = await supabase
-        .from('student_avatars')
-        .update({ unlocked_items: updatedUnlocked })
-        .eq('student_id', dbStudentId);
-        
-      if (error) {
-        console.error('Error unlocking cosmetic in Supabase:', error.message);
+      if (isUuid(dbStudentId)) {
+        const { error } = await supabase
+          .from('student_avatars')
+          .update({ unlocked_items: updatedUnlocked })
+          .eq('student_id', dbStudentId);
+          
+        if (error) {
+          console.warn('Aviso al sincronizar cosmético en Supabase:', error.message);
+        }
       }
     } catch (err) {
-      console.error('Unexpected error unlocking cosmetic:', err);
+      console.warn('Aviso de conexión al desbloquear cosmético:', err);
     }
     
     set((state) => {
@@ -359,39 +363,56 @@ export const useStudentStore = create<StudentStoreState>()(
 
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      const { data, error } = await supabase.rpc('process_reward', {
-        p_student_id: dbStudentId,
-        p_coins_change: -50,
-        p_happiness_change: 20
-      });
+      if (isUuid(dbStudentId)) {
+        const { data, error } = await supabase.rpc('process_reward', {
+          p_student_id: dbStudentId,
+          p_coins_change: -50,
+          p_happiness_change: 20
+        });
 
-      if (error) {
-        console.error('Error updating pet happiness in Supabase:', error.message);
-        alert('Error al alimentar a tu mascota: ' + error.message);
-        return;
-      }
-
-      if (data) {
-        const updatedStats = data as StudentStats;
-        set((state) => ({
-          allStats: {
-            ...state.allStats,
-            [activeId]: {
-              ...state.allStats[activeId],
-              ...updatedStats,
-              student_id: activeId
-            },
-            [rawId]: {
-              ...state.allStats[rawId],
-              ...updatedStats,
-              student_id: rawId
+        if (error) {
+          console.warn('Aviso al actualizar felicidad de mascota en Supabase:', error.message);
+        } else if (data) {
+          const updatedStats = data as StudentStats;
+          set((state) => ({
+            allStats: {
+              ...state.allStats,
+              [activeId]: {
+                ...state.allStats[activeId],
+                ...updatedStats,
+                student_id: activeId
+              },
+              [rawId]: {
+                ...state.allStats[rawId],
+                ...updatedStats,
+                student_id: rawId
+              }
             }
-          }
-        }));
+          }));
+          return;
+        }
       }
     } catch (err) {
-      console.error('Unexpected error updating pet happiness:', err);
+      console.warn('Aviso de conexión al alimentar mascota RPG:', err);
     }
+
+    // Fallback local optimista cuando se usa un ID local o sin conexión RPC
+    set((state) => {
+      const base = state.allStats[activeId] || state.allStats[rawId] || currentStats;
+      const nextStats = {
+        ...base,
+        coins: Math.max(0, (base.coins || 0) - 50),
+        pet_happiness: Math.min(100, (base.pet_happiness ?? 80) + 20),
+        updated_at: new Date().toISOString()
+      };
+      return {
+        allStats: {
+          ...state.allStats,
+          [activeId]: { ...nextStats, student_id: activeId },
+          [rawId]: { ...nextStats, student_id: rawId }
+        }
+      };
+    });
   },
 
   trainPetRpg: async () => {
@@ -408,39 +429,56 @@ export const useStudentStore = create<StudentStoreState>()(
 
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      const { data, error } = await supabase.rpc('process_reward', {
-        p_student_id: dbStudentId,
-        p_energy_change: -25,
-        p_xp_change: 40
-      });
+      if (isUuid(dbStudentId)) {
+        const { data, error } = await supabase.rpc('process_reward', {
+          p_student_id: dbStudentId,
+          p_energy_change: -25,
+          p_xp_change: 40
+        });
 
-      if (error) {
-        console.error('Error updating pet training in Supabase:', error.message);
-        alert('Error al entrenar a tu mascota: ' + error.message);
-        return;
-      }
-
-      if (data) {
-        const updatedStats = data as StudentStats;
-        set((state) => ({
-          allStats: {
-            ...state.allStats,
-            [activeId]: {
-              ...state.allStats[activeId],
-              ...updatedStats,
-              student_id: activeId
-            },
-            [rawId]: {
-              ...state.allStats[rawId],
-              ...updatedStats,
-              student_id: rawId
+        if (error) {
+          console.warn('Aviso al actualizar entrenamiento de mascota en Supabase:', error.message);
+        } else if (data) {
+          const updatedStats = data as StudentStats;
+          set((state) => ({
+            allStats: {
+              ...state.allStats,
+              [activeId]: {
+                ...state.allStats[activeId],
+                ...updatedStats,
+                student_id: activeId
+              },
+              [rawId]: {
+                ...state.allStats[rawId],
+                ...updatedStats,
+                student_id: rawId
+              }
             }
-          }
-        }));
+          }));
+          return;
+        }
       }
     } catch (err) {
-      console.error('Unexpected error updating pet training:', err);
+      console.warn('Aviso de conexión al entrenar mascota RPG:', err);
     }
+
+    // Fallback local optimista
+    set((state) => {
+      const base = state.allStats[activeId] || state.allStats[rawId] || currentStats;
+      const nextStats = {
+        ...base,
+        pet_energy: Math.max(0, (base.pet_energy ?? 100) - 25),
+        xp: (base.xp || 0) + 40,
+        updated_at: new Date().toISOString()
+      };
+      return {
+        allStats: {
+          ...state.allStats,
+          [activeId]: { ...nextStats, student_id: activeId },
+          [rawId]: { ...nextStats, student_id: rawId }
+        }
+      };
+    });
   },
 
   hatchStudentEgg: async (studentId?: string, forcedRace?: ElementalPetRace, petName?: string) => {
@@ -918,7 +956,7 @@ export const useStudentStore = create<StudentStoreState>()(
     // Sincronización asíncrona en Supabase
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      if (dbStudentId && dbStudentId.length > 10) {
+      if (isUuid(dbStudentId)) {
         supabase
           .from('student_stats')
           .update({ coins: updatedStats.coins })
@@ -978,7 +1016,7 @@ export const useStudentStore = create<StudentStoreState>()(
     // Sincronización en Supabase
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      if (dbStudentId && dbStudentId.length > 10) {
+      if (isUuid(dbStudentId)) {
         supabase
           .from('student_avatars')
           .update({ [targetKey]: itemId, updated_at: updatedAv.updated_at })
@@ -1017,7 +1055,7 @@ export const useStudentStore = create<StudentStoreState>()(
     // Sincronización en Supabase
     try {
       const dbStudentId = mapStudentIdToUuid(activeId);
-      if (dbStudentId && dbStudentId.length > 10) {
+      if (isUuid(dbStudentId)) {
         supabase
           .from('student_avatars')
           .update({ ...traits, updated_at: updatedAv.updated_at })
@@ -1037,31 +1075,33 @@ export const useStudentStore = create<StudentStoreState>()(
     const dbStudentId = mapStudentIdToUuid(activeId);
     
     // 1. Intento via RPC
-    try {
-      const response = await supabase.rpc('level_up_attribute', {
-        p_student_id: dbStudentId,
-        p_attribute_name: statName
-      });
-      if (!response.error && response.data && response.data.success) {
-        const newStatsData = response.data.new_stats;
-        set((state) => {
-          const currentStats = state.allStats[activeId] || state.allStats[rawId] || {};
-          const updatedStats = {
-            ...currentStats,
-            ...newStatsData
-          };
-          return {
-            allStats: {
-              ...state.allStats,
-              [activeId]: updatedStats,
-              [rawId]: updatedStats
-            }
-          };
+    if (isUuid(dbStudentId)) {
+      try {
+        const response = await supabase.rpc('level_up_attribute', {
+          p_student_id: dbStudentId,
+          p_attribute_name: statName
         });
-        return;
+        if (!response.error && response.data && response.data.success) {
+          const newStatsData = response.data.new_stats;
+          set((state) => {
+            const currentStats = state.allStats[activeId] || state.allStats[rawId] || {};
+            const updatedStats = {
+              ...currentStats,
+              ...newStatsData
+            };
+            return {
+              allStats: {
+                ...state.allStats,
+                [activeId]: updatedStats,
+                [rawId]: updatedStats
+              }
+            };
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn('RPC level_up_attribute falló, realizando actualización directa:', err);
       }
-    } catch (err) {
-      console.warn('RPC level_up_attribute falló, realizando actualización directa:', err);
     }
 
     // 2. Fallback de actualización directa en Supabase
@@ -1079,23 +1119,25 @@ export const useStudentStore = create<StudentStoreState>()(
     const newIntelligence = (currentStats.attribute_intelligence ?? 10) + (statName === 'intelligence' ? 1 : 0);
     const newDefense = (currentStats.attribute_defense ?? 10) + (statName === 'defense' ? 1 : 0);
 
-    try {
-      const { error } = await supabase
-        .from('student_stats')
-        .update({
-          skill_points: newSkillPoints,
-          attribute_strength: newStrength,
-          attribute_intelligence: newIntelligence,
-          attribute_defense: newDefense,
-          updated_at: new Date().toISOString()
-        })
-        .eq('student_id', dbStudentId);
+    if (isUuid(dbStudentId)) {
+      try {
+        const { error } = await supabase
+          .from('student_stats')
+          .update({
+            skill_points: newSkillPoints,
+            attribute_strength: newStrength,
+            attribute_intelligence: newIntelligence,
+            attribute_defense: newDefense,
+            updated_at: new Date().toISOString()
+          })
+          .eq('student_id', dbStudentId);
 
-      if (error) {
-        console.error('Error al actualizar atributos en Supabase:', error.message);
+        if (error) {
+          console.warn('Aviso al actualizar atributos en Supabase:', error.message);
+        }
+      } catch (err) {
+        console.warn('Aviso inesperado al actualizar atributos:', err);
       }
-    } catch (err) {
-      console.error('Error inesperado al actualizar atributos:', err);
     }
 
     set((state) => {
@@ -1447,18 +1489,20 @@ export const useStudentStore = create<StudentStoreState>()(
       updated_at: new Date().toISOString()
     };
 
-    // 1. Envío asíncrono a Supabase primero
-    try {
-      const { error } = await supabase
-        .from('student_stats')
-        .update(updatedStatsPayload)
-        .eq('student_id', dbStudentId);
+    // 1. Envío asíncrono a Supabase primero (solo si el ID es un UUID válido en base de datos)
+    if (isUuid(dbStudentId)) {
+      try {
+        const { error } = await supabase
+          .from('student_stats')
+          .update(updatedStatsPayload)
+          .eq('student_id', dbStudentId);
 
-      if (error) {
-        console.error('Error al actualizar estadísticas en Supabase:', error.message);
+        if (error) {
+          console.warn('Aviso al actualizar estadísticas en Supabase:', error.message);
+        }
+      } catch (err) {
+        console.warn('Aviso de conexión al enviar estadísticas a Supabase:', err);
       }
-    } catch (err) {
-      console.error('Error inesperado al enviar estadísticas a Supabase:', err);
     }
 
     // 2. Actualizar estado local en Zustand
@@ -1541,17 +1585,19 @@ export const useStudentStore = create<StudentStoreState>()(
     };
 
     // 1. Envío asíncrono a Supabase primero
-    try {
-      const { error } = await supabase
-        .from('student_stats')
-        .update(updatedStatsPayload)
-        .eq('student_id', dbStudentId);
+    if (isUuid(dbStudentId)) {
+      try {
+        const { error } = await supabase
+          .from('student_stats')
+          .update(updatedStatsPayload)
+          .eq('student_id', dbStudentId);
 
-      if (error) {
-        console.warn('Aviso al actualizar estadísticas del examen en Supabase:', error.message);
+        if (error) {
+          console.warn('Aviso al actualizar estadísticas del examen en Supabase:', error.message);
+        }
+      } catch (err: any) {
+        console.warn('Aviso de conexión al enviar estadísticas del examen a Supabase:', err?.message || err);
       }
-    } catch (err: any) {
-      console.warn('Aviso de conexión al enviar estadísticas del examen a Supabase:', err?.message || err);
     }
 
     // 2. Actualizar estado local en Zustand
@@ -1576,13 +1622,15 @@ export const useStudentStore = create<StudentStoreState>()(
         const currentUnlocked = currentAvatar.unlocked_items || [];
         const nextUnlocked = currentUnlocked.includes(customLoot) ? currentUnlocked : [...currentUnlocked, customLoot];
         
-        try {
-          await supabase
-            .from('student_avatars')
-            .update({ unlocked_items: nextUnlocked })
-            .eq('student_id', dbStudentId);
-        } catch (err) {
-          console.error('Error al desbloquear recompensa del examen en Supabase:', err);
+        if (isUuid(dbStudentId)) {
+          try {
+            await supabase
+              .from('student_avatars')
+              .update({ unlocked_items: nextUnlocked })
+              .eq('student_id', dbStudentId);
+          } catch (err) {
+            console.warn('Aviso al desbloquear recompensa del examen en Supabase:', err);
+          }
         }
 
         set((state) => {
@@ -1675,6 +1723,7 @@ export const useStudentStore = create<StudentStoreState>()(
     if (statsChannel) return;
 
     const dbStudentId = mapStudentIdToUuid(studentId);
+    if (!isUuid(dbStudentId)) return;
     
     statsChannel = supabase
       .channel('custom-stats-channel')
@@ -1783,20 +1832,42 @@ export const isUuid = (str?: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 };
 
+const STUDENT_ID_TO_UUID_MAP: Record<string, string> = {
+  'std-pa': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'std-sec': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22',
+  'std-pb': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33',
+  'std-prep': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44',
+  'std-ibime-montes-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b01',
+  'std-ibime-montes-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02',
+  'std-ibime-montes-03': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03',
+  'std-ibime-montes-04': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04',
+  'std-ibime-lagos-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b11',
+  'std-ibime-lagos-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b12',
+  'std-ibime-san-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b21',
+  'std-ibime-san-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b22',
+  'std-ibime-coac-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b31',
+  'std-ibime-coac-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b32',
+};
+
+const UUID_TO_STUDENT_ID_MAP: Record<string, string> = Object.entries(STUDENT_ID_TO_UUID_MAP).reduce(
+  (acc, [stdId, uuid]) => {
+    acc[uuid] = stdId;
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
 export const mapStudentIdToUuid = (id: string): string => {
+  if (!id) return id;
   if (isUuid(id)) return id;
-  if (id === 'std-pa') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11';
-  if (id === 'std-sec') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22';
-  if (id === 'std-pb') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33';
-  if (id === 'std-prep') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44';
+  if (STUDENT_ID_TO_UUID_MAP[id]) return STUDENT_ID_TO_UUID_MAP[id];
   return id;
 };
 
 export const normalizeStudentId = (id: string): string => {
-  if (id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11') return 'std-pa';
-  if (id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22') return 'std-sec';
-  if (id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33') return 'std-pb';
-  if (id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44') return 'std-prep';
+  if (!id) return id;
+  const lower = id.toLowerCase();
+  if (UUID_TO_STUDENT_ID_MAP[lower]) return UUID_TO_STUDENT_ID_MAP[lower];
   return id;
 };
 

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, StudioBlockType } from '@/types/studioBlocks';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
+import { StudioBlockIcon } from './StudioPremiumBlockIcon';
 import { 
   GripVertical, 
   ChevronDown, 
@@ -45,7 +46,13 @@ import {
   Landmark,
   GraduationCap,
   Theater,
-  ClipboardCheck
+  ClipboardCheck,
+  ScanLine,
+  Crosshair,
+  FileText,
+  CheckSquare,
+  MessagesSquare,
+  Sigma
 } from 'lucide-react';
 
 export interface Props {
@@ -271,6 +278,54 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
     badgeBg: 'bg-amber-100/90 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200/60',
     glow: 'hover:border-amber-400 dark:hover:border-amber-700 hover:shadow-amber-500/10',
     color: 'from-amber-600 via-orange-600 to-yellow-600'
+  },
+  omr_optical_exam_block: {
+    label: 'Examen Híbrido OMR & Variantes A/B/C/D',
+    icon: ScanLine,
+    colorScheme: 'border-rose-200/90 dark:border-rose-900/60 shadow-rose-500/5',
+    badgeBg: 'bg-rose-100/90 dark:bg-rose-950 text-rose-700 dark:text-rose-300 border-rose-200/60',
+    glow: 'hover:border-rose-400 dark:hover:border-rose-700 hover:shadow-rose-500/10',
+    color: 'from-rose-600 via-red-600 to-orange-600'
+  },
+  interactive_hotspot_canvas: {
+    label: 'Mapa de Puntos Calientes & Oclusión',
+    icon: Crosshair,
+    colorScheme: 'border-cyan-200/90 dark:border-cyan-900/60 shadow-cyan-500/5',
+    badgeBg: 'bg-cyan-100/90 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 border-cyan-200/60',
+    glow: 'hover:border-cyan-400 dark:hover:border-cyan-700 hover:shadow-cyan-500/10',
+    color: 'from-cyan-600 via-sky-600 to-blue-600'
+  },
+  cornell_smart_notes: {
+    label: 'Apuntes Cornell & Sello QR de Libreta',
+    icon: FileText,
+    colorScheme: 'border-emerald-200/90 dark:border-emerald-900/60 shadow-emerald-500/5',
+    badgeBg: 'bg-emerald-100/90 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200/60',
+    glow: 'hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-emerald-500/10',
+    color: 'from-emerald-600 via-teal-600 to-green-600'
+  },
+  exit_ticket_reflection: {
+    label: 'Boleto de Salida 3-2-1 & Termómetro',
+    icon: CheckSquare,
+    colorScheme: 'border-amber-200/90 dark:border-amber-900/60 shadow-amber-500/5',
+    badgeBg: 'bg-amber-100/90 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200/60',
+    glow: 'hover:border-amber-400 dark:hover:border-amber-700 hover:shadow-amber-500/10',
+    color: 'from-amber-500 via-orange-500 to-yellow-500'
+  },
+  socratic_debate_arena: {
+    label: 'Foro de Debate & Co-Evaluación SEP',
+    icon: MessagesSquare,
+    colorScheme: 'border-indigo-200/90 dark:border-indigo-900/60 shadow-indigo-500/5',
+    badgeBg: 'bg-indigo-100/90 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border-indigo-200/60',
+    glow: 'hover:border-indigo-400 dark:hover:border-indigo-700 hover:shadow-indigo-500/10',
+    color: 'from-indigo-600 via-violet-600 to-purple-600'
+  },
+  interactive_whiteboard_math: {
+    label: 'Pizarra Matemática & Graficador STEM',
+    icon: Sigma,
+    colorScheme: 'border-blue-200/90 dark:border-blue-900/60 shadow-blue-500/5',
+    badgeBg: 'bg-blue-100/90 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border-blue-200/60',
+    glow: 'hover:border-blue-400 dark:hover:border-blue-700 hover:shadow-blue-500/10',
+    color: 'from-blue-600 via-cyan-600 to-teal-600'
   }
 };
 
@@ -362,9 +417,11 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               {index + 1}
             </span>
 
+            {/* Icono 3D Ilustrado del Bloque */}
+            <StudioBlockIcon blockType={block.type} size="sm" fallbackIcon={BlockIcon} />
+
             {/* Badge del tipo */}
             <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border flex items-center gap-1 shrink-0 shadow-sm ${meta.badgeBg}`}>
-              <BlockIcon className="w-3 h-3" />
               <span className="hidden sm:inline">{meta.label}</span>
             </span>
 

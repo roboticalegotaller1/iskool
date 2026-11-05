@@ -14,6 +14,7 @@
 
 export interface StudioBroadcastOptions {
   gender?: 'female' | 'male';
+  isMale?: boolean;
   role?: string;
   enableRoomPresence?: boolean;
 }
@@ -80,7 +81,7 @@ export function attachStudioBroadcastMaster(
     }
 
     const source = ctx.createMediaElementSource(audio);
-    const isMale = options.gender === 'male';
+    const isMale = options.isMale ?? (options.gender === 'male');
 
     // Etapa 1: Filtro Paso-Alto Subsónico Transparente (65 Hz)
     const highPass = ctx.createBiquadFilter();

@@ -10,6 +10,8 @@ import {
   HISTORICAL_FIGURES_PRESET_CATALOG
 } from '@/data/mexicanIndependenceStudioFlow';
 import { BLOCK_META } from './SortableBlockWrapper';
+import { StudioBlockIcon } from './StudioPremiumBlockIcon';
+import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Sparkles, 
   Settings2, 
@@ -119,14 +121,21 @@ export const NodeGraphBoard: React.FC = () => {
 
     setSpeakingNodeId(node.id);
     try {
+      const resolvedGender: 'male' | 'female' =
+        voiceGender || (node.data as Record<string, any>)?.voiceGender || 'female';
+      const resolvedCharacterName =
+        (node.data as Record<string, any>)?.characterOrSiteName ||
+        (node.data as Record<string, any>)?.characterName ||
+        node.title;
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: textToSpeak,
-          lang: 'es-MX',
-          gender: voiceGender || (node.data as Record<string, any>)?.voiceGender || 'female',
-          characterName: (node.data as Record<string, any>)?.characterOrSiteName || (node.data as Record<string, any>)?.characterName || node.title
+          language: 'es-MX',
+          gender: resolvedGender,
+          characterName: resolvedCharacterName,
+          role: node.type === 'historical_figure_block' ? 'character' : 'tutor'
         })
       });
       if (res.ok) {
@@ -135,6 +144,10 @@ export const NodeGraphBoard: React.FC = () => {
         if (audioRef.current) audioRef.current.pause();
         const audio = new Audio(url);
         audioRef.current = audio;
+        attachStudioBroadcastMaster(audio, {
+          isMale: resolvedGender === 'male',
+          role: node.type === 'historical_figure_block' ? 'character' : 'tutor'
+        });
         audio.onended = () => setSpeakingNodeId(null);
         audio.onerror = () => setSpeakingNodeId(null);
         await audio.play();
@@ -634,10 +647,8 @@ export const NodeGraphBoard: React.FC = () => {
 
                 {/* Cabecera del Nodo */}
                 <div className="p-3.5 border-b border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2 bg-slate-50/80 dark:bg-zinc-850/80 rounded-t-3xl">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${meta.color || 'from-emerald-600 to-teal-600'} flex items-center justify-center text-white shrink-0 shadow-sm text-xs font-bold`}>
-                      <meta.icon className="w-4 h-4" />
-                    </div>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <StudioBlockIcon blockType={block.type} size="sm" fallbackIcon={meta.icon} />
                     <div className="min-w-0">
                       <span className="text-[9px] font-black uppercase tracking-wider text-teal-500 dark:text-teal-400 block truncate">
                         {meta.label}
@@ -1164,6 +1175,123 @@ export const NodeGraphBoard: React.FC = () => {
                               : '🔊 Voz Neural LatAm Activa'}
                           </span>
                         </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 29. Examen Híbrido OMR & Variantes A/B/C/D (0 Tokens) */}
+                  {block.type === 'omr_optical_exam_block' && (
+                    <div className="p-2.5 rounded-xl bg-rose-50/80 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-black text-rose-800 dark:text-rose-200">
+                        <span>📝 {block.data.variantsCount || 4} Filas Anti-Copia</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 justify-between">
+                        {['A', 'B', 'C', 'D'].slice(0, block.data.variantsCount || 4).map((v) => (
+                          <span key={v} className="flex-1 text-center py-0.5 rounded bg-white dark:bg-zinc-900 border border-rose-200 text-[9.5px] font-black text-rose-700">
+                            Fila {v}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center justify-between text-[9.5px] font-bold text-slate-600 dark:text-zinc-300">
+                        <span>📄 Hoja OMR + QR</span>
+                        <span>📷 Escáner &lt;1s</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedBlockId(block.id);
+                          if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('iskool:open-omr-exam-suite', { detail: { blockId: block.id } }));
+                          }
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                      >
+                        <span>📝 Abrir Suite OMR &amp; Escáner</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 30. Mapa de Puntos Calientes & Oclusión Visual (0 Tokens) */}
+                  {block.type === 'interactive_hotspot_canvas' && (
+                    <div className="p-2.5 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/50 border border-cyan-200/80 dark:border-cyan-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-black text-cyan-800 dark:text-cyan-200">
+                        <span>🎯 {(block.data.hotspots || []).length} Puntos Calientes</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {(block.data.hotspots || []).slice(0, 3).map((pin) => (
+                          <span key={pin.id} className="px-1.5 py-0.5 rounded bg-white dark:bg-zinc-900 border border-cyan-200 text-[9px] font-bold text-slate-700 dark:text-zinc-300 truncate max-w-[120px]">
+                            📍 {pin.correctLabel}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 31. Apuntes Cornell & Sello QR de Libreta (0 Tokens) */}
+                  {block.type === 'cornell_smart_notes' && (
+                    <div className="p-2.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between font-black text-emerald-800 dark:text-emerald-200">
+                        <span>📓 Sello Pág. {block.data.notebookPageNumber || 48}</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-300 font-medium line-clamp-2">
+                        🔑 Conceptos: {(block.data.requiredSummaryKeywords || []).slice(0, 4).join(', ')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 32. Boleto de Salida 3-2-1 & Termómetro Aula (0 Tokens) */}
+                  {block.type === 'exit_ticket_reflection' && (
+                    <div className="p-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between font-black text-amber-800 dark:text-amber-200">
+                        <span>🚦 Boleto 3-2-1 SEP</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 text-center text-[9px] font-black">
+                        <span className="py-0.5 rounded bg-emerald-100 text-emerald-800">🟢 Dominado</span>
+                        <span className="py-0.5 rounded bg-amber-100 text-amber-800">🟡 Duda</span>
+                        <span className="py-0.5 rounded bg-rose-100 text-rose-800">🔴 Apoyo</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 33. Foro de Debate & Co-Evaluación SEP (0 Tokens) */}
+                  {block.type === 'socratic_debate_arena' && (
+                    <div className="p-2.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between font-black text-indigo-800 dark:text-indigo-200">
+                        <span>⚖️ Debate &amp; Pares</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <p className="text-[9.5px] font-bold text-slate-600 dark:text-zinc-300 truncate">
+                        🅰️ {block.data.stanceATitle} vs 🅱️ {block.data.stanceBTitle}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* 34. Pizarra Matemática & Graficador STEM (0 Tokens) */}
+                  {block.type === 'interactive_whiteboard_math' && (
+                    <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 text-[11px] space-y-1.5">
+                      <div className="flex items-center justify-between font-black text-blue-800 dark:text-blue-200">
+                        <span>📐 Graficador STEM</span>
+                        <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md font-black">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <div className="px-2 py-1 rounded bg-white dark:bg-zinc-900 border border-blue-200 font-mono text-[10px] font-black text-blue-700 text-center">
+                        {block.data.formulaExpression || 'y = 2x + 3'} → ({block.data.targetCoordinate?.x ?? 2}, {block.data.targetCoordinate?.y ?? 7})
                       </div>
                     </div>
                   )}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
 import { BLOCK_META } from './SortableBlockWrapper';
+import { StudioBlockIcon } from './StudioPremiumBlockIcon';
 import { 
   X, 
   Settings2, 
@@ -136,9 +137,7 @@ export const NodeConfigDrawer: React.FC = () => {
           {/* Cabecera del Panel */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3 bg-slate-50/80 dark:bg-zinc-850/80">
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${meta.color || 'from-emerald-600 to-teal-600'} flex items-center justify-center text-white shrink-0 shadow-md`}>
-                <meta.icon className="w-5 h-5" />
-              </div>
+              <StudioBlockIcon blockType={selectedBlock.type} size="lg" fallbackIcon={meta.icon} />
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-wider text-teal-500 dark:text-teal-400">

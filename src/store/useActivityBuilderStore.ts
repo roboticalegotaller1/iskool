@@ -634,6 +634,220 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0, existingBl
       } as any;
     }
 
+    case 'omr_optical_exam_block':
+      return {
+        id,
+        type: 'omr_optical_exam_block',
+        title: 'Examen Híbrido OMR & Variantes A/B/C/D',
+        isCollapsed: false,
+        position,
+        data: {
+          examTitle: 'Evaluación Sumativa & Formativa SEP: La Gesta de Independencia (1810-1821)',
+          deliveryMode: 'hybrid_paper_digital',
+          variantsCount: 4,
+          shuffleQuestions: true,
+          shuffleOptions: true,
+          penaltyPerError: 0.25,
+          timeLimitMinutes: 30,
+          allowStudentBubbleCorrection: true,
+          syncToKardexAndCeo: true,
+          notebookStampPage: 48,
+          questions: [
+            {
+              id: 'omr-q1',
+              type: 'single_choice',
+              stem: '¿Desde qué ciudad envió Doña Josefa Ortiz de Domínguez el aviso urgente la noche del 15 de septiembre de 1810 tras descubrirse la conspiración?',
+              options: [
+                'Santiago de Querétaro',
+                'San Miguel el Grande',
+                'Valladolid (hoy Morelia)',
+                'Chilpancingo de los Bravo'
+              ],
+              correctOptionIndex: 0,
+              points: 2,
+              explanation: 'Desde la Corregiduría de Querétaro envió a Ignacio Pérez a cabalgar hacia San Miguel y Dolores.'
+            },
+            {
+              id: 'omr-q2',
+              type: 'single_choice',
+              stem: '¿Qué documento redactado por José María Morelos en 1813 proclamó por primera vez la abolición de la esclavitud y que la soberanía dimana del pueblo?',
+              options: [
+                'Sentimientos de la Nación',
+                'Plan de Iguala',
+                'Tratados de Córdoba',
+                'Estatuto Provisional del Imperio'
+              ],
+              correctOptionIndex: 0,
+              points: 2,
+              explanation: 'Leído el 14 de septiembre de 1813 en la apertura del Congreso de Anáhuac en Chilpancingo.'
+            },
+            {
+              id: 'omr-q3',
+              type: 'single_choice',
+              stem: '¿Cuál es el orden cronológico correcto de las 4 etapas del proceso de Independencia de México (1810-1821)?',
+              options: [
+                '1. Inicio (Hidalgo) → 2. Organización (Morelos) → 3. Resistencia (Guerrero) → 4. Consumación (1821)',
+                '1. Organización → 2. Inicio → 3. Consumación → 4. Resistencia',
+                '1. Resistencia → 2. Consumación → 3. Inicio → 4. Organización',
+                '1. Inicio → 2. Consumación → 3. Organización → 4. Resistencia'
+              ],
+              correctOptionIndex: 0,
+              points: 2,
+              explanation: 'Las 4 etapas históricas SEP son Inicio, Organización, Resistencia y Consumación.'
+            },
+            {
+              id: 'omr-q4',
+              type: 'single_choice',
+              stem: '¿En qué batalla del 30 de octubre de 1810 las fuerzas insurgentes derrotaron al ejército realista a las puertas de la Ciudad de México?',
+              options: [
+                'Batalla del Monte de las Cruces',
+                'Batalla del Puente de Calderón',
+                'Sitio de Cuautla',
+                'Toma del Fuerte de San Diego'
+              ],
+              correctOptionIndex: 0,
+              points: 2,
+              explanation: 'La victoria insurgente en el Monte de las Cruces abrió el paso al Valle de México.'
+            },
+            {
+              id: 'omr-q5',
+              type: 'single_choice',
+              stem: '¿Qué caudillo insurgente sostuvo la resistencia en las montañas del sur y consumó el Abrazo de Acatempan en 1821?',
+              options: [
+                'Vicente Guerrero Saldaña',
+                'Mariano Matamoros',
+                'Hermenegildo Galeana',
+                'Nicolás Bravo'
+              ],
+              correctOptionIndex: 0,
+              points: 2,
+              explanation: 'Vicente Guerrero mantuvo viva la causa en el sur bajo el principio "La Patria es Primero".'
+            }
+          ]
+        }
+      } as any;
+
+    case 'interactive_hotspot_canvas':
+      return {
+        id,
+        type: 'interactive_hotspot_canvas',
+        title: 'Mapa de Puntos Calientes & Oclusión Visual',
+        isCollapsed: false,
+        position,
+        data: {
+          diagramTitle: 'Ruta Geográfica de la Insurgencia (1810-1811)',
+          diagramImageUrl: '/images/history/queretaro_1810_avatar.png',
+          instructions: 'Toca cada pin numerado en el mapa cartográfico y selecciona el hito histórico correspondiente (0 Tokens):',
+          hotspots: [
+            {
+              id: 'hs-1',
+              pinNumber: 1,
+              xPercent: 28,
+              yPercent: 36,
+              correctLabel: '1. Santiago de Querétaro (Aviso de la Corregidora)',
+              distractorLabels: ['Puerto de Veracruz', 'Fuerte de Acapulco', 'Córdoba'],
+              hint: 'Ciudad donde se reunía la tertulia literaria en 1810.'
+            },
+            {
+              id: 'hs-2',
+              pinNumber: 2,
+              xPercent: 52,
+              yPercent: 48,
+              correctLabel: '2. Pueblo de Dolores (Proclama del 16 de Septiembre)',
+              distractorLabels: ['Chilpancingo', 'Guadalajara', 'Chihuahua'],
+              hint: 'Parroquia donde Don Miguel Hidalgo convocó al pueblo.'
+            },
+            {
+              id: 'hs-3',
+              pinNumber: 3,
+              xPercent: 74,
+              yPercent: 62,
+              correctLabel: '3. Guanajuato (Toma de la Alhóndiga de Granaditas)',
+              distractorLabels: ['Acatempan', 'Valladolid', 'Monte de las Cruces'],
+              hint: 'Recinto fortificado tomado el 28 de septiembre de 1810.'
+            }
+          ]
+        }
+      } as any;
+
+    case 'cornell_smart_notes':
+      return {
+        id,
+        type: 'cornell_smart_notes',
+        title: 'Apuntes Cornell & Sello QR de Libreta',
+        isCollapsed: false,
+        position,
+        data: {
+          topicTitle: 'Síntesis Estructurada Cornell: Causas Internas y Externas de 1810',
+          notebookPageNumber: 48,
+          keyCuesPrompts: [
+            '¿Qué reformas borbónicas afectaron a los criollos?',
+            '¿Por qué la invasión napoleónica a España en 1808 detonó las juntas?',
+            '¿Qué papel jugó la desigualdad de castas?'
+          ],
+          guidedNotesTemplate: '1. Causas Externas: Ilustración, Independencia de las 13 Colonias e invasión de 1808.\n2. Causas Internas: Desigualdad social, monopolio de cargos y tributos.',
+          requiredSummaryKeywords: ['soberanía', 'criollos', 'igualdad', 'constitución'],
+          autoStampOnCompletion: true
+        }
+      } as any;
+
+    case 'exit_ticket_reflection':
+      return {
+        id,
+        type: 'exit_ticket_reflection',
+        title: 'Boleto de Salida 3-2-1 & Termómetro Aula',
+        isCollapsed: false,
+        position,
+        data: {
+          closurePrompt: 'Antes de concluir la sesión, registra tu síntesis 3-2-1 y tu semáforo de dominio para el Espejo Ejecutivo:',
+          requireThreeLearnings: true,
+          requireTwoQuestions: true,
+          requireOneApplication: true,
+          expectedCoreConcepts: ['independencia', 'soberanía', 'derechos', 'justicia'],
+          enableTrafficLightSelfCheck: true
+        }
+      } as any;
+
+    case 'socratic_debate_arena':
+      return {
+        id,
+        type: 'socratic_debate_arena',
+        title: 'Foro de Debate & Co-Evaluación por Pares',
+        isCollapsed: false,
+        position,
+        data: {
+          centralDilemma: '¿Debía el movimiento de 1810 buscar autonomía dentro de la Corona o separación absoluta e inmediata?',
+          stanceATitle: 'Postura A: Soberanía Popular e Independencia Absoluta (Morelos / Hidalgo)',
+          stanceBTitle: 'Postura B: Junta Provisional Autonomista (Primo de Verdad / Talamantes)',
+          primarySourceExcerpt: '“Que la soberanía dimana inmediatamente del pueblo, el que sólo quiere depositarla en sus representantes...” — Art. 5°, Sentimientos de la Nación (1813).',
+          requiredEvidenceKeywords: ['soberanía', 'pueblo', 'división de poderes', 'esclavitud'],
+          peerRubricCriteria: [
+            'Cita al menos un hecho o documento histórico real (1808-1821)',
+            'Contrasta respetuosamente la postura contraria con argumentos lógicos',
+            'Vincula el dilema histórico con los derechos ciudadanos actuales'
+          ]
+        }
+      } as any;
+
+    case 'interactive_whiteboard_math':
+      return {
+        id,
+        type: 'interactive_whiteboard_math',
+        title: 'Pizarra Matemática & Graficador STEM',
+        isCollapsed: false,
+        position,
+        data: {
+          challengeTitle: 'Modelado Lineal y Parabólico en Plano Cartesiano (0 Tokens)',
+          mathMode: 'linear_function',
+          formulaExpression: 'y = 2x + 1',
+          targetSlopeM: 2,
+          targetInterceptB: 1,
+          targetCoordinate: { x: 2, y: 5 },
+          promptQuestion: 'Ajusta la pendiente (m = 2) y la ordenada al origen (b = 1) para trazar la recta y = 2x + 1 y verifica el punto (2, 5):',
+          tolerance: 0.1
+        }
+      } as any;
+
     default:
       return {
         id,

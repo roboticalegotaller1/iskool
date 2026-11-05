@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
+import { StudioCategoryIcon, StudioBlockIcon } from './StudioPremiumBlockIcon';
 import { 
   HelpCircle, 
   BookOpen, 
@@ -42,11 +43,17 @@ import {
   Landmark,
   GraduationCap,
   Theater,
-  ClipboardCheck
+  ClipboardCheck,
+  ScanLine,
+  MapPin,
+  NotebookPen,
+  TrafficCone,
+  Scale,
+  LineChart
 } from 'lucide-react';
 
 export interface BlockCategoryItem {
-  id: 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math' | 'languages' | 'history_figures';
+  id: 'exams_omr' | 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math' | 'languages' | 'history_figures';
   name: string;
   badge: string;
   icon: any;
@@ -69,6 +76,61 @@ export interface BlockToolItem {
 }
 
 export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
+  {
+    id: 'exams_omr',
+    name: 'Exámenes & Evaluación Óptica OMR',
+    badge: '4 Bloques • 0 Tokens',
+    icon: ScanLine,
+    color: 'from-emerald-600 via-teal-600 to-sky-600',
+    description: 'Generación determinista de exámenes híbridos (papel + digital), variantes anti-copia A/B/C/D, hojas ópticas de alveolos OMR, mapas de oclusión y boletos de salida 3-2-1 con 0 consumo de tokens.',
+    example: 'Imprime hojas de respuestas OMR con código QR, genera 4 filas distintas y califica a 35 alumnos en menos de 1 segundo.',
+    blocks: [
+      {
+        type: 'omr_optical_exam_block',
+        title: 'Examen Híbrido OMR & Variantes A/B/C/D',
+        category: 'Evaluación Óptica & Exámenes',
+        badge: '📷 Escáner OMR • 0 Tokens',
+        description: 'Crea exámenes en papel y en línea con 4 variantes anti-copia (Filas A, B, C, D), hoja de alveolos ópticos con casilla de corrección limpia, calificación por cámara/lote en segundos y psicometría SEP sin gastar tokens.',
+        example: 'Examen de Historia con 4 variantes barajadas, hoja óptica OMR imprimible y pase directo de notas al Kardex SEP.',
+        icon: ScanLine,
+        gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
+        glowColor: 'shadow-emerald-500/30'
+      },
+      {
+        type: 'interactive_hotspot_canvas',
+        title: 'Mapa de Puntos Calientes & Oclusión Visual',
+        category: 'Evaluación Visual Determinista',
+        badge: '📍 Pines & Oclusión • 0 Tokens',
+        description: 'Coloca pines numerados o etiquetas ocultas sobre mapas históricos, esquemas anatómicos, células o diagramas científicos para identificación táctil inmediata.',
+        example: 'Identificar en el mapa los 3 puntos estratégicos de la Ruta de la Independencia (Querétaro, Dolores y Guanajuato).',
+        icon: MapPin,
+        gradient: 'from-sky-600 to-indigo-600',
+        glowColor: 'shadow-sky-500/30'
+      },
+      {
+        type: 'cornell_smart_notes',
+        title: 'Apuntes Cornell & Sello QR de Libreta',
+        category: 'Cuaderno Activo & Evidencia SEP',
+        badge: '💮 Sello Pág. 48 • 0 Tokens',
+        description: 'Plantilla estructurada del Método Cornell (Preguntas Clave, Notas de Aula y Síntesis de 1 Minuto) vinculada directamente al Sello Digital de Libreta y Magic Link.',
+        example: 'Síntesis de causas internas y externas de 1810 con sellado automático de la Página 48 del cuaderno.',
+        icon: NotebookPen,
+        gradient: 'from-amber-500 to-orange-600',
+        glowColor: 'shadow-amber-500/30'
+      },
+      {
+        type: 'exit_ticket_reflection',
+        title: 'Boleto de Salida 3-2-1 & Termómetro Aula',
+        category: 'Cierre Metacognitivo SEP',
+        badge: '🚦 Semáforo • 0 Tokens',
+        description: 'Cierre de clase en 3 minutos (3 aprendizajes, 2 dudas, 1 aplicación + semáforo de dominio) con detección determinista de dudas frecuentes para el Espejo CEO.',
+        example: 'Boleto de salida al terminar la sesión para detectar en tiempo real qué concepto requiere refuerzo mañana.',
+        icon: TrafficCone,
+        gradient: 'from-rose-500 to-amber-500',
+        glowColor: 'shadow-rose-500/30'
+      }
+    ]
+  },
   {
     id: 'assessments',
     name: 'Evaluación & Reactivos',
@@ -259,12 +321,23 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
   {
     id: 'pedagogy',
     name: 'Pedagogía & Rutas',
-    badge: '3 Bloques',
+    badge: '4 Bloques',
     icon: GitBranch,
     color: 'from-emerald-500 to-teal-600',
-    description: 'Rutas condicionales adaptativas, puntos de control metacognitivo y diplomas de honor.',
-    example: 'Personaliza la ruta del alumno según su desempeño o emite diplomas al finalizar.',
+    description: 'Rutas condicionales adaptativas, foros de debate con co-evaluación por pares, puntos de control metacognitivo y diplomas de honor.',
+    example: 'Personaliza la ruta del alumno según su desempeño, organiza un debate estructurado o emite diplomas al finalizar.',
     blocks: [
+      {
+        type: 'socratic_debate_arena',
+        title: 'Foro de Debate & Co-Evaluación SEP',
+        category: 'Pensamiento Crítico & Debate',
+        badge: '⚖️ Postura A vs B • 0 Tokens',
+        description: 'Debate estructurado con fuente primaria, confrontación de posturas (A vs B) y rúbrica determinista de co-evaluación entre pares.',
+        example: 'Debate histórico con base en los Sentimientos de la Nación (1813): Soberanía popular vs autonomismo.',
+        icon: Scale,
+        gradient: 'from-indigo-600 to-violet-600',
+        glowColor: 'shadow-indigo-500/30'
+      },
       {
         type: 'logic_branch',
         title: 'Bifurcación Condicional',
@@ -303,12 +376,23 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
   {
     id: 'logic_math',
     name: 'Lógica Matemática & Algoritmia',
-    badge: '5 Bloques',
+    badge: '6 Bloques',
     icon: Binary,
     color: 'from-cyan-600 via-blue-600 to-indigo-700',
-    description: 'Retos de pensamiento computacional, compuertas booleanas, autómatas, grafos y satisfacción de restricciones.',
-    example: 'Ideal para olimpiadas de lógica, retos interactivos por niveles (1º Primaria a 3º Secundaria) y simuladores animados.',
+    description: 'Pizarra matemática con plano cartesiano interactivo, retos de pensamiento computacional, compuertas booleanas, autómatas, grafos y satisfacción de restricciones.',
+    example: 'Ideal para graficar funciones STEM en vivo, olimpiadas de lógica y simuladores animados con 0 consumo de tokens.',
     blocks: [
+      {
+        type: 'interactive_whiteboard_math',
+        title: 'Pizarra Matemática & Graficador STEM',
+        category: 'Matemáticas & Modelado',
+        badge: '📈 Plano & Funciones • 0 Tokens',
+        description: 'Plano cartesiano interactivo y graficador dinámico de funciones lineales, parábolas y coordenadas evaluado de forma determinista.',
+        example: 'Modelar la recta y = 2x + 1 ajustando pendiente m y ordenada b en tiempo real.',
+        icon: LineChart,
+        gradient: 'from-blue-600 via-indigo-600 to-cyan-600',
+        glowColor: 'shadow-blue-500/30'
+      },
       {
         type: 'logic_challenge_interactive',
         title: 'Reto de Lógica & Condiciones',
@@ -472,6 +556,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
 
   // Estados de categorías desplegadas (acordeón múltiple o individual)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+    exams_omr: true, // Desplegado por defecto para máxima visibilidad del módulo de Exámenes OMR & Variantes
     assessments: false,
     multimedia: false,
     gamification: false,
@@ -561,7 +646,16 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
 
     if (momentFilter === 'inicio') {
       blocksList = blocksList.filter(b =>
-        ['historical_figure_block', 'text_narrative', 'youtube_video', 'timed_reading_block', 'open_poll_wordcloud', 'languages_practice_portal'].includes(b.type)
+        [
+          'historical_figure_block',
+          'text_narrative',
+          'youtube_video',
+          'timed_reading_block',
+          'open_poll_wordcloud',
+          'languages_practice_portal',
+          'cornell_smart_notes',
+          'interactive_hotspot_canvas'
+        ].includes(b.type)
       );
     } else if (momentFilter === 'desarrollo') {
       blocksList = blocksList.filter(b =>
@@ -580,12 +674,28 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
           'languages_karaoke_block',
           'languages_socratic_tutor',
           'languages_roleplay_mission',
-          'historical_figure_block'
+          'historical_figure_block',
+          'interactive_hotspot_canvas',
+          'cornell_smart_notes',
+          'socratic_debate_arena',
+          'interactive_whiteboard_math'
         ].includes(b.type)
       );
     } else if (momentFilter === 'cierre') {
       blocksList = blocksList.filter(b =>
-        ['boss_enemy', 'reward_chest', 'badge_certificate', 'checkpoint_gate', 'secret_code_puzzle', 'minigame_action', 'languages_evaluation_rubric', 'audio_sfx'].includes(b.type)
+        [
+          'omr_optical_exam_block',
+          'exit_ticket_reflection',
+          'cornell_smart_notes',
+          'boss_enemy',
+          'reward_chest',
+          'badge_certificate',
+          'checkpoint_gate',
+          'secret_code_puzzle',
+          'minigame_action',
+          'languages_evaluation_rubric',
+          'audio_sfx'
+        ].includes(b.type)
       );
     }
 
@@ -608,10 +718,8 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
     <aside className="w-full bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl rounded-3xl border border-slate-200/90 dark:border-zinc-800 p-4 shadow-xl select-none flex flex-col gap-3 relative z-30">
       {/* Cabecera del Panel de Bloques */}
       <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-xs">
-            <Workflow className="w-4 h-4" />
-          </div>
+        <div className="flex items-center gap-2.5">
+          <StudioCategoryIcon categoryKey="studio_master" size="sm" fallbackIcon={Workflow} />
           <div>
             <h3 className="text-xs font-black text-slate-900 dark:text-white">
               Agrupaciones de Bloques
@@ -639,19 +747,19 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
         />
       </div>
 
-      {/* Píldoras de Momento Didáctico SEP NEM (Nuevo Rediseño 1 - Vista 1.1: Todo | Inicio 10m | Desarrollo 25m | Cierre 15m) */}
+      {/* Píldoras de Momento Didáctico SEP NEM (Todo | Inicio 10m | Desarr. 25m | Cierre 15m — Sin truncamiento) */}
       <div className="grid grid-cols-4 gap-1 bg-slate-100/90 dark:bg-zinc-800/80 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700/70">
         {[
           { id: 'all', label: 'Todo' },
           { id: 'inicio', label: 'Inicio 10m' },
-          { id: 'desarrollo', label: 'Desarrollo 25m' },
+          { id: 'desarrollo', label: 'Desarr. 25m' },
           { id: 'cierre', label: 'Cierre 15m' }
         ].map((pill) => (
           <button
             key={pill.id}
             type="button"
             onClick={() => setMomentFilter(pill.id as any)}
-            className={`py-1 px-1 rounded-lg text-[9.5px] font-black transition-all truncate cursor-pointer ${
+            className={`py-1 px-1 rounded-lg text-[9.5px] font-black transition-all whitespace-nowrap cursor-pointer ${
               momentFilter === pill.id
                 ? 'bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-300 shadow-xs border border-emerald-300/70'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
@@ -683,12 +791,10 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                   isExpanded ? 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200' : 'hover:bg-slate-100/80 dark:hover:bg-zinc-800/60'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${cat.color} text-white flex items-center justify-center shrink-0 shadow-sm`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <StudioCategoryIcon categoryKey={cat.id} size="md" fallbackIcon={Icon} />
                   <div className="min-w-0">
-                    <h4 className="text-[11px] font-black text-slate-900 dark:text-white truncate">
+                    <h4 className="text-[11px] font-black text-slate-900 dark:text-white leading-snug line-clamp-2">
                       {cat.name}
                     </h4>
                     <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400">
@@ -697,7 +803,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                   </div>
                 </div>
 
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-emerald-500' : ''}`} />
+                <ChevronDown className={`w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-emerald-500' : ''}`} />
               </button>
 
               {/* Lista de Bloques dentro de la Agrupación */}
@@ -733,20 +839,18 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                               : 'hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-zinc-850 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                           } flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs`}
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className={`w-7 h-7 rounded-lg bg-gradient-to-tr ${tool.gradient} text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform`}>
-                              <ToolIcon className="w-3.5 h-3.5" />
-                            </div>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <StudioBlockIcon blockType={tool.type} size="md" fallbackIcon={ToolIcon} />
                             <div className="min-w-0">
-                              <h5 className={`text-[11px] font-black truncate ${
+                              <h5 className={`text-[11px] font-black leading-snug line-clamp-2 ${
                                 isLanguageTool 
                                   ? 'text-slate-800 dark:text-zinc-200 group-hover:text-violet-600 dark:group-hover:text-violet-400' 
                                   : 'text-slate-800 dark:text-zinc-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
                               }`}>
                                 {tool.title}
                               </h5>
-                              <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 block truncate">
-                                +1 Clic Insertar • {tool.badge}
+                              <span className="text-[9px] font-bold text-slate-500 dark:text-zinc-400 block leading-tight line-clamp-1">
+                                +1 Clic • {tool.badge}
                               </span>
                             </div>
                           </div>
@@ -795,10 +899,8 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
             {hoveredTool ? (
               <>
                 <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${hoveredTool.gradient} text-white flex items-center justify-center shrink-0 shadow-md`}>
-                      <hoveredTool.icon className="w-4 h-4" />
-                    </div>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <StudioBlockIcon blockType={hoveredTool.type} size="md" fallbackIcon={hoveredTool.icon} />
                     <div className="min-w-0">
                       <span className="text-[9px] font-black uppercase text-teal-400 tracking-wider block">
                         {hoveredTool.category}
@@ -836,9 +938,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
             ) : hoveredCategory ? (
               <>
                 <div className="flex items-center gap-2.5 border-b border-slate-800 pb-2">
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${hoveredCategory.color} text-white flex items-center justify-center shrink-0 shadow-md`}>
-                    <hoveredCategory.icon className="w-4 h-4" />
-                  </div>
+                  <StudioCategoryIcon categoryKey={hoveredCategory.id} size="md" fallbackIcon={hoveredCategory.icon} />
                   <div>
                     <span className="text-[9px] font-black uppercase text-teal-400 tracking-wider block">
                       Agrupación de Bloques
@@ -877,9 +977,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
           }}
           className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-emerald-500 shadow-2xl flex items-center gap-2.5 min-w-[200px] animate-scale-in opacity-90 rotate-2"
         >
-          <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${draggingTool.gradient} text-white flex items-center justify-center shrink-0 shadow-md`}>
-            <draggingTool.icon className="w-4 h-4" />
-          </div>
+          <StudioBlockIcon blockType={draggingTool.type} size="md" fallbackIcon={draggingTool.icon} />
           <div>
             <span className="text-[9px] font-black uppercase text-emerald-500 block">
               Soltar para crear nodo

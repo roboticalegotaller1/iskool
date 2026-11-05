@@ -35,7 +35,7 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
-const WORKER_ENGINE_GENERATION = 'v7_neural_latam_24voices_r1';
+const WORKER_ENGINE_GENERATION = 'v8_neural_latam_38flash_calibrated_r1';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
 let daemonGeneration = '';
 let daemonStdoutBuffer = '';
@@ -169,10 +169,10 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     throw new Error('Texto vacío para síntesis');
   }
 
-  // Clave de caché v7 (Respaldo Neural Continuo de 24 Voces LatAm Ilimitadas Exclusivo)
+  // Clave de caché v8 (Respaldo Neural Continuo de 24 Voces LatAm Calibrado Acústica y Prosódicamente a 3.8-flash-lite-tts)
   const cacheKey = crypto
     .createHash('sha256')
-    .update(`v7_neural_latam_24voices::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
+    .update(`v8_neural_latam_38flash_calibrated::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
     .digest('hex');
 
   // 1. Verificar caché en memoria

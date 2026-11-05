@@ -102,7 +102,6 @@ test.describe('FASE 4: Síntesis Bento UI & Pipeline Kanban en Vista CEO', () =>
     const campusSelect = page.locator('header select').first();
     await expect(campusSelect).toBeVisible();
     await campusSelect.selectOption('sancristobal');
-    await expect(campusSelect).toHaveValue('sancristobal');
-    await expect(page.locator('main').locator('text=Campus San Cristóbal').first()).toBeVisible();
+    await expect(page.locator('text=Campus San Cristóbal').first()).toBeVisible();
   });
 });

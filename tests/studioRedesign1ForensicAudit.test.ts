@@ -9,6 +9,19 @@ import {
   buildDynamicHistoricalFigureData
 } from '@/data/mexicanIndependenceStudioFlow';
 import { StudioBlockType } from '@/types/studioBlocks';
+import {
+  generateExamVariantsZeroToken,
+  extractExamQuestionsFromStudioBlocks,
+  runClassroomOmrBatchGradingZeroToken,
+  evaluateOpenAnswerDeterministically
+} from '@/services/deterministicExamOmrEngine';
+import { generateOmrExamPdfBytes } from '@/services/omrExamPdfExporter';
+import {
+  CATEGORY_VISUAL_SPECS,
+  BLOCK_VISUAL_SPECS
+} from '@/components/studio/builder/StudioPremiumBlockIcon';
+import { isUuid, mapStudentIdToUuid, normalizeStudentId } from '@/store/useStudentStore';
+import { resolveCertifiedPlatformVoice } from '@/app/api/ai/tts/route';
 
 describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', () => {
   beforeEach(() => {
@@ -78,8 +91,8 @@ describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', 
     expect(branchConns.some((c) => c.condition === 'score_low')).toBe(true);
   });
 
-  it('4. Los 28 tipos de bloques didácticos de Studio se instancian con datos válidos y sin errores', () => {
-    const all28Types: StudioBlockType[] = [
+  it('4. Los 34 tipos de bloques didácticos de Studio (incluyendo los 6 bloques internacionales 0-Tokens) se instancian con datos válidos y sin errores', () => {
+    const all34Types: StudioBlockType[] = [
       'text_narrative',
       'quiz_question',
       'timed_reading_block',
@@ -107,13 +120,19 @@ describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', 
       'logic_branch',
       'checkpoint_gate',
       'badge_certificate',
-      'audio_sfx'
+      'audio_sfx',
+      'omr_optical_exam_block',
+      'interactive_hotspot_canvas',
+      'cornell_smart_notes',
+      'exit_ticket_reflection',
+      'socratic_debate_arena',
+      'interactive_whiteboard_math'
     ];
 
-    expect(all28Types.length).toBe(28);
+    expect(all34Types.length).toBe(34);
     const store = useActivityBuilderStore.getState();
 
-    for (const type of all28Types) {
+    for (const type of all34Types) {
       const id = store.addBlock(type);
       const created = useActivityBuilderStore.getState().blocks.find((b) => b.id === id);
       expect(created).toBeDefined();
@@ -152,6 +171,156 @@ describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', 
     expect(layoutCode).toContain('formatLiveCountdown');
     expect(layoutCode).toContain('{weeklyRemainingPct.toFixed(2)}%');
     expect(layoutCode).toContain('Models & Usage • Telemetría en Tiempo Real');
+  });
+
+  it('6. Motor de Exámenes Híbridos OMR & Variantes Anti-Copia A/B/C/D opera al 100% con 0 Tokens (Fisher-Yates Determinista + Escáner Lote + Rúbrica Léxica)', () => {
+    const baseQuestions = extractExamQuestionsFromStudioBlocks(MEXICAN_INDEPENDENCE_BLOCKS);
+    expect(baseQuestions.length).toBeGreaterThanOrEqual(5);
+
+    // 1. Generar 4 variantes deterministas produce exactamente las mismas claves reproducibles
+    const variantsRun1 = generateExamVariantsZeroToken(baseQuestions, ['A', 'B', 'C', 'D'], true, true);
+    const variantsRun2 = generateExamVariantsZeroToken(baseQuestions, ['A', 'B', 'C', 'D'], true, true);
+    expect(variantsRun1.length).toBe(4);
+    expect(variantsRun1.map((v) => v.variantCode)).toEqual(['A', 'B', 'C', 'D']);
+    expect(variantsRun1[1].answerKey).toEqual(variantsRun2[1].answerKey);
+
+    // 2. Calificación óptica en lote de todo el salón en 0 Tokens
+    const batchSummary = runClassroomOmrBatchGradingZeroToken({
+      examTitle: 'Evaluación Bimestral de la Independencia',
+      schoolName: 'Instituto Bilingüe IBIME',
+      groupName: '1°A Secundaria',
+      baseQuestions,
+      variants: variantsRun1,
+      penaltyPerError: 0.25
+    });
+    expect(batchSummary.tokensConsumed).toBe(0);
+    expect(batchSummary.totalStudentsScanned).toBeGreaterThanOrEqual(8);
+    expect(batchSummary.itemPsychometrics.length).toBe(baseQuestions.length);
+
+    // 3. Evaluación determinista de pregunta abierta con 0 Tokens
+    const openEval = evaluateOpenAnswerDeterministically(
+      'Doña Josefa Ortiz de Domínguez envió el aviso urgente desde Querétaro con Ignacio Pérez hacia Dolores para luchar por la soberanía y libertad.',
+      ['Querétaro', 'Josefa Ortiz', 'Ignacio Pérez', 'Dolores'],
+      10
+    );
+    expect(openEval.score).toBe(10);
+    expect(openEval.matchedKeywords.length).toBe(4);
+
+    // 4. Exportación en Formato PDF Vectorial Nativo (ISO PDF 1.4 en 0 Tokens):
+    // 4a. PDF individual de Fila A (1 página)
+    const singlePdf = generateOmrExamPdfBytes({
+      examTitle: 'Evaluación Bimestral de la Independencia',
+      schoolName: 'Instituto Bilingüe IBIME',
+      schoolShortName: 'IBIME',
+      groupName: '1°A Secundaria',
+      notebookPage: 48,
+      penaltyPerError: 0.25,
+      scope: 'single_variant',
+      selectedVariantCode: 'A',
+      variants: variantsRun1,
+      batchReport: batchSummary
+    });
+    expect(singlePdf.pageCount).toBe(1);
+    expect(singlePdf.fileName).toContain('Fila_A_OMR.pdf');
+    const headerStr = String.fromCharCode(...singlePdf.bytes.slice(0, 8));
+    expect(headerStr).toBe('%PDF-1.4');
+
+    // 4b. Paquete Maestro PDF con las 4 Filas (A, B, C, D) + Hoja Maestra de Claves Docente (5 páginas)
+    const masterPackPdf = generateOmrExamPdfBytes({
+      examTitle: 'Evaluación Bimestral de la Independencia',
+      schoolName: 'Instituto Bilingüe IBIME',
+      schoolShortName: 'IBIME',
+      groupName: '1°A Secundaria',
+      notebookPage: 48,
+      penaltyPerError: 0.25,
+      scope: 'all_4_variants_pack',
+      variants: variantsRun1,
+      batchReport: batchSummary
+    });
+    expect(masterPackPdf.pageCount).toBe(5);
+    expect(masterPackPdf.bytes.byteLength).toBeGreaterThan(2500);
+
+    // 4c. Acta Oficial de Calificaciones & Psicometría Kardex SEP en PDF
+    const kardexPdf = generateOmrExamPdfBytes({
+      examTitle: 'Evaluación Bimestral de la Independencia',
+      schoolName: 'Instituto Bilingüe IBIME',
+      schoolShortName: 'IBIME',
+      groupName: '1°A Secundaria',
+      notebookPage: 48,
+      penaltyPerError: 0.25,
+      scope: 'psychometrics_kardex_report',
+      variants: variantsRun1,
+      batchReport: batchSummary
+    });
+    expect(kardexPdf.pageCount).toBe(1);
+    expect(kardexPdf.fileName).toContain('Acta_Calificaciones_Kardex_SEP.pdf');
+  });
+
+  it('7. Los 44 iconos 3D externos (Agrupaciones) e internos (34 Bloques) existen en formato WebP comprimido (< 50 KB, REGLA NO NEGOCIABLE 3) y tienen insignias explicativas', () => {
+    const publicDir = path.join(process.cwd(), 'public');
+
+    // Verificar todas las categorías externas
+    for (const [catKey, spec] of Object.entries(CATEGORY_VISUAL_SPECS)) {
+      expect(spec.badgeText.length).toBeGreaterThan(0);
+      const absPath = path.join(publicDir, spec.imagePath);
+      expect(fs.existsSync(absPath), `Falta icono 3D de categoría ${catKey}: ${absPath}`).toBe(true);
+      const stats = fs.statSync(absPath);
+      expect(stats.size).toBeGreaterThan(500);
+      expect(stats.size).toBeLessThan(50 * 1024); // Menor a 50 KB
+    }
+
+    // Verificar los 34 bloques internos
+    const blockKeys = Object.keys(BLOCK_VISUAL_SPECS);
+    expect(blockKeys.length).toBe(34);
+    for (const [blockKey, spec] of Object.entries(BLOCK_VISUAL_SPECS)) {
+      expect(spec.microTag.length).toBeGreaterThan(0);
+      expect(spec.tooltip.length).toBeGreaterThan(10);
+      const absPath = path.join(publicDir, spec.imagePath);
+      expect(fs.existsSync(absPath), `Falta icono 3D de bloque ${blockKey}: ${absPath}`).toBe(true);
+      const stats = fs.statSync(absPath);
+      expect(stats.size).toBeGreaterThan(500);
+      expect(stats.size).toBeLessThan(50 * 1024); // Menor a 50 KB
+    }
+  });
+
+  it('8. Blindaje UUID para alumnos IBIME (std-ibime-montes-01) y Homologación Acústica 3.8-flash-lite-tts (es-419-*) -> Respaldo Neural Continuo (24 voces LatAm)', () => {
+    // 1. Verificar que std-ibime-montes-01 y demás IDs IBIME se mapean a UUID determinista válido y se normalizan de vuelta
+    const mappedMontes = mapStudentIdToUuid('std-ibime-montes-01');
+    expect(isUuid(mappedMontes)).toBe(true);
+    expect(normalizeStudentId(mappedMontes)).toBe('std-ibime-montes-01');
+
+    const mappedLagos = mapStudentIdToUuid('std-ibime-lagos-01');
+    expect(isUuid(mappedLagos)).toBe(true);
+    expect(normalizeStudentId(mappedLagos)).toBe('std-ibime-lagos-01');
+
+    // 2. Verificar que useStudentStore protege todas las escrituras a Supabase con isUuid(dbStudentId)
+    const studentStoreCode = fs.readFileSync(
+      path.join(process.cwd(), 'src/store/useStudentStore.ts'),
+      'utf-8'
+    );
+    expect(studentStoreCode).toContain("'std-ibime-montes-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b01'");
+    expect(studentStoreCode).not.toContain("console.error('Error al actualizar estadísticas en Supabase:'");
+
+    // 3. Verificar que todos los arquetipos 3.8-flash-lite-tts (es-419-* y voice_*) se resuelven a sus 24 voces LatAm calibradas
+    expect(resolveCertifiedPlatformVoice('es-419-advisor-7', 'es', 'female').voice).toBe('es-US-PalomaNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-advisor-4', 'es', 'female').voice).toBe('es-MX-DaliaNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-commercial-6', 'es', 'female').voice).toBe('es-CO-SalomeNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-tutor-3', 'es', 'female').voice).toBe('es-CR-MariaNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-assistant-1', 'es', 'female').voice).toBe('es-PE-CamilaNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-concierge-2', 'es', 'male').voice).toBe('es-MX-JorgeNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-concierge-7', 'es', 'male').voice).toBe('es-CO-GonzaloNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-concierge-8', 'es', 'male').voice).toBe('es-US-AlonsoNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-podcaster-3', 'es', 'male').voice).toBe('es-PE-AlexNeural');
+
+    // 4. Verificar la presencia de la matriz de calibración acústica y formántica en neural_tts_worker.py
+    const workerPyCode = fs.readFileSync(
+      path.join(process.cwd(), 'scripts/neural_tts_worker.py'),
+      'utf-8'
+    );
+    expect(workerPyCode).toContain('ES_419_TO_NEURAL_LATAM_CALIBRATION');
+    expect(workerPyCode).toContain('_resolve_calibrated_neural_latam_profile');
+    expect(workerPyCode).toContain('_shape_conversational_cadence_for_neural_latam');
+    expect(workerPyCode).toContain('harmonic_drive');
   });
 });
 

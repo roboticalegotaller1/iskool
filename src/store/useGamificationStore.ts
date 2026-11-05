@@ -941,10 +941,10 @@ export const useGamificationStore = create<GamificationStoreState>()(
   unlockBadge: async (studentId, badgeId) => {
     set({ syncError: null });
     try {
-      const dbStudentId = studentId;
+      const dbStudentId = mapStudentIdToUuid(studentId);
       let dbBadgeId = badgeId;
 
-      if (!isUuid(badgeId)) {
+      if (!isUuid(badgeId) && isUuid(dbStudentId)) {
         const seedBadge = BADGES_SEED.find(b => b.id === badgeId);
         if (seedBadge) {
           const { data, error } = await supabase
@@ -959,29 +959,30 @@ export const useGamificationStore = create<GamificationStoreState>()(
         }
       }
 
-      if (!isUuid(dbBadgeId)) {
-        throw new Error(`Invalid badge ID format: ${badgeId}`);
-      }
+      let earnedAt = new Date().toISOString();
 
-      const { data, error } = await supabase
-        .from('student_badges')
-        .insert({
-          student_id: dbStudentId,
-          badge_id: dbBadgeId
-        })
-        .select()
-        .single();
+      if (isUuid(dbStudentId) && isUuid(dbBadgeId)) {
+        const { data, error } = await supabase
+          .from('student_badges')
+          .insert({
+            student_id: dbStudentId,
+            badge_id: dbBadgeId
+          })
+          .select()
+          .single();
 
-      if (error) {
-        // If already unlocked (duplicate key violation), we don't treat it as a hard failure
-        if (error.code === '23505') {
-          console.log(`Badge ${badgeId} already unlocked for student ${studentId}`);
-          return;
+        if (error) {
+          // If already unlocked (duplicate key violation), we don't treat it as a hard failure
+          if (error.code === '23505') {
+            console.log(`Badge ${badgeId} already unlocked for student ${studentId}`);
+            return;
+          }
+          console.warn('Aviso al sincronizar medalla en Supabase:', error.message);
+        } else if (data?.earned_at) {
+          earnedAt = data.earned_at;
         }
-        throw new Error(error.message);
       }
 
-      const earnedAt = data?.earned_at || new Date().toISOString();
       const newBadge: StudentBadge = {
         student_id: studentId,
         badge_id: badgeId,
@@ -994,9 +995,8 @@ export const useGamificationStore = create<GamificationStoreState>()(
 
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al guardar en Supabase';
-      console.error('Error unlocking badge:', err);
+      console.warn('Aviso al desbloquear medalla:', err);
       set({ syncError: errorMsg });
-      alert(`Error al desbloquear la medalla: ${errorMsg}`);
     }
   },
 
@@ -1107,25 +1107,30 @@ export const useGamificationStore = create<GamificationStoreState>()(
   },
 
   grantFormativeLoot: async (studentId, questId, evaluation, feedback) => {
-    const denormalizeStudentId = (id: string): string => {
-      if (id === 'std-pa') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11';
-      if (id === 'std-sec') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22';
-      if (id === 'std-pb') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33';
-      if (id === 'std-prep') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44';
-      return id;
-    };
-
-    const normStudentId = isUuid(studentId) ? studentId : denormalizeStudentId(studentId);
+    const normStudentId = mapStudentIdToUuid(studentId);
+    const hasValidUuid = isUuid(normStudentId);
 
     try {
-      // 1. Obtener Quest de Supabase
-      const { data: questData, error: questError } = await supabase
-        .from('quests')
-        .select('*')
-        .eq('id', questId)
-        .maybeSingle();
+      // 1. Obtener Quest de Supabase o de la caché local
+      let questData: any = null;
+      if (isUuid(questId)) {
+        const { data, error: questError } = await supabase
+          .from('quests')
+          .select('*')
+          .eq('id', questId)
+          .maybeSingle();
 
-      if (questError) throw questError;
+        if (!questError && data) questData = data;
+      }
+      if (!questData) {
+        for (const m of get().missionsList) {
+          const found = m.quests?.find((q: any) => q.id === questId);
+          if (found) {
+            questData = found;
+            break;
+          }
+        }
+      }
 
       const xpRewardBase = questData?.xp_reward || 100;
       const coinsRewardBase = questData?.coins_reward || 20;
@@ -1147,126 +1152,69 @@ export const useGamificationStore = create<GamificationStoreState>()(
         coinsToGrant = Math.floor(coinsRewardBase * 0.2);
         itemGranted = 'art-potion-perseverancia';
 
-        // Insertar item en inventario
-        const { error: invError } = await supabase
-          .from('student_inventory')
-          .insert({
-            student_id: normStudentId,
-            artifact_id: 'art-potion-perseverancia',
-            acquired_at: new Date().toISOString()
-          });
-        if (invError) console.error('Error inserting perseverance potion in inventory:', invError);
+        if (hasValidUuid) {
+          // Insertar item en inventario
+          const { error: invError } = await supabase
+            .from('student_inventory')
+            .insert({
+              student_id: normStudentId,
+              artifact_id: 'art-potion-perseverancia',
+              acquired_at: new Date().toISOString()
+            });
+          if (invError) console.warn('Aviso al insertar poción en inventario:', invError.message);
 
-        // Insertar mensaje de aliento
-        const { error: msgError } = await supabase
-          .from('student_messages')
-          .insert({
-            student_id: normStudentId,
-            title: '¡Mensaje de perseverancia de tu Mentor!',
-            message: `¡No te rindas! Sigue intentándolo en el reto "${questData?.title || 'la misión'}". Has recibido una "Poción de perseverancia" para tu inventario.`,
-            sent_at: new Date().toISOString(),
-            is_read: false,
-            type: 'system'
-          });
-        if (msgError) console.error('Error inserting message in student_messages:', msgError);
+          // Insertar mensaje de aliento
+          const { error: msgError } = await supabase
+            .from('student_messages')
+            .insert({
+              student_id: normStudentId,
+              title: '¡Mensaje de perseverancia de tu Mentor!',
+              message: `¡No te rindas! Sigue intentándolo en el reto "${questData?.title || 'la misión'}". Has recibido una "Poción de perseverancia" para tu inventario.`,
+              sent_at: new Date().toISOString(),
+              is_read: false,
+              type: 'system'
+            });
+          if (msgError) console.warn('Aviso al insertar mensaje en student_messages:', msgError.message);
+        }
       }
 
       // 3. Registrar o actualizar feedback en quest_attempts
-      const { data: existingAttempts, error: attemptsError } = await supabase
-        .from('quest_attempts')
-        .select('*')
-        .eq('student_id', normStudentId)
-        .eq('quest_id', questId)
-        .order('created_at', { ascending: false });
-
-      if (attemptsError) throw attemptsError;
-
-      if (existingAttempts && existingAttempts.length > 0) {
-        const attemptId = existingAttempts[0].id;
-        const { error: updateError } = await supabase
+      if (hasValidUuid && isUuid(questId)) {
+        const { data: existingAttempts, error: attemptsError } = await supabase
           .from('quest_attempts')
-          .update({
-            feedback: feedback,
-            is_completed: evaluation === 'Logrado' || evaluation === 'Avanzando',
-            score: evaluation === 'Logrado' ? 100 : evaluation === 'Avanzando' ? 70 : 40
-          })
-          .eq('id', attemptId);
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('quest_attempts')
-          .insert({
-            student_id: normStudentId,
-            quest_id: questId,
-            score: evaluation === 'Logrado' ? 100 : evaluation === 'Avanzando' ? 70 : 40,
-            is_completed: evaluation === 'Logrado' || evaluation === 'Avanzando',
-            feedback: feedback,
-            created_at: new Date().toISOString()
-          });
-        if (insertError) throw insertError;
-      }
+          .select('*')
+          .eq('student_id', normStudentId)
+          .eq('quest_id', questId)
+          .order('created_at', { ascending: false });
 
-      // 4. Actualizar estadísticas del alumno (XP y monedas)
-      const { data: currentStats, error: statsError } = await supabase
-        .from('student_stats')
-        .select('*')
-        .eq('student_id', normStudentId)
-        .maybeSingle();
-
-      if (statsError) throw statsError;
-
-      if (currentStats) {
-        let finalXp = (currentStats.xp || 0) + xpToGrant;
-        const newCoins = (currentStats.coins || 0) + coinsToGrant;
-        let finalLevel = currentStats.level || 1;
-        let finalSkillPoints = currentStats.skill_points ?? 0;
-
-        let xpForCurrentLevel = finalLevel * 200;
-        while (finalXp >= xpForCurrentLevel) {
-          finalXp -= xpForCurrentLevel;
-          finalLevel += 1;
-          finalSkillPoints += 2;
-          xpForCurrentLevel = finalLevel * 200;
+        if (!attemptsError) {
+          if (existingAttempts && existingAttempts.length > 0) {
+            const attemptId = existingAttempts[0].id;
+            await supabase
+              .from('quest_attempts')
+              .update({
+                feedback: feedback,
+                is_completed: evaluation === 'Logrado' || evaluation === 'Avanzando',
+                score: evaluation === 'Logrado' ? 100 : evaluation === 'Avanzando' ? 70 : 40
+              })
+              .eq('id', attemptId);
+          } else {
+            await supabase
+              .from('quest_attempts')
+              .insert({
+                student_id: normStudentId,
+                quest_id: questId,
+                score: evaluation === 'Logrado' ? 100 : evaluation === 'Avanzando' ? 70 : 40,
+                is_completed: evaluation === 'Logrado' || evaluation === 'Avanzando',
+                feedback: feedback,
+                created_at: new Date().toISOString()
+              });
+          }
         }
-
-        const { error: updateStatsError } = await supabase
-          .from('student_stats')
-          .update({
-            xp: finalXp,
-            coins: newCoins,
-            level: finalLevel,
-            skill_points: finalSkillPoints,
-            updated_at: new Date().toISOString()
-          })
-          .eq('student_id', normStudentId);
-
-        if (updateStatsError) throw updateStatsError;
-
-        // Sincronizar en useStudentStore local
-        useStudentStore.setState((state) => {
-          const currentA = state.allStats[studentId] || {};
-          const currentB = state.allStats[normStudentId] || {};
-          return {
-            allStats: {
-              ...state.allStats,
-              [studentId]: {
-                ...currentA,
-                xp: finalXp,
-                coins: newCoins,
-                level: finalLevel,
-                skill_points: finalSkillPoints
-              },
-              [normStudentId]: {
-                ...currentB,
-                xp: finalXp,
-                coins: newCoins,
-                level: finalLevel,
-                skill_points: finalSkillPoints
-              }
-            }
-          };
-        });
       }
+
+      // 4. Actualizar estadísticas del alumno (XP y monedas) vía useStudentStore (soporta UUID y local)
+      await useStudentStore.getState().addXpAndCoins(studentId, xpToGrant, coinsToGrant);
 
       // Forzar recarga local de intentos
       await get().fetchQuestAttempts(studentId);

@@ -40,7 +40,15 @@ export type StudioBlockType =
   | 'logic_branch'         // Ramificación condicional según desempeño
   | 'checkpoint_gate'      // Punto de control y autoevaluación / Rúbrica
   | 'badge_certificate'    // Certificado y diploma digital de maestría
-  | 'audio_sfx';           // Efectos de sonido o ambientación musical
+  | 'audio_sfx'            // Efectos de sonido o ambientación musical
+
+  // Herramientas de Evaluación Óptica OMR, Exámenes Híbridos & Bloques de Clase Mundial (0 Tokens)
+  | 'omr_optical_exam_block'      // Examen Híbrido OMR, Variantes A/B/C/D, Hoja de Alveolos & Escáner Óptico (0 Tokens)
+  | 'interactive_hotspot_canvas'  // Mapa / Diagrama de Puntos Calientes & Oclusión Visual (0 Tokens)
+  | 'cornell_smart_notes'         // Apuntes Estructurados Cornell & Sellado QR de Libreta (0 Tokens)
+  | 'exit_ticket_reflection'      // Boleto de Salida 3-2-1 & Termómetro Metacognitivo de Aula (0 Tokens)
+  | 'socratic_debate_arena'       // Foro de Debate Estructurado & Co-Evaluación por Pares con Rúbrica (0 Tokens)
+  | 'interactive_whiteboard_math'; // Pizarra Matemática, Plano Cartesiano & Graficador STEM (0 Tokens)
 
 /**
  * Posición 2D del nodo en el tablero de flujos interactivo
@@ -572,6 +580,118 @@ export interface HistoricalFigureBlock extends BaseStudioBlock {
 }
 
 /**
+ * 29. Bloque de Examen Híbrido OMR, Variantes A/B/C/D & Escáner Óptico (0 Tokens)
+ */
+export interface OmrOpticalExamBlock extends BaseStudioBlock {
+  type: 'omr_optical_exam_block';
+  data: {
+    examTitle: string;
+    deliveryMode: 'hybrid_paper_digital' | 'paper_omr_only' | 'digital_kiosk_only';
+    variantsCount: 2 | 4;
+    shuffleQuestions: boolean;
+    shuffleOptions: boolean;
+    penaltyPerError: number;
+    timeLimitMinutes: number;
+    allowStudentBubbleCorrection: boolean;
+    syncToKardexAndCeo: boolean;
+    notebookStampPage: number;
+    questions: Array<{
+      id: string;
+      type: 'single_choice' | 'multiple_choice' | 'open_rubric';
+      stem: string;
+      options: string[];
+      correctOptionIndex: number;
+      points: number;
+      explanation: string;
+      expectedKeywords?: string[];
+    }>;
+  };
+}
+
+/**
+ * 30. Bloque de Mapa / Diagrama de Puntos Calientes & Oclusión Visual (0 Tokens)
+ */
+export interface InteractiveHotspotCanvasBlock extends BaseStudioBlock {
+  type: 'interactive_hotspot_canvas';
+  data: {
+    diagramTitle: string;
+    diagramImageUrl: string;
+    instructions: string;
+    hotspots: Array<{
+      id: string;
+      pinNumber: number;
+      xPercent: number;
+      yPercent: number;
+      correctLabel: string;
+      distractorLabels: string[];
+      hint: string;
+    }>;
+  };
+}
+
+/**
+ * 31. Bloque de Apuntes Cornell & Sellado QR de Libreta Física (0 Tokens)
+ */
+export interface CornellSmartNotesBlock extends BaseStudioBlock {
+  type: 'cornell_smart_notes';
+  data: {
+    topicTitle: string;
+    notebookPageNumber: number;
+    keyCuesPrompts: string[];
+    guidedNotesTemplate: string;
+    requiredSummaryKeywords: string[];
+    autoStampOnCompletion: boolean;
+  };
+}
+
+/**
+ * 32. Bloque de Boleto de Salida 3-2-1 & Termómetro Metacognitivo SEP (0 Tokens)
+ */
+export interface ExitTicketReflectionBlock extends BaseStudioBlock {
+  type: 'exit_ticket_reflection';
+  data: {
+    closurePrompt: string;
+    requireThreeLearnings: boolean;
+    requireTwoQuestions: boolean;
+    requireOneApplication: boolean;
+    expectedCoreConcepts: string[];
+    enableTrafficLightSelfCheck: boolean;
+  };
+}
+
+/**
+ * 33. Bloque de Foro de Debate Estructurado & Co-Evaluación por Pares (0 Tokens)
+ */
+export interface SocraticDebateArenaBlock extends BaseStudioBlock {
+  type: 'socratic_debate_arena';
+  data: {
+    centralDilemma: string;
+    stanceATitle: string;
+    stanceBTitle: string;
+    primarySourceExcerpt: string;
+    requiredEvidenceKeywords: string[];
+    peerRubricCriteria: string[];
+  };
+}
+
+/**
+ * 34. Bloque de Pizarra Matemática, Plano Cartesiano & Graficador STEM (0 Tokens)
+ */
+export interface InteractiveWhiteboardMathBlock extends BaseStudioBlock {
+  type: 'interactive_whiteboard_math';
+  data: {
+    challengeTitle: string;
+    mathMode: 'linear_function' | 'quadratic_parabola' | 'coordinate_geometry' | 'fractions_visual';
+    formulaExpression: string;
+    targetSlopeM: number;
+    targetInterceptB: number;
+    targetCoordinate: { x: number; y: number };
+    promptQuestion: string;
+    tolerance: number;
+  };
+}
+
+/**
  * Unión discriminada de todos los bloques didácticos (Lienzo Digital)
  */
 export type StudioBlock =
@@ -602,7 +722,13 @@ export type StudioBlock =
   | LogicBranchBlock
   | CheckpointGateBlock
   | BadgeCertificateBlock
-  | AudioSfxBlock;
+  | AudioSfxBlock
+  | OmrOpticalExamBlock
+  | InteractiveHotspotCanvasBlock
+  | CornellSmartNotesBlock
+  | ExitTicketReflectionBlock
+  | SocraticDebateArenaBlock
+  | InteractiveWhiteboardMathBlock;
 
 /**
  * Aliases para la arquitectura Canvas / Lienzo Digital

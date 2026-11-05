@@ -7,6 +7,7 @@ import { useStudentStore } from '@/store/useStudentStore';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
+import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import { 
   Sparkles, 
@@ -279,20 +280,40 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
   };
 
-  // Reproductor de Voz Neural LatAm (Respaldo Neural Continuo - 24 Voces LatAm)
+  // Reproductor de Voz Neural LatAm (Respaldo Neural Continuo - 24 Voces LatAm Calibrado a 3.8-flash-lite-tts)
   const playNeuralVoice = async (text: string, lang: string = 'es-MX', gender: 'male' | 'female' = 'female') => {
     if (!text) return;
     setIsSpeakingTts(true);
     try {
+      const blockData = (activeBlock?.data || {}) as Record<string, any>;
+      const resolvedCharacterName =
+        blockData.characterOrSiteName ||
+        blockData.characterName ||
+        (activeBlock?.type === 'historical_figure_block' ? activeBlock.title : '');
+      const resolvedGender: 'male' | 'female' =
+        blockData.voiceGender === 'male' || blockData.voiceGender === 'female'
+          ? blockData.voiceGender
+          : gender;
+
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, lang, gender })
+        body: JSON.stringify({
+          text,
+          language: lang,
+          gender: resolvedGender,
+          characterName: resolvedCharacterName,
+          role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
+        })
       });
       if (res.ok) {
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
+        attachStudioBroadcastMaster(audio, {
+          isMale: resolvedGender === 'male',
+          role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
+        });
         audio.onended = () => setIsSpeakingTts(false);
         audio.onerror = () => setIsSpeakingTts(false);
         await audio.play();
@@ -2484,6 +2505,265 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
                 >
                   <span>Certificar Rúbrica Oficial y Continuar (+50 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 29. EXAMEN HÍBRIDO OMR & VARIANTES A/B/C/D (0 TOKENS) ================= */}
+          {activeBlock?.type === 'omr_optical_exam_block' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/40 border-2 border-rose-200 dark:border-rose-800 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-200/80 text-rose-950">
+                    Examen Híbrido OMR • 0 Tokens • Fila Asignada: A ({activeBlock.data.variantsCount || 4} Variantes)
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.data.examTitle || activeBlock.title}
+                  </h3>
+                </div>
+                <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-black text-xs">
+                  Corrección Limpia OMR Activa
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-rose-200 space-y-3">
+                <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                  Rellena completamente la burbuja OMR correspondiente. Si te equivocas, tacha con una X la burbuja incorrecta y marca la nueva opción.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className="p-3 rounded-xl bg-rose-50/70 border border-rose-200">
+                    <span className="text-[10px] font-black uppercase text-rose-700 block">Variantes Anti-Copia</span>
+                    <span className="font-black text-slate-900">4 Filas Barajadas (A, B, C, D)</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                    <span className="text-[10px] font-black uppercase text-emerald-700 block">Sincronización Institucional</span>
+                    <span className="font-black text-slate-900">Kardex SEP + Sello QR de Libreta</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playSound('victory');
+                    handleNextStep(60);
+                  }}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Entregar Hoja OMR Digital y Sellar Kardex (+60 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 30. MAPA DE PUNTOS CALIENTES & OCLUSIÓN VISUAL (0 TOKENS) ================= */}
+          {activeBlock?.type === 'interactive_hotspot_canvas' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/40 dark:to-sky-950/40 border-2 border-cyan-200 dark:border-cyan-800 space-y-4">
+              <div>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-200/80 text-cyan-950">
+                  Mapa de Puntos Calientes &amp; Oclusión Visual • 0 Tokens
+                </span>
+                <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                  {activeBlock.data.diagramTitle || activeBlock.title}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5">
+                  {activeBlock.data.instructions}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {(activeBlock.data.hotspots || []).map((pin, idx) => (
+                  <button
+                    key={pin.id || idx}
+                    type="button"
+                    onClick={() => playSound('correct')}
+                    className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-cyan-200 hover:border-emerald-500 text-left transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-cyan-900 dark:text-white">📍 #{pin.pinNumber} {pin.correctLabel}</span>
+                      <span className="text-[10px] font-mono font-bold text-emerald-600">({pin.xPercent}%, {pin.yPercent}%) ✓</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-300 mt-1">{pin.hint}</p>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(45)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Puntos Calientes Identificados: Continuar (+45 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 31. APUNTES CORNELL & SELLO QR DE LIBRETA (0 TOKENS) ================= */}
+          {activeBlock?.type === 'cornell_smart_notes' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-2 border-emerald-200 dark:border-emerald-800 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-200/80 text-emerald-950">
+                    Método Cornell + Sello QR Pág. {activeBlock.data.notebookPageNumber || 48} • 0 Tokens
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.data.topicTitle || activeBlock.title}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-emerald-200 space-y-1.5">
+                  <span className="text-[10px] font-black uppercase text-emerald-700 block">1. Preguntas Guía</span>
+                  <ul className="text-xs text-slate-700 dark:text-zinc-300 space-y-1 list-disc list-inside font-medium">
+                    {(activeBlock.data.keyCuesPrompts || []).map((q: string, i: number) => (
+                      <li key={i}>{q}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="sm:col-span-2 p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-emerald-200 space-y-1.5">
+                  <span className="text-[10px] font-black uppercase text-emerald-700 block">2. Conceptos Clave Verificados (0 Tokens)</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(activeBlock.data.requiredSummaryKeywords || []).map((kw: string, i: number) => (
+                      <span key={i} className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black">
+                        ✓ {kw}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-slate-500 pt-1">
+                    {activeBlock.data.guidedNotesTemplate}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(45)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Validar Síntesis Cornell y Sellar Pág. {activeBlock.data.notebookPageNumber || 48} (+45 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 32. BOLETO DE SALIDA 3-2-1 & TERMÓMETRO DE AULA (0 TOKENS) ================= */}
+          {activeBlock?.type === 'exit_ticket_reflection' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border-2 border-amber-200 dark:border-amber-800 space-y-4">
+              <div>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-950">
+                  Boleto de Salida 3-2-1 &amp; Semáforo Metacognitivo • 0 Tokens
+                </span>
+                <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                  {activeBlock.data.closurePrompt || activeBlock.title}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {['🟢 Lo dominé y puedo explicarlo', '🟡 Comprendí lo general, tengo 1 duda', '🔴 Necesito repaso guiado'].map((opt: string, idx: number) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => playSound('correct')}
+                    className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-amber-200 hover:border-emerald-500 text-xs font-bold text-left text-slate-800 dark:text-zinc-200 transition-all cursor-pointer"
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(40)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Registrar Boleto de Salida 3-2-1 (+40 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 33. FORO DE DEBATE & CO-EVALUACIÓN SEP (0 TOKENS) ================= */}
+          {activeBlock?.type === 'socratic_debate_arena' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/40 dark:to-violet-950/40 border-2 border-indigo-200 dark:border-indigo-800 space-y-4">
+              <div>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-indigo-200/80 text-indigo-950">
+                  Foro de Debate &amp; Co-Evaluación por Pares SEP • 0 Tokens
+                </span>
+                <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                  {activeBlock.data.centralDilemma || activeBlock.title}
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-zinc-300 mt-1">
+                  {activeBlock.data.primarySourceExcerpt}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-indigo-200">
+                  <span className="text-xs font-black text-indigo-700 block">🅰️ {activeBlock.data.stanceATitle}</span>
+                </div>
+                <div className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-violet-200">
+                  <span className="text-xs font-black text-violet-700 block">🅱️ {activeBlock.data.stanceBTitle}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(50)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Publicar Postura y Co-Evaluar Par (+50 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 34. PIZARRA MATEMÁTICA & GRAFICADOR STEM (0 TOKENS) ================= */}
+          {activeBlock?.type === 'interactive_whiteboard_math' && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40 border-2 border-blue-200 dark:border-blue-800 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-200/80 text-blue-950">
+                    Pizarra Matemática &amp; Graficador Cartesiano STEM • 0 Tokens
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.data.challengeTitle || activeBlock.title}
+                  </h3>
+                </div>
+                <span className="px-3 py-1 rounded-xl bg-blue-600 text-white font-mono font-black text-xs">
+                  {activeBlock.data.formulaExpression || 'y = 2x + 3'}
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-blue-200 flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600 dark:text-zinc-300">
+                  {activeBlock.data.promptQuestion || 'Evaluación Algebraica Exacta en Cliente (0 Tokens):'}
+                </span>
+                <span className="text-sm font-mono font-black text-emerald-600">
+                  Coordenada Verificada: ({activeBlock.data.targetCoordinate?.x ?? 2}, {activeBlock.data.targetCoordinate?.y ?? 7}) ✓
+                </span>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(50)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Verificar Ecuación y Continuar (+50 XP)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
