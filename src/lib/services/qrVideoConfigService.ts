@@ -28,8 +28,8 @@ export const QR_VIDEO_PRESETS: QrVideoPreset[] = [
     id: 'preset-iskool-comercial-oficial',
     label: 'Vídeo Comercial Oficial iSkool® (Con Voz)',
     description: 'Presentación ejecutiva oficial de iSkool® en alta definición para directivos y colegios privados.',
-    youtubeUrl: 'https://youtu.be/R-mLJbVsC1M',
-    youtubeId: 'R-mLJbVsC1M',
+    youtubeUrl: 'https://youtu.be/WgeQVmHDNJ4',
+    youtubeId: 'WgeQVmHDNJ4',
     title: 'iSkool® — El Cerebro Vivo de tu Escuela',
     subtitle: 'Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.'
   },
@@ -125,8 +125,8 @@ function getNodeFs() {
 }
 
 const DEFAULT_CONFIG: QrVideoConfig = {
-  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/R-mLJbVsC1M',
-  youtubeId: initialConfig.youtubeId || 'R-mLJbVsC1M',
+  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/WgeQVmHDNJ4',
+  youtubeId: initialConfig.youtubeId || 'WgeQVmHDNJ4',
   title: initialConfig.title || 'iSkool® — El Cerebro Vivo de tu Escuela',
   subtitle:
     initialConfig.subtitle ||

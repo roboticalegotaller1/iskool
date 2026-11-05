@@ -37,8 +37,8 @@ const WHATSAPP_DIRECT_URL =
 
 export default function VideoQrLandingPage() {
   const [config, setConfig] = useState<QrVideoConfig>({
-    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/R-mLJbVsC1M",
-    youtubeId: initialConfig.youtubeId || "R-mLJbVsC1M",
+    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/WgeQVmHDNJ4",
+    youtubeId: initialConfig.youtubeId || "WgeQVmHDNJ4",
     title: initialConfig.title || "iSkool® — El Cerebro Vivo de tu Escuela",
     subtitle:
       initialConfig.subtitle ||
@@ -91,7 +91,7 @@ export default function VideoQrLandingPage() {
         setPresets(data.presets);
       }
     } catch {
-      // Mantiene configuración inicial R-mLJbVsC1M en caso de intermitencia
+      // Mantiene configuración inicial WgeQVmHDNJ4 en caso de intermitencia
     }
   }, []);
 

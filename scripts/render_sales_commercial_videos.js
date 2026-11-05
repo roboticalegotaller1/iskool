@@ -464,7 +464,7 @@ function drawFivePillarsAndBenefitsSlide(localT, duration) {
   ctx.font = '800 19px "Segoe UI", sans-serif';
   ctx.fillText('Tecnología Creada en Canadá para Colegios Privados en México  •  Conecta los 5 Pilares de la Educación', 330, 100);
 
-  // Top-right Origin & Phonetics Badge
+  // Top-right Origin Badge
   ctx.save();
   ctx.fillStyle = '#0A193A';
   roundRect(ctx, 1520, 38, 305, 58, 18);
@@ -477,8 +477,8 @@ function drawFivePillarsAndBenefitsSlide(localT, duration) {
   ctx.font = '800 13px "Segoe UI", sans-serif';
   ctx.fillText('TECNOLOGÍA CANADIENSE • IA', 1672, 61);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 17px "Segoe UI", sans-serif';
-  ctx.fillText('iSkool®  /ˈa͡ɪskˌuːl/', 1672, 84);
+  ctx.font = '900 18px "Segoe UI", sans-serif';
+  ctx.fillText('iSkool®', 1672, 84);
   ctx.restore();
 
   // Connecting line behind the 5 Pillars
@@ -757,21 +757,8 @@ window.renderFrameAtTime = function(globalT) {
       ctx.fillText('TECNOLOGÍA CREADA EN CANADÁ PARA COLEGIOS PRIVADOS EN MÉXICO', 960, 141);
       ctx.restore();
 
-      // Official iSkool® Logo Badge + IPA Phonetics Pill
-      drawLogoBadge(960 - 380, 192, 760, 270, 0.90 + ep * 0.10);
-
-      ctx.save();
-      ctx.fillStyle = 'rgba(29, 104, 255, 0.12)';
-      roundRect(ctx, 960 - 210, 482, 420, 42, 21);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(29, 104, 255, 0.35)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.textAlign = 'center';
-      ctx.fillStyle = '#1D68FF';
-      ctx.font = '800 18px "Segoe UI", sans-serif';
-      ctx.fillText('PRONUNCIACIÓN OFICIAL:  /ˈa͡ɪskˌuːl/  ("Áiskul")', 960, 509);
-      ctx.restore();
+      // Official iSkool® Logo Badge (Clean Keynote Presentation without Phonetic Pill)
+      drawLogoBadge(960 - 380, 212, 760, 296, 0.90 + ep * 0.10);
 
       // Main Value Proposition Headline: El Cerebro Vivo de tu Escuela
       ctx.textAlign = 'center';
@@ -1334,7 +1321,7 @@ window.renderFrameAtTime = function(globalT) {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 20px "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('iSkool® (/ˈa͡ɪskˌuːl/)  •  El Cerebro Vivo con IA  •  Tecnología Creada en Canadá para Colegios en México', 960, cy + 869);
+    ctx.fillText('iSkool®  •  El Cerebro Vivo con IA  •  Tecnología Creada en Canadá para Colegios en México', 960, cy + 869);
 
     ctx.restore();
 
@@ -1444,7 +1431,7 @@ window.renderFrameAtTime = function(globalT) {
     '-i', audioConVoz,
     '-c:v', 'copy',
     '-c:a', 'aac',
-    '-b:a', '192k',
+    '-b:a', '256k',
     '-shortest',
     '-movflags', '+faststart',
     outConVoz
@@ -1459,7 +1446,7 @@ window.renderFrameAtTime = function(globalT) {
     '-i', audioSinVoz,
     '-c:v', 'copy',
     '-c:a', 'aac',
-    '-b:a', '192k',
+    '-b:a', '256k',
     '-shortest',
     '-movflags', '+faststart',
     outSinVoz
