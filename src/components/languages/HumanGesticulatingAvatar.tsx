@@ -49,19 +49,28 @@ interface Character3DRig {
   id: string;
   idle: string;
   talkMovie: string;
+  gestureMovies?: Partial<Record<Exclude<AvatarGestureMode, 'auto'>, string>>;
   talkFrames: string[];
-  poseCompendium: Partial<Record<Exclude<AvatarGestureMode, 'auto'> | 'blink', string>>;
+  poseCompendium: Partial<Record<Exclude<AvatarGestureMode, 'auto'> | 'blink' | 'turn', string>>;
 }
 
 // =========================================================================
-// COMPENDIO DE POSES, GESTOS DE MANOS Y EXPRESIONES NANO BANANA 2.1 A 60 FPS
+// COMPENDIO DE VIDEOS NEURONALES 3D (.MP4) Y POSES NANO BANANA 2.1 A 60 FPS
 // =========================================================================
 const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   claire: {
     id: 'claire',
     idle: '/images/languages/3d/mentor_female_3d.webp',
     talkMovie: '/images/languages/3d/movies/mentor_female_3d_talk.mp4',
+    gestureMovies: {
+      welcome: '/images/languages/3d/movies/mentor_female_3d_welcome.mp4',
+      explain: '/images/languages/3d/movies/mentor_female_3d_explain.mp4',
+      exclaim: '/images/languages/3d/movies/mentor_female_3d_exclaim.mp4',
+      inquire: '/images/languages/3d/movies/mentor_female_3d_inquire.mp4',
+      encourage: '/images/languages/3d/movies/mentor_female_3d_exclaim.mp4',
+    },
     talkFrames: [
+      '/images/languages/3d/mentor_female_3d_pose_turn.webp',
       '/images/languages/3d/mentor_female_3d_pose_explain.webp',
       '/images/languages/3d/mentor_female_3d_pose_exclaim.webp',
       '/images/languages/3d/mentor_female_3d_pose_inquire.webp',
@@ -77,16 +86,25 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
       encourage: '/images/languages/3d/mentor_female_3d_pose_encourage.webp',
       listen: '/images/languages/3d/mentor_female_3d_pose_listen.webp',
       blink: '/images/languages/3d/mentor_female_3d_idle_blink.webp',
+      turn: '/images/languages/3d/mentor_female_3d_pose_turn.webp',
     },
   },
   arthur: {
     id: 'arthur',
     idle: '/images/languages/3d/mentor_male_3d_v2.webp',
     talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+    gestureMovies: {
+      welcome: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+      explain: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+      exclaim: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+    },
     talkFrames: [
+      '/images/languages/3d/mentor_male_3d_pose_turn.webp',
+      '/images/languages/3d/mentor_male_3d_pose_turn_left.webp',
       '/images/languages/3d/mentor_male_3d_pose_explain.webp',
       '/images/languages/3d/mentor_male_3d_pose_exclaim.webp',
       '/images/languages/3d/mentor_male_3d_pose_inquire.webp',
+      '/images/languages/3d/mentor_male_3d_pose_encourage.webp',
       '/images/languages/3d/mentor_male_3d_talk_a.webp',
       '/images/languages/3d/mentor_male_3d_talk_c.webp',
       '/images/languages/3d/mentor_male_3d_v2_idle_blink.webp',
@@ -96,9 +114,10 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
       explain: '/images/languages/3d/mentor_male_3d_pose_explain.webp',
       exclaim: '/images/languages/3d/mentor_male_3d_pose_exclaim.webp',
       inquire: '/images/languages/3d/mentor_male_3d_pose_inquire.webp',
-      encourage: '/images/languages/3d/mentor_male_3d_talk_c.webp',
+      encourage: '/images/languages/3d/mentor_male_3d_pose_encourage.webp',
       listen: '/images/languages/3d/mentor_male_3d_talk_a.webp',
       blink: '/images/languages/3d/mentor_male_3d_v2_idle_blink.webp',
+      turn: '/images/languages/3d/mentor_male_3d_pose_turn.webp',
     },
   },
   shakespeare: {
@@ -107,6 +126,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
     talkMovie: '/images/languages/3d/movies/shakespeare_3d_talk.mp4',
     talkFrames: [
       '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
+      '/images/languages/3d/shakespeare_3d_pose_inquire.webp',
       '/images/languages/3d/shakespeare_3d_talk_a.webp',
       '/images/languages/3d/shakespeare_3d_talk_b.webp',
     ],
@@ -114,7 +134,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
       welcome: '/images/languages/3d/shakespeare_3d.webp',
       explain: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
       exclaim: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
-      inquire: '/images/languages/3d/shakespeare_3d.webp',
+      inquire: '/images/languages/3d/shakespeare_3d_pose_inquire.webp',
       encourage: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
       listen: '/images/languages/3d/shakespeare_3d.webp',
     },
@@ -478,7 +498,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     return 'auto';
   }, [activeGestureMode, avatarMood, isListening]);
 
-  // Renderizador Quirúrgico del Personaje 3D / Histórico con Compendio Multi-Pose y Cinemática 60 FPS
+  // Renderizador Quirúrgico del Personaje 3D / Histórico con Video Neuronal 3D (.mp4), Compendio Multi-Pose y Cinemática 60 FPS
   const renderLivingPuppet = () => {
     const canonicalSrc = characterRig.idle || avatarImage || '/images/languages/3d/mentor_female_3d.webp';
     const charKey = matchedFigure?.id || historicalFigureId || characterRig.id || name;
@@ -489,6 +509,8 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           imageSrc={canonicalSrc}
           characterId={charKey}
           isSpeaking={isPlaying}
+          videoSrc={characterRig.talkMovie}
+          gestureVideoMap={characterRig.gestureMovies}
           spokenText={currentText}
           poseCompendium={characterRig.poseCompendium}
           activeGesture={effectiveGestureProp}

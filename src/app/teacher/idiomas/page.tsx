@@ -1583,7 +1583,15 @@ export default function TeacherIdiomasPage() {
                         <span className="text-[10px] font-black text-slate-800">
                           {activeLesson.avatarName} · 60 FPS
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Cinemática Activa a 60 FPS" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Cinemática 3D Activa a 60 FPS" />
+                      </div>
+
+                      {/* Badge Superior Derecho: Telemetría de Video Neuronal 3D y Malla Esquelética */}
+                      <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-indigo-950/90 backdrop-blur-md border border-indigo-500/40 text-indigo-100 shadow-xs pointer-events-none">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                        <span className="text-[9px] font-mono font-bold tracking-tight">
+                          3D Video · Yaw/Hands/LipSync
+                        </span>
                       </div>
 
                       {/* Personaje 3D Articulado Centrado con Compendio de Gestos y Parpadeo Involuntario */}
