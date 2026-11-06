@@ -33,12 +33,12 @@ const OFFICIAL_EMAIL = "contacto@iskool.mx";
 const WHATSAPP_NUMBER_DISPLAY = "56 1140 4767";
 const WHATSAPP_DIRECT_URL =
   "https://wa.me/525611404767?text=Hola%2C%20acabo%20de%20ver%20el%20video%20oficial%20de%20iSkool%C2%AE%20y%20me%20gustar%C3%ADa%20agendar%20una%20demostraci%C3%B3n%20para%20mi%20instituci%C3%B3n.";
-const DIRECT_1080P_VIDEO_ID = "WgeQVmHDNJ4";
+const DIRECT_1080P_VIDEO_ID = "4mUbPIpJnDw";
 
 export default function VideoQrLandingPage() {
   const [config, setConfig] = useState<QrVideoConfig>({
-    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/WgeQVmHDNJ4",
-    youtubeId: initialConfig.youtubeId || "WgeQVmHDNJ4",
+    youtubeUrl: initialConfig.youtubeUrl || "https://youtu.be/4mUbPIpJnDw",
+    youtubeId: initialConfig.youtubeId || "4mUbPIpJnDw",
     title: initialConfig.title || "iSkool® — El Cerebro Vivo de tu Escuela",
     subtitle:
       initialConfig.subtitle ||
@@ -121,7 +121,7 @@ export default function VideoQrLandingPage() {
         setPresets(data.presets);
       }
     } catch {
-      // Mantiene configuración inicial WgeQVmHDNJ4 en caso de intermitencia
+      // Mantiene configuración inicial 4mUbPIpJnDw en caso de intermitencia
     }
   }, []);
 

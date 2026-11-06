@@ -28,8 +28,8 @@ export const QR_VIDEO_PRESETS: QrVideoPreset[] = [
     id: 'preset-iskool-comercial-oficial',
     label: 'Vídeo Comercial Oficial iSkool® (Con Voz)',
     description: 'Presentación ejecutiva oficial de iSkool® en alta definición para directivos y colegios privados.',
-    youtubeUrl: 'https://youtu.be/WgeQVmHDNJ4',
-    youtubeId: 'WgeQVmHDNJ4',
+    youtubeUrl: 'https://youtu.be/4mUbPIpJnDw',
+    youtubeId: '4mUbPIpJnDw',
     title: 'iSkool® — El Cerebro Vivo de tu Escuela',
     subtitle: 'Plataforma educativa integral potenciada con Inteligencia Artificial y tecnología creada en Canadá para colegios privados en México.'
   },
@@ -125,8 +125,8 @@ function getNodeFs() {
 }
 
 const DEFAULT_CONFIG: QrVideoConfig = {
-  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/WgeQVmHDNJ4',
-  youtubeId: initialConfig.youtubeId || 'WgeQVmHDNJ4',
+  youtubeUrl: initialConfig.youtubeUrl || 'https://youtu.be/4mUbPIpJnDw',
+  youtubeId: initialConfig.youtubeId || '4mUbPIpJnDw',
   title: initialConfig.title || 'iSkool® — El Cerebro Vivo de tu Escuela',
   subtitle:
     initialConfig.subtitle ||
@@ -152,7 +152,7 @@ function loadConfigFromDisk(): QrVideoConfig | null {
 
     if (node.fs.existsSync(runtimePath)) {
       const parsed = JSON.parse(node.fs.readFileSync(runtimePath, 'utf8'));
-      if (parsed && parsed.youtubeId) {
+      if (parsed && parsed.youtubeId && parsed.youtubeId !== 'WgeQVmHDNJ4') {
         runtimeConfig = { ...DEFAULT_CONFIG, ...parsed };
       }
     }

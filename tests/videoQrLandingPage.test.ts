@@ -4,21 +4,21 @@ import { GET } from '@/app/api/video-config/route';
 import fs from 'fs';
 import path from 'path';
 
-describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/WgeQVmHDNJ4 & QR WHATSAPP', () => {
-  it('debe tener configurado por defecto el video oficial https://youtu.be/WgeQVmHDNJ4 (ID: WgeQVmHDNJ4)', () => {
+describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/4mUbPIpJnDw & QR WHATSAPP', () => {
+  it('debe tener configurado por defecto el video oficial https://youtu.be/4mUbPIpJnDw (ID: 4mUbPIpJnDw)', () => {
     const config = QrVideoConfigService.getConfig();
-    expect(config.youtubeId).toBe('WgeQVmHDNJ4');
-    expect(extractYouTubeId(config.youtubeUrl)).toBe('WgeQVmHDNJ4');
+    expect(config.youtubeId).toBe('4mUbPIpJnDw');
+    expect(extractYouTubeId(config.youtubeUrl)).toBe('4mUbPIpJnDw');
     expect(config.autoplay).toBe(true);
   });
 
-  it('el endpoint /api/video-config debe retornar el video WgeQVmHDNJ4 y la URL permanente https://iskool.mx/video', async () => {
+  it('el endpoint /api/video-config debe retornar el video 4mUbPIpJnDw y la URL permanente https://iskool.mx/video', async () => {
     const res = await GET();
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.success).toBe(true);
     expect(data.permanentQrUrl).toBe('https://iskool.mx/video');
-    expect(data.config.youtubeId).toBe('WgeQVmHDNJ4');
+    expect(data.config.youtubeId).toBe('4mUbPIpJnDw');
   });
 
   it('debe contar con los activos optimizados del QR de WhatsApp (< 300KB) y escenario Nano Banana 2.1', () => {
@@ -35,12 +35,12 @@ describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/WgeQVmHDNJ4
     expect(fs.statSync(stageWebp).size).toBeLessThan(300 * 1024);
   });
 
-  it('la página src/app/video/page.tsx debe incluir el video WgeQVmHDNJ4, audio activo (mute=0), QR oficial, contacto@iskool.mx y calidad hd1080', () => {
+  it('la página src/app/video/page.tsx debe incluir el video 4mUbPIpJnDw, audio activo (mute=0), QR oficial, contacto@iskool.mx y calidad hd1080', () => {
     const pageSrc = fs.readFileSync(
       path.join(process.cwd(), 'src', 'app', 'video', 'page.tsx'),
       'utf8'
     );
-    expect(pageSrc).toContain('WgeQVmHDNJ4');
+    expect(pageSrc).toContain('4mUbPIpJnDw');
     expect(pageSrc).toContain('contacto@iskool.mx');
     expect(pageSrc).toContain('/brand/iskool-qr-whatsapp-oficial.webp');
     expect(pageSrc).toContain('autoplay=1&mute=0');
@@ -59,7 +59,7 @@ describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/WgeQVmHDNJ4
     const manifestPath = path.join(process.cwd(), 'src', 'data', 'video-1080p', 'manifest.json');
     expect(fs.existsSync(manifestPath)).toBe(true);
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    expect(manifest.videoId).toBe('WgeQVmHDNJ4');
+    expect(manifest.videoId).toBe('4mUbPIpJnDw');
     expect(manifest.width).toBe(1920);
     expect(manifest.height).toBe(1080);
     expect(manifest.chunks.length).toBeGreaterThan(20);
