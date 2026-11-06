@@ -2,7 +2,7 @@
   "videoId": "WgeQVmHDNJ4",
   "width": 1920,
   "height": 1080,
-  "totalSize": 24197245,
+  "totalSize": 23913985,
   "chunkSize": 921600,
   "chunks": [
     {
@@ -133,12 +133,7 @@
     {
       "name": "part-25.bin",
       "offset": 23040000,
-      "size": 921600
-    },
-    {
-      "name": "part-26.bin",
-      "offset": 23961600,
-      "size": 235645
+      "size": 873985
     }
   ]
 }

@@ -55,10 +55,10 @@ const SCENE_DEFS = [
   },
   {
     id: 'scene06',
-    title: 'Generación de Planeaciones SEP NEM + Estudio iSkool (34 Bloques & Evaluación Óptica OMR)',
+    title: 'Generación de Planeaciones SEP NEM + Estudio iSkool (Clases con Interacción Nunca Antes Vista)',
     preWait: 0.25,
     postWait: 0.30,
-    ssmlText: 'El Generador de Planeaciones crea secuencias didácticas oficiales listas para clase o fechas programadas. Y en el Estudio Áiskul, el maestro diseña flujos interactivos con treinta y cuatro bloques, exámenes ópticos imprimibles y simulador de alumno en vivo.'
+    ssmlText: 'El Generador de Planeaciones crea secuencias didácticas oficiales listas para clase o fechas programadas. Y en el Estudio Áiskul, el docente crea clases con una interacción nunca antes vista, con unos cuantos clics y en unos cuantos minutos: el límite es su imaginación.'
   },
   {
     id: 'scene07',
@@ -304,16 +304,20 @@ async function main() {
 
     const sourceAudio = fs.existsSync(matchedWav) ? matchedWav : rawMp3;
 
-    // Master with natural, unhurried cadence (atempo=1.06, zero internal stop_periods chopping)
-    // and reference-locked spectral balance matched 100% to scene12 (es-419-advisor-7)
-    execFileSync(ffmpegPath, [
-      '-y', '-i', sourceAudio,
-      '-af', 'atempo=1.06,highpass=f=75,equalizer=f=240:t=q:w=1.2:g=1.2,equalizer=f=3550:t=q:w=1.4:g=1.2,loudnorm=I=-14.0:TP=-1.0:LRA=6.0',
-      '-ar', '44100', '-ac', '2',
-      wavNorm
-    ], { stdio: 'ignore' });
+    if (s.id === 'scene06' || !fs.existsSync(wavNorm)) {
+      // Master with natural, unhurried cadence (atempo=1.06, zero internal stop_periods chopping)
+      // and reference-locked spectral balance matched 100% to scene12 (es-419-advisor-7)
+      execFileSync(ffmpegPath, [
+        '-y', '-i', sourceAudio,
+        '-af', 'atempo=1.06,highpass=f=75,equalizer=f=240:t=q:w=1.2:g=1.2,equalizer=f=3550:t=q:w=1.4:g=1.2,loudnorm=I=-14.0:TP=-1.0:LRA=6.0',
+        '-ar', '44100', '-ac', '2',
+        wavNorm
+      ], { stdio: 'ignore' });
+      normalizeWavToTargetActiveRms(wavNorm, -14.8);
+    }
 
-    const finalRmsDb = normalizeWavToTargetActiveRms(wavNorm, -14.8);
+    const bufNorm = fs.readFileSync(wavNorm);
+    const finalRmsDb = measureRmsDb(bufNorm, findWavDataOffset(bufNorm));
     const voiceDur = getExactPcmWavDuration(wavNorm);
 
     const startTime = Number(cursorTime.toFixed(2));

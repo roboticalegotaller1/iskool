@@ -47,6 +47,12 @@ describe('🎬 SALA EJECUTIVA DE VIDEO (/video) — https://youtu.be/WgeQVmHDNJ4
     expect(pageSrc).toContain('vq=hd1080');
     expect(pageSrc).toContain('cc_load_policy=0');
     expect(pageSrc).toContain('/api/video-stream');
+    expect(pageSrc).toContain('h-[100svh]');
+    expect(pageSrc).toContain('Ver contacto ↓');
+    expect(pageSrc).toContain('Toca para ver la presentación con sonido');
+    expect(pageSrc).not.toContain('Sonido HD activo');
+    expect(pageSrc).toContain('whitespace-nowrap');
+    expect(pageSrc).toContain('break-all');
   });
 
   it('debe garantizar el stream nativo directo en 1080p (1920x1080) sin caída a 144p', () => {

@@ -16,6 +16,7 @@ const artifactDir = 'C:/Users/kami-/.gemini/antigravity/brain/fde3a4d8-54b9-4be2
 const officialLogoPath = path.join(artifactDir, '.user_uploaded', 'media_1793858758766_265c7960.jpg');
 const qrWhatsappPath = path.join(artifactDir, '.user_uploaded', 'media_1793859728185_a6c5dddf.jpg');
 const heroBrainBgPath = path.join(artifactDir, 'iskool_v2_hero_brain_bg_1793860464866.jpg');
+const pillarsBgPath = path.join(artifactDir, 'cerebro_vivo_5_pilares_background_1793923659556.jpg');
 const bumperBgPath = path.join(artifactDir, 'iskool_v2_cortinilla_bg_1793860481647.jpg');
 const ctaBgPath = path.join(artifactDir, 'iskool_v2_cta_sales_bg_1793860499035.jpg');
 
@@ -44,6 +45,7 @@ async function main() {
     logo: toDataURI(officialLogoPath),
     qrWhatsapp: toDataURI(qrWhatsappPath),
     heroBrainBg: toDataURI(heroBrainBgPath),
+    pillarsBg: toDataURI(pillarsBgPath),
     bumperBg: toDataURI(bumperBgPath),
     ctaBg: toDataURI(ctaBgPath),
     screens: {}
@@ -101,6 +103,7 @@ window.initAssets = async function(rawAssets, manifestData) {
     loadImg('logo', rawAssets.logo),
     loadImg('qrWhatsapp', rawAssets.qrWhatsapp),
     loadImg('heroBrainBg', rawAssets.heroBrainBg),
+    loadImg('pillarsBg', rawAssets.pillarsBg),
     loadImg('bumperBg', rawAssets.bumperBg),
     loadImg('ctaBg', rawAssets.ctaBg)
   ];
@@ -327,8 +330,8 @@ function drawSignalArrow(fromX, fromY, toX, toY, label, sublabel, color = '#1D68
   const pillW = Math.max(w1, w2) + 46;
   const pillH = sublabel ? 64 : 44;
 
-  const px = clamp(fromX - pillW / 2, 24, 1896 - pillW);
-  const py = clamp(fromY - pillH / 2, 24, 1056 - pillH);
+  const px = clamp(fromX - pillW / 2, 96, 1824 - pillW);
+  const py = clamp(fromY - pillH / 2, 48, 1032 - pillH);
   const cx = px + pillW / 2;
   const cy = py + pillH / 2;
 
@@ -637,6 +640,238 @@ function drawFivePillarsAndBenefitsSlide(localT, duration) {
   ctx.restore();
 }
 
+// Draw Didactic Central Infographic: Los 5 Pilares de la Educación sobre Fondo Nano Banana 2.1 (12.4s - 21.2s)
+function drawFivePillarsCentralInfographic(slideT, duration, sceneLocalT) {
+  const enter = easeOutCubic(slideT / 0.45);
+  const exit = slideT > duration - 0.35 ? easeInOutCubic((duration - slideT) / 0.35) : 1;
+  const masterAlpha = enter * exit;
+
+  ctx.save();
+  ctx.globalAlpha = masterAlpha;
+
+  // 1. Background image (Crystal Brain at top center + 5 fiber-optic bases: blue, cyan, violet, green, amber)
+  const bg = IMAGES.pillarsBg || IMAGES.heroBrainBg;
+  const z = 1.0 + clamp(slideT / duration) * 0.025;
+  ctx.save();
+  ctx.translate(960, 540);
+  ctx.scale(z, z);
+  ctx.drawImage(bg, -960, -540, 1920, 1080);
+  ctx.restore();
+
+  // Soft top veil for maximum typography contrast without hiding the 3D crystal brain or beams
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 165);
+  topGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+  topGrad.addColorStop(0.75, 'rgba(248, 250, 252, 0.78)');
+  topGrad.addColorStop(1, 'rgba(248, 250, 252, 0.0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, 1920, 165);
+
+  // 2. Top Executive Header: Official Logo + Main Title "Los 5 Pilares de la Educación"
+  const logo = IMAGES.logo;
+  if (logo) {
+    const lh = 56;
+    const lw = lh * (logo.width / logo.height);
+    ctx.drawImage(logo, 96, 34, lw, lh);
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#0A193A';
+  ctx.font = '900 46px "Segoe UI", sans-serif';
+  ctx.fillText('Los 5 Pilares de la Educación', 960, 64);
+
+  ctx.fillStyle = '#1D68FF';
+  ctx.font = '800 21px "Segoe UI", sans-serif';
+  ctx.fillText('Conectados en Tiempo Real con Beneficios Reales desde el Primer Día', 960, 102);
+
+  // Top-right Origin Badge
+  ctx.save();
+  ctx.fillStyle = '#0A193A';
+  roundRect(ctx, 1520, 32, 304, 58, 18);
+  ctx.fill();
+  ctx.strokeStyle = '#1D68FF';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#60A5FA';
+  ctx.font = '800 13px "Segoe UI", sans-serif';
+  ctx.fillText('TECNOLOGÍA CANADIENSE • IA', 1672, 55);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 18px "Segoe UI", sans-serif';
+  ctx.fillText('iSkool®', 1672, 78);
+  ctx.restore();
+
+  // 3. Central Crystal Brain Label: "iSkool® — El Cerebro Vivo con IA" over the brain hub pedestal
+  const brainPop = easeOutCubic(clamp((slideT - 0.15) / 0.5));
+  ctx.save();
+  ctx.translate(960, 456);
+  ctx.scale(0.92 + 0.08 * brainPop, 0.92 + 0.08 * brainPop);
+
+  const bw = 540;
+  const bh = 66;
+  ctx.shadowColor = 'rgba(10, 25, 58, 0.28)';
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 10;
+  ctx.fillStyle = 'rgba(10, 25, 58, 0.95)';
+  roundRect(ctx, -bw / 2, -bh / 2, bw, bh, 33);
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#00C2FF';
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 25px "Segoe UI", sans-serif';
+  ctx.fillText('iSkool® — El Cerebro Vivo con IA', 0, 9);
+  ctx.restore();
+
+  // 4. The 5 Pillars aligned directly over the 5 crystal bases (left to right: azul, cian, violeta, verde, ámbar)
+  // Staggered appearance synchronized to the voice (~1 pillar every 1.2s starting at 14.5s)
+  const bases = [
+    {
+      num: 'PILAR 01',
+      name: 'Directivos',
+      benefit: 'Gobernanza & KPIs 360°',
+      detail: 'Control multicampus en tiempo real',
+      color: '#1D68FF',
+      glow: 'rgba(29, 104, 255, 0.26)',
+      cx: 244,
+      discY: 748,
+      cardY: 774,
+      appearAt: 14.5
+    },
+    {
+      num: 'PILAR 02',
+      name: 'Coordinadores',
+      benefit: 'Supervisión & Espejo 1:1',
+      detail: 'Auditoría de aula en vivo sin interrumpir',
+      color: '#0284C7',
+      glow: 'rgba(2, 132, 199, 0.26)',
+      cx: 574,
+      discY: 814,
+      cardY: 838,
+      appearAt: 15.7
+    },
+    {
+      num: 'PILAR 03',
+      name: 'Docentes',
+      benefit: 'Planeación SEP & Aula Viva',
+      detail: 'Clases interactivas en pocos minutos',
+      color: '#7C3AED',
+      glow: 'rgba(124, 58, 237, 0.26)',
+      cx: 960,
+      discY: 842,
+      cardY: 864,
+      appearAt: 16.9
+    },
+    {
+      num: 'PILAR 04',
+      name: 'Alumnos',
+      benefit: 'Gamificación & Idiomas',
+      detail: '20 mundos, avatares y fluidez fonética',
+      color: '#10B981',
+      glow: 'rgba(16, 185, 129, 0.26)',
+      cx: 1346,
+      discY: 814,
+      cardY: 838,
+      appearAt: 18.1
+    },
+    {
+      num: 'PILAR 05',
+      name: 'Tutores',
+      benefit: 'Logros, Avisos & Pagos SAT',
+      detail: 'Cobranza y CFDI 4.0 al instante',
+      color: '#D97706',
+      glow: 'rgba(217, 119, 6, 0.26)',
+      cx: 1676,
+      discY: 748,
+      cardY: 774,
+      appearAt: 19.3
+    }
+  ];
+
+  bases.forEach((b, idx) => {
+    const baseIntro = easeOutCubic(clamp((slideT - 0.25 - idx * 0.08) / 0.45));
+    const voiceActive = easeOutCubic(clamp((sceneLocalT - b.appearAt) / 0.45));
+    const cardAlpha = baseIntro * (0.34 + 0.66 * voiceActive);
+    if (cardAlpha <= 0.01) return;
+
+    const pulse = 0.5 + 0.5 * Math.sin((sceneLocalT - b.appearAt) * 6.5);
+    const cardW = 304;
+    const cardH = 148;
+
+    ctx.save();
+    ctx.globalAlpha = masterAlpha * cardAlpha;
+
+    // Glowing energy beacon on the crystal base center when activated by voice
+    if (voiceActive > 0.05) {
+      ctx.beginPath();
+      ctx.arc(b.cx, b.discY - 22, (20 + pulse * 10) * voiceActive, 0, Math.PI * 2);
+      ctx.fillStyle = b.glow;
+      ctx.fill();
+    }
+
+    // Pillar number pill floating right above the crystal disc
+    const pillW = 142;
+    const pillH = 32;
+    ctx.fillStyle = b.color;
+    roundRect(ctx, b.cx - pillW / 2, b.discY - 40, pillW, pillH, 16);
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 13.5px "Segoe UI", sans-serif';
+    ctx.fillText(b.num, b.cx, b.discY - 19);
+
+    // Didactic Pillar Card anchored cleanly to the base (elevates & scales on voice cue)
+    const cy = b.cardY + (1 - voiceActive) * 14;
+    ctx.translate(b.cx, cy + cardH / 2);
+    const sc = 0.94 + 0.06 * voiceActive;
+    ctx.scale(sc, sc);
+
+    ctx.shadowColor = 'rgba(10, 25, 58, 0.22)';
+    ctx.shadowBlur = 18 + 12 * voiceActive;
+    ctx.shadowOffsetY = 8 + 4 * voiceActive;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+    roundRect(ctx, -cardW / 2, -cardH / 2, cardW, cardH, 22);
+    ctx.fill();
+    ctx.lineWidth = 2.5 + 1.0 * voiceActive;
+    ctx.strokeStyle = b.color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Top color accent bar inside card
+    ctx.fillStyle = b.color;
+    roundRect(ctx, -56, -cardH / 2 + 10, 112, 5, 2.5);
+    ctx.fill();
+
+    // Pillar Name
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0A193A';
+    ctx.font = '900 29px "Segoe UI", sans-serif';
+    ctx.fillText(b.name, 0, -cardH / 2 + 50);
+
+    // Primary Benefit
+    ctx.fillStyle = b.color;
+    ctx.font = '800 17.5px "Segoe UI", sans-serif';
+    ctx.fillText(b.benefit, 0, -cardH / 2 + 84);
+
+    // Operational Detail
+    ctx.fillStyle = '#475569';
+    ctx.font = '600 15px "Segoe UI", sans-serif';
+    ctx.fillText(b.detail, 0, -cardH / 2 + 116);
+
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
 // Top Executive Header Bar & Bottom Subtitle Bar
 function drawStudioHeaderAndFooter(portalName, stepBadge, captionText) {
   ctx.save();
@@ -726,10 +961,10 @@ window.renderFrameAtTime = function(globalT) {
   const p = clamp(localT / dur);
 
   // =========================================================================
-  // SCENE 1: Keynote Intro (0..4.6s) -> 5 Pilares & Beneficios Reales (4.6..12.2s) -> Cortinilla CEO (12.2..14.4s) -> Resumen Ejecutivo (14.4..dur)
+  // SCENE 1: Keynote Intro (0..8.5s) -> 5 Pilares & Beneficios Reales (8.5..12.4s) -> Infografía Central 5 Pilares (12.4..21.2s) -> Cortinilla CEO (21.2..23.0s) -> Resumen Ejecutivo (23.0..dur)
   // =========================================================================
   if (sc.id === 'scene01') {
-    if (localT < 4.6) {
+    if (localT < 8.5) {
       // Official iSkool® (/ˈa͡ɪskˌuːl/) Keynote Opening: El Cerebro Vivo + IA + Tecnología Creada en Canadá
       const ep = easeOutCubic(localT / 0.8);
       ctx.drawImage(IMAGES.heroBrainBg, 0, 0, 1920, 1080);
@@ -789,18 +1024,20 @@ window.renderFrameAtTime = function(globalT) {
         ctx.textAlign = 'center';
         ctx.fillText(pn, bx + 145, by + 35);
       });
-    } else if (localT < 12.2) {
-      drawFivePillarsAndBenefitsSlide(localT - 4.6, 7.6);
-    } else if (localT < 14.4) {
+    } else if (localT < 12.4) {
+      drawFivePillarsAndBenefitsSlide(localT - 8.5, 3.9);
+    } else if (localT < 21.2) {
+      drawFivePillarsCentralInfographic(localT - 12.4, 8.8, localT);
+    } else if (localT < 23.0) {
       drawCortinilla(
         'MÓDULO EJECUTIVO 01',
         'Portal de CEO',
         'Gobernanza Escolar, Admisión 360°, Triage Cognitivo & Supervisión en Vivo',
-        localT - 12.2,
-        2.2
+        localT - 21.2,
+        1.8
       );
     } else {
-      const uiT = localT - 14.4;
+      const uiT = localT - 23.0;
       drawStudioHeaderAndFooter(
         '1. Portal de CEO',
         'Consola de Mando Corporativo & Resumen Ejecutivo',
@@ -890,7 +1127,7 @@ window.renderFrameAtTime = function(globalT) {
   }
 
   // =========================================================================
-  // SCENE 6: Generador Curricular SEP NEM 360° & Estudio iSkool de Bloques
+  // SCENE 6: Generador Curricular SEP NEM 360° & Estudio iSkool
   // =========================================================================
   else if (sc.id === 'scene06') {
     const splitTime = dur * 0.52;
@@ -907,13 +1144,13 @@ window.renderFrameAtTime = function(globalT) {
       const subT = localT - splitTime;
       drawStudioHeaderAndFooter(
         '2. Portal del Profesor',
-        'Estudio iSkool — 34 Bloques Interactivos, Exámenes OMR & Simulador en Vivo',
-        'Diseña actividades interactivas, exámenes ópticos imprimibles OMR (0 Tokens) y simula la vista del alumno en tiempo real.'
+        'Estudio iSkool — Clases con Interacción Nunca Antes Vista',
+        'Crea clases interactivas de calidad con unos cuantos clics y en pocos minutos: el límite es tu imaginación.'
       );
       drawStudioScreen('img_08', { darkBg: false, zoom: 1.0 + (subT / (dur - splitTime)) * 0.012 });
-      drawSignalArrow(510, 420, 235, 420, '34 Bloques + Evaluación Óptica OMR', 'Exámenes imprimibles y reactivos interactivos', '#1D68FF', (subT - 0.25) / 0.45, globalT);
-      drawSignalArrow(885, 250, 885, 515, 'Constructor de Flujo por Nodos', 'Bifurcación condicional y tarjetas ricas 3D', '#10B981', (subT - 1.0) / 0.45, globalT);
-      drawSignalArrow(1310, 680, 1590, 680, 'Simulador de Alumno en Vivo', 'Previsualiza voz e interacción antes de publicar', '#8B5CF6', (subT - 1.75) / 0.45, globalT);
+      drawSignalArrow(510, 420, 235, 420, 'Unos Cuantos Clics', 'Crea clases interactivas en pocos minutos', '#1D68FF', (subT - 0.25) / 0.45, globalT);
+      drawSignalArrow(885, 250, 885, 515, 'Interacción Nunca Antes Vista', 'Experiencias dinámicas de alta calidad pedagógica', '#10B981', (subT - 1.0) / 0.45, globalT);
+      drawSignalArrow(1310, 680, 1590, 680, 'El Límite es tu Imaginación', 'Simulador de alumno y publicación en tiempo real', '#8B5CF6', (subT - 1.75) / 0.45, globalT);
     }
   }
 
@@ -1341,23 +1578,24 @@ window.renderFrameAtTime = function(globalT) {
   // Save forensic preview snapshots across ALL key scenes so every single arrow can be verified visually
   const previewSnapshots = [
     { t: 2.2, file: path.join(artifactDir, 'preview_v2_00_keynote_cerebro_vivo_ia_canada.jpg') },
-    { t: 8.5, file: path.join(artifactDir, 'preview_v2_01_cinco_pilares_beneficios.jpg') },
-    { t: 13.3, file: path.join(artifactDir, 'preview_v2_cortinilla_ceo.jpg') },
-    { t: 19.0, file: path.join(artifactDir, 'preview_v2_01b_resumen_ejecutivo.jpg') },
-    { t: 28.5, file: path.join(artifactDir, 'preview_v2_02_admision_360.jpg') },
-    { t: 39.5, file: path.join(artifactDir, 'preview_v2_03_triage_cognitivo.jpg') },
-    { t: 48.5, file: path.join(artifactDir, 'preview_v2_04_espejo_vivo.jpg') },
-    { t: 60.0, file: path.join(artifactDir, 'preview_v2_05_teacher_daylight.jpg') },
-    { t: 68.0, file: path.join(artifactDir, 'preview_v2_06a_planeacion_sep.jpg') },
-    { t: 74.0, file: path.join(artifactDir, 'preview_v2_06b_estudio_bloques_omr.jpg') },
-    { t: 80.5, file: path.join(artifactDir, 'preview_v2_07_libro_magico.jpg') },
-    { t: 89.0, file: path.join(artifactDir, 'preview_v2_08a_estudiante_misiones.jpg') },
-    { t: 93.5, file: path.join(artifactDir, 'preview_v2_08b_estudiante_avatar.jpg') },
-    { t: 98.0, file: path.join(artifactDir, 'preview_v2_09a_idiomas_mentora.jpg') },
-    { t: 103.5, file: path.join(artifactDir, 'preview_v2_09b_idiomas_karaoke.jpg') },
-    { t: 111.5, file: path.join(artifactDir, 'preview_v2_10_gamificacion_20_mundos.jpg') },
-    { t: 121.5, file: path.join(artifactDir, 'preview_v2_11a_padres_muro_avisos.jpg') },
-    { t: 126.5, file: path.join(artifactDir, 'preview_v2_11b_padres_pagos_sat.jpg') },
+    { t: 10.0, file: path.join(artifactDir, 'preview_v2_01_cinco_pilares_beneficios.jpg') },
+    { t: 17.0, file: path.join(artifactDir, 'preview_v2_01a_cinco_pilares_infografia_central.jpg') },
+    { t: 22.0, file: path.join(artifactDir, 'preview_v2_cortinilla_ceo.jpg') },
+    { t: 27.0, file: path.join(artifactDir, 'preview_v2_01b_resumen_ejecutivo.jpg') },
+    { t: 38.0, file: path.join(artifactDir, 'preview_v2_02_admision_360.jpg') },
+    { t: 55.0, file: path.join(artifactDir, 'preview_v2_03_triage_cognitivo.jpg') },
+    { t: 69.0, file: path.join(artifactDir, 'preview_v2_04_espejo_vivo.jpg') },
+    { t: 84.0, file: path.join(artifactDir, 'preview_v2_05_teacher_daylight.jpg') },
+    { t: 98.0, file: path.join(artifactDir, 'preview_v2_06a_planeacion_sep.jpg') },
+    { t: 106.0, file: path.join(artifactDir, 'preview_v2_06b_estudio_bloques_omr.jpg') },
+    { t: 114.0, file: path.join(artifactDir, 'preview_v2_07_libro_magico.jpg') },
+    { t: 126.0, file: path.join(artifactDir, 'preview_v2_08a_estudiante_misiones.jpg') },
+    { t: 133.0, file: path.join(artifactDir, 'preview_v2_08b_estudiante_avatar.jpg') },
+    { t: 141.0, file: path.join(artifactDir, 'preview_v2_09a_idiomas_mentora.jpg') },
+    { t: 149.0, file: path.join(artifactDir, 'preview_v2_09b_idiomas_karaoke.jpg') },
+    { t: 160.0, file: path.join(artifactDir, 'preview_v2_10_gamificacion_20_mundos.jpg') },
+    { t: 173.0, file: path.join(artifactDir, 'preview_v2_11a_padres_muro_avisos.jpg') },
+    { t: 181.0, file: path.join(artifactDir, 'preview_v2_11b_padres_pagos_sat.jpg') },
     { t: totalDuration - 3.0, file: path.join(artifactDir, 'preview_v2_12_cta_contacto_qr.jpg') }
   ];
   for (const snap of previewSnapshots) {

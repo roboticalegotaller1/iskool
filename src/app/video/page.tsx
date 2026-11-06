@@ -16,7 +16,8 @@ import {
   MessageCircle,
   Phone,
   Maximize2,
-  RotateCcw
+  RotateCcw,
+  ChevronDown
 } from "lucide-react";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
 import {
@@ -53,9 +54,9 @@ export default function VideoQrLandingPage() {
 
   const [presets, setPresets] = useState<QrVideoPreset[]>(QR_VIDEO_PRESETS);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [useYtAudioBridge, setUseYtAudioBridge] = useState<boolean>(true);
+  const [needsSoundConfirmation, setNeedsSoundConfirmation] = useState<boolean>(false);
   const [nativeControlsReady, setNativeControlsReady] = useState<boolean>(false);
-  const [iframeScale, setIframeScale] = useState<number>(0.5);
+  const [iframeScale, setIframeScale] = useState<number>(1);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
@@ -72,13 +73,10 @@ export default function VideoQrLandingPage() {
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const audioBridgeIframeRef = useRef<HTMLIFrameElement | null>(null);
   const playerWrapperRef = useRef<HTMLDivElement | null>(null);
   const stageViewportRef = useRef<HTMLDivElement | null>(null);
-  const hasUserToggledAudioRef = useRef<boolean>(false);
-  const useYtAudioBridgeRef = useRef<boolean>(true);
-  const ytBridgePlayingUnmutedRef = useRef<boolean>(false);
-  const userInteractedRef = useRef<boolean>(false);
+  const contactSectionRef = useRef<HTMLElement | null>(null);
+  const hasUserConfirmedAudioRef = useRef<boolean>(false);
 
   const isDirect1080pStream = config.youtubeId === DIRECT_1080P_VIDEO_ID;
 
@@ -138,46 +136,14 @@ export default function VideoQrLandingPage() {
     }
   }, [fetchActiveConfig]);
 
-  const triggerAudioBridgeUnmuteAndPlay = useCallback(() => {
-    if (!useYtAudioBridgeRef.current) return;
-    const targetWin = audioBridgeIframeRef.current?.contentWindow;
-    if (!targetWin) return;
-    targetWin.postMessage(
-      JSON.stringify({
-        event: "listening",
-        id: 1,
-        channel: "widget"
-      }),
-      "*"
-    );
-    const sendCmd = (func: string, args: unknown[] = []) => {
-      targetWin.postMessage(
-        JSON.stringify({
-          event: "command",
-          func,
-          args
-        }),
-        "*"
-      );
-    };
-    sendCmd("unloadModule", ["captions"]);
-    sendCmd("unloadModule", ["cc"]);
-    sendCmd("unMute");
-    sendCmd("setVolume", [100]);
-    sendCmd("playVideo");
-  }, []);
-
-  // Arranque inmediato en 1080p nativo con audio activo desde el segundo 0:00
-  // Si el navegador permite <video> con sonido directo, usa el audio nativo del MP4 1080p;
-  // si el navegador bloquea el audio de primer origen en visita fría, activa al instante el puente de audio pre-autorizado (MEI) sincronizado cuadro a cuadro con el video 1080p.
+  // Intentar reproducción directa con sonido; si el navegador exige gesto (iOS Safari, Android, pestaña fría),
+  // mostrar capa universal a pantalla completa "Toca para ver la presentación con sonido".
   useEffect(() => {
     if (!isDirect1080pStream) return;
     const v = videoRef.current;
     if (!v) return;
 
     let cancelled = false;
-    let fallbackPlayTimer: ReturnType<typeof setTimeout> | null = null;
-    let bridgeAuditTimer: ReturnType<typeof setTimeout> | null = null;
 
     const startPlayback = async () => {
       try {
@@ -185,191 +151,30 @@ export default function VideoQrLandingPage() {
         v.volume = 1.0;
         await v.play();
         if (cancelled) return;
-        useYtAudioBridgeRef.current = false;
-        ytBridgePlayingUnmutedRef.current = false;
-        setUseYtAudioBridge(false);
-        setNativeControlsReady(true);
-        setIsMuted(false);
+        if (!v.muted && v.volume > 0) {
+          setIsMuted(false);
+          setNeedsSoundConfirmation(false);
+          setNativeControlsReady(true);
+        } else {
+          setIsMuted(true);
+          setNeedsSoundConfirmation(true);
+        }
       } catch {
         if (cancelled) return;
-        if (userInteractedRef.current && !hasUserToggledAudioRef.current) {
-          try {
-            v.muted = false;
-            v.volume = 1.0;
-            await v.play();
-            useYtAudioBridgeRef.current = false;
-            setUseYtAudioBridge(false);
-            setNativeControlsReady(true);
-            setIsMuted(false);
-            return;
-          } catch {
-            // Continúa al puente
-          }
-        }
-
-        // Activar puente de audio inmediato (MEI) + arranque instantáneo del video 1080p
+        // Fallback: pre-arrancar imagen en silencio de fondo y mostrar confirmación universal de sonido
+        setIsMuted(true);
+        setNeedsSoundConfirmation(true);
         v.muted = true;
-        useYtAudioBridgeRef.current = true;
-        setUseYtAudioBridge(true);
-        triggerAudioBridgeUnmuteAndPlay();
         v.play().catch(() => {});
-
-        fallbackPlayTimer = setTimeout(() => {
-          if (!cancelled && videoRef.current && videoRef.current.paused) {
-            videoRef.current.play().catch(() => {});
-          }
-        }, 250);
-
-        bridgeAuditTimer = setTimeout(() => {
-          if (cancelled || hasUserToggledAudioRef.current) return;
-          const el = videoRef.current;
-          if (!el) return;
-          if (!el.muted && !el.paused) {
-            setIsMuted(false);
-          } else if (ytBridgePlayingUnmutedRef.current) {
-            setIsMuted(false);
-          } else {
-            setIsMuted(true);
-          }
-        }, 1800);
       }
     };
 
     startPlayback();
 
-    const handleBridgeMessage = (event: MessageEvent) => {
-      if (!useYtAudioBridgeRef.current) return;
-      if (typeof event.data !== "string") return;
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload?.event === "onReady" || payload?.event === "initialDelivery") {
-          triggerAudioBridgeUnmuteAndPlay();
-          return;
-        }
-
-        if (payload?.event === "onStateChange" || payload?.event === "infoDelivery") {
-          const info = payload?.info;
-          const state =
-            typeof info === "number" ? info : info?.playerState;
-
-          if ((state === 1 || state === 3) && !ytBridgePlayingUnmutedRef.current) {
-            triggerAudioBridgeUnmuteAndPlay();
-          }
-
-          const el = videoRef.current;
-          if (!el) return;
-
-          if (typeof info === "object" && info !== null) {
-            if (typeof info.currentTime === "number" && info.currentTime > 0) {
-              const wasAlreadySynced = ytBridgePlayingUnmutedRef.current;
-              ytBridgePlayingUnmutedRef.current = info.muted !== true;
-              if (!hasUserToggledAudioRef.current && info.muted !== true) {
-                setIsMuted(false);
-              }
-              if (el.paused) {
-                el.play().catch(() => {});
-              }
-              const drift = Math.abs(el.currentTime - info.currentTime);
-              if (!wasAlreadySynced || drift > 0.12) {
-                el.currentTime = info.currentTime;
-              }
-            } else if (state === 1) {
-              ytBridgePlayingUnmutedRef.current = true;
-              if (!hasUserToggledAudioRef.current) {
-                setIsMuted(false);
-              }
-              if (el.paused) {
-                el.play().catch(() => {});
-              }
-            }
-          }
-        }
-      } catch {
-        // Ignorar mensajes externos
-      }
-    };
-
-    const handoverToNativeUnmutedAudio = (evt: Event) => {
-      userInteractedRef.current = true;
-      const target = evt.target as HTMLElement | null;
-      if (target?.closest?.('[data-audio-control="true"]')) {
-        return;
-      }
-
-      const el = videoRef.current;
-      if (!el) return;
-
-      if (useYtAudioBridgeRef.current) {
-        useYtAudioBridgeRef.current = false;
-        ytBridgePlayingUnmutedRef.current = false;
-        setUseYtAudioBridge(false);
-        setNativeControlsReady(true);
-        if (!hasUserToggledAudioRef.current) {
-          el.muted = false;
-          el.volume = 1.0;
-          el.play().catch(() => {});
-          setIsMuted(false);
-        }
-      } else if (!hasUserToggledAudioRef.current && el.muted) {
-        el.muted = false;
-        el.volume = 1.0;
-        el.play().catch(() => {});
-        setNativeControlsReady(true);
-        setIsMuted(false);
-      }
-    };
-
-    window.addEventListener("message", handleBridgeMessage);
-    window.addEventListener("click", handoverToNativeUnmutedAudio, {
-      capture: true,
-      passive: true
-    });
-    window.addEventListener("mousedown", handoverToNativeUnmutedAudio, {
-      capture: true,
-      passive: true
-    });
-    window.addEventListener("pointerup", handoverToNativeUnmutedAudio, {
-      capture: true,
-      passive: true
-    });
-    window.addEventListener("keydown", handoverToNativeUnmutedAudio, {
-      capture: true,
-      passive: true
-    });
-    window.addEventListener("touchend", handoverToNativeUnmutedAudio, {
-      capture: true,
-      passive: true
-    });
-
     return () => {
       cancelled = true;
-      if (fallbackPlayTimer) clearTimeout(fallbackPlayTimer);
-      if (bridgeAuditTimer) clearTimeout(bridgeAuditTimer);
-      window.removeEventListener("message", handleBridgeMessage);
-      window.removeEventListener("click", handoverToNativeUnmutedAudio, {
-        capture: true
-      });
-      window.removeEventListener("mousedown", handoverToNativeUnmutedAudio, {
-        capture: true
-      });
-      window.removeEventListener("pointerup", handoverToNativeUnmutedAudio, {
-        capture: true
-      });
-      window.removeEventListener("keydown", handoverToNativeUnmutedAudio, {
-        capture: true
-      });
-      window.removeEventListener("touchend", handoverToNativeUnmutedAudio, {
-        capture: true
-      });
     };
-  }, [isDirect1080pStream, config.youtubeId, triggerAudioBridgeUnmuteAndPlay]);
-
-  const handleAudioBridgeLoad = useCallback(() => {
-    triggerAudioBridgeUnmuteAndPlay();
-    setTimeout(triggerAudioBridgeUnmuteAndPlay, 180);
-    setTimeout(triggerAudioBridgeUnmuteAndPlay, 500);
-    setTimeout(triggerAudioBridgeUnmuteAndPlay, 1100);
-  }, [triggerAudioBridgeUnmuteAndPlay]);
+  }, [isDirect1080pStream, config.youtubeId]);
 
   // Enviar comandos a la API del reproductor embebido de respaldo
   const sendPlayerCommand = useCallback((func: string, args: unknown[] = []) => {
@@ -404,7 +209,7 @@ export default function VideoQrLandingPage() {
       sendPlayerCommand("unloadModule", ["cc"]);
       sendPlayerCommand("setOption", ["captions", "track", {}]);
       sendPlayerCommand("setOption", ["cc", "track", {}]);
-      if (forceUnmute && !hasUserToggledAudioRef.current) {
+      if (forceUnmute) {
         sendPlayerCommand("unMute");
         sendPlayerCommand("setVolume", [100]);
         setIsMuted(false);
@@ -426,55 +231,60 @@ export default function VideoQrLandingPage() {
     };
   }, [enforceMaxQualityAndPlay]);
 
-  // Alternar sonido con un toque sin reiniciar el vídeo y asegurando máxima definición 1080p
-  const handleToggleAudio = useCallback(() => {
-    hasUserToggledAudioRef.current = true;
-    userInteractedRef.current = true;
-    if (isDirect1080pStream && videoRef.current) {
-      const v = videoRef.current;
-      const wasBridgePlayingUnmuted = ytBridgePlayingUnmutedRef.current;
-      useYtAudioBridgeRef.current = false;
-      ytBridgePlayingUnmutedRef.current = false;
-      setUseYtAudioBridge(false);
-      setNativeControlsReady(true);
+  const requestVideoFullscreen = useCallback(() => {
+    const v = videoRef.current as (HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | null;
+    const wrapper = playerWrapperRef.current as (HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void;
+    }) | null;
 
-      if (isMuted || (v.muted && !wasBridgePlayingUnmuted)) {
-        v.muted = false;
-        v.volume = 1.0;
-        v.play().catch(() => {});
-        setIsMuted(false);
-      } else {
-        v.muted = true;
-        setIsMuted(true);
+    try {
+      if (wrapper?.requestFullscreen) {
+        wrapper.requestFullscreen().catch(() => {
+          if (v?.requestFullscreen) {
+            v.requestFullscreen().catch(() => {});
+          } else if (typeof v?.webkitEnterFullscreen === "function") {
+            try {
+              v.webkitEnterFullscreen();
+            } catch {
+              // Ignorar si iOS aún está procesando el frame
+            }
+          }
+        });
+        return;
       }
-      return;
+      if (v?.requestFullscreen) {
+        v.requestFullscreen().catch(() => {});
+        return;
+      }
+      if (typeof v?.webkitEnterFullscreen === "function") {
+        v.webkitEnterFullscreen();
+        return;
+      }
+      if (typeof wrapper?.webkitRequestFullscreen === "function") {
+        wrapper.webkitRequestFullscreen();
+      }
+    } catch {
+      // Continuar reproducción normal en viewport 100svh si el navegador rechaza fullscreen
     }
+  }, []);
 
-    if (isMuted) {
-      sendPlayerCommand("unMute");
-      sendPlayerCommand("setVolume", [100]);
-      sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
-      sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
-      sendPlayerCommand("playVideo");
-      setIsMuted(false);
-    } else {
-      sendPlayerCommand("mute");
-      setIsMuted(true);
-    }
-  }, [isDirect1080pStream, isMuted, sendPlayerCommand]);
+  // Confirmación universal de sonido: reinicia en 0:00 con volumen al 100%, desmonta el botón y pide pantalla completa
+  const handleActivateSoundAndPlay = useCallback(() => {
+    hasUserConfirmedAudioRef.current = true;
+    setNeedsSoundConfirmation(false);
+    setIsMuted(false);
+    setNativeControlsReady(true);
 
-  const handleRestartVideo = useCallback(() => {
-    hasUserToggledAudioRef.current = true;
     if (isDirect1080pStream && videoRef.current) {
       const v = videoRef.current;
-      useYtAudioBridgeRef.current = false;
-      setUseYtAudioBridge(false);
-      setNativeControlsReady(true);
-      v.currentTime = 0;
       v.muted = false;
-      v.volume = 1.0;
+      v.volume = 1;
+      v.currentTime = 0;
       v.play().catch(() => {});
-      setIsMuted(false);
+      requestVideoFullscreen();
       return;
     }
 
@@ -484,15 +294,45 @@ export default function VideoQrLandingPage() {
     sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
     sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
     sendPlayerCommand("playVideo");
+    requestVideoFullscreen();
+  }, [isDirect1080pStream, requestVideoFullscreen, sendPlayerCommand]);
+
+  const handleRestartVideo = useCallback(() => {
+    hasUserConfirmedAudioRef.current = true;
+    setNeedsSoundConfirmation(false);
     setIsMuted(false);
+    setNativeControlsReady(true);
+
+    if (isDirect1080pStream && videoRef.current) {
+      const v = videoRef.current;
+      v.muted = false;
+      v.volume = 1;
+      v.currentTime = 0;
+      v.play().catch(() => {});
+      return;
+    }
+
+    sendPlayerCommand("seekTo", [0, true]);
+    sendPlayerCommand("unMute");
+    sendPlayerCommand("setVolume", [100]);
+    sendPlayerCommand("setPlaybackQualityRange", ["hd1080", "hd1080"]);
+    sendPlayerCommand("setPlaybackQuality", ["hd1080"]);
+    sendPlayerCommand("playVideo");
   }, [isDirect1080pStream, sendPlayerCommand]);
 
-  const handleFullscreen = useCallback(() => {
-    const el = videoRef.current || playerWrapperRef.current || iframeRef.current;
-    if (!el) return;
-    if (el.requestFullscreen) {
-      el.requestFullscreen().catch(() => {});
+  const handleScrollToContact = useCallback(() => {
+    if (typeof document !== "undefined" && document.fullscreenElement) {
+      document
+        .exitFullscreen()
+        .catch(() => {})
+        .finally(() => {
+          setTimeout(() => {
+            contactSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 80);
+        });
+      return;
     }
+    contactSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const handleCopyEmail = useCallback(() => {
@@ -552,10 +392,14 @@ export default function VideoQrLandingPage() {
         type: "success",
         message: `¡Vídeo actualizado en vivo! ID activo: ${data.config.youtubeId}.`
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Error de conexión al guardar el vídeo.";
       setSaveFeedback({
         type: "error",
-        message: error?.message || "Error de conexión al guardar el vídeo."
+        message
       });
     } finally {
       setIsSaving(false);
@@ -571,57 +415,191 @@ export default function VideoQrLandingPage() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[#040B1A] text-white font-sans selection:bg-blue-500 selection:text-white overflow-x-hidden">
-      {/* Fondo Ambiental Cinematográfico generado con Nano Banana 2.1 */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-45"
-        style={{
-          backgroundImage: "url('/brand/iskool-video-cinema-backdrop.webp')"
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-[#040B1A]/75 via-[#061026]/65 to-[#040B1A]/95"
-        aria-hidden="true"
-      />
-
-      {/* Cabecera Ejecutiva Minimalista (Cero Ruido Visual, Optimizada para Celular, Tablet, Laptop y PC) */}
-      <header className="relative z-30 w-full border-b border-white/10 bg-[#040B1A]/80 backdrop-blur-xl sticky top-0">
-        <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+      {/* ===================================================================== */}
+      {/* PRIMERA PANTALLA (100svh): REPRODUCTOR MAXIMIZADO A PANTALLA COMPLETA */}
+      {/* ===================================================================== */}
+      <section
+        ref={playerWrapperRef}
+        className="relative z-20 h-[100svh] w-full flex flex-col bg-[#020611] overflow-hidden select-none"
+      >
+        {/* Barra Superior Compacta sobre el Escenario de Video */}
+        <header className="relative z-30 flex h-12 sm:h-14 w-full shrink-0 items-center justify-between border-b border-white/10 bg-[#040B1A]/90 px-3 sm:px-6 backdrop-blur-xl">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
             <ISkoolOfficialLogo
               variant="horizontal"
               theme="dark"
-              size={24}
+              size={22}
               showTagline={false}
             />
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <a
-              href={`mailto:${OFFICIAL_EMAIL}`}
-              className="hidden md:inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-1.5 text-xs font-bold text-slate-100 transition-all"
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <button
+              type="button"
+              onClick={handleScrollToContact}
+              className="inline-flex items-center gap-1 rounded-full border border-blue-400/35 bg-blue-500/15 hover:bg-blue-500/25 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-extrabold text-blue-200 transition-all cursor-pointer whitespace-nowrap"
             >
-              <Mail className="h-3.5 w-3.5 text-blue-400" />
-              <span>{OFFICIAL_EMAIL}</span>
-            </a>
+              <span>Ver contacto ↓</span>
+            </button>
 
             <a
               href={WHATSAPP_DIRECT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 px-3.5 sm:px-4 py-1.5 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all"
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 px-2.5 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all whitespace-nowrap"
             >
-              <MessageCircle className="h-3.5 w-3.5 fill-slate-950" />
-              <span>WhatsApp Directo</span>
+              <MessageCircle className="h-3.5 w-3.5 fill-slate-950 shrink-0" />
+              <span>WhatsApp</span>
             </a>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Escenario Principal: Reproductor en Alta Definición 1080p Nativo + Tarjeta Ejecutiva de Contacto & QR WhatsApp */}
-      <main className="relative z-10 flex-1 mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col justify-center">
-        {/* Encabezado Compacto de Presentación */}
-        <div className="text-center max-w-3xl mx-auto mb-3 sm:mb-5">
+        {/* Escenario de Video 1080p Maximizado (ocupa todo el resto del 100svh) */}
+        <div
+          ref={stageViewportRef}
+          className="relative flex-1 min-h-0 w-full bg-[#020611] flex items-center justify-center overflow-hidden"
+        >
+          {/* Controles Flotantes: El botón "Activar sonido" DESAPARECE (se desmonta) cuando el sonido está activo */}
+          <div
+            data-audio-control="true"
+            className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 sm:gap-2"
+          >
+            {isMuted && (
+              <button
+                type="button"
+                onClick={handleActivateSoundAndPlay}
+                className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-blue-600 hover:bg-blue-500 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-black text-white shadow-2xl ring-2 ring-white/40 animate-pulse transition-all cursor-pointer whitespace-nowrap"
+              >
+                <VolumeX className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span>Activar sonido</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleRestartVideo}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
+              title="Reiniciar vídeo desde el inicio con sonido"
+              aria-label="Reiniciar vídeo"
+            >
+              <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={requestVideoFullscreen}
+              className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
+              title="Pantalla completa"
+              aria-label="Pantalla completa"
+            >
+              <Maximize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            </button>
+          </div>
+
+          {isDirect1080pStream ? (
+            <video
+              key={config.youtubeId}
+              ref={videoRef}
+              src={`/api/video-stream?v=${config.youtubeId}`}
+              poster="/brand/iskool-video-poster-1080p.webp"
+              playsInline
+              loop={config.loop}
+              controls={nativeControlsReady && !needsSoundConfirmation}
+              preload="auto"
+              onVolumeChange={(e) => {
+                const v = e.currentTarget;
+                const mutedNow = v.muted || v.volume === 0;
+                setIsMuted(mutedNow);
+                if (!mutedNow) {
+                  setNeedsSoundConfirmation(false);
+                }
+              }}
+              className="h-full w-full object-contain bg-[#020611]"
+            />
+          ) : (
+            <iframe
+              key={config.youtubeId}
+              ref={iframeRef}
+              onLoad={handleIframeLoad}
+              src={embedSrc}
+              title={config.title}
+              style={{
+                width: "1920px",
+                height: "1080px",
+                transform: `scale(${iframeScale})`,
+                transformOrigin: "0 0"
+              }}
+              className="absolute top-0 left-0 border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          )}
+
+          {/* Confirmación Universal de Sonido a Pantalla Completa (iOS Safari, Android, Pestañas Frías) */}
+          {needsSoundConfirmation && (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={handleActivateSoundAndPlay}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleActivateSoundAndPlay();
+                }
+              }}
+              aria-label="Toca para ver la presentación con sonido"
+              className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-[#040B1A]/75 backdrop-blur-sm p-4 text-center cursor-pointer transition-opacity"
+            >
+              <div className="max-w-md w-full rounded-3xl border border-blue-400/40 bg-[#0A193A]/95 p-6 sm:p-8 shadow-[0_25px_80px_rgba(29,104,255,0.45)] flex flex-col items-center">
+                <div className="mb-4 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl shadow-blue-600/40 ring-4 ring-blue-400/30 animate-pulse">
+                  <Volume2 className="h-8 w-8 sm:h-10 sm:w-10" />
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-blue-200 mb-2">
+                  <Sparkles className="h-3 w-3 text-blue-400" />
+                  1080p Full HD · Audio Explicativo
+                </span>
+                <p className="text-lg sm:text-2xl font-black text-white leading-snug">
+                  Toca para ver la presentación con sonido
+                </p>
+                <p className="mt-1.5 text-xs sm:text-sm text-slate-300">
+                  Inicia desde el segundo 0:00 con narración activa en pantalla completa
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Botón Inferior Flotante para Desplazarse a Contacto y QR */}
+          <div className="pointer-events-none absolute bottom-3 left-0 right-0 z-30 flex justify-center px-4">
+            <button
+              type="button"
+              onClick={handleScrollToContact}
+              className="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-[#040B1A]/85 hover:bg-[#0A193A] px-4 py-1.5 text-xs font-extrabold text-blue-200 hover:text-white shadow-xl backdrop-blur-md transition-all cursor-pointer whitespace-nowrap"
+            >
+              <span>Ver contacto ↓</span>
+              <ChevronDown className="h-3.5 w-3.5 text-blue-400" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================================== */}
+      {/* SEGUNDA SECCIÓN (DEBAJO DEL REPRODUCTOR): CONTACTO EJECUTIVO Y QR     */}
+      {/* ===================================================================== */}
+      <section
+        id="contacto-ejecutivo"
+        ref={contactSectionRef}
+        className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-8 sm:py-12"
+      >
+        {/* Fondo Ambiental Cinematográfico generado con Nano Banana 2.1 */}
+        <div
+          className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-35"
+          style={{
+            backgroundImage: "url('/brand/iskool-video-cinema-backdrop.webp')"
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 text-center max-w-3xl mx-auto mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-[11px] sm:text-xs font-bold text-blue-200 mb-2">
             <Sparkles className="h-3.5 w-3.5 text-blue-400 shrink-0" />
             <span>{config.badgeText}</span>
@@ -631,270 +609,151 @@ export default function VideoQrLandingPage() {
             {config.title}
           </h1>
 
-          <p className="mt-1 sm:mt-1.5 text-xs sm:text-sm lg:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-1.5 text-xs sm:text-sm lg:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed">
             {config.subtitle}
           </p>
         </div>
 
-        {/* Grid Responsivo: Celular/Tablet (Apilado Fluido) | Laptop/PC (Escenario Cine 8 col + Panel Contacto QR 4 col) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
-          {/* Columna Izquierda/Central: Reproductor 16:9 1080p Full HD Directo sin Ruido Visual */}
-          <div className="lg:col-span-8 flex flex-col">
-            <div
-              ref={playerWrapperRef}
-              className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-blue-400/25 bg-black shadow-[0_20px_70px_rgba(29,104,255,0.28)]"
-            >
-              {/* Controles Flotantes de Audio y Pantalla Completa */}
-              <div
-                data-audio-control="true"
-                className="absolute top-2 right-2 sm:top-3.5 sm:right-3.5 z-30 flex items-center gap-1.5 sm:gap-2"
-              >
+        {/* Cintillo de Contacto Directo: Botones apilados a ancho completo en celular (320-430px), sin corte ni desbordamiento */}
+        <div className="relative z-10 mb-6 rounded-2xl border border-white/10 bg-[#0A1633]/90 backdrop-blur-xl p-4 sm:p-5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="/brand/iskool-video-concierge-orb.webp"
+              alt=""
+              className="hidden sm:block h-11 w-11 rounded-xl object-cover border border-blue-400/30 shrink-0"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] uppercase tracking-wider font-extrabold text-blue-300">
+                Atención Ejecutiva para Colegios
+              </p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
+                <a
+                  href={`mailto:${OFFICIAL_EMAIL}`}
+                  className="text-sm sm:text-base font-black text-white hover:text-blue-300 transition-colors min-w-0 break-all"
+                >
+                  {OFFICIAL_EMAIL}
+                </a>
                 <button
                   type="button"
-                  onClick={handleToggleAudio}
-                  className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-black shadow-2xl backdrop-blur-md transition-all cursor-pointer ${
-                    isMuted
-                      ? "bg-blue-600 hover:bg-blue-500 text-white ring-2 ring-white/40 animate-pulse"
-                      : "bg-slate-900/85 hover:bg-slate-800 text-emerald-300 border border-emerald-400/40"
-                  }`}
+                  onClick={handleCopyEmail}
+                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 hover:bg-white/15 px-2.5 py-1 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                 >
-                  {isMuted ? (
+                  {copiedEmail ? (
                     <>
-                      <VolumeX className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                      <span>Activar sonido</span>
+                      <Check className="h-3 w-3 text-emerald-400 shrink-0" />
+                      <span className="text-emerald-300">Correo copiado</span>
                     </>
                   ) : (
                     <>
-                      <Volume2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400 shrink-0" />
-                      <span>Sonido HD activo · 1080p</span>
+                      <Copy className="h-3 w-3 shrink-0" />
+                      <span>Copiar correo</span>
                     </>
                   )}
                 </button>
-
-                <button
-                  type="button"
-                  onClick={handleRestartVideo}
-                  className="inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-1.5 sm:p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
-                  title="Reiniciar vídeo desde el inicio con sonido"
-                  aria-label="Reiniciar vídeo"
-                >
-                  <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleFullscreen}
-                  className="hidden sm:inline-flex items-center justify-center rounded-full bg-slate-900/85 hover:bg-slate-800 border border-white/15 p-2 text-slate-200 hover:text-white backdrop-blur-md transition-all cursor-pointer"
-                  title="Pantalla completa"
-                  aria-label="Pantalla completa"
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* Escenario 16:9: Reproducción Directa 1920x1080 (1080p Full HD Nativo desde el Segundo 0:00) */}
-              <div
-                ref={stageViewportRef}
-                className="relative w-full pt-[56.25%] bg-[#020611] overflow-hidden"
-              >
-                {isDirect1080pStream ? (
-                  <>
-                    <video
-                      key={config.youtubeId}
-                      ref={videoRef}
-                      src={`/api/video-stream?v=${config.youtubeId}`}
-                      poster="/brand/iskool-video-poster-1080p.webp"
-                      playsInline
-                      loop={config.loop}
-                      controls={nativeControlsReady}
-                      preload="auto"
-                      onVolumeChange={(e) => {
-                        if (useYtAudioBridgeRef.current) return;
-                        const v = e.currentTarget;
-                        setIsMuted(v.muted || v.volume === 0);
-                      }}
-                      className="absolute inset-0 z-10 h-full w-full object-contain bg-[#020611] cursor-pointer"
-                    />
-                    {useYtAudioBridge && (
-                      <iframe
-                        ref={audioBridgeIframeRef}
-                        onLoad={handleAudioBridgeLoad}
-                        src={embedSrc}
-                        title="Motor de Audio HD Sincronizado"
-                        aria-hidden="true"
-                        tabIndex={-1}
-                        className="pointer-events-none absolute inset-0 z-0 h-full w-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      />
-                    )}
-                  </>
-                ) : (
-                  <iframe
-                    key={config.youtubeId}
-                    ref={iframeRef}
-                    onLoad={handleIframeLoad}
-                    src={embedSrc}
-                    title={config.title}
-                    style={{
-                      width: "1920px",
-                      height: "1080px",
-                      transform: `scale(${iframeScale})`,
-                      transformOrigin: "0 0"
-                    }}
-                    className="absolute top-0 left-0 border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                )}
-              </div>
-            </div>
-
-            {/* Cintillo Inferior de Contacto Directo para Celular, Tablet, Laptop y PC */}
-            <div className="mt-3 sm:mt-4 rounded-2xl border border-white/10 bg-[#0A1633]/85 backdrop-blur-xl px-4 py-3 sm:px-5 sm:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3 text-center sm:text-left">
-                <img
-                  src="/brand/iskool-video-concierge-orb.webp"
-                  alt=""
-                  className="hidden sm:block h-10 w-10 rounded-xl object-cover border border-blue-400/30 shrink-0"
-                />
-                <div>
-                  <p className="text-[11px] uppercase tracking-wider font-extrabold text-blue-300">
-                    Atención Ejecutiva para Colegios
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1">
-                    <a
-                      href={`mailto:${OFFICIAL_EMAIL}`}
-                      className="text-sm sm:text-base font-black text-white hover:text-blue-300 transition-colors"
-                    >
-                      {OFFICIAL_EMAIL}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={handleCopyEmail}
-                      className="inline-flex items-center gap-1 rounded-lg bg-white/10 hover:bg-white/15 px-2 py-0.5 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer"
-                    >
-                      {copiedEmail ? (
-                        <>
-                          <Check className="h-3 w-3 text-emerald-400" />
-                          <span className="text-emerald-300">Correo copiado</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3" />
-                          <span>Copiar correo</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-center gap-2 w-full sm:w-auto">
-                <a
-                  href={`tel:+525611404767`}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-2 text-xs font-bold text-white transition-all flex-1 sm:flex-initial"
-                >
-                  <Phone className="h-3.5 w-3.5 text-blue-400" />
-                  <span>Tel: {WHATSAPP_NUMBER_DISPLAY}</span>
-                </a>
-                <a
-                  href={WHATSAPP_DIRECT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2 text-xs font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-all flex-1 sm:flex-initial"
-                >
-                  <MessageCircle className="h-3.5 w-3.5 fill-slate-950" />
-                  <span>WhatsApp {WHATSAPP_NUMBER_DISPLAY}</span>
-                </a>
               </div>
             </div>
           </div>
 
-          {/* Columna Derecha: Código QR Oficial para Contacto por WhatsApp + Correo contacto@iskool.mx */}
-          <div className="lg:col-span-4 flex flex-col">
-            <div className="h-full rounded-2xl sm:rounded-3xl border border-blue-400/25 bg-gradient-to-b from-[#0C1B3D]/95 to-[#061026]/95 backdrop-blur-xl p-4 sm:p-6 shadow-2xl flex flex-col items-center justify-between text-center">
-              <div className="w-full">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  Contacto Directo por WhatsApp
-                </span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full lg:w-auto">
+            <a
+              href="tel:+525611404767"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-4 py-2.5 text-xs sm:text-sm font-bold text-white transition-all whitespace-nowrap"
+            >
+              <Phone className="h-4 w-4 text-blue-400 shrink-0" />
+              <span className="whitespace-nowrap">Tel: {WHATSAPP_NUMBER_DISPLAY}</span>
+            </a>
+            <a
+              href={WHATSAPP_DIRECT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs sm:text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/20 transition-all whitespace-nowrap"
+            >
+              <MessageCircle className="h-4 w-4 fill-slate-950 shrink-0" />
+              <span className="whitespace-nowrap">WhatsApp {WHATSAPP_NUMBER_DISPLAY}</span>
+            </a>
+          </div>
+        </div>
 
-                <h2 className="mt-2.5 text-lg sm:text-xl font-black text-white leading-snug">
-                  Agenda tu Demostración Ejecutiva
-                </h2>
-                <p className="mt-1 text-xs text-slate-300">
-                  Escanea el código QR con tu celular o toca para abrir WhatsApp de inmediato
-                </p>
-              </div>
+        {/* Tarjeta Central de Código QR Oficial para Contacto por WhatsApp + Correo contacto@iskool.mx */}
+        <div className="relative z-10 max-w-xl mx-auto rounded-2xl sm:rounded-3xl border border-blue-400/25 bg-gradient-to-b from-[#0C1B3D]/95 to-[#061026]/95 backdrop-blur-xl p-5 sm:p-8 shadow-2xl flex flex-col items-center text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
+            <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+            <span>Contacto Directo por WhatsApp</span>
+          </span>
 
-              {/* Código QR Oficial de iSkool® (Optimizado WebP/JPG de Alta Nitidez) */}
-              <a
-                href={WHATSAPP_DIRECT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group my-3 sm:my-4 relative flex items-center justify-center rounded-2xl bg-white p-3 sm:p-4 shadow-[0_12px_40px_rgba(255,255,255,0.12)] ring-4 ring-blue-500/30 hover:ring-emerald-400/60 transition-all"
-                title="Escanear o tocar para contactar por WhatsApp (56 1140 4767)"
-              >
-                <picture>
-                  <source
-                    srcSet="/brand/iskool-qr-whatsapp-oficial.webp"
-                    type="image/webp"
-                  />
-                  <img
-                    src="/brand/iskool-qr-whatsapp-oficial.jpg"
-                    alt="Código QR Oficial de WhatsApp iSkool® — 56 1140 4767 y contacto@iskool.mx"
-                    className="h-44 w-44 sm:h-48 sm:w-48 lg:h-52 lg:w-52 object-contain rounded-lg group-hover:scale-[1.02] transition-transform"
-                    loading="eager"
-                  />
-                </picture>
-              </a>
+          <h2 className="mt-3 text-lg sm:text-2xl font-black text-white leading-snug">
+            Agenda tu Demostración Ejecutiva
+          </h2>
+          <p className="mt-1 text-xs sm:text-sm text-slate-300">
+            Escanea el código QR con tu celular o toca para abrir WhatsApp de inmediato
+          </p>
 
-              {/* Datos Oficiales de Contacto (WhatsApp + Correo contacto@iskool.mx) */}
-              <div className="w-full space-y-2.5">
+          {/* Código QR Oficial de iSkool® (Optimizado WebP/JPG de Alta Nitidez) */}
+          <a
+            href={WHATSAPP_DIRECT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group my-4 sm:my-5 relative flex items-center justify-center rounded-2xl bg-white p-3 sm:p-4 shadow-[0_12px_40px_rgba(255,255,255,0.12)] ring-4 ring-blue-500/30 hover:ring-emerald-400/60 transition-all"
+            title="Escanear o tocar para contactar por WhatsApp (56 1140 4767)"
+          >
+            <picture>
+              <source
+                srcSet="/brand/iskool-qr-whatsapp-oficial.webp"
+                type="image/webp"
+              />
+              <img
+                src="/brand/iskool-qr-whatsapp-oficial.jpg"
+                alt="Código QR Oficial de WhatsApp iSkool® — 56 1140 4767 y contacto@iskool.mx"
+                className="h-44 w-44 sm:h-52 sm:w-52 object-contain rounded-lg group-hover:scale-[1.02] transition-transform"
+                loading="eager"
+              />
+            </picture>
+          </a>
+
+          {/* Datos Oficiales de Contacto (WhatsApp + Correo contacto@iskool.mx) */}
+          <div className="w-full space-y-2.5">
+            <a
+              href={WHATSAPP_DIRECT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-3 text-xs sm:text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all whitespace-nowrap"
+            >
+              <MessageCircle className="h-4 w-4 fill-slate-950 shrink-0" />
+              <span className="whitespace-nowrap">WhatsApp: {WHATSAPP_NUMBER_DISPLAY}</span>
+            </a>
+
+            <div className="rounded-xl border border-blue-400/30 bg-[#040B1A]/85 px-3.5 py-2.5 flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Mail className="h-4 w-4 text-blue-400 shrink-0" />
                 <a
-                  href={WHATSAPP_DIRECT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 px-4 py-2.5 text-xs sm:text-sm font-black text-slate-950 shadow-lg shadow-emerald-500/25 transition-all"
+                  href={`mailto:${OFFICIAL_EMAIL}`}
+                  className="text-xs sm:text-sm font-black text-white hover:text-blue-300 transition-colors min-w-0 break-all text-left"
                 >
-                  <MessageCircle className="h-4 w-4 fill-slate-950" />
-                  <span>WhatsApp: {WHATSAPP_NUMBER_DISPLAY}</span>
+                  {OFFICIAL_EMAIL}
                 </a>
-
-                <div className="rounded-xl border border-blue-400/30 bg-[#040B1A]/85 px-3.5 py-2.5 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Mail className="h-4 w-4 text-blue-400 shrink-0" />
-                    <a
-                      href={`mailto:${OFFICIAL_EMAIL}`}
-                      className="text-xs sm:text-sm font-black text-white hover:text-blue-300 truncate transition-colors"
-                    >
-                      correo: {OFFICIAL_EMAIL}
-                    </a>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyEmail}
-                    className="shrink-0 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-400/30 px-2.5 py-1 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer"
-                  >
-                    {copiedEmail ? "Copiado" : "Copiar"}
-                  </button>
-                </div>
               </div>
+              <button
+                type="button"
+                onClick={handleCopyEmail}
+                className="shrink-0 rounded-lg bg-blue-600/25 hover:bg-blue-600/40 border border-blue-400/30 px-2.5 py-1 text-[11px] font-bold text-blue-200 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                {copiedEmail ? "Copiado" : "Copiar"}
+              </button>
             </div>
           </div>
         </div>
-      </main>
+      </section>
 
       {/* Pie Minimalista Institucional sin Ruido Visual */}
-      <footer className="relative z-10 w-full border-t border-white/10 bg-[#040B1A]/90 py-3 px-4 text-center text-[11px] text-slate-400">
+      <footer className="relative z-10 w-full border-t border-white/10 bg-[#040B1A]/90 py-4 px-4 text-center text-[11px] text-slate-400">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>
             © {new Date().getFullYear()} <strong>iSkool®</strong> — Tecnología Creada en Canadá para Colegios Privados en México.
           </span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <a
               href={`mailto:${OFFICIAL_EMAIL}`}
-              className="text-blue-300 hover:text-white font-bold transition-colors"
+              className="text-blue-300 hover:text-white font-bold transition-colors break-all"
             >
               {OFFICIAL_EMAIL}
             </a>
@@ -903,7 +762,7 @@ export default function VideoQrLandingPage() {
               href={WHATSAPP_DIRECT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-emerald-300 hover:text-white font-bold transition-colors"
+              className="text-emerald-300 hover:text-white font-bold transition-colors whitespace-nowrap"
             >
               WhatsApp {WHATSAPP_NUMBER_DISPLAY}
             </a>
