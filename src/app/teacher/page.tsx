@@ -322,6 +322,10 @@ function TeacherDashboardContent() {
 
   // Navegación principal del portal del profesor (Unificado en iSkool Daylight Studio Pro)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
+  const [teacherViewMode, setTeacherViewMode] = useState<'guided' | 'expert'>('guided');
+  const [showGuidedTelemetryDrawer, setShowGuidedTelemetryDrawer] = useState<boolean>(false);
+  const [guidedAttendanceConfirmed, setGuidedAttendanceConfirmed] = useState<boolean>(false);
+  const [guidedSummarySent, setGuidedSummarySent] = useState<boolean>(false);
 
   // Telemetría en Tiempo Real para el Sistema de Supervisión Espejo del CEO
   const [ceoMirrorTelemetry, setCeoMirrorTelemetry] = useState<{
@@ -981,8 +985,274 @@ function TeacherDashboardContent() {
 
       <main className="flex-1 w-full max-w-[1860px] mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-4 flex flex-col gap-4 overflow-x-clip">
         
+        {/* Barra Superior de Conmutación de Complejidad (Modo Guiado en 3 Pasos vs Modo Experto) */}
+        {currentMenuTab === 'hub' && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 px-4 sm:px-6 py-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
+                iSkool • Portal Docente
+              </span>
+              <span className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700 flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                <span>
+                  {currentTeacher?.first_name ? `Prof. ${currentTeacher.first_name}` : 'Docente Titular'} • {ceoMirrorTelemetry.groupLabel}
+                </span>
+              </span>
+            </div>
+
+            <div className="inline-flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 self-stretch sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setTeacherViewMode('guided')}
+                className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  teacherViewMode === 'guided'
+                    ? 'bg-white dark:bg-slate-950 text-blue-700 dark:text-blue-300 shadow-sm border border-blue-300/80 dark:border-blue-700'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Modo Guiado (3 Pasos)</span>
+                {teacherViewMode === 'guided' && <Check className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeacherViewMode('expert')}
+                className={`flex-1 sm:flex-initial px-4 py-1.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                  teacherViewMode === 'expert'
+                    ? 'bg-white dark:bg-slate-950 text-indigo-700 dark:text-indigo-300 shadow-sm border border-indigo-300/80 dark:border-indigo-700'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Activity className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>Modo Experto</span>
+                {teacherViewMode === 'expert' && <Check className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* VISTA GUIADA EN 3 PASOS SIMPLES (REVELACIÓN PROGRESIVA PARA CURVA DE APRENDIZAJE CERO) */}
+        {currentMenuTab === 'hub' && teacherViewMode === 'guided' && (
+          <div className="rounded-3xl bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-800 shadow-xl p-6 sm:p-10 space-y-8 animate-in fade-in duration-200">
+            <div className="text-center space-y-2 max-w-2xl mx-auto">
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+                Tu Clase de Hoy en 3 Pasos Simples
+              </h1>
+              <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+                {ceoMirrorTelemetry.scheduleSlot} • {ceoMirrorTelemetry.subjectLabel}:{' '}
+                <span className="text-slate-800 dark:text-slate-200 font-bold">
+                  {ceoMirrorTelemetry.activeSessionTitle}
+                </span>
+              </p>
+            </div>
+
+            {/* Conector Visual de los 3 Pasos */}
+            <div className="relative max-w-6xl mx-auto pt-4">
+              <div
+                aria-hidden="true"
+                className="hidden lg:block absolute top-0 left-[16.66%] right-[16.66%] h-0.5 bg-gradient-to-r from-blue-500 via-purple-600 to-emerald-500"
+              />
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+                {/* PASO 1 */}
+                <div className="relative rounded-3xl bg-white dark:bg-slate-950 border-2 border-blue-200/90 dark:border-blue-800/70 p-6 pt-9 shadow-lg shadow-blue-500/5 flex flex-col justify-between text-center gap-5">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-600/30 mx-auto -mt-14 border-4 border-white dark:border-slate-900">
+                    1
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                      1. Pasar Lista y Sellar Libreta
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      {ceoMirrorTelemetry.presentCount}/{ceoMirrorTelemetry.totalStudents} presentes · 1 clic
+                    </p>
+                    <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-full border border-slate-200 dark:border-slate-800 mt-2">
+                      <span className="px-3 py-1 rounded-full bg-emerald-700 text-white text-xs font-bold flex items-center gap-1">
+                        <Check className="h-3.5 w-3.5" /> Presente ({ceoMirrorTelemetry.presentCount})
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-slate-600 dark:text-slate-300 text-xs font-semibold">
+                        Sello {ceoMirrorTelemetry.stampPage}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuidedAttendanceConfirmed(true)}
+                      className={`w-full py-3 px-5 rounded-2xl font-black text-sm text-white shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                        guidedAttendanceConfirmed
+                          ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20'
+                          : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20'
+                      }`}
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>
+                        {guidedAttendanceConfirmed ? '✓ Asistencia y Sello Confirmados' : 'Confirmar Asistencia'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentMenuTab('attendance')}
+                      className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      Abrir lista detallada de alumnos →
+                    </button>
+                  </div>
+                </div>
+
+                {/* PASO 2 */}
+                <div className="relative rounded-3xl bg-white dark:bg-slate-950 border-2 border-purple-300/90 dark:border-purple-800/70 p-6 pt-9 shadow-lg shadow-purple-500/5 flex flex-col justify-between text-center gap-5">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-700 text-white font-black text-xl flex items-center justify-center shadow-md shadow-purple-700/30 mx-auto -mt-14 border-4 border-white dark:border-slate-900">
+                    2
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                      2. Iniciar Clase Interactiva
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Proyectar Estudio iSkool · Pregunta Detonadora
+                    </p>
+                    <div className="mx-auto max-w-xs p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-800/50 text-left flex items-center gap-3 mt-2">
+                      <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0">
+                        <Play className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-purple-950 dark:text-purple-200 truncate">
+                          {ceoMirrorTelemetry.activeNodeTitle}
+                        </p>
+                        <p className="text-[11px] font-semibold text-purple-700 dark:text-purple-400 truncate">
+                          Estudio iSkool • {ceoMirrorTelemetry.bloomLevel}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => router.push('/teacher/studio')}
+                      className="w-full py-3 px-5 rounded-2xl bg-purple-700 hover:bg-purple-600 text-white font-black text-sm shadow-md shadow-purple-700/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      <span>Proyectar en Pantalla</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentMenuTab('planning')}
+                      className="text-[11px] font-bold text-purple-700 dark:text-purple-400 hover:underline cursor-pointer"
+                    >
+                      Ver o generar Planeación NEM →
+                    </button>
+                  </div>
+                </div>
+
+                {/* PASO 3 */}
+                <div className="relative rounded-3xl bg-white dark:bg-slate-950 border-2 border-emerald-200/90 dark:border-emerald-800/70 p-6 pt-9 shadow-lg shadow-emerald-500/5 flex flex-col justify-between text-center gap-5">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-emerald-600/30 mx-auto -mt-14 border-4 border-white dark:border-slate-900">
+                    3
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                      3. Evaluar y Notificar a Padres
+                    </h2>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                      Rúbrica rápida + Magic Link automático
+                    </p>
+                    <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold mt-2">
+                      <MessageSquare className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>Notificaciones Listas ({ceoMirrorTelemetry.signedMagicLinks}/{ceoMirrorTelemetry.totalMagicLinks} firmados)</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setGuidedSummarySent(true)}
+                      className="w-full py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    >
+                      <Send className="h-4 w-4" />
+                      <span>{guidedSummarySent ? '✓ Resumen Enviado a Padres' : 'Enviar Resumen'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentMenuTab('evaluation')}
+                      className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                    >
+                      Abrir rúbrica y portafolio SEP →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Cajón Colapsable de Telemetría Avanzada y Taxonomía de Bloom */}
+            <div className="pt-2 flex flex-col items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setShowGuidedTelemetryDrawer((prev) => !prev)}
+                className="px-6 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-colors cursor-pointer"
+              >
+                <span>Ver telemetría avanzada y Taxonomía de Bloom</span>
+                {showGuidedTelemetryDrawer ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showGuidedTelemetryDrawer && (
+                <div className="w-full max-w-5xl rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 p-4 space-y-4 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 text-xs">
+                    <div className="p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                      <div className="text-[10px] font-bold uppercase text-slate-400">Secuencia & Nodo Activo</div>
+                      <div className="font-black text-slate-900 dark:text-white truncate mt-0.5">{ceoMirrorTelemetry.activeNodeTitle}</div>
+                      <div className="text-[10px] text-sky-600 dark:text-sky-400 font-bold truncate">{ceoMirrorTelemetry.activeSessionTitle}</div>
+                    </div>
+                    <div className="p-2.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50">
+                      <div className="text-[10px] font-bold uppercase text-indigo-500">Taxonomía de Bloom</div>
+                      <div className="font-black text-indigo-900 dark:text-indigo-200 mt-0.5">{ceoMirrorTelemetry.bloomLevel}</div>
+                      <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">Verbo: {ceoMirrorTelemetry.bloomVerb}</div>
+                    </div>
+                    <div className="p-2.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/50">
+                      <div className="text-[10px] font-bold uppercase text-emerald-600">Asistencia & Sellos Hoy</div>
+                      <div className="font-black text-emerald-900 dark:text-emerald-200 mt-0.5">
+                        {ceoMirrorTelemetry.presentCount}/{ceoMirrorTelemetry.totalStudents} Presentes
+                      </div>
+                      <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">
+                        {ceoMirrorTelemetry.stampedCount} Libretas Selladas ({ceoMirrorTelemetry.stampPage})
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50">
+                      <div className="text-[10px] font-bold uppercase text-amber-600">Clases Preparadas</div>
+                      <div className="font-black text-amber-900 dark:text-amber-200 mt-0.5">
+                        {ceoMirrorTelemetry.deferredClassesCount} Clases en Cola SEP
+                      </div>
+                      <div className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold">
+                        Bóveda Curricular • 0 Tokens IA
+                      </div>
+                    </div>
+                    <div className="p-2.5 rounded-2xl bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/50 col-span-2 sm:col-span-1">
+                      <div className="text-[10px] font-bold uppercase text-sky-600">Trazabilidad Magic Links</div>
+                      <div className="font-black text-sky-900 dark:text-sky-200 mt-0.5">
+                        {ceoMirrorTelemetry.signedMagicLinks}/{ceoMirrorTelemetry.totalMagicLinks} Firmados ✓
+                      </div>
+                      <div className="text-[10px] text-sky-700 dark:text-sky-400 font-semibold">
+                        {ceoMirrorTelemetry.pendingReviews} Evidencias en Portafolio
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setTeacherViewMode('expert')}
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <span>Abrir Panel Experto Completo</span>
+                      < ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* Sistema de Supervisión Espejo del CEO en Tiempo Real (CEO Live Mirror & Telemetry HUD) */}
-        {isAdminSupervisor && (
+        {isAdminSupervisor && (currentMenuTab !== 'hub' || teacherViewMode === 'expert') && (
           <div className="rounded-3xl p-4 sm:p-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-2 border-indigo-500/30 shadow-xl shadow-indigo-500/5 space-y-3.5 animate-in fade-in duration-200">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
               <div className="flex items-start gap-3.5">
@@ -1152,8 +1422,8 @@ function TeacherDashboardContent() {
           </div>
         )}
         
-        {/* VISTA 1: ISKOOL DAYLIGHT STUDIO PRO (SIN HUB BENTO CLÁSICO REDUNDANTE) */}
-        {currentMenuTab === 'hub' && (
+        {/* VISTA 1: ISKOOL DAYLIGHT STUDIO PRO (MODO EXPERTO COMPLETO) */}
+        {currentMenuTab === 'hub' && teacherViewMode === 'expert' && (
           <div className="w-full rounded-2xl sm:rounded-3xl shadow-xl border border-slate-200/90 dark:border-slate-800/80 overflow-x-clip">
             <TeacherMasterCopilot
               teacher={currentTeacher}

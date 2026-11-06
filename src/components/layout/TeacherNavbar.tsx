@@ -25,6 +25,7 @@ import {
   Languages
 } from 'lucide-react';
 import { BackButton } from '@/components/navigation/BackButton';
+import { UniversalCommandBar } from '@/components/navigation/UniversalCommandBar';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 
@@ -250,6 +251,8 @@ export function TeacherNavbar() {
 
         {/* Acciones de Gestión y Perfil */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
+          <UniversalCommandBar variant={isIbime ? 'dark' : 'light'} />
+
           {/* Enlace de Supervisión / Presidencia (Solo para Directivos / Administradores) */}
           {isManagementRole && (
             <Link

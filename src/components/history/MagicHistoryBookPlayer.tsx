@@ -44,10 +44,13 @@ export interface MagicHistoryBookPlayerProps {
   isProjectorModeInitially?: boolean;
 }
 
-// Estilos visuales de los 5 lomos de libros mágicos
+// Estilos visuales de los 5 lomos de libros mágicos (con portadas fotorrealistas Nano Banana 2.1)
 export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   name: string;
   badge: string;
+  coverImage: string;
+  medallionPos: { left: string; top: string; width: string };
+  cartouchePos: { left: string; top: string; width: string };
   coverGradient: string;
   spineGradient: string;
   borderDecor: string;
@@ -60,6 +63,9 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   codice_antiguo: {
     name: 'Códice Antiguo',
     badge: '📜 Pergamino & Glifos',
+    coverImage: '/images/books/cover_codice_antiguo.webp',
+    medallionPos: { left: '57.5%', top: '36.2%', width: '30.5%' },
+    cartouchePos: { left: '57.5%', top: '56.5%', width: '58%' },
     coverGradient: 'from-amber-950 via-stone-900 to-amber-950',
     spineGradient: 'from-amber-900 via-amber-950 to-stone-950',
     borderDecor: 'border-amber-600/60 shadow-amber-900/50',
@@ -72,6 +78,9 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   tomo_imperial: {
     name: 'Tomo Imperial',
     badge: '👑 Terciopelo Púrpura & Oro',
+    coverImage: '/images/books/cover_tomo_imperial.webp',
+    medallionPos: { left: '57.2%', top: '31.8%', width: '27.8%' },
+    cartouchePos: { left: '57.2%', top: '53.5%', width: '61%' },
     coverGradient: 'from-purple-950 via-indigo-950 to-slate-950',
     spineGradient: 'from-purple-900 via-purple-950 to-indigo-950',
     borderDecor: 'border-purple-400/50 shadow-purple-950/60',
@@ -84,6 +93,9 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   diario_republicano: {
     name: 'Diario Republicano',
     badge: '🇲🇽 Verde Insurgente 1810',
+    coverImage: '/images/books/cover_diario_republicano.webp',
+    medallionPos: { left: '55.0%', top: '31.0%', width: '25.2%' },
+    cartouchePos: { left: '55.0%', top: '52.5%', width: '57%' },
     coverGradient: 'from-emerald-950 via-teal-950 to-slate-950',
     spineGradient: 'from-emerald-900 via-teal-950 to-stone-950',
     borderDecor: 'border-emerald-500/50 shadow-emerald-950/50',
@@ -96,6 +108,9 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   grimorio_dorado: {
     name: 'Grimorio Dorado',
     badge: '✨ Oro Místico & Runas',
+    coverImage: '/images/books/cover_grimorio_dorado.webp',
+    medallionPos: { left: '56.2%', top: '31.6%', width: '25.2%' },
+    cartouchePos: { left: '56.2%', top: '55.5%', width: '58%' },
     coverGradient: 'from-amber-900 via-yellow-950 to-stone-950',
     spineGradient: 'from-yellow-700 via-amber-800 to-stone-900',
     borderDecor: 'border-yellow-400/70 shadow-yellow-600/40',
@@ -108,6 +123,9 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   cuaderno_cronista: {
     name: 'Cuaderno del Cronista',
     badge: '🖋️ Crónica Revolucionaria (1910)',
+    coverImage: '/images/books/cover_cuaderno_cronista.webp',
+    medallionPos: { left: '56.4%', top: '30.8%', width: '27.2%' },
+    cartouchePos: { left: '56.4%', top: '52.5%', width: '60%' },
     coverGradient: 'from-stone-900 via-stone-950 to-stone-900',
     spineGradient: 'from-stone-800 via-stone-900 to-black',
     borderDecor: 'border-rose-600/50 shadow-rose-950/40',
@@ -336,68 +354,139 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
       <div className="flex-1 flex items-center justify-center relative my-2">
         <AnimatePresence mode="wait">
           {!isOpen ? (
-            /* ================= PORTADA DEL LIBRO CERRADO ================= */
+            /* ================= PORTADA DEL LIBRO CERRADO (NANO BANANA 2.1 3D TOMO HISTÓRICO) ================= */
             <motion.div
               key="closed-book"
-              initial={{ scale: 0.9, opacity: 0, rotateY: -15 }}
+              initial={{ scale: 0.92, opacity: 0, rotateY: -15 }}
               animate={{ scale: 1, opacity: 1, rotateY: 0 }}
               exit={{ scale: 1.05, opacity: 0, rotateY: -80 }}
               transition={{ duration: 0.5 }}
               onClick={handleOpenBook}
-              className={`w-full max-w-lg aspect-[3/4] max-h-[580px] rounded-3xl p-8 flex flex-col justify-between items-center text-center cursor-pointer select-none shadow-2xl relative overflow-hidden bg-gradient-to-tr ${spineTheme.coverGradient} border-4 ${spineTheme.borderDecor} ${spineTheme.coverTexture} transform hover:scale-[1.02] transition-transform`}
+              className="relative w-full max-w-[460px] aspect-[3/4] max-h-[610px] cursor-pointer select-none group transform hover:scale-[1.015] transition-transform duration-300"
             >
-              {/* Lomo Grueso 3D del Libro a la Izquierda */}
-              <div className={`absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r ${spineTheme.spineGradient} border-r-2 border-amber-500/40 shadow-2xl`} />
+              {/* Canto 3D de Páginas Apiladas (Derecha e Inferior) */}
+              <div
+                aria-hidden="true"
+                className="absolute top-2.5 bottom-1.5 -right-3.5 w-4 rounded-r-md shadow-2xl pointer-events-none"
+                style={{
+                  background:
+                    'repeating-linear-gradient(to right, #e6d7b8 0px, #cbb58b 1.5px, #f5ecd7 3px)',
+                  boxShadow: '8px 14px 32px rgba(0,0,0,0.85), inset -2px 0 4px rgba(120,90,40,0.45)',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className="absolute -bottom-2.5 left-3 right-0 h-3 rounded-b-md pointer-events-none"
+                style={{
+                  background:
+                    'repeating-linear-gradient(to bottom, #dfd0b0 0px, #bfa678 1.5px, #f2e8cf 3px)',
+                  boxShadow: '0 14px 28px rgba(0,0,0,0.9)',
+                }}
+              />
 
-              {/* Marco Dorado Ornamentado */}
-              <div className="absolute inset-4 rounded-2xl border-2 border-amber-500/40 pointer-events-none" />
+              {/* Cuerpo Principal de la Portada Encuadernada */}
+              <div
+                className={`relative w-full h-full rounded-l-[6px] rounded-r-[18px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] border border-amber-500/30 bg-gradient-to-tr ${spineTheme.coverGradient}`}
+              >
+                {/* Textura Fotográfica de Portada de Libro Nano Banana 2.1 */}
+                <img
+                  src={spineTheme.coverImage}
+                  alt={spineTheme.name}
+                  className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none"
+                />
 
-              {/* Emblema Superior */}
-              <div className="z-10 space-y-2 pt-4">
-                <span className="text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-black/40 text-amber-300 border border-amber-500/40">
-                  {spineTheme.badge}
-                </span>
-                <p className="text-xs font-serif text-amber-400/80 italic">
-                  {data.historicalEra || 'Crónica Histórica'}
-                </p>
-              </div>
+                {/* Sombra de Canaleta de Encuadernación (Hinge Groove) e Iluminación de Lomo */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 w-[16%] pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, rgba(255,255,255,0.12) 0%, rgba(0,0,0,0.08) 65%, rgba(0,0,0,0.65) 88%, rgba(255,215,120,0.12) 100%)',
+                  }}
+                />
 
-              {/* Título Principal y Retrato */}
-              <div className="z-10 space-y-4 my-auto">
-                <div className="w-32 h-32 rounded-full border-4 border-amber-400/60 p-1 shadow-2xl mx-auto overflow-hidden bg-black/60">
-                  <img 
-                    src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
-                    alt={data.characterName} 
+                {/* Etiqueta Superior de Época / Colección */}
+                <div
+                  style={{ left: spineTheme.medallionPos.left }}
+                  className="absolute top-[6.5%] -translate-x-1/2 z-20 flex flex-col items-center gap-0.5 w-[68%] pointer-events-none"
+                >
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-0.5 rounded-full bg-black/75 text-amber-300 border border-amber-400/50 shadow-lg backdrop-blur-xs whitespace-nowrap">
+                    {spineTheme.badge}
+                  </span>
+                  <p className="text-[10px] sm:text-[11px] font-serif text-amber-200/95 italic drop-shadow-[0_2px_3px_rgba(0,0,0,0.95)] truncate max-w-full">
+                    {data.historicalEra || 'Crónica Histórica'}
+                  </p>
+                </div>
+
+                {/* Retrato Circular Engastado Exactamente dentro del Medallón en Relieve */}
+                <div
+                  style={{
+                    left: spineTheme.medallionPos.left,
+                    top: spineTheme.medallionPos.top,
+                    width: spineTheme.medallionPos.width,
+                  }}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 aspect-square rounded-full overflow-hidden z-10 bg-black/80 shadow-[inset_0_6px_16px_rgba(0,0,0,0.9),0_2px_10px_rgba(0,0,0,0.75)] ring-1 ring-amber-400/40"
+                >
+                  <img
+                    src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                    alt={data.characterName}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       if (!target.src.includes('francisco_villa_avatar.png')) {
                         target.src = '/images/history/francisco_villa_avatar.png';
                       }
                     }}
-                    className="w-full h-full object-cover filter contrast-105"
+                    className="w-full h-full object-cover filter contrast-105 saturate-105 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {/* Brillo de Cristal Antiguo sobre el Medallón */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      background:
+                        'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.55) 100%)',
+                    }}
                   />
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-amber-100 tracking-wide font-serif drop-shadow-lg">
-                  {data.characterName}
-                </h1>
-
-                <p className="text-xs sm:text-sm text-amber-200/80 font-serif max-w-xs mx-auto line-clamp-3">
-                  {data.shortBio}
-                </p>
-              </div>
-
-              {/* Botón de Apertura Mágica */}
-              <div className="z-10 pb-4">
-                <button
-                  type="button"
-                  onClick={handleOpenBook}
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs sm:text-sm shadow-xl shadow-amber-500/30 flex items-center gap-2 border border-amber-300 transform active:scale-95 cursor-pointer animate-pulse"
+                {/* Cartela Inferior con Nombre Grabado en Oro, Semblanza y Botón de Apertura */}
+                <div
+                  style={{
+                    left: spineTheme.cartouchePos.left,
+                    top: spineTheme.cartouchePos.top,
+                    width: spineTheme.cartouchePos.width,
+                  }}
+                  className="absolute -translate-x-1/2 bottom-[7.5%] z-20 flex flex-col justify-between items-center text-center px-2.5 py-2.5 rounded-2xl bg-gradient-to-b from-black/20 via-black/45 to-black/55 backdrop-blur-[1px] border border-amber-400/20 shadow-[inset_0_1px_12px_rgba(0,0,0,0.55)]"
                 >
-                  <Sparkles className="w-4 h-4 text-slate-950" />
-                  <span>Abrir Libro Mágico</span>
-                  <ChevronRight className="w-4 h-4 text-slate-950" />
-                </button>
+                  <div className="space-y-1.5 my-auto">
+                    <h1
+                      className="text-xl sm:text-2xl font-black tracking-wide font-serif leading-tight"
+                      style={{
+                        color: '#fef3c7',
+                        textShadow: '0 2px 6px rgba(0,0,0,0.95), 0 0 18px rgba(245,158,11,0.35)',
+                      }}
+                    >
+                      {data.characterName}
+                    </h1>
+
+                    <p className="text-[11px] sm:text-xs text-amber-100/90 font-serif leading-relaxed line-clamp-3 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                      {data.shortBio}
+                    </p>
+                  </div>
+
+                  {/* Botón de Apertura Mágica */}
+                  <div className="pt-1.5">
+                    <button
+                      type="button"
+                      onClick={handleOpenBook}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm shadow-[0_6px_20px_rgba(245,158,11,0.45)] flex items-center gap-1.5 border border-amber-200 transform active:scale-95 cursor-pointer transition-all"
+                    >
+                      <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
+                      <span>Abrir Libro Mágico</span>
+                      <ChevronRight className="w-4 h-4 text-slate-950 shrink-0" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           ) : (

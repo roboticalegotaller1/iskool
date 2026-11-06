@@ -329,12 +329,17 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
           </div>
         )}
 
-        {/* ================= ELECCIÓN DE LOS 5 TIPOS DE LOMOS DE LIBRO (REGLA 14) ================= */}
-        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
-          <label className="text-xs font-black text-slate-700 dark:text-zinc-200 uppercase tracking-wide">
-            Estilo de Lomo y Encuadernación del Libro Mágico (5 Diseños Disponibles):
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+        {/* ================= ELECCIÓN DE LOS 5 TIPOS DE LOMOS DE LIBRO (REGLA 14 — PORTADAS NANO BANANA 2.1) ================= */}
+        <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <label className="text-xs font-black text-slate-700 dark:text-zinc-200 uppercase tracking-wide">
+              Estilo de Portada y Encuadernación del Libro Mágico (5 Diseños Disponibles):
+            </label>
+            <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+              Haz clic en una portada para aplicarla al instante
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {spineKeys.map((key) => {
               const theme = BOOK_SPINE_THEMES[key];
               const isSelected = selectedSpine === key;
@@ -346,23 +351,89 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
                     setSelectedSpine(key);
                     handleUpdateData({ bookSpineStyle: key });
                   }}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1.5 relative overflow-hidden ${
-                    isSelected 
-                      ? 'border-amber-500 bg-amber-500/10 shadow-md ring-2 ring-amber-500/30' 
-                      : 'border-slate-200 dark:border-zinc-750 bg-slate-50 dark:bg-zinc-900/60 hover:border-slate-300'
+                  className={`group p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-between gap-2.5 relative overflow-hidden ${
+                    isSelected
+                      ? 'border-amber-500 bg-amber-50/90 dark:bg-amber-950/30 shadow-lg ring-2 ring-amber-500/40 -translate-y-0.5'
+                      : 'border-slate-200 dark:border-zinc-750 bg-slate-50/80 dark:bg-zinc-900/60 hover:border-amber-400/60 hover:bg-white dark:hover:bg-zinc-800/80 hover:-translate-y-0.5'
                   }`}
                 >
-                  <div className={`w-full h-4 rounded-full bg-gradient-to-r ${theme.spineGradient} shadow-inner`} />
-                  <div>
-                    <p className="text-xs font-black text-slate-900 dark:text-white truncate">
+                  {/* Miniatura 3D Fotorrealista de la Portada del Libro con su Canto de Hojas */}
+                  <div className="relative w-full max-w-[100px] aspect-[3/4] mx-auto my-0.5 select-none pr-1.5 pb-1">
+                    {/* Canto de hojas derecho 3D */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute top-1.5 bottom-2 right-0 w-1.5 rounded-r-xs"
+                      style={{
+                        background:
+                          'repeating-linear-gradient(to right, #e6d7b8 0px, #bfa678 1px, #f5ecd7 2px)',
+                        boxShadow: '2px 4px 10px rgba(0,0,0,0.45)',
+                      }}
+                    />
+                    {/* Canto de hojas inferior 3D */}
+                    <div
+                      aria-hidden="true"
+                      className="absolute bottom-0 left-1.5 right-1.5 h-1.5 rounded-b-xs"
+                      style={{
+                        background:
+                          'repeating-linear-gradient(to bottom, #dfd0b0 0px, #bfa678 1px, #f2e8cf 2px)',
+                      }}
+                    />
+
+                    {/* Portada Nano Banana 2.1 */}
+                    <div className="relative w-full h-full rounded-l-[3px] rounded-r-[7px] overflow-hidden shadow-md border border-amber-500/30 bg-zinc-950">
+                      <img
+                        src={theme.coverImage}
+                        alt={theme.name}
+                        className="w-full h-full object-fill group-hover:scale-[1.03] transition-transform duration-300"
+                      />
+                      {/* Retrato miniatura del personaje dentro del medallón */}
+                      <div
+                        style={{
+                          left: theme.medallionPos.left,
+                          top: theme.medallionPos.top,
+                          width: theme.medallionPos.width,
+                        }}
+                        className="absolute -translate-x-1/2 -translate-y-1/2 aspect-square rounded-full overflow-hidden bg-black/80 shadow-inner ring-1 ring-amber-300/40"
+                      >
+                        <img
+                          src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                          alt={data.characterName}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.src.includes('francisco_villa_avatar.png')) {
+                              target.src = '/images/history/francisco_villa_avatar.png';
+                            }
+                          }}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {/* Cartela miniatura con el nombre grabado en oro */}
+                      <div
+                        style={{
+                          left: theme.cartouchePos.left,
+                          width: theme.cartouchePos.width,
+                        }}
+                        className="absolute -translate-x-1/2 bottom-[14%] flex flex-col items-center justify-center px-1 py-0.5 rounded bg-black/45 backdrop-blur-[0.5px] border border-amber-400/20"
+                      >
+                        <span className="text-[7px] font-serif font-black text-amber-100 leading-tight line-clamp-2 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]">
+                          {data.characterName || 'Personaje Histórico'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Título Completo sin Truncar y Distintivo */}
+                  <div className="w-full space-y-0.5">
+                    <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">
                       {theme.name}
                     </p>
-                    <p className="text-[10px] text-slate-500 dark:text-zinc-400">
+                    <p className="text-[10px] font-medium text-slate-600 dark:text-zinc-400 leading-snug">
                       {theme.badge}
                     </p>
                   </div>
+
                   {isSelected && (
-                    <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-[10px] font-black">
+                    <span className="absolute top-2 right-2 w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-[11px] font-black shadow-sm">
                       ✓
                     </span>
                   )}

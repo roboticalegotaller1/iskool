@@ -1567,14 +1567,14 @@ export default function TeacherIdiomasPage() {
                     isLightMode ? 'bg-white border-slate-200/90 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
                   }`}>
                     
-                    {/* Escenario Nano Banana 2.1 del Avatar 3D Centrado (0% Superposición sobre el Rostro) */}
-                    <div className={`relative rounded-2xl overflow-hidden border h-[330px] flex items-end justify-center p-3 transition-all ${
+                    {/* Escenario del Avatar 3D Centrado con Compendio de Gestos a 60 FPS (0% Superposición sobre el Rostro) */}
+                    <div className={`relative rounded-2xl overflow-hidden border h-[355px] flex items-end justify-center p-2.5 transition-all ${
                       isLightMode 
                         ? 'bg-gradient-to-b from-[#F1F5F9] via-[#F8FAFC] to-[#FFFFFF] border-slate-200/80 shadow-inner' 
                         : 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800 shadow-inner'
                     }`}>
-                      {/* Badge Superior Izquierdo con Emblema Nano Banana 2.1 */}
-                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200 shadow-xs">
+                      {/* Badge Superior Izquierdo con Indicador Vivo 60 FPS */}
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 px-2.5 py-1 rounded-xl bg-white/90 backdrop-blur-md border border-slate-200 shadow-xs pointer-events-none">
                         <img
                           src="/images/languages/nanobanana-gamified/nb_holodeck_avatar_stage.webp"
                           alt="Escenario 60 FPS"
@@ -1583,10 +1583,11 @@ export default function TeacherIdiomasPage() {
                         <span className="text-[10px] font-black text-slate-800">
                           {activeLesson.avatarName} · 60 FPS
                         </span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Cinemática Activa a 60 FPS" />
                       </div>
 
-                      {/* Personaje 3D Articulado Centrado sin obstrucción */}
-                      <div className="relative w-full max-w-[300px] h-[310px] flex items-end justify-center pointer-events-none">
+                      {/* Personaje 3D Articulado Centrado con Compendio de Gestos y Parpadeo Involuntario */}
+                      <div className="relative w-full max-w-[335px] h-[338px] flex items-end justify-center">
                         <HumanGesticulatingAvatar
                           variant="stage"
                           gender={activeLesson.avatarGender}
@@ -1596,6 +1597,11 @@ export default function TeacherIdiomasPage() {
                           avatarImage={resolvedAvatar3dSrc}
                           historicalFigureId={useHistoricalFigure ? selectedHistoricalId : activeLesson.historicalFigureId}
                           isPlaying={isPlayingPreview || Boolean(activePlayingLineId)}
+                          currentText={
+                            activePlayingLineId
+                              ? (activeLesson.dialogue.find(d => d.id === activePlayingLineId)?.text || activeLesson.dialogue[0]?.text)
+                              : (activeLesson.dialogue[0]?.text || 'Welcome to our interactive language session!')
+                          }
                           speechRate={activeLesson.defaultSpeed}
                           isLightMode={isLightMode}
                           className="w-full h-full"

@@ -15,6 +15,7 @@ import { isISkoolHouseBrand, ISKOOL_THEME_TOKENS } from '@/lib/branding/tenantTh
 import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 import { BackButton } from '@/components/navigation/BackButton';
+import { UniversalCommandBar } from '@/components/navigation/UniversalCommandBar';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -280,7 +281,7 @@ export const Header: React.FC = () => {
         </div>
 
         {/* Navegación de Escritorio (Desktop >= lg) */}
-        <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Navegación principal">
+        <nav className="hidden lg:flex items-center gap-1 overflow-x-auto no-scrollbar" aria-label="Navegación principal">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -292,7 +293,7 @@ export const Header: React.FC = () => {
                     selectSchool(null);
                   }
                 }}
-                className={`text-xs xl:text-sm font-semibold transition-all px-2.5 xl:px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
+                className={`text-xs font-semibold transition-all px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                   isActive
                     ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/70 shadow-xs'
                     : 'text-zinc-600 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 hover:bg-zinc-100/60 dark:hover:bg-zinc-850'
@@ -308,7 +309,7 @@ export const Header: React.FC = () => {
           <Link
             href={`/guide${currentRole !== 'none' ? `?role=${currentRole}` : ''}`}
             aria-label="Ir a la guía y centro de ayuda"
-            className={`text-xs xl:text-sm font-semibold transition-all px-2.5 py-1.5 rounded-xl flex items-center gap-1 ${
+            className={`text-xs font-semibold transition-all px-2 py-1.5 rounded-xl flex items-center gap-1 whitespace-nowrap shrink-0 ${
               pathname === '/guide' 
                 ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/70' 
                 : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-zinc-100/60 dark:hover:bg-zinc-850'
@@ -321,6 +322,9 @@ export const Header: React.FC = () => {
 
         {/* Stats, Switcher de Roles y Acciones de Usuario */}
         <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
+          {/* Barra de Comando Universal (Ctrl+K) */}
+          <UniversalCommandBar variant="light" />
+
           {/* Stats para Estudiante */}
           {currentRole === 'student' && (
             <div className="hidden md:flex items-center gap-1.5 text-xs font-bold shrink-0">

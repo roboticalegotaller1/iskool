@@ -1518,8 +1518,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 486, y1: 264, cx: 512, cy: 266, x2: 538, y2: 264,
-      chinY: 304, eyeY: 196, leftEyeX: 480, rightEyeX: 544, eyeRadius: 16, baseOpen: 0.18,
+      x1: 476, y1: 274, cx: 506, cy: 275, x2: 536, y2: 274,
+      chinY: 318, eyeY: 220, leftEyeX: 472, rightEyeX: 538, eyeRadius: 17, baseOpen: 0.18,
       maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
       lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
     };
@@ -1536,8 +1536,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 474, y1: 318, cx: 510, cy: 320, x2: 546, y2: 318,
-      chinY: 382, eyeY: 232, leftEyeX: 462, rightEyeX: 554, eyeRadius: 24, baseOpen: 0.32,
+      x1: 462, y1: 306, cx: 500, cy: 308, x2: 538, y2: 306,
+      chinY: 382, eyeY: 222, leftEyeX: 458, rightEyeX: 544, eyeRadius: 24, baseOpen: 0.32,
       maxOpening: 15, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
       lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
     };
@@ -1554,8 +1554,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 490, y1: 263, cx: 524, cy: 264, x2: 558, y2: 263,
-      chinY: 348, eyeY: 188, leftEyeX: 482, rightEyeX: 564, eyeRadius: 18, baseOpen: 0,
+      x1: 472, y1: 258, cx: 504, cy: 258, x2: 536, y2: 258,
+      chinY: 326, eyeY: 192, leftEyeX: 468, rightEyeX: 540, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
       lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
     };
@@ -1572,8 +1572,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 472, y1: 388, cx: 512, cy: 390, x2: 552, y2: 388,
-      chinY: 438, eyeY: 288, leftEyeX: 452, rightEyeX: 570, eyeRadius: 30, baseOpen: 0.35,
+      x1: 465, y1: 374, cx: 506, cy: 376, x2: 548, y2: 374,
+      chinY: 432, eyeY: 292, leftEyeX: 452, rightEyeX: 562, eyeRadius: 32, baseOpen: 0.35,
       maxOpening: 16, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
       lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
     };
@@ -1590,8 +1590,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 492, y1: 242, cx: 518, cy: 244, x2: 544, y2: 242,
-      chinY: 280, eyeY: 176, leftEyeX: 480, rightEyeX: 552, eyeRadius: 20, baseOpen: 0.28,
+      x1: 484, y1: 242, cx: 506, cy: 243, x2: 530, y2: 242,
+      chinY: 276, eyeY: 196, leftEyeX: 476, rightEyeX: 534, eyeRadius: 18, baseOpen: 0.28,
       maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
       lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
     };
@@ -1608,8 +1608,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 474, y1: 455, cx: 510, cy: 455, x2: 546, y2: 455,
-      chinY: 576, eyeY: 308, leftEyeX: 446, rightEyeX: 570, eyeRadius: 22, baseOpen: 0,
+      x1: 464, y1: 446, cx: 502, cy: 446, x2: 540, y2: 446,
+      chinY: 572, eyeY: 310, leftEyeX: 436, rightEyeX: 566, eyeRadius: 24, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
       lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
     };
@@ -1626,8 +1626,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 478, y1: 436, cx: 514, cy: 437, x2: 550, y2: 436,
-      chinY: 498, eyeY: 314, leftEyeX: 444, rightEyeX: 580, eyeRadius: 28, baseOpen: 0,
+      x1: 456, y1: 426, cx: 500, cy: 426, x2: 544, y2: 426,
+      chinY: 488, eyeY: 312, leftEyeX: 436, rightEyeX: 566, eyeRadius: 30, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
     };
@@ -1636,8 +1636,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
   if (norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
     return {
-      x1: 464, y1: 370, cx: 516, cy: 374, x2: 568, y2: 370,
-      chinY: 424, eyeY: 256, leftEyeX: 444, rightEyeX: 588, eyeRadius: 34, baseOpen: 0.38,
+      x1: 454, y1: 365, cx: 504, cy: 368, x2: 562, y2: 356,
+      chinY: 432, eyeY: 268, leftEyeX: 442, rightEyeX: 560, eyeRadius: 34, baseOpen: 0.38,
       maxOpening: 16, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',
       lowerLipRimColor: 'rgba(215, 92, 105, 0.94)', teethColor: '#fff7f0'
     };
@@ -1646,8 +1646,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 9. MENTOR MASCULINO 3D (/images/languages/3d/mentor_male_3d_v2.webp)
   if (norm.includes('mentor_male') || norm.includes('arthur') || norm.includes('henri')) {
     return {
-      x1: 448, y1: 292, cx: 486, cy: 294, x2: 524, y2: 292,
-      chinY: 350, eyeY: 196, leftEyeX: 442, rightEyeX: 534, eyeRadius: 24, baseOpen: 0.30,
+      x1: 400, y1: 290, cx: 444, cy: 292, x2: 490, y2: 290,
+      chinY: 362, eyeY: 208, leftEyeX: 398, rightEyeX: 490, eyeRadius: 28, baseOpen: 0.30,
       maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#300a0e', cavityRimColor: '#521319',
       lowerLipRimColor: 'rgba(178, 82, 75, 0.90)', teethColor: '#eee4d6', mustacheCover: true
     };

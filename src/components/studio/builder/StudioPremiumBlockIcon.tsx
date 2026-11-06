@@ -30,12 +30,12 @@ interface CategoryVisualSpec {
 export const CATEGORY_VISUAL_SPECS: Record<StudioCategoryKey, CategoryVisualSpec> = {
   studio_master: {
     imagePath: '/images/studio-icons/cat_studio_master.webp',
-    badgeText: '34',
+    badgeText: 'PRO',
     gradientBg: 'from-emerald-500 via-teal-600 to-cyan-700',
     borderStyle: 'border-emerald-300/90 dark:border-emerald-700',
     shadowStyle: 'shadow-md shadow-emerald-600/20',
     badgeColors: 'bg-emerald-950 text-emerald-200 border-emerald-400',
-    titleHint: 'Catálogo Maestro de 34 Nodos Didácticos'
+    titleHint: 'Catálogo Maestro de Bloques Didácticos'
   },
   exams_omr: {
     imagePath: '/images/studio-icons/cat_exams_omr.webp',

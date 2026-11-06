@@ -698,21 +698,107 @@ export default function CoordinatorDashboard() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         
         {/* Banner Coordinador */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
-          <div>
-            <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 px-2.5 py-1 rounded-md">Panel de Control de Coordinación</span>
-            <h1 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">Módulo de Administración Académica</h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Escuela: <strong>{schoolInfo.name}</strong> (<span className="font-mono text-violet-500">@{schoolDomain}</span>) | Administra altas, conforma grupos y define horarios.
-            </p>
+        <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 px-2.5 py-1 rounded-md">Panel de Control de Coordinación</span>
+              <h1 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">Módulo de Administración Académica</h1>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Escuela: <strong>{schoolInfo.name}</strong> (<span className="font-mono text-violet-500">@{schoolDomain}</span>) | Administra altas, conforma grupos y define horarios.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsRegisterModalOpen(true)}
+                style={{ backgroundColor: 'var(--brand-primary)' }}
+                className="px-4 py-2 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-all cursor-pointer"
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>+ Alta Rápida de Alumno</span>
+              </button>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200/45 dark:border-zinc-850 self-stretch md:self-auto overflow-x-auto max-w-full scrollbar-none shrink-0">
+          {/* Checklist de Progreso de Escuela en 4 Pasos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800/80" data-testid="coordinator-4step-checklist">
+            <button
+              type="button"
+              onClick={() => setActiveTab('settings')}
+              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                activeTab === 'settings'
+                  ? 'bg-violet-50/80 dark:bg-violet-950/30 border-violet-300 dark:border-violet-700'
+                  : 'bg-zinc-50/80 dark:bg-zinc-950/60 border-zinc-200/70 dark:border-zinc-800 hover:border-violet-300'
+              }`}
+            >
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Paso 1 · Listo ✓</span>
+                <span className="text-xs font-black text-zinc-900 dark:text-white">1. Identidad del Colegio</span>
+              </div>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('groups')}
+              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                activeTab === 'groups'
+                  ? 'bg-violet-50/80 dark:bg-violet-950/30 border-violet-300 dark:border-violet-700'
+                  : 'bg-zinc-50/80 dark:bg-zinc-950/60 border-zinc-200/70 dark:border-zinc-800 hover:border-violet-300'
+              }`}
+            >
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 block">
+                  Paso 2 · {groupsList.length > 0 ? `${groupsList.length} Grupos ✓` : 'Pendiente'}
+                </span>
+                <span className="text-xs font-black text-zinc-900 dark:text-white">2. Conformar Grupos A/B</span>
+              </div>
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${groupsList.length > 0 ? 'text-emerald-500' : 'text-zinc-300 dark:text-zinc-700'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('students')}
+              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                activeTab === 'students'
+                  ? 'bg-violet-50/80 dark:bg-violet-950/30 border-violet-300 dark:border-violet-700'
+                  : 'bg-zinc-50/80 dark:bg-zinc-950/60 border-zinc-200/70 dark:border-zinc-800 hover:border-violet-300'
+              }`}
+            >
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 block">
+                  Paso 3 · {detailedStudents.length} Expedientes
+                </span>
+                <span className="text-xs font-black text-zinc-900 dark:text-white">3. Alta de Alumnos / CURP</span>
+              </div>
+              <CheckCircle2 className={`w-4 h-4 shrink-0 ${detailedStudents.length > 0 ? 'text-emerald-500' : 'text-amber-500'}`} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('schedules')}
+              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                activeTab === 'schedules'
+                  ? 'bg-violet-50/80 dark:bg-violet-950/30 border-violet-300 dark:border-violet-700'
+                  : 'bg-zinc-50/80 dark:bg-zinc-950/60 border-zinc-200/70 dark:border-zinc-800 hover:border-violet-300'
+              }`}
+            >
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block">
+                  Paso 4 · Horarios SEP
+                </span>
+                <span className="text-xs font-black text-zinc-900 dark:text-white">4. Asignar Materias y Aulas</span>
+              </div>
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            </button>
+          </div>
+
+          {/* Tabs (con flex-wrap para evitar cualquier corte en 1440px o resoluciones intermedias) */}
+          <div className="flex flex-wrap items-center gap-1 bg-zinc-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-zinc-200/45 dark:border-zinc-850 w-full">
             <button
               onClick={() => setActiveTab('students')}
               style={activeTab === 'students' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === 'students'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -723,7 +809,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('groups')}
               style={activeTab === 'groups' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === 'groups'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -734,7 +820,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('schedules')}
               style={activeTab === 'schedules' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === 'schedules'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -745,7 +831,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('settings')}
               style={activeTab === 'settings' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                 activeTab === 'settings'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -756,7 +842,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('books')}
               style={activeTab === 'books' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'books'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm text-purple-600'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -768,7 +854,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('memory')}
               style={activeTab === 'memory' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'memory'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm text-indigo-600 dark:text-indigo-400'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -777,32 +863,34 @@ export default function CoordinatorDashboard() {
               <Brain className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Memoria Institucional</span>
             </button>
-            {currentGovernance.allowCoordinatorBilling ? (
+            <div className="flex items-center gap-1.5 ml-auto">
+              {currentGovernance.allowCoordinatorBilling ? (
+                <Link
+                  href="/coordinator/billing"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Landmark className="w-3.5 h-3.5" />
+                  <span>Cobranza</span>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => alert("🔒 La función de Cobranza y Aranceles ha sido restringida para Coordinación por la Dirección del Colegio.")}
+                  title="Acceso restringido por la Dirección"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 cursor-not-allowed opacity-80 whitespace-nowrap shrink-0"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Cobranza (Bloqueado)</span>
+                </button>
+              )}
               <Link
-                href="/coordinator/billing"
-                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+                href="/coordinator/fiscal"
+                className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
               >
-                <Landmark className="w-3.5 h-3.5" />
-                <span>Cobranza</span>
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Facturación SAT</span>
               </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={() => alert("🔒 La función de Cobranza y Aranceles ha sido restringida para Coordinación por la Dirección del Colegio.")}
-                title="Acceso restringido por la Dirección"
-                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 cursor-not-allowed opacity-80 whitespace-nowrap shrink-0"
-              >
-                <Lock className="w-3.5 h-3.5 text-amber-500" />
-                <span>Cobranza (Bloqueado)</span>
-              </button>
-            )}
-            <Link
-              href="/coordinator/fiscal"
-              className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Facturación SAT</span>
-            </Link>
+            </div>
           </div>
         </div>
 
@@ -935,9 +1023,51 @@ export default function CoordinatorDashboard() {
                   <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-zinc-800 dark:text-zinc-200">
                     {sortedStudents.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-zinc-400">
-                          <AlertCircle className="h-10 w-10 mx-auto text-zinc-300 mb-2" />
-                          No se encontraron expedientes con los filtros aplicados.
+                        <td colSpan={7} className="p-8 sm:p-10 text-center">
+                          <div className="max-w-md mx-auto flex flex-col items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/50 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+                              <UserPlus className="h-6 w-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-black text-zinc-900 dark:text-white">
+                                No se encontraron expedientes con los filtros aplicados
+                              </p>
+                              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                Comienza registrando un alumno nuevo con su CURP o conforma los grupos escolares del ciclo activo en 1 clic.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setIsRegisterModalOpen(true)}
+                                style={{ backgroundColor: 'var(--brand-primary)' }}
+                                className="px-4 py-2 rounded-xl text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-all cursor-pointer"
+                              >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                <span>Dar de Alta Alumno</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setActiveTab('groups')}
+                                className="px-4 py-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition-all cursor-pointer"
+                              >
+                                Conformar Grupos A/B
+                              </button>
+                              {(searchQuery || levelFilter !== 'all' || groupFilter !== 'all') && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSearchQuery('');
+                                    setLevelFilter('all');
+                                    setGroupFilter('all');
+                                  }}
+                                  className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 text-xs font-bold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                >
+                                  Limpiar Filtros
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ) : (

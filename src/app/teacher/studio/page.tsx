@@ -46,13 +46,41 @@ function TeacherStudioContent() {
   const isEmbedded = searchParams?.get('embed') === 'true' || isIframe;
   const { loadPresetBlocks } = useActivityBuilderStore();
 
-  const [activeTab, setActiveTab] = useState<'builder' | 'ai_assistant'>('builder');
+  const [activeTab, setActiveTab] = useState<'recipes' | 'builder' | 'ai_assistant'>('recipes');
   const [aiTopic, setAiTopic] = useState('');
   const [faseNem, setFaseNem] = useState('Fase 5');
   const [gamificationStyle, setGamificationStyle] = useState<'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament'>('rpg_adventure');
   const [generationLanguage, setGenerationLanguage] = useState<'Español' | 'Inglés B2' | 'Francés A2'>('Español');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
+
+  const handleApplyQuickRecipe = async (recipeType: 'rpg' | 'escape' | 'history') => {
+    if (recipeType === 'history') {
+      setActiveTab('builder');
+      return;
+    }
+    const defaultTopic =
+      recipeType === 'rpg'
+        ? 'Aventura de Repaso General de la Unidad'
+        : 'Escape Room de Evaluación Formativa';
+    const style = recipeType === 'rpg' ? 'rpg_adventure' : 'escape_room';
+    const projectResult = await generateGamifiedProject({
+      topic: aiTopic.trim() || defaultTopic,
+      faseNem,
+      gamificationStyle: style,
+      language: generationLanguage,
+    });
+    if (projectResult?.blocks?.length) {
+      loadPresetBlocks(projectResult.blocks, projectResult.metadata);
+      if (projectResult.connections?.length) {
+        useActivityBuilderStore.setState({
+          connections: projectResult.connections,
+          startNodeId: projectResult.startNodeId || projectResult.blocks[0]?.id || null,
+        });
+      }
+    }
+    setActiveTab('builder');
+  };
 
   // Generador Maestro con IA y Motor Pedagógico Gamificado
   const handleGenerateWithAi = async () => {
@@ -130,6 +158,197 @@ function TeacherStudioContent() {
       {!isEmbedded && <Header />}
 
       <main className={`flex-1 w-full ${isEmbedded ? 'max-w-none px-2 py-2 sm:px-4 sm:py-3 space-y-3' : 'max-w-[1660px] mx-auto px-3 sm:px-5 lg:px-6 py-3 space-y-3'} relative z-10`}>
+        {/* Barra Superior de Conmutación Rápida del Estudio iSkool */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900 text-white px-4 sm:px-6 py-3 rounded-2xl shadow-md border border-slate-800">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="px-2.5 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs">
+              Estudio iSkool
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-slate-200">
+              Crea tu clase interactiva en minutos: el límite es tu imaginación
+            </span>
+          </div>
+
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-800 border border-slate-700 self-stretch sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('recipes')}
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeTab === 'recipes'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Recetas en 1 Clic</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('builder')}
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeTab === 'builder'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Lienzo Avanzado de Nodos</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Vista 0: Asistente Rápido de Recetas Pedagógicas en 1 Clic (Baja Curva de Aprendizaje) */}
+        {activeTab === 'recipes' && (
+          <div className="relative min-h-[620px] rounded-3xl border border-slate-200/90 bg-white/80 backdrop-blur-sm p-6 sm:p-10 flex flex-col items-center justify-center shadow-xl overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-40"
+              style={{
+                backgroundImage: 'radial-gradient(#94a3b8 1.25px, transparent 1.25px)',
+                backgroundSize: '20px 20px',
+              }}
+            />
+
+            <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl border border-slate-200/90 shadow-2xl p-6 sm:p-9 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    Asistente Rápido: Elige una Receta en 1 Clic
+                  </h1>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Selecciona una plantilla lista en 30 segundos o escribe tu tema para que el Asistente Pedagógico IA la arme por ti.
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/70 text-[11px] font-black shrink-0 w-fit">
+                  Unos Cuantos Clics
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Receta 1: Aventura RPG */}
+                <button
+                  type="button"
+                  onClick={() => handleApplyQuickRecipe('rpg')}
+                  className="group text-left p-5 rounded-2xl border-2 border-slate-200/80 hover:border-indigo-500 bg-slate-50/60 hover:bg-indigo-50/30 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between gap-4"
+                >
+                  <div className="flex items-start justify-between gap-2 w-full">
+                    <div className="w-11 h-11 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                      <Swords className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-indigo-100/80 text-indigo-800 text-[11px] font-bold">
+                      Lista en 30 seg
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-slate-900 group-hover:text-indigo-700 transition-colors">
+                      ⚔️ Aventura RPG de Repaso
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Narrativa inmersiva, duelo de saberes contra jefe temático y cofre de recompensa curricular.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Receta 2: Escape Room */}
+                <button
+                  type="button"
+                  onClick={() => handleApplyQuickRecipe('escape')}
+                  className="group text-left p-5 rounded-2xl border-2 border-slate-200/80 hover:border-amber-500 bg-slate-50/60 hover:bg-amber-50/30 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between gap-4"
+                >
+                  <div className="flex items-start justify-between gap-2 w-full">
+                    <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                      <KeyRound className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-amber-100/80 text-amber-900 text-[11px] font-bold">
+                      Lista en 30 seg
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-slate-900 group-hover:text-amber-700 transition-colors">
+                      🔐 Escape Room de Evaluación
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Enigmas secuenciales, código secreto y reactivos formativos con retroalimentación inmediata.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Receta 3: Diálogo con Personaje Histórico */}
+                <button
+                  type="button"
+                  onClick={() => handleApplyQuickRecipe('history')}
+                  className="group text-left p-5 rounded-2xl border-2 border-slate-200/80 hover:border-emerald-500 bg-slate-50/60 hover:bg-emerald-50/30 transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between gap-4"
+                >
+                  <div className="flex items-start justify-between gap-2 w-full">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100/80 text-emerald-900 text-[11px] font-bold">
+                      Lista en 30 seg
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-base font-black text-slate-900 group-hover:text-emerald-700 transition-colors">
+                      🗣️ Diálogo con Personaje Histórico (1ª Persona)
+                    </h2>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      Conversación viva en primera persona con protagonistas históricos y evaluación de fuentes primarias.
+                    </p>
+                  </div>
+                </button>
+
+                {/* Receta 4: Generar con Asistente Pedagógico IA */}
+                <div className="p-5 rounded-2xl border-2 border-purple-300 bg-purple-50/40 shadow-xs flex flex-col justify-between gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[11px] font-bold">
+                      Motor de IA
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-base font-black text-slate-900">
+                      ✨ Generar con Asistente Pedagógico IA
+                    </h2>
+                    <p className="text-xs text-slate-600">
+                      Escribe tu tema y grado para generar la clase completa:
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={aiTopic}
+                        onChange={(e) => setAiTopic(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleGenerateWithAi()}
+                        placeholder="Ej. Fracciones 5º Primaria, Ecosistemas..."
+                        className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white border border-purple-200 text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleGenerateWithAi}
+                        disabled={!aiTopic.trim() || isGeneratingAi}
+                        className="px-3.5 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white font-black text-xs transition-all cursor-pointer shrink-0"
+                      >
+                        {isGeneratingAi ? '...' : 'Crear'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 w-full max-w-3xl flex justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => setActiveTab('builder')}
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 font-black text-xs border-2 border-slate-300 shadow-sm transition-all cursor-pointer flex items-center gap-2"
+              >
+                <span>Abrir Lienzo Avanzado de Nodos →</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Vista 1: Lienzo de Bloques Interactivo (Nuevo Rediseño 1 — Vista 1.1) */}
         {activeTab === 'builder' && (
           <ActivityBuilderLayout isEmbedded={isEmbedded} />
