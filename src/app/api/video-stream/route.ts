@@ -20,15 +20,20 @@ interface VideoManifest {
 }
 
 function getMaster1080pBuffer(): Buffer | null {
-  const g = globalThis as unknown as { __iskoolMasterVideo1080pBuffer?: Buffer };
-  if (g.__iskoolMasterVideo1080pBuffer) {
-    return g.__iskoolMasterVideo1080pBuffer;
-  }
+  const g = globalThis as unknown as {
+    __iskoolMasterVideo1080pBuffer?: Buffer;
+    __iskoolMasterVideo1080pMtime?: number;
+  };
 
   try {
     const dir = path.join(process.cwd(), 'src', 'data', 'video-1080p');
     const manifestPath = path.join(dir, 'manifest.json');
     if (!fs.existsSync(manifestPath)) return null;
+
+    const mtimeMs = fs.statSync(manifestPath).mtimeMs;
+    if (g.__iskoolMasterVideo1080pBuffer && g.__iskoolMasterVideo1080pMtime === mtimeMs) {
+      return g.__iskoolMasterVideo1080pBuffer;
+    }
 
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as VideoManifest;
     const buffers: Buffer[] = [];
@@ -38,6 +43,7 @@ function getMaster1080pBuffer(): Buffer | null {
     }
     const fullBuffer = Buffer.concat(buffers, manifest.totalSize);
     g.__iskoolMasterVideo1080pBuffer = fullBuffer;
+    g.__iskoolMasterVideo1080pMtime = mtimeMs;
     return fullBuffer;
   } catch (err) {
     console.error('Error al cargar el stream maestro 1080p:', err);

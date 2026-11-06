@@ -500,7 +500,7 @@ export default function VideoQrLandingPage() {
             <video
               key={config.youtubeId}
               ref={videoRef}
-              src={`/api/video-stream?v=${config.youtubeId}`}
+              src={`/api/video-stream?v=${config.youtubeId}-r2`}
               poster="/brand/iskool-video-poster-1080p.webp"
               playsInline
               loop={config.loop}
