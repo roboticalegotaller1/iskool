@@ -60,7 +60,10 @@ export const TrafficLightDifferentiatedView: React.FC<Props> = ({
     }
   };
 
-  const filteredStudentReports = studentReports.filter((rep) => {
+  const reportsByLanguage = studentReports.filter((rep) => rep.language === lesson.language);
+  const baseReports = reportsByLanguage.length > 0 ? reportsByLanguage : studentReports;
+
+  const filteredStudentReports = baseReports.filter((rep) => {
     if (selectedBandFilter === 'green') return rep.overallAccuracy >= 85;
     if (selectedBandFilter === 'amber')
       return rep.overallAccuracy >= 75 && rep.overallAccuracy < 85;

@@ -114,12 +114,6 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
     const matchingLesson = lessons.find((l) => l.language === lang);
     if (matchingLesson) {
       setActiveLessonId(matchingLesson.id);
-    } else if (activeLesson) {
-      updateLesson(activeLesson.id, {
-        language: lang,
-        avatarName: lang === 'fr' ? 'Sophie' : 'Claire',
-        avatarVoice: lang === 'fr' ? 'fr-FR-DeniseNeural' : 'en-US-JennyNeural',
-      });
     }
   };
 

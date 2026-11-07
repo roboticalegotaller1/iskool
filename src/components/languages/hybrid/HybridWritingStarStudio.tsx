@@ -19,6 +19,7 @@ import Link from 'next/link';
 
 interface Props {
   language: LanguageCode;
+  level?: 'A1' | 'A2' | 'B1' | 'B2';
   isLightMode: boolean;
   onPlayAudio: (text: string, customRate?: number) => void;
   onTriggerToast: (msg: string) => void;
@@ -26,31 +27,33 @@ interface Props {
 
 export const HybridWritingStarStudio: React.FC<Props> = ({
   language,
+  level = 'A1',
   isLightMode,
   onPlayAudio,
   onTriggerToast,
 }) => {
   const recipesForLang = useMemo(() => {
     const exact = WRITING_STUDIO_RECIPES.filter((r) => r.language === language);
-    return exact.length >= 2 ? exact : WRITING_STUDIO_RECIPES;
+    return exact.length > 0 ? exact : WRITING_STUDIO_RECIPES;
   }, [language]);
 
   const [selectedRecipeId, setSelectedRecipeId] = useState<string>(recipesForLang[0].id);
 
   useEffect(() => {
-    if (language === 'fr') {
-      setSelectedRecipeId('recipe-fr-cafe');
+    const matchingByLevel = recipesForLang.find((r) => r.level === level);
+    if (matchingByLevel) {
+      setSelectedRecipeId(matchingByLevel.id);
     } else {
-      setSelectedRecipeId('recipe-en-cafe');
+      setSelectedRecipeId(recipesForLang[0].id);
     }
-  }, [language]);
+  }, [language, level, recipesForLang]);
 
   const activeRecipe = useMemo(() => {
     return (
-      WRITING_STUDIO_RECIPES.find((r) => r.id === selectedRecipeId) ||
-      WRITING_STUDIO_RECIPES[0]
+      recipesForLang.find((r) => r.id === selectedRecipeId) ||
+      recipesForLang[0]
     );
-  }, [selectedRecipeId]);
+  }, [recipesForLang, selectedRecipeId]);
 
   const [draftText, setDraftText] = useState<string>(activeRecipe.sampleDraft);
   const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({
@@ -80,11 +83,11 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
     setDraftText(activeRecipe.sampleDraft);
     if (activeRecipe.language === 'fr') {
       setTeacherFeedback(
-        '¡Excelente redacción en francés, Camila! Muy buen uso de conectores ("D\'abord", "De plus") y del condicional de cortesía "Je voudrais".'
+        `¡Excelente redacción en francés (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Muy buen uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y precisión léxica.`
       );
     } else {
       setTeacherFeedback(
-        `¡Excelente trabajo, ${activeRecipe.sampleStudentName.split(' ')[0]}! Gran uso de conectores y vocabulario del nivel ${activeRecipe.level}. Sigue practicando tiempos verbales.`
+        `¡Excelente trabajo (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Gran uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y vocabulario del nivel ${activeRecipe.level}.`
       );
     }
   }, [activeRecipe]);
@@ -96,9 +99,16 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
 
   const computedBandLabel = useMemo(() => {
     if (language === 'fr') {
-      if (totalScore >= 90) return `DELF ${activeRecipe.level} · SEP CENNI Nivel 6 (${totalScore}/100)`;
-      if (totalScore >= 75) return `DELF A1+ · SEP CENNI Nivel 4 (${totalScore}/100)`;
-      return `DELF A1 Inicial · SEP CENNI Nivel 3 (${totalScore}/100)`;
+      if (activeRecipe.level === 'B2') {
+        return `DELF B2 · SEP CENNI Nivel 12 (${totalScore}/100)`;
+      }
+      if (activeRecipe.level === 'B1') {
+        return `DELF B1 · SEP CENNI Nivel 9 (${totalScore}/100)`;
+      }
+      if (activeRecipe.level === 'A2') {
+        return `DELF A2 · SEP CENNI Nivel 6 (${totalScore}/100)`;
+      }
+      return `DELF A1 · SEP CENNI Nivel 4 (${totalScore}/100)`;
     }
     if (activeRecipe.level === 'B2') {
       return `B2 First · SEP CENNI Nivel 12 (${totalScore}/100)`;
@@ -106,7 +116,10 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
     if (activeRecipe.level === 'B1') {
       return `B1 Preliminary · SEP CENNI Nivel 9 (${totalScore}/100)`;
     }
-    return `A2 Key · SEP CENNI Nivel 6 (${totalScore}/100)`;
+    if (activeRecipe.level === 'A2') {
+      return `A2 Key · SEP CENNI Nivel 6 (${totalScore}/100)`;
+    }
+    return `A1 Movers · SEP CENNI Nivel 4 (${totalScore}/100)`;
   }, [language, activeRecipe.level, totalScore]);
 
   const handleInsertIntoDraft = (snippet: string) => {
@@ -133,10 +146,10 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-lg sm:text-xl font-black tracking-tight">
-              Taller de Redacción Guiada con Andamiaje Pedagógico
+              Taller de Redacción Guiada ({language === 'fr' ? '🇫🇷 Francés DELF A1–B2' : '🇬🇧 Inglés Cambridge A1–B2'})
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Elige una plantilla curricular en 1 clic: el alumno escribe con apoyo visual de vocabulario y conectores.
+              Elige una plantilla curricular por nivel en 1 clic: el alumno escribe con apoyo visual de vocabulario y conectores.
             </p>
           </div>
           <span className="px-2.5 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-extrabold">
@@ -144,13 +157,13 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
           </span>
         </div>
 
-        {/* 3 Recetas Superiores en 1 Clic */}
+        {/* 4 Recetas por Nivel (A1, A2, B1, B2) Filtradas por el Idioma Activo */}
         <div className="space-y-1.5">
           <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
-            Recetas de Redacción en 1 Clic:
+            Recetas de Redacción por Nivel ({language === 'fr' ? 'DELF A1, A2, B1, B2' : 'Cambridge A1, A2, B1, B2'}):
           </span>
           <div className="flex flex-wrap gap-2">
-            {WRITING_STUDIO_RECIPES.map((rec) => {
+            {recipesForLang.map((rec) => {
               const active = rec.id === activeRecipe.id;
               return (
                 <button
@@ -174,7 +187,8 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
 
         {/* Consigna Pedagógica */}
         <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
-          <strong className="text-slate-900">Consigna del Día:</strong> {activeRecipe.promptInstructionEs}
+          <strong className="text-slate-900">Consigna del Día ({activeRecipe.level}):</strong>{' '}
+          {activeRecipe.promptInstructionEs}
         </div>
 
         {/* Lienzo de Escritura Interactivo (Writing Canvas) */}
@@ -182,7 +196,9 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
           <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-black text-slate-700">
             <span className="flex items-center gap-1.5">
               <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Writing Canvas · Borrador del Estudiante</span>
+              <span>
+                Writing Canvas · Borrador en {language === 'fr' ? 'Francés (FLE)' : 'Inglés (ESL)'} ({activeRecipe.level})
+              </span>
             </span>
             <button
               type="button"
@@ -300,7 +316,7 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-lg sm:text-xl font-black tracking-tight">
-              Rúbrica Oficial CEFR / SEP CENNI en 1 Clic
+              Rúbrica Oficial {language === 'fr' ? 'DELF / SEP CENNI' : 'Cambridge / SEP CENNI'} en 1 Clic
             </h2>
             <p className="text-xs text-slate-500 font-medium">
               Selecciona de 1 a 5 estrellas en cada criterio oficial. El sistema calcula el nivel CENNI automáticamente.
@@ -411,4 +427,3 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
     </div>
   );
 };
-

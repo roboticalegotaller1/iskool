@@ -7,6 +7,7 @@ import {
   LanguageCode,
   DialogueLine,
   KaraokePhrase,
+  sanitizeAndEnsureCompleteCatalog,
 } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from '@/components/languages/HumanGesticulatingAvatar';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
@@ -217,16 +218,7 @@ export default function TeacherIdiomasPage() {
   }, [deduplicateLessons]);
 
   const cleanLessons = useMemo(() => {
-    const seen = new Set<string>();
-    const result: LanguageLesson[] = [];
-    for (const l of lessons) {
-      const key = `${l.language}-${l.title.trim().toLowerCase()}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        result.push(l);
-      }
-    }
-    return result.length > 0 ? result : lessons;
+    return sanitizeAndEnsureCompleteCatalog(lessons);
   }, [lessons]);
 
   const filteredLessons = useMemo(() => {
@@ -276,6 +268,32 @@ export default function TeacherIdiomasPage() {
   const activeLesson = useMemo(() => {
     return cleanLessons.find((l) => l.id === activeLessonId) || cleanLessons[0] || lessons[0];
   }, [cleanLessons, lessons, activeLessonId]);
+
+  // Lecciones filtradas estrictamente por el idioma activo (sin mezclar Inglés en Francés ni viceversa)
+  const lessonsForActiveLanguage = useMemo(() => {
+    const byLang = cleanLessons.filter((l) => l.language === activeLesson.language);
+    return byLang.length > 0 ? byLang : cleanLessons;
+  }, [cleanLessons, activeLesson.language]);
+
+  // Reiniciar índice de frase de karaoke cuando cambia la lección activa
+  useEffect(() => {
+    setSelectedKaraokeIndex(0);
+  }, [activeLesson.id]);
+
+  // Cambiar de Nivel CEFR (A1, A2, B1, B2) dentro del idioma activo en 1 clic
+  const handleSelectCefrLevel = (targetLevel: 'A1' | 'A2' | 'B1' | 'B2') => {
+    stopAllIskoolAudio();
+    const matchInLang = lessonsForActiveLanguage.find((l) => l.level === targetLevel);
+    if (matchInLang) {
+      setActiveLessonId(matchInLang.id);
+      setSelectedKaraokeIndex(0);
+      triggerToast(
+        `✓ Nivel ${targetLevel} (${
+          activeLesson.language === 'fr' ? '🇫🇷 Francés DELF' : '🇬🇧 Inglés Cambridge'
+        }) activo: "${matchInLang.title}"`
+      );
+    }
+  };
 
   const { user: authUser } = useAuth();
   const adminSchools = useSchoolAdminStore((s) => s.institutionsList);
@@ -752,10 +770,26 @@ export default function TeacherIdiomasPage() {
   };
 
   const handleApplyHistoricalFigure = (figure: MultilingualHistoricalFigure) => {
+    stopAllIskoolAudio();
+    const existingHistLesson = cleanLessons.find(
+      (l) => l.historicalFigureId === figure.id && l.language === figure.language
+    );
+    if (existingHistLesson) {
+      setActiveLessonId(existingHistLesson.id);
+      setUseHistoricalFigure(true);
+      setSelectedHistoricalId(figure.id);
+      setSelectedKaraokeIndex(0);
+      triggerToast(`✓ Personaje 3D en 1ª Persona activo: ${figure.name}`);
+      return;
+    }
+
     const spanishIntro =
       HISTORICAL_TRANSLATIONS[figure.id] || 'Presentación canónica del personaje histórico.';
-    updateLesson(activeLesson.id, {
+    const newHistId = addLesson({
+      title: `Inmersión 1ª Persona: ${figure.name}`,
+      topic: 'Inmersión Histórica en 1ª Persona',
       language: figure.language,
+      level: 'B2',
       avatarName: figure.name,
       avatarVoice: figure.voiceId,
       avatarGender: figure.gender,
@@ -786,8 +820,10 @@ export default function TeacherIdiomasPage() {
         },
       ],
     });
+    setActiveLessonId(newHistId);
     setUseHistoricalFigure(true);
     setSelectedHistoricalId(figure.id);
+    setSelectedKaraokeIndex(0);
     triggerToast(`✓ Personaje 3D en 1ª Persona activo: ${figure.name}`);
   };
 
@@ -965,29 +1001,37 @@ export default function TeacherIdiomasPage() {
   };
 
   const handleSwitchLanguageGlobal = (lang: LanguageCode) => {
-    const isFemale = activeLesson.avatarGender === 'female';
-    const newVoice =
-      lang === 'fr'
-        ? isFemale
-          ? 'fr-FR-DeniseNeural'
-          : 'fr-FR-HenriNeural'
-        : isFemale
-          ? 'en-US-JennyNeural'
-          : 'en-US-GuyNeural';
-    const newName =
-      lang === 'fr' ? (isFemale ? 'Sophie' : 'Henri') : isFemale ? 'Claire' : 'Arthur';
+    stopAllIskoolAudio();
+    audioControllerRef.current?.stop();
+    setIsPlayingPreview(false);
+    setActivePlayingLineId(null);
 
-    setUseHistoricalFigure(false);
-    setSelectedHistoricalId('');
-    updateLesson(activeLesson.id, {
-      language: lang,
-      avatarVoice: newVoice,
-      avatarName: newName,
-      historicalFigureId: undefined,
-      avatarImage: isFemale
-        ? '/images/languages/3d/mentor_female_3d.webp'
-        : '/images/languages/3d/mentor_male_3d_v2.webp',
-    });
+    const candidates = cleanLessons.filter((l) => l.language === lang);
+    // Si la lección actual trata sobre horario escolar ("schedule" / "emploi du temps"), elegir su equivalente directo en el otro idioma
+    const isCurrentSchoolSchedule = /schedule|science lab|emploi du temps|collège/i.test(
+      activeLesson.title
+    );
+    const counterpartSchedule = isCurrentSchoolSchedule
+      ? candidates.find((l) => /schedule|science lab|emploi du temps|collège/i.test(l.title))
+      : undefined;
+
+    const sameLevelLesson = candidates.find(
+      (l) => l.level === activeLesson.level && !l.historicalFigureId
+    );
+    const targetLesson =
+      counterpartSchedule || sameLevelLesson || candidates[0];
+
+    if (targetLesson) {
+      setUseHistoricalFigure(Boolean(targetLesson.historicalFigureId));
+      setSelectedHistoricalId(targetLesson.historicalFigureId || '');
+      setSelectedKaraokeIndex(0);
+      setActiveLessonId(targetLesson.id);
+      triggerToast(
+        lang === 'fr'
+          ? `🇫🇷 Francés (FLE · DELF ${targetLesson.level}) activado: "${targetLesson.title}"`
+          : `🇬🇧 Inglés (ESL · Cambridge ${targetLesson.level}) activado: "${targetLesson.title}"`
+      );
+    }
   };
 
   // Agrupación de las 40 semanas en las 4 Etapas de Certificación (Pantalla Híbrida 3)
@@ -1008,67 +1052,145 @@ export default function TeacherIdiomasPage() {
     [current40Weeks]
   );
 
-  // Tarjetas de la Galería de Mentores e Inmersión Histórica 3D en 1ª Persona (Pantalla Híbrida 3)
-  const galleryMentors3D = [
-    {
-      id: 'mentor-claire',
-      name: 'Prof. Claire 3D',
-      subtitle: 'Situación: Cafetería en Londres · A1–A2',
-      language: 'en' as LanguageCode,
-      gender: 'female' as const,
-      voiceId: 'en-US-JennyNeural',
-      image: '/images/languages/3d/mentor_female_3d.webp',
-      sampleText: 'Good morning! Welcome to the Royal Orchard Café. What would you like today?',
-      isHistorical: false,
-    },
-    {
-      id: 'mentor-arthur',
-      name: 'Prof. Arthur 3D',
-      subtitle: 'Situación: Debate Académico en Oxford · B1–B2',
-      language: 'en' as LanguageCode,
-      gender: 'male' as const,
-      voiceId: 'en-US-GuyNeural',
-      image: '/images/languages/3d/mentor_male_3d_v2.webp',
-      sampleText: 'Welcome explorers! Today we investigate how kinetic energy transforms our world.',
-      isHistorical: false,
-    },
-    {
-      id: 'shakespeare',
-      name: 'William Shakespeare 3D',
-      subtitle: '1ª Persona: Mi Teatro Globe en 1599',
-      language: 'en' as LanguageCode,
-      gender: 'male' as const,
-      voiceId: 'en-GB-RyanNeural',
-      image: '/images/languages/3d/shakespeare_3d.webp',
-      sampleText:
-        'I am William Shakespeare. Upon the boards of the Globe Theatre in London, I crafted Hamlet and Macbeth.',
-      isHistorical: true,
-    },
-    {
-      id: 'ada_lovelace',
-      name: 'Ada Lovelace 3D',
-      subtitle: '1ª Persona: Cómo inventé el primer algoritmo',
-      language: 'en' as LanguageCode,
-      gender: 'female' as const,
-      voiceId: 'en-GB-SoniaNeural',
-      image: '/images/languages/3d/ada_lovelace_3d.webp',
-      sampleText:
-        'I am Ada Lovelace. In 1843, I wrote the first algorithm for Charles Babbage and envisioned modern computing.',
-      isHistorical: true,
-    },
-    {
-      id: 'marie_curie',
-      name: 'Marie Curie 3D [🇫🇷 Francés FLE]',
-      subtitle: '1ª Persona: Mon Laboratoire à Paris',
-      language: 'fr' as LanguageCode,
-      gender: 'female' as const,
-      voiceId: 'fr-FR-DeniseNeural',
-      image: '/images/languages/3d/marie_curie_3d.webp',
-      sampleText:
-        'Je suis Marie Curie. Dans mon laboratoire à Paris, j’ai découvert le radium et le polonium.',
-      isHistorical: true,
-    },
-  ];
+  // Tarjetas de la Galería de Mentores e Inmersión Histórica 3D en 1ª Persona (Adaptadas por Idioma ESL / FLE)
+  const galleryMentors3D = useMemo(() => {
+    if (activeLesson.language === 'fr') {
+      return [
+        {
+          id: 'mentor-sophie',
+          targetLessonId: 'lesson-fr-paris',
+          name: 'Prof. Sophie 3D',
+          subtitle: 'Situación: Brasserie à Paris & Gare TGV · DELF A1–A2',
+          language: 'fr' as LanguageCode,
+          gender: 'female' as const,
+          voiceId: 'fr-FR-DeniseNeural',
+          image: '/images/languages/3d/mentor_female_3d.webp',
+          sampleText:
+            "Bonjour et bienvenue à la brasserie parisienne ! Comment puis-je vous aider aujourd'hui ?",
+          isHistorical: false,
+        },
+        {
+          id: 'mentor-henri',
+          targetLessonId: 'lesson-fr-college-a1',
+          name: 'Prof. Henri 3D',
+          subtitle: 'Situación: Collège, Laboratoire & Écologie · DELF A1–B1',
+          language: 'fr' as LanguageCode,
+          gender: 'male' as const,
+          voiceId: 'fr-FR-HenriNeural',
+          image: '/images/languages/3d/mentor_male_3d_v2.webp',
+          sampleText:
+            "Bonjour les élèves ! Notre séance au laboratoire de sciences commence à huit heures du matin.",
+          isHistorical: false,
+        },
+        {
+          id: 'marie_curie',
+          targetLessonId: 'lesson-fr-curie-b1',
+          name: 'Marie Curie 3D',
+          subtitle: '1ª Persona: Mon Laboratoire à Paris · DELF B1',
+          language: 'fr' as LanguageCode,
+          gender: 'female' as const,
+          voiceId: 'fr-FR-DeniseNeural',
+          image: '/images/languages/3d/marie_curie_3d.webp',
+          sampleText:
+            'Je suis Marie Curie. Dans mon laboratoire à Paris, j’ai découvert le radium et le polonium.',
+          isHistorical: true,
+        },
+        {
+          id: 'napoleon',
+          targetLessonId: 'lesson-fr-napoleon',
+          name: 'Napoléon Bonaparte 3D',
+          subtitle: '1ª Persona: Le Code Civil des Français · DELF B2',
+          language: 'fr' as LanguageCode,
+          gender: 'male' as const,
+          voiceId: 'fr-FR-HenriNeural',
+          image: '/images/languages/3d/napoleon_3d.webp',
+          sampleText:
+            "Je suis Napoléon Bonaparte. J'ai réorganisé l'administration et promulgué le Code civil.",
+          isHistorical: true,
+        },
+        {
+          id: 'victor_hugo',
+          targetLessonId: '',
+          name: 'Victor Hugo 3D',
+          subtitle: '1ª Persona: Notre-Dame et Les Misérables · DELF B2',
+          language: 'fr' as LanguageCode,
+          gender: 'male' as const,
+          voiceId: 'fr-FR-HenriNeural',
+          image: '/images/languages/3d/victor_hugo_3d.webp',
+          sampleText:
+            "Je suis Victor Hugo. J'ai écrit Les Misérables et Notre-Dame de Paris pour défendre la dignité humaine.",
+          isHistorical: true,
+        },
+      ];
+    }
+
+    return [
+      {
+        id: 'mentor-claire',
+        targetLessonId: 'lesson-en-coffee',
+        name: 'Prof. Claire 3D',
+        subtitle: 'Situación: Cafetería & Estación en Londres · A1–A2',
+        language: 'en' as LanguageCode,
+        gender: 'female' as const,
+        voiceId: 'en-US-JennyNeural',
+        image: '/images/languages/3d/mentor_female_3d.webp',
+        sampleText: 'Good morning! Welcome to the Royal Orchard Café. What would you like today?',
+        isHistorical: false,
+      },
+      {
+        id: 'mentor-arthur',
+        targetLessonId: 'lesson-en-science',
+        name: 'Prof. Arthur 3D',
+        subtitle: 'Situación: Laboratorio & Energía Limpia · A1–B1',
+        language: 'en' as LanguageCode,
+        gender: 'male' as const,
+        voiceId: 'en-US-GuyNeural',
+        image: '/images/languages/3d/mentor_male_3d_v2.webp',
+        sampleText:
+          'Welcome explorers! Today we investigate how kinetic energy transforms our world.',
+        isHistorical: false,
+      },
+      {
+        id: 'ada_lovelace',
+        targetLessonId: 'lesson-en-lovelace-b1',
+        name: 'Ada Lovelace 3D',
+        subtitle: '1ª Persona: Cómo inventé el primer algoritmo · B1',
+        language: 'en' as LanguageCode,
+        gender: 'female' as const,
+        voiceId: 'en-GB-SoniaNeural',
+        image: '/images/languages/3d/ada_lovelace_3d.webp',
+        sampleText:
+          'I am Ada Lovelace. In 1843, I wrote the first algorithm for Charles Babbage and envisioned modern computing.',
+        isHistorical: true,
+      },
+      {
+        id: 'shakespeare',
+        targetLessonId: 'lesson-en-shakespeare',
+        name: 'William Shakespeare 3D',
+        subtitle: '1ª Persona: Mi Teatro Globe en 1599 · B2',
+        language: 'en' as LanguageCode,
+        gender: 'male' as const,
+        voiceId: 'en-GB-RyanNeural',
+        image: '/images/languages/3d/shakespeare_3d.webp',
+        sampleText:
+          'I am William Shakespeare. Upon the boards of the Globe Theatre in London, I crafted Hamlet and Macbeth.',
+        isHistorical: true,
+      },
+      {
+        id: 'abraham_lincoln',
+        targetLessonId: '',
+        name: 'Abraham Lincoln 3D',
+        subtitle: '1ª Persona: El Discurso de Gettysburg · B2',
+        language: 'en' as LanguageCode,
+        gender: 'male' as const,
+        voiceId: 'en-US-GuyNeural',
+        image: '/images/languages/3d/abraham_lincoln_3d.webp',
+        sampleText:
+          'I am Abraham Lincoln. In 1863 at Gettysburg, I proclaimed that government of the people shall not perish.',
+        isHistorical: true,
+      },
+    ];
+  }, [activeLesson.language]);
 
   return (
     <div
@@ -1116,13 +1238,34 @@ export default function TeacherIdiomasPage() {
             </div>
           </div>
 
-          {/* Centro: Píldora Unificada de Grupo y Nivel CEFR/CENNI (Sin Contradicciones) */}
-          <div className="px-4 py-1.5 rounded-full bg-slate-800/90 border border-slate-700 text-xs sm:text-sm font-extrabold text-slate-100 shadow-inner flex items-center gap-2">
-            <span>Grupo: 2º A Secundaria</span>
+          {/* Centro: Píldora Unificada de Grupo, Certificación y Selector Rápido de Nivel CEFR (A1, A2, B1, B2) */}
+          <div className="px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700 text-xs sm:text-sm font-extrabold text-slate-100 shadow-inner flex flex-wrap items-center gap-2">
+            <span>Grupo: 2º A</span>
             <span className="text-slate-500">·</span>
             <span className="text-emerald-400 font-black">
-              Nivel CEFR {activeLesson.level} ({activeCertification.cenni.split('(')[0].trim()})
+              {activeLesson.language === 'fr' ? '🇫🇷 DELF' : '🇬🇧 Cambridge'} {activeLesson.level} (
+              {activeCertification.cenni.split('(')[0].trim()})
             </span>
+            <div className="flex items-center gap-1 ml-1 bg-slate-900/90 p-0.5 rounded-full border border-slate-700">
+              {(['A1', 'A2', 'B1', 'B2'] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  data-testid={`header-level-${lvl}`}
+                  onClick={() => handleSelectCefrLevel(lvl)}
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-black transition-all cursor-pointer ${
+                    activeLesson.level === lvl
+                      ? 'bg-emerald-500 text-slate-950 shadow-2xs'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                  title={`Cambiar a Nivel ${lvl} en ${
+                    activeLesson.language === 'fr' ? 'Francés (FLE)' : 'Inglés (ESL)'
+                  }`}
+                >
+                  {lvl}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Derecha: Selector Único de Idioma (ESL / FLE) + Modo Claro/Oscuro + Switch Vista Coordinador */}
@@ -1443,18 +1586,38 @@ export default function TeacherIdiomasPage() {
                 </button>
               </div>
 
-              {/* Selector compacto de Lección Activa + Catálogo */}
+              {/* Selector compacto de Nivel CEFR (A1-B2) + Lección Activa Filtrada por Idioma */}
               <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                  <span className="text-[11px] font-black text-slate-500 px-1.5">Nivel:</span>
+                  {(['A1', 'A2', 'B1', 'B2'] as const).map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      data-testid={`level-pill-${lvl}`}
+                      onClick={() => handleSelectCefrLevel(lvl)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                        activeLesson.level === lvl
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
+
                 <span className="text-xs font-bold text-slate-500">Lección Activa:</span>
                 <select
                   aria-label="Seleccionar lección activa"
+                  data-testid="select-active-lesson"
                   value={activeLesson.id}
                   onChange={(e) => setActiveLessonId(e.target.value)}
-                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-black text-slate-800 shadow-2xs cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-black text-slate-800 shadow-2xs cursor-pointer max-w-[330px] truncate"
                 >
-                  {cleanLessons.map((les) => (
+                  {lessonsForActiveLanguage.map((les) => (
                     <option key={les.id} value={les.id}>
-                      {les.language === 'fr' ? '🇫🇷' : '🇬🇧'} {les.title} ({les.level})
+                      {les.language === 'fr' ? '🇫🇷' : '🇬🇧'} [{les.level}] {les.title}
                     </option>
                   ))}
                 </select>
@@ -1957,29 +2120,41 @@ export default function TeacherIdiomasPage() {
               </div>
 
               {!showFull40WeekExplorer ? (
-                /* 4 Columnas de Etapas Oficiales (Exacto a Pantalla Híbrida 3) */
+                /* 4 Columnas de Etapas Oficiales (Adaptadas a Cambridge ESL o DELF FLE) */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                   {[
                     {
-                      stageTitle: 'Etapa 1: A1 Movers',
+                      stageTitle:
+                        activeLesson.language === 'fr'
+                          ? 'Étape 1: DELF Prim / A1'
+                          : 'Etapa 1: A1 Movers',
                       subLabel: '(Sem 1–10 · CENNI 3–4)',
                       weeks: stage1Weeks.slice(0, 2),
                       highlightFirst: true,
                     },
                     {
-                      stageTitle: 'Etapa 2: A2 Key',
+                      stageTitle:
+                        activeLesson.language === 'fr'
+                          ? 'Étape 2: DELF A2 Scolaire'
+                          : 'Etapa 2: A2 Key',
                       subLabel: '(Sem 11–20 · CENNI 5–7)',
                       weeks: stage2Weeks.slice(0, 2),
                       highlightFirst: false,
                     },
                     {
-                      stageTitle: 'Etapa 3: B1 Preliminary',
+                      stageTitle:
+                        activeLesson.language === 'fr'
+                          ? 'Étape 3: DELF B1 Junior'
+                          : 'Etapa 3: B1 Preliminary',
                       subLabel: '(Sem 21–30 · CENNI 8–10)',
                       weeks: stage3Weeks.slice(0, 2),
                       highlightFirst: false,
                     },
                     {
-                      stageTitle: 'Etapa 4: B2 First',
+                      stageTitle:
+                        activeLesson.language === 'fr'
+                          ? 'Étape 4: DELF B2 Tout Public'
+                          : 'Etapa 4: B2 First',
                       subLabel: '(Sem 31–40 · CENNI 11–13)',
                       weeks: stage4Weeks.slice(0, 2),
                       highlightFirst: false,
@@ -2104,7 +2279,8 @@ export default function TeacherIdiomasPage() {
             >
               <div>
                 <h2 className="text-lg sm:text-xl font-black tracking-tight">
-                  Galería de Mentores e Inmersión Histórica 3D en 1ª Persona (60 FPS)
+                  Galería de Mentores e Inmersión Histórica 3D en 1ª Persona (60 FPS ·{' '}
+                  {activeLesson.language === 'fr' ? '🇫🇷 Francés FLE' : '🇬🇧 Inglés ESL'})
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
                   Selecciona un mentor pedagógico o un personaje histórico en primera persona para proyectar al frente del aula.
@@ -2156,6 +2332,21 @@ export default function TeacherIdiomasPage() {
                       <button
                         type="button"
                         onClick={() => {
+                          if (card.targetLessonId) {
+                            const found = cleanLessons.find(
+                              (l) => l.id === card.targetLessonId
+                            );
+                            if (found) {
+                              setActiveLessonId(found.id);
+                              setUseHistoricalFigure(Boolean(found.historicalFigureId));
+                              setSelectedHistoricalId(found.historicalFigureId || '');
+                              setSelectedKaraokeIndex(0);
+                              triggerToast(`✓ ${card.name} activo: "${found.title}"`);
+                              setActiveMacroTab('speaking');
+                              setSpeakingSubView('studio');
+                              return;
+                            }
+                          }
                           if (card.isHistorical) {
                             const fig = MULTILINGUAL_HISTORICAL_FIGURES.find(
                               (f) => f.id === card.id
@@ -2163,18 +2354,6 @@ export default function TeacherIdiomasPage() {
                             if (fig) {
                               handleApplyHistoricalFigure(fig);
                             }
-                          } else {
-                            setUseHistoricalFigure(false);
-                            setSelectedHistoricalId('');
-                            updateLesson(activeLesson.id, {
-                              language: card.language,
-                              avatarGender: card.gender,
-                              avatarName: card.id === 'mentor-claire' ? 'Claire' : 'Arthur',
-                              avatarVoice: card.voiceId,
-                              avatarImage: card.image,
-                              historicalFigureId: undefined,
-                            });
-                            triggerToast(`✓ ${card.name} cargado en la cabina principal`);
                           }
                           setActiveMacroTab('speaking');
                           setSpeakingSubView('studio');
@@ -2197,6 +2376,7 @@ export default function TeacherIdiomasPage() {
         {activeMacroTab === 'writing' && (
           <HybridWritingStarStudio
             language={activeLesson.language}
+            level={activeLesson.level}
             isLightMode={isLightMode}
             onPlayAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
             onTriggerToast={triggerToast}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LanguageLesson } from '@/store/useLanguagesStore';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
 import { CONTRASTIVE_PHONETIC_MIRRORS } from './hybridPedagogicalData';
@@ -31,8 +31,15 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
   onPlayAudio,
   onBackToStudio,
 }) => {
+  const mirrorsForLang = useMemo(() => {
+    const filtered = CONTRASTIVE_PHONETIC_MIRRORS.filter(
+      (m) => m.language === lesson.language
+    );
+    return filtered.length > 0 ? filtered : CONTRASTIVE_PHONETIC_MIRRORS;
+  }, [lesson.language]);
+
   const [selectedMirrorId, setSelectedMirrorId] = useState<string>(
-    initialMirrorId || (lesson.language === 'fr' ? 'fr_u_nasal' : 'th_interdental')
+    initialMirrorId || mirrorsForLang[0].id
   );
   const [practiceMode, setPracticeMode] = useState<'group' | 'individual'>('group');
   const [selectedPhraseIndex, setSelectedPhraseIndex] = useState<number>(0);
@@ -40,18 +47,19 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
   const [groupAccuracy, setGroupAccuracy] = useState<number>(95);
 
   useEffect(() => {
-    if (initialMirrorId) {
+    setSelectedPhraseIndex(0);
+  }, [lesson.id]);
+
+  useEffect(() => {
+    if (initialMirrorId && mirrorsForLang.some((m) => m.id === initialMirrorId)) {
       setSelectedMirrorId(initialMirrorId);
-    } else if (lesson.language === 'fr') {
-      setSelectedMirrorId('fr_u_nasal');
     } else {
-      setSelectedMirrorId('th_interdental');
+      setSelectedMirrorId(mirrorsForLang[0].id);
     }
-  }, [initialMirrorId, lesson.language]);
+  }, [initialMirrorId, lesson.language, mirrorsForLang]);
 
   const activeMirror =
-    CONTRASTIVE_PHONETIC_MIRRORS.find((m) => m.id === selectedMirrorId) ||
-    CONTRASTIVE_PHONETIC_MIRRORS[0];
+    mirrorsForLang.find((m) => m.id === selectedMirrorId) || mirrorsForLang[0];
 
   const handleGroupChoralPractice = () => {
     if (isGroupListening) {
@@ -68,7 +76,7 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Breadcrumb & Selector Rápido de Espejos Fonéticos */}
+      {/* Breadcrumb & Selector Rápido de Espejos Fonéticos por Idioma y Nivel */}
       <div
         className={`p-4 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${
           isLightMode
@@ -89,16 +97,18 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
           )}
           <span className="text-slate-400">Centro de Idiomas</span>
           <span className="text-slate-300">&gt;</span>
-          <span className="text-slate-500">1. Speaking & Avatar 3D</span>
+          <span className="text-slate-500">
+            {lesson.language === 'fr' ? '🇫🇷 Francés FLE' : '🇬🇧 Inglés ESL'} · Nivel {lesson.level}
+          </span>
           <span className="text-slate-300">&gt;</span>
           <span className="font-black text-indigo-600">
             👄 Espejo Articulatorio Contrastivo y Karaoke Grupal
           </span>
         </div>
 
-        {/* Píldoras de Sonidos Meta L1 -> L2 */}
+        {/* Píldoras de Sonidos Meta L1 -> L2 (Filtradas por el Idioma Activo) */}
         <div className="flex flex-wrap items-center gap-1.5">
-          {CONTRASTIVE_PHONETIC_MIRRORS.map((m) => {
+          {mirrorsForLang.map((m) => {
             const active = m.id === activeMirror.id;
             return (
               <button
@@ -134,10 +144,11 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-700 block">
-                  Guía Visual de Pronunciación (Sin Tecnicismos)
+                  Guía Visual de Pronunciación ({activeMirror.levelTag})
                 </span>
                 <h3 className="text-lg sm:text-xl font-black tracking-tight mt-0.5">
-                  Espejo Articulatorio Contrastivo ({lesson.language === 'fr' ? 'Español → Francés' : 'Español → Inglés'})
+                  Espejo Articulatorio Contrastivo (
+                  {lesson.language === 'fr' ? 'Español → Francés FLE' : 'Español → Inglés ESL'})
                 </h3>
               </div>
               <span className="px-3 py-1 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 font-mono font-black text-xs shrink-0">
@@ -145,7 +156,7 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
               </span>
             </div>
 
-            {/* Diagrama Anatómico Nano Banana 2.1 Comprimido en WebP */}
+            {/* Diagrama Anatómico Comprimido en WebP */}
             <div className="rounded-2xl overflow-hidden border-2 border-slate-200 bg-white shadow-xs">
               <img
                 src={activeMirror.diagramSrc}
@@ -204,7 +215,7 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
           </button>
         </div>
 
-        {/* COLUMNA DERECHA (7 cols): Karaoke de Pronunciación en Vivo (Sin Gráficas Complejas) */}
+        {/* COLUMNA DERECHA (7 cols): Karaoke de Pronunciación en Vivo */}
         <div
           className={`lg:col-span-7 p-5 sm:p-6 rounded-3xl border shadow-sm flex flex-col justify-between space-y-5 ${
             isLightMode
@@ -216,7 +227,7 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-lg sm:text-xl font-black tracking-tight">
-                Karaoke de Pronunciación en Vivo (Sin Gráficas Complejas)
+                Karaoke de Pronunciación en Vivo ({lesson.language === 'fr' ? 'Francés FLE' : 'Inglés ESL'})
               </h3>
               <p className="text-xs text-slate-500 font-medium">
                 Las palabras bien pronunciadas se iluminan en verde esmeralda; las palabras a pulir muestran un consejo amigable.
@@ -263,7 +274,10 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
                       clean === 'three' ||
                       clean === 'would' ||
                       clean === 'very' ||
-                      clean === 'voudrais';
+                      clean === 'voudrais' ||
+                      clean === 'huit' ||
+                      clean === 'laboratoire' ||
+                      clean === 'beaucoup';
                     const isGreenWord = idx < 5 && !isAmberWord;
 
                     if (isAmberWord) {
@@ -276,7 +290,13 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
                             <span>💡</span>
                             <span>
                               {lesson.language === 'fr'
-                                ? 'Recuerda vibrar /v/ en Voudrais'
+                                ? clean === 'huit'
+                                  ? 'Enlaza huit_heures [ɥit‿œʁ]'
+                                  : clean === 'laboratoire'
+                                    ? 'Suaviza la R gutural /ʁ/ en Laboratoire'
+                                    : clean === 'beaucoup'
+                                      ? 'La P final es muda en Beaucoup [boku]'
+                                      : 'Recuerda vibrar /v/ en Voudrais'
                                 : clean === 'three'
                                   ? 'Recuerda sacar la punta de la lengua en TH'
                                   : 'Recuerda no pronunciar la L en Would'}
@@ -332,7 +352,8 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
                     <span>Diagnóstico Pedagógico Instantáneo</span>
                   </div>
                   <p className="text-slate-700 font-medium leading-relaxed">
-                    El grupo mantiene excelente entonación coral. Repite una vez más en cámara lenta la palabra resaltada en ámbar para consolidar el fonema meta.
+                    El grupo mantiene excelente entonación coral en{' '}
+                    {lesson.language === 'fr' ? 'francés (DELF)' : 'inglés (Cambridge)'}. Repite una vez más en cámara lenta la palabra resaltada en ámbar.
                   </p>
                 </div>
               </div>
@@ -360,7 +381,7 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold text-slate-600">
-                  Selecciona la frase de práctica individual:
+                  Selecciona la frase de práctica individual ({lesson.title}):
                 </span>
                 <select
                   value={selectedPhraseIndex}
@@ -375,9 +396,9 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
                 </select>
               </div>
 
-              {lesson.karaokePhrases[selectedPhraseIndex] && (
+              {(lesson.karaokePhrases[selectedPhraseIndex] || lesson.karaokePhrases[0]) && (
                 <LanguageKaraokePlayer
-                  phrase={lesson.karaokePhrases[selectedPhraseIndex]}
+                  phrase={lesson.karaokePhrases[selectedPhraseIndex] || lesson.karaokePhrases[0]}
                   language={lesson.language}
                   avatarGender={lesson.avatarGender}
                   avatarVoice={lesson.avatarVoice}
@@ -397,4 +418,3 @@ export const ContrastivePhoneticsMirrorView: React.FC<Props> = ({
     </div>
   );
 };
-
