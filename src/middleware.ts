@@ -81,6 +81,10 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname === '/api/video-config' ||
     pathname.startsWith('/api/video-config/') ||
     pathname === '/api/demo' ||
+    pathname === '/control-remoto-qr' ||
+    pathname.startsWith('/control-remoto-qr/') ||
+    pathname === '/api/languages/pocket-remote' ||
+    pathname.startsWith('/api/languages/pocket-remote/') ||
     pathname.startsWith('/brand') ||
     pathname.startsWith('/favicon') ||
     pathname === '/404' ||
