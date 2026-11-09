@@ -52,12 +52,15 @@ const nextConfig: NextConfig = {
   // pixi.js is a browser-only WebGL/canvas library — skip server-side bundling
   serverExternalPackages: ["pixi.js"],
   typescript: {
-    // Type narrowing errors in JSX are safe at runtime (guarded by quest.type checks).
-    // Full type safety is enforced during development via IDE.
-    ignoreBuildErrors: true,
+    // Type safety is strictly verified across the entire repository (0 errors).
+    ignoreBuildErrors: false,
   },
   // Cabeceras de Seguridad Estrictas OWASP Top 10 y Política de Protección Perimetral
   async headers() {
+    const isDev = process.env.NODE_ENV !== "production";
+    const scriptSrc = isDev
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com"
+      : "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com";
     return [
       {
         source: "/(images|brand|icons|fonts)/(.*)",
@@ -75,7 +78,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com",
+              scriptSrc,
               "style-src 'self' 'unsafe-inline' https:",
               "font-src 'self' data: https:",
               "img-src 'self' data: blob: https:",

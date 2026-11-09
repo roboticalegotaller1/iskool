@@ -183,7 +183,12 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
   if (!identifier) return null;
   let emailLower = identifier.toLowerCase().trim();
 
-  if (emailLower === 'usr-teacher-1' || emailLower.includes('israel.lopez')) {
+  if (
+    emailLower === 'usr-teacher-1' ||
+    emailLower.includes('israel.lopez') ||
+    emailLower === 'profesor@iskool.edu.mx' ||
+    emailLower === 'claire.dubois@ibime.edu.mx'
+  ) {
     return {
       id: 'usr-teacher-1',
       school_id: 'sch-ibime',
@@ -191,8 +196,44 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       first_name: 'Profesor',
       last_name: 'Docente IBIME',
       role: 'teacher' as UserRole,
-      email: 'profesor.docente@ibime.edu.mx',
+      email: 'alejandro.mendoza@ibime.edu.mx',
       created_at: '2026-01-01T08:00:00.000Z',
+      updated_at: new Date().toISOString()
+    };
+  }
+  if (
+    emailLower === 'familia@iskool.edu.mx' ||
+    emailLower === 'familia.montes01@ibime.edu.mx' ||
+    emailLower === 'padre@ibime.edu.mx'
+  ) {
+    return {
+      id: 'usr-parent-ibime-01',
+      school_id: 'sch-ibime',
+      campus_name: 'Campus Montes',
+      first_name: 'Familia',
+      last_name: 'Morales Peña',
+      role: 'parent' as UserRole,
+      email: 'familia.morales@ibime.edu.mx',
+      created_at: '2026-01-01T08:00:00.000Z',
+      updated_at: new Date().toISOString()
+    };
+  }
+  if (
+    emailLower === 'superadmin@iskool.mx' ||
+    emailLower === 'superadmin@iskool.edu.mx' ||
+    emailLower === 'admin@iskool.edu.mx' ||
+    emailLower === 'superadmin' ||
+    emailLower === 'admin'
+  ) {
+    return {
+      ...(SUPER_USERS_ISKOOL_SEED[0] || {
+        id: 'usr-admin-1',
+        first_name: 'Dirección',
+        last_name: 'General ISkool',
+        email: 'admin@iskool.edu.mx',
+        created_at: '2026-01-01T08:00:00.000Z'
+      }),
+      role: 'superadmin' as UserRole,
       updated_at: new Date().toISOString()
     };
   }

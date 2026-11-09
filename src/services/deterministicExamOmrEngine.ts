@@ -160,10 +160,9 @@ export function generateExamVariantsZeroToken(
 
       const safeCorrectIdx = Math.max(0, Math.min(3, q.correctOptionIndex ?? 0));
 
-      const optOrder =
-        variantCode === 'A' || !shuffleOptions
-          ? { shuffled: normalizedOptions, indices: [0, 1, 2, 3] }
-          : deterministicShuffle(normalizedOptions, baseSeed + (qIdx + 1) * 7919);
+      const optOrder = !shuffleOptions
+        ? { shuffled: normalizedOptions, indices: [0, 1, 2, 3] }
+        : deterministicShuffle(normalizedOptions, baseSeed + (qIdx + 1) * 7919);
 
       const newCorrectIdx = optOrder.indices.indexOf(safeCorrectIdx);
       const safeNewCorrectIdx = newCorrectIdx >= 0 ? newCorrectIdx : 0;
@@ -202,20 +201,36 @@ export function generateExamVariantsZeroToken(
 }
 
 /**
- * Extrae reactivos automáticamente de cualquier secuencia de bloques de ISkool Studio (0 Tokens)
+ * Extrae reactivos automáticamente de TODOS los bloques de evaluación y examen de ISkool Studio (0 Tokens)
+ * con deduplicación estricta para evitar reactivos repetidos.
  */
 export function extractExamQuestionsFromStudioBlocks(
   blocks: StudioBlock[],
   defaultPenalty = 0
 ): ExamQuestionItem[] {
   const extracted: ExamQuestionItem[] = [];
+  const seenStems = new Set<string>();
+
+  const pushUniqueQuestion = (item: ExamQuestionItem) => {
+    const cleanStem = (item.stem || '').trim();
+    if (!cleanStem) return;
+    const normKey = cleanStem
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+    if (seenStems.has(normKey)) return;
+    seenStems.add(normKey);
+    extracted.push(item);
+  };
 
   blocks.forEach((blk, idx) => {
     const raw = (blk.data || {}) as Record<string, any>;
 
     if (blk.type === 'omr_optical_exam_block' && Array.isArray(raw.questions) && raw.questions.length > 0) {
       raw.questions.forEach((q: any, qIdx: number) => {
-        extracted.push({
+        pushUniqueQuestion({
           id: q.id || `omr-q-${idx}-${qIdx}`,
           type: q.type || 'single_choice',
           stem: q.stem || q.question || `Reactivo #${qIdx + 1}`,
@@ -235,7 +250,7 @@ export function extractExamQuestionsFromStudioBlocks(
     }
 
     if (blk.type === 'quiz_question') {
-      extracted.push({
+      pushUniqueQuestion({
         id: `quiz-${blk.id}`,
         type: 'single_choice',
         stem: raw.question || blk.title,
@@ -251,7 +266,7 @@ export function extractExamQuestionsFromStudioBlocks(
       });
     } else if (blk.type === 'historical_figure_block' && Array.isArray(raw.verificationQuestions)) {
       raw.verificationQuestions.slice(0, 2).forEach((vq: any, vIdx: number) => {
-        extracted.push({
+        pushUniqueQuestion({
           id: `hist-${blk.id}-${vIdx}`,
           type: 'single_choice',
           stem: vq.question,
@@ -266,14 +281,75 @@ export function extractExamQuestionsFromStudioBlocks(
           explanation: vq.explanation || 'Fuente histórica primaria verificada en Bóveda.'
         });
       });
+    } else if (blk.type === 'timed_reading_block') {
+      const rqList = Array.isArray(raw.comprehensionQuestions)
+        ? raw.comprehensionQuestions
+        : Array.isArray(raw.questions)
+          ? raw.questions
+          : [];
+      rqList.slice(0, 2).forEach((rq: any, rIdx: number) => {
+        pushUniqueQuestion({
+          id: `read-${blk.id}-${rIdx}`,
+          type: 'single_choice',
+          stem: rq.question || rq.stem || `Comprensión lectora: ${blk.title}`,
+          options: Array.isArray(rq.options) && rq.options.length >= 4
+            ? rq.options.slice(0, 4)
+            : ['Idea central fundamentada en el texto', 'Dato secundario aislado', 'Hipótesis no mencionada', 'Opinión externa al texto'],
+          correctOptionIndex: typeof rq.correctIndex === 'number' ? rq.correctIndex : 0,
+          points: 2,
+          penaltyPerError: defaultPenalty,
+          bloomLevel: 3,
+          pdaReference: 'NEM-LEN-F5-01',
+          explanation: rq.explanation || 'Comprensión lectora verificada.'
+        });
+      });
+    } else if (blk.type === 'drag_drop_match' && Array.isArray(raw.pairs) && raw.pairs.length > 0) {
+      const firstPair = raw.pairs[0];
+      const otherDefs = raw.pairs.slice(1, 4).map((p: any) => p.right || p.definition || p.match);
+      pushUniqueQuestion({
+        id: `match-${blk.id}`,
+        type: 'single_choice',
+        stem: `Relación conceptual (${blk.title}): ¿Qué definición o par corresponde exactamente a "${firstPair.left || firstPair.term || 'Concepto clave'}"?`,
+        options: [
+          firstPair.right || firstPair.definition || firstPair.match || 'Definición oficial verificada',
+          otherDefs[0] || 'Proceso secundario no relacionado directamente',
+          otherDefs[1] || 'Antecedente cronológico de otra etapa',
+          otherDefs[2] || 'Consecuencia externa al fenómeno estudiado'
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 3,
+        pdaReference: 'NEM-REL-01',
+        explanation: 'Asociación conceptual directa extraída del bloque de emparejamiento.'
+      });
+    } else if (blk.type === 'ordering_sequence' && Array.isArray(raw.items) && raw.items.length >= 2) {
+      const seqLabels = raw.items.map((it: any, sIdx: number) => `${sIdx + 1}. ${typeof it === 'string' ? it : it.label || it.text || `Paso ${sIdx + 1}`}`);
+      pushUniqueQuestion({
+        id: `ord-${blk.id}`,
+        type: 'single_choice',
+        stem: `Secuencia cronológica y algorítmica (${blk.title}): ¿Cuál es el orden correcto de los elementos?`,
+        options: [
+          seqLabels.slice(0, 4).join(' → '),
+          [...seqLabels].reverse().slice(0, 4).join(' → '),
+          [seqLabels[1], seqLabels[0], ...seqLabels.slice(2, 4)].filter(Boolean).join(' → '),
+          [...seqLabels.slice(2, 4), seqLabels[0], seqLabels[1]].filter(Boolean).join(' → ')
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 4,
+        pdaReference: 'NEM-SEQ-01',
+        explanation: 'Orden secuencial verificado en el bloque de secuencia.'
+      });
     } else if (blk.type === 'fill_in_blanks') {
       const words: string[] = Array.isArray(raw.wordBank) && raw.wordBank.length > 0
         ? raw.wordBank
         : ['Querétaro', 'Ignacio Pérez', 'Dolores', 'Miguel Hidalgo'];
-      extracted.push({
+      pushUniqueQuestion({
         id: `fill-${blk.id}`,
         type: 'single_choice',
-        stem: `Completa correctamente el enunciado histórico: "${(raw.textWithBlanks || blk.title).replace(/\[([^\]]+)\]/g, '______')}"`,
+        stem: `Completa correctamente el enunciado curricular: "${(raw.textWithBlanks || blk.title).replace(/\[([^\]]+)\]/g, '______')}"`,
         options: [
           words.slice(0, 3).join(' → '),
           [...words].reverse().slice(0, 3).join(' → '),
@@ -289,7 +365,7 @@ export function extractExamQuestionsFromStudioBlocks(
       });
     } else if (blk.type === 'boss_enemy' && Array.isArray(raw.questions)) {
       raw.questions.slice(0, 2).forEach((bq: any, bIdx: number) => {
-        extracted.push({
+        pushUniqueQuestion({
           id: `boss-${blk.id}-${bIdx}`,
           type: 'single_choice',
           stem: bq.question,
@@ -303,6 +379,111 @@ export function extractExamQuestionsFromStudioBlocks(
           pdaReference: 'NEM-BOSS-01',
           explanation: bq.explanation || 'Reactivo de maestría del duelo curricular.'
         });
+      });
+    } else if (blk.type === 'interactive_hotspot_canvas' && Array.isArray(raw.hotspots) && raw.hotspots.length > 0) {
+      const pin0 = raw.hotspots[0];
+      const otherPins = raw.hotspots.slice(1, 4).map((p: any) => p.correctLabel);
+      pushUniqueQuestion({
+        id: `hotspot-${blk.id}`,
+        type: 'single_choice',
+        stem: `Identificación en Mapa / Diagrama (${raw.diagramTitle || blk.title}): ¿Qué elemento corresponde al Punto Caliente #${pin0.pinNumber || 1} (${pin0.hint || 'coordenada principal'})?`,
+        options: [
+          pin0.correctLabel || 'Punto de referencia primario',
+          otherPins[0] || 'Elemento periférico norte',
+          otherPins[1] || 'Región secundaria sur',
+          otherPins[2] || 'Zona limítrofe externa'
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 4,
+        pdaReference: 'NEM-GEO-01',
+        explanation: 'Coordenada verificada en el lienzo de oclusión visual.'
+      });
+    } else if (blk.type === 'interactive_whiteboard_math') {
+      const expr = raw.formulaExpression || 'y = 2x + 3';
+      const tx = raw.targetCoordinate?.x ?? 2;
+      const ty = raw.targetCoordinate?.y ?? 7;
+      pushUniqueQuestion({
+        id: `math-wb-${blk.id}`,
+        type: 'single_choice',
+        stem: `${raw.promptQuestion || `En el modelo algebraico ${expr}, ¿cuál es el par ordenado (x, y) que satisface exactamente la función para x = ${tx}?`}`,
+        options: [
+          `(${tx}, ${ty})`,
+          `(${tx}, ${ty + 2})`,
+          `(${tx + 1}, ${ty - 1})`,
+          `(${ty}, ${tx})`
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 4,
+        pdaReference: 'NEM-MAT-F6-01',
+        explanation: `Sustituyendo x = ${tx} en ${expr} se obtiene el punto exacto (${tx}, ${ty}).`
+      });
+    } else if (blk.type === 'cornell_smart_notes' || blk.type === 'exit_ticket_reflection' || blk.type === 'socratic_debate_arena' || blk.type === 'open_poll_wordcloud') {
+      const kws: string[] = Array.isArray(raw.requiredSummaryKeywords)
+        ? raw.requiredSummaryKeywords
+        : ['soberanía', 'pueblo', 'igualdad', 'libertad'];
+      pushUniqueQuestion({
+        id: `synth-${blk.id}`,
+        type: 'single_choice',
+        stem: `Síntesis Metacognitiva (${raw.topicTitle || raw.centralDilemma || raw.closurePrompt || blk.title}): ¿Qué conjunto de conceptos clave integra de forma rigurosa la conclusión de la sesión?`,
+        options: [
+          kws.join(', '),
+          'Memorización aislada sin relación con el entorno comunitario',
+          'Reproducción literal sin contraste de fuentes primarias',
+          'Omisión de causas históricas y científicas del fenómeno'
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 5,
+        pdaReference: 'NEM-SINT-01',
+        explanation: 'Síntesis verificada mediante los conceptos rectores del bloque.',
+        expectedKeywords: kws
+      });
+    } else if (blk.type === 'secret_code_puzzle' || blk.type === 'checkpoint_gate') {
+      pushUniqueQuestion({
+        id: `gate-${blk.id}`,
+        type: 'single_choice',
+        stem: raw.riddleQuestion || raw.checkpointQuestion || `Verificación de dominio (${blk.title}): ¿Cuál es la clave o criterio que acredita el avance de este bloque?`,
+        options: [
+          raw.secretCode || raw.expectedAnswer || 'Cumplimiento integral de los criterios de la rúbrica y evidencia verificada',
+          'Avance automático sin validación de evidencias',
+          'Entrega parcial sin fundamentación teórica',
+          'Revisión superficial sin contraste experimental'
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 4,
+        pdaReference: 'NEM-GATE-01',
+        explanation: 'Punto de control acreditado por clave determinista.'
+      });
+    } else if (
+      blk.type === 'languages_evaluation_rubric' ||
+      blk.type === 'languages_karaoke_block' ||
+      blk.type === 'languages_socratic_tutor' ||
+      blk.type === 'languages_roleplay_mission' ||
+      blk.type === 'languages_practice_portal'
+    ) {
+      pushUniqueQuestion({
+        id: `lang-${blk.id}`,
+        type: 'single_choice',
+        stem: raw.prompt || raw.targetPhrase || `Competencia Comunicativa CEFR (${blk.title}): Selecciona la estructura lingüística formal y gramaticalmente correcta para esta misión:`,
+        options: [
+          raw.targetPhrase || 'Bonjour, je voudrais réserver une table pour deux personnes, s’il vous plaît.',
+          'Je veux table maintenant vite.',
+          'Moi aller brasserie hier demain.',
+          'Pourquoi tu pas parler jamais.'
+        ],
+        correctOptionIndex: 0,
+        points: 2,
+        penaltyPerError: defaultPenalty,
+        bloomLevel: 4,
+        pdaReference: 'CEFR-DELF-CAMB',
+        explanation: 'Estructura comunicativa validada conforme al Marco Común Europeo (CEFR / CENNI).'
       });
     }
   });
@@ -400,14 +581,11 @@ export function extractExamQuestionsFromStudioBlocks(
     }
   ];
 
-  const merged = [...extracted];
   for (const item of fallbackBank) {
-    if (merged.length >= 6) break;
-    if (!merged.some((m) => m.stem === item.stem)) {
-      merged.push(item);
-    }
+    if (extracted.length >= 8) break;
+    pushUniqueQuestion(item);
   }
-  return merged;
+  return extracted.slice(0, 12);
 }
 
 /**

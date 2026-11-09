@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export interface MagicLinkRecord {
   token: string;
@@ -141,6 +142,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token');
   const studentId = searchParams.get('student_id');
+  const auth = await validateApiAuth(req);
 
   const records = readMagicLinksStore();
 
@@ -159,12 +161,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Token no encontrado' }, { status: 404 });
   }
 
+  // Enmascarar PII telefónica si la consulta general no proviene de sesión autenticada
+  const maskIfUnauth = (list: MagicLinkRecord[]) =>
+    auth.authenticated
+      ? list
+      : list.map((r) => ({
+          ...r,
+          phone: r.phone ? `${r.phone.slice(0, 4)}****${r.phone.slice(-4)}` : '',
+        }));
+
   if (studentId) {
     const filtered = records.filter((r) => r.studentId === studentId);
-    return NextResponse.json({ ok: true, records: filtered });
+    return NextResponse.json({ ok: true, records: maskIfUnauth(filtered) });
   }
 
-  return NextResponse.json({ ok: true, records });
+  return NextResponse.json({ ok: true, records: maskIfUnauth(records) });
 }
 
 export async function POST(req: NextRequest) {

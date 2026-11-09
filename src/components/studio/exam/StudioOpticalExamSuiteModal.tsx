@@ -128,6 +128,9 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
       examTitle: examTitle || 'Evaluación Curricular Híbrida SEP NEM',
       schoolName: schoolName || 'Instituto Bilingüe IBIME',
       schoolShortName: schoolShortName || 'IBIME',
+      cctCode: '15PPR3322G',
+      campusName: 'Campus Montes (Sede Matriz & CCH UNAM)',
+      schoolCycle: '2025-2026',
       groupName: groupName || '1°A Secundaria',
       notebookPage: notebookPage || 48,
       penaltyPerError,
@@ -137,9 +140,48 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
       batchReport
     });
     triggerBanner(
-      `📥 Archivo PDF generado y descargado en 0 Tokens: "${result.fileName}" (${result.pageCount} pág${result.pageCount > 1 ? 's' : ''} • ${(result.byteLength / 1024).toFixed(1)} KB).`
+      `📥 Archivo PDF Oficial con Identidad Institucional generado en 0 Tokens: "${result.fileName}" (${result.pageCount} pág${result.pageCount > 1 ? 's' : ''} • ${(result.byteLength / 1024).toFixed(1)} KB).`
     );
   };
+
+  const isIbimeSchool = useMemo(
+    () => `${schoolName} ${schoolShortName}`.toUpperCase().includes('IBIME'),
+    [schoolName, schoolShortName]
+  );
+
+  const detectedExamBlockTypes = useMemo(() => {
+    const evalTypes = new Set<string>();
+    studioBlocks.forEach((b) => {
+      if (
+        [
+          'omr_optical_exam_block',
+          'quiz_question',
+          'historical_figure_block',
+          'timed_reading_block',
+          'drag_drop_match',
+          'ordering_sequence',
+          'fill_in_blanks',
+          'boss_enemy',
+          'interactive_hotspot_canvas',
+          'interactive_whiteboard_math',
+          'cornell_smart_notes',
+          'exit_ticket_reflection',
+          'socratic_debate_arena',
+          'open_poll_wordcloud',
+          'secret_code_puzzle',
+          'checkpoint_gate',
+          'languages_evaluation_rubric',
+          'languages_karaoke_block',
+          'languages_socratic_tutor',
+          'languages_roleplay_mission',
+          'languages_practice_portal'
+        ].includes(b.type)
+      ) {
+        evalTypes.add(b.type);
+      }
+    });
+    return Array.from(evalTypes);
+  }, [studioBlocks]);
 
   if (!isOpen || typeof document === 'undefined') return null;
 
@@ -189,9 +231,19 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
         {/* Cabecera Ejecutiva Daylight */}
         <div className="bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-sky-600 text-white flex items-center justify-center shadow-md">
-              <ScanLine className="w-6 h-6" />
-            </div>
+            {isIbimeSchool ? (
+              <div className="w-12 h-12 rounded-2xl bg-slate-900 border-2 border-amber-400 p-1 flex items-center justify-center shadow-md shrink-0">
+                <img
+                  src="/brand/ibime_logo.webp"
+                  alt="Escudo Oficial Instituto Bilingüe IBIME"
+                  className="w-9 h-9 object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-sky-600 text-white flex items-center justify-center shadow-md shrink-0">
+                <ScanLine className="w-6 h-6" />
+              </div>
+            )}
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -199,6 +251,9 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                   {schoolShortName} • {groupName}
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300">
+                  CCT SEP: 15PPR3322G • Ciclo 2025-2026
                 </span>
               </div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-0.5">
@@ -495,22 +550,59 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
 
               {/* Columna Derecha (7 cols): Vista Previa Imprimible de la Variante Seleccionada + Clave */}
               <div className="lg:col-span-7 bg-white rounded-2xl border-2 border-slate-300 p-5 shadow-sm space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-900 pb-3">
-                  <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      {schoolName} • EVALUACIÓN OFICIAL SEP NEM 2024
-                    </div>
-                    <h3 className="text-base font-black text-slate-900">
-                      {examTitle || 'Examen Curricular'} — VARIANTE FILA {activeVariant.variantCode}
-                    </h3>
-                    <div className="text-[11px] text-slate-600 font-semibold">
-                      Grupo: {groupName} • Folio OMR: <span className="font-mono font-bold">{activeVariant.folioCode}</span>
+                {/* Cintillo Oficial de Identidad del Colegio (Idéntico al PDF Vectorial) */}
+                <div className="p-3.5 rounded-2xl bg-slate-900 text-white border-2 border-amber-400/80 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    {isIbimeSchool ? (
+                      <div className="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 border border-amber-300">
+                        <img
+                          src="/brand/ibime_logo.webp"
+                          alt="Escudo Oficial Instituto Bilingüe IBIME"
+                          className="w-10 h-10 object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-indigo-700 text-white flex items-center justify-center font-black text-xs shrink-0 border border-amber-300">
+                        {schoolShortName}
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">
+                          {schoolName} ({schoolShortName})
+                        </span>
+                        <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-white/15 text-emerald-300">
+                          CCT SEP: 15PPR3322G
+                        </span>
+                      </div>
+                      <h3 className="text-sm sm:text-base font-black text-white leading-snug mt-0.5">
+                        {examTitle || 'Examen Curricular'} — VARIANTE FILA {activeVariant.variantCode}
+                      </h3>
+                      <div className="text-[11px] text-slate-300 font-semibold">
+                        Campus Montes (Sede Matriz &amp; CCH UNAM) • Grupo: {groupName} • Ciclo 2025-2026 • Sello Libreta Pág. {notebookPage}
+                      </div>
                     </div>
                   </div>
-                  <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-center">
-                    <div className="text-[9px] uppercase font-bold text-amber-300">Versión Anti-Copia</div>
-                    <div className="text-sm font-black">FILA {activeVariant.variantCode}</div>
+                  <div className="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-center border border-emerald-400 shrink-0">
+                    <div className="text-[9px] uppercase font-bold text-emerald-100">Versión Anti-Copia</div>
+                    <div className="text-base font-black leading-none mt-0.5">FILA {activeVariant.variantCode}</div>
+                    <div className="text-[9px] font-mono font-bold text-emerald-100 mt-0.5">{activeVariant.folioCode}</div>
                   </div>
+                </div>
+
+                {/* Indicador de Bloques de Examen Conectados y Layout Anti-Colisión PDF */}
+                <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-900">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      Layout PDF Vectorial 2 Columnas OMR Anti-Colisión • Sin texto sobrepuesto • Paginación Automática
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-white border border-emerald-300 text-[10px] font-black text-emerald-800">
+                    {detectedExamBlockTypes.length > 0
+                      ? `${detectedExamBlockTypes.length} tipos de bloque vinculados (${questions.length} reactivos únicos)`
+                      : `${questions.length} reactivos curriculares activos`}
+                  </span>
                 </div>
 
                 {/* Lista de Preguntas Barajadas para esta Variante */}
@@ -596,18 +688,33 @@ export const StudioOpticalExamSuiteModal: React.FC<StudioOpticalExamSuiteModalPr
                 )}
 
                 <div className="px-6 py-2 space-y-4">
-                  {/* Encabezado de la Hoja OMR */}
+                  {/* Encabezado de la Hoja OMR con Identidad Oficial del Colegio */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-800 pb-3">
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
-                        HOJA DE LECTURA ÓPTICA OMR • {schoolName}
+                    <div className="flex items-center gap-3">
+                      {isIbimeSchool ? (
+                        <div className="w-11 h-11 rounded-xl bg-slate-900 border border-amber-400 p-1 flex items-center justify-center shrink-0">
+                          <img
+                            src="/brand/ibime_logo.webp"
+                            alt="Escudo Oficial Instituto Bilingüe IBIME"
+                            className="w-8 h-8 object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shrink-0">
+                          {schoolShortName}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-emerald-700">
+                          HOJA DE LECTURA ÓPTICA OMR • {schoolName} • CCT: 15PPR3322G
+                        </div>
+                        <h3 className="text-base font-black text-slate-900">
+                          Folio: {activeVariant.folioCode} • Variante Fila {activeVariant.variantCode}
+                        </h3>
+                        <p className="text-[11px] text-slate-600">
+                          Campus Montes • Ciclo 2025-2026 • Alumno en prueba: <strong className="text-slate-900">Santiago Gómez Pérez (#0248)</strong>
+                        </p>
                       </div>
-                      <h3 className="text-base font-black text-slate-900">
-                        Folio: {activeVariant.folioCode} • Variante Fila {activeVariant.variantCode}
-                      </h3>
-                      <p className="text-[11px] text-slate-600">
-                        Alumno en prueba: <strong className="text-slate-900">Santiago Gómez Pérez (#0248)</strong>
-                      </p>
                     </div>
 
                     {/* QR Simulado y Calificación Instantánea */}

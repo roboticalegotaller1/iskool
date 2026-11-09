@@ -20,6 +20,7 @@ import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ParentFiveSecondSummaryCard } from '@/components/ergonomics/ParentFiveSecondSummaryCard';
 
 export interface SystemParentAccount {
   id: string;
@@ -505,6 +506,18 @@ export default function ParentDashboard() {
       <Header />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <ParentFiveSecondSummaryCard
+            familyName={selectedParentAccount?.family || currentParent.first_name || 'Familia Morales Peña'}
+            studentName={
+              `${currentStudent?.first_name || ''} ${currentStudent?.last_name || ''}`.trim() ||
+              selectedParentAccount?.studentName ||
+              'Iker Santiago Morales Peña'
+            }
+            gradeLabel={selectedParentAccount?.grade || '5ºA Primaria Bilingüe · Campus Montes'}
+            studentId={currentStudent?.id || selectedParentAccount?.studentId || 'std-ibime-montes-01'}
+          />
+        </div>
         
         {/* Banner de Magic Link Inmediato con Firma Bidireccional en 1 Toque */}
         {magicLinkAccess && (

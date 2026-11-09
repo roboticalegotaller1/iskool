@@ -23,13 +23,19 @@ import { TimedReadingBlockView } from './TimedReadingBlockView';
 import { LogicMathBlockView } from './LogicMathBlockView';
 import { LanguagesBlockView } from './LanguagesBlockView';
 import { HistoricalFigureBlockView } from './HistoricalFigureBlockView';
+import {
+  extractExamQuestionsFromStudioBlocks,
+  generateExamVariantsZeroToken,
+  runClassroomOmrBatchGradingZeroToken
+} from '@/services/deterministicExamOmrEngine';
+import { downloadOmrExamPdf } from '@/services/omrExamPdfExporter';
 
 interface Props {
   block: StudioBlock;
 }
 
 export const BlockDispatcher: React.FC<Props> = ({ block }) => {
-  const { updateBlockData, setIsNodeConfigDrawerOpen } = useActivityBuilderStore();
+  const { blocks, updateBlockData, setIsNodeConfigDrawerOpen } = useActivityBuilderStore();
 
   switch (block.type) {
     case 'historical_figure_block':
@@ -83,13 +89,25 @@ export const BlockDispatcher: React.FC<Props> = ({ block }) => {
     case 'omr_optical_exam_block':
       return (
         <div className="p-4 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/60 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-rose-800 dark:text-rose-200">
-              📝 {block.data.examTitle || block.title}
-            </span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black">
-              0 Tokens • {block.data.variantsCount || 4} Filas (A/B/C/D)
-            </span>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <img
+                src="/brand/ibime_logo.webp"
+                alt="Escudo Oficial Instituto Bilingüe IBIME"
+                className="w-6 h-6 object-contain rounded bg-white p-0.5 border border-rose-200"
+              />
+              <span className="text-xs font-black text-rose-800 dark:text-rose-200">
+                📝 {block.data.examTitle || block.title}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-mono font-black">
+                CCT SEP: 15PPR3322G
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black">
+                0 Tokens • {block.data.variantsCount || 4} Filas (A/B/C/D)
+              </span>
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
@@ -124,18 +142,54 @@ export const BlockDispatcher: React.FC<Props> = ({ block }) => {
               </select>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setIsNodeConfigDrawerOpen(false);
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('iskool:open-omr-exam-suite', { detail: { blockId: block.id } }));
-              }
-            }}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
-          >
-            <span>📝 Abrir Suite Completa de Exámenes OMR, Hoja de Burbujas &amp; Escáner Óptico</span>
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsNodeConfigDrawerOpen(false);
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('iskool:open-omr-exam-suite', { detail: { blockId: block.id } }));
+                }
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 hover:to-orange-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+            >
+              <span>📝 Abrir Suite de Exámenes OMR &amp; Escáner</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const penaltyVal = block.data.penaltyPerError ?? 0.25;
+                const qs = extractExamQuestionsFromStudioBlocks(blocks.length > 0 ? blocks : [block], penaltyVal);
+                const vars = generateExamVariantsZeroToken(qs, ['A', 'B', 'C', 'D'], true, true);
+                const batchRep = runClassroomOmrBatchGradingZeroToken({
+                  examTitle: block.data.examTitle || block.title,
+                  schoolName: 'Instituto Bilingüe IBIME',
+                  groupName: '1°A Secundaria',
+                  baseQuestions: qs,
+                  variants: vars,
+                  penaltyPerError: penaltyVal
+                });
+                downloadOmrExamPdf({
+                  examTitle: block.data.examTitle || block.title,
+                  schoolName: 'Instituto Bilingüe IBIME',
+                  schoolShortName: 'IBIME',
+                  cctCode: '15PPR3322G',
+                  campusName: 'Campus Montes (Sede Matriz & CCH UNAM)',
+                  schoolCycle: '2025-2026',
+                  groupName: '1°A Secundaria',
+                  notebookPage: 52,
+                  penaltyPerError: penaltyVal,
+                  scope: 'single_variant',
+                  selectedVariantCode: 'A',
+                  variants: vars,
+                  batchReport: batchRep
+                });
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+            >
+              <span>📄 Descargar PDF Oficial OMR (Fila A)</span>
+            </button>
+          </div>
         </div>
       );
     case 'interactive_hotspot_canvas':

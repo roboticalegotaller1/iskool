@@ -9,6 +9,12 @@ import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
 import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
+import {
+  extractExamQuestionsFromStudioBlocks,
+  generateExamVariantsZeroToken,
+  runClassroomOmrBatchGradingZeroToken
+} from '@/services/deterministicExamOmrEngine';
+import { downloadOmrExamPdf } from '@/services/omrExamPdfExporter';
 import { 
   Sparkles, 
   Trophy, 
@@ -186,6 +192,11 @@ export const StudioFlowPlayer: React.FC<Props> = ({
   const [readingTimeTaken, setReadingTimeTaken] = useState<number>(0);
   const [readingSelectedAnswers, setReadingSelectedAnswers] = useState<Record<string, number>>({});
   const [readingResults, setReadingResults] = useState<{ score: number; ppm: number; xp: number; coins: number; feedback: string } | null>(null);
+
+  // Estados de Examen Híbrido OMR en vivo
+  const [omrPlayerBubbles, setOmrPlayerBubbles] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
+  const [omrPlayerCorrections, setOmrPlayerCorrections] = useState<Record<number, 'A' | 'B' | 'C' | 'D' | null>>({});
+  const [omrPlayerSubmitted, setOmrPlayerSubmitted] = useState<boolean>(false);
 
   const activeBlock: StudioBlock | undefined = 
     (currentNodeId ? blocks.find(b => b.id === currentNodeId) : undefined) || 
@@ -2512,53 +2523,206 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           )}
 
           {/* ================= 29. EXAMEN HÍBRIDO OMR & VARIANTES A/B/C/D (0 TOKENS) ================= */}
-          {activeBlock?.type === 'omr_optical_exam_block' && (
-            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/40 border-2 border-rose-200 dark:border-rose-800 space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-rose-200/80 text-rose-950">
-                    Examen Híbrido OMR • 0 Tokens • Fila Asignada: A ({activeBlock.data.variantsCount || 4} Variantes)
-                  </span>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                    {activeBlock.data.examTitle || activeBlock.title}
-                  </h3>
-                </div>
-                <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-black text-xs">
-                  Corrección Limpia OMR Activa
-                </span>
-              </div>
+          {activeBlock?.type === 'omr_optical_exam_block' && (() => {
+            const penaltyVal = activeBlock.data.penaltyPerError ?? 0.25;
+            const extractedQs = extractExamQuestionsFromStudioBlocks(blocks, penaltyVal);
+            const omrVariants = generateExamVariantsZeroToken(extractedQs, ['A', 'B', 'C', 'D'], true, true);
+            const filaA = omrVariants[0];
+            let hits = 0;
+            let totalPts = 0;
+            let maxPts = 0;
+            filaA.questions.forEach((vq) => {
+              maxPts += vq.points;
+              const eff = omrPlayerCorrections[vq.variantQuestionNumber] || omrPlayerBubbles[vq.variantQuestionNumber];
+              if (eff === vq.correctOptionLetter) {
+                hits++;
+                totalPts += vq.points;
+              } else if (eff) {
+                totalPts -= penaltyVal;
+              }
+            });
+            const grade10 = maxPts > 0 ? Number(((Math.max(0, totalPts) / maxPts) * 10).toFixed(1)) : 10;
 
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-rose-200 space-y-3">
-                <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                  Rellena completamente la burbuja OMR correspondiente. Si te equivocas, tacha con una X la burbuja incorrecta y marca la nueva opción.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                  <div className="p-3 rounded-xl bg-rose-50/70 border border-rose-200">
-                    <span className="text-[10px] font-black uppercase text-rose-700 block">Variantes Anti-Copia</span>
-                    <span className="font-black text-slate-900">4 Filas Barajadas (A, B, C, D)</span>
+            return (
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-rose-50 to-orange-50 dark:from-rose-950/40 dark:to-orange-950/40 border-2 border-rose-200 dark:border-rose-800 space-y-4">
+                {/* Cintillo Oficial con Identidad del Colegio */}
+                <div className="p-3.5 rounded-2xl bg-slate-900 text-white border-2 border-amber-400/80 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 border border-amber-300">
+                      <img
+                        src="/brand/ibime_logo.webp"
+                        alt="Escudo Oficial Instituto Bilingüe IBIME"
+                        className="w-9 h-9 object-contain"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">
+                          INSTITUTO BILINGÜE IBIME • CCT SEP: 15PPR3322G
+                        </span>
+                        <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-white/15 text-emerald-300">
+                          {filaA.folioCode}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-black text-white mt-0.5">
+                        {activeBlock.data.examTitle || activeBlock.title}
+                      </h3>
+                      <div className="text-[11px] text-slate-300 font-semibold">
+                        Campus Montes • Ciclo 2025-2026 • Fila Asignada: A ({activeBlock.data.variantsCount || 4} Variantes Anti-Copia)
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200">
-                    <span className="text-[10px] font-black uppercase text-emerald-700 block">Sincronización Institucional</span>
-                    <span className="font-black text-slate-900">Kardex SEP + Sello QR de Libreta</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const batchRep = runClassroomOmrBatchGradingZeroToken({
+                          examTitle: activeBlock.data.examTitle || activeBlock.title,
+                          schoolName: 'Instituto Bilingüe IBIME',
+                          groupName: metadata.faseNem || metadata.subject || '1°A Secundaria',
+                          baseQuestions: extractedQs,
+                          variants: omrVariants,
+                          penaltyPerError: penaltyVal
+                        });
+                        downloadOmrExamPdf({
+                          examTitle: activeBlock.data.examTitle || activeBlock.title,
+                          schoolName: 'Instituto Bilingüe IBIME',
+                          schoolShortName: 'IBIME',
+                          cctCode: '15PPR3322G',
+                          campusName: 'Campus Montes (Sede Matriz & CCH UNAM)',
+                          schoolCycle: '2025-2026',
+                          groupName: metadata.faseNem || metadata.subject || '1°A Secundaria',
+                          notebookPage: 52,
+                          penaltyPerError: penaltyVal,
+                          scope: 'single_variant',
+                          selectedVariantCode: 'A',
+                          variants: omrVariants,
+                          batchReport: batchRep
+                        });
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Descargar PDF Oficial OMR</span>
+                    </button>
+                    <span className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-black text-xs">
+                      Nota OMR: {grade10} / 10 ({hits}/{filaA.questions.length})
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    playSound('victory');
-                    handleNextStep(60);
-                  }}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Entregar Hoja OMR Digital y Sellar Kardex (+60 XP)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-rose-200 space-y-3">
+                  <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                    Rellena completamente la burbuja OMR correspondiente (A, B, C o D). Si te equivocas, usa la fila derecha de Corrección Limpia sin anular tu hoja.
+                  </p>
+
+                  <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                    {filaA.questions.map((vq) => {
+                      const qNum = vq.variantQuestionNumber;
+                      const marked = omrPlayerBubbles[qNum];
+                      const corrected = omrPlayerCorrections[qNum] || null;
+                      const effective = corrected || marked;
+                      const isCorrect = effective === vq.correctOptionLetter;
+
+                      return (
+                        <div key={qNum} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-black text-slate-900">
+                              {qNum}. {vq.stem}
+                            </p>
+                            {omrPlayerSubmitted && (
+                              <span
+                                className={`text-[10px] font-black px-2 py-0.5 rounded shrink-0 ${
+                                  isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                }`}
+                              >
+                                {isCorrect ? '✓ Correcto' : `Clave: ${vq.correctOptionLetter}`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {vq.options.map((optText, oIdx) => {
+                              const letter = (['A', 'B', 'C', 'D'] as const)[oIdx];
+                              const isPicked = effective === letter;
+                              return (
+                                <button
+                                  key={letter}
+                                  type="button"
+                                  onClick={() => {
+                                    setOmrPlayerBubbles((prev) => ({ ...prev, [qNum]: letter }));
+                                    setOmrPlayerCorrections((prev) => ({ ...prev, [qNum]: null }));
+                                  }}
+                                  className={`text-left text-[11px] px-2.5 py-1.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all ${
+                                    isPicked
+                                      ? 'bg-slate-900 border-slate-900 text-white font-bold'
+                                      : 'bg-white border-slate-200 text-slate-700 hover:border-rose-400'
+                                  }`}
+                                >
+                                  <span
+                                    className={`w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center shrink-0 ${
+                                      isPicked ? 'bg-emerald-500 text-slate-950' : 'bg-slate-200 text-slate-700'
+                                    }`}
+                                  >
+                                    {letter}
+                                  </span>
+                                  <span className="leading-tight">{optText}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {marked && (
+                            <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-slate-200/70">
+                              <span className="text-[10px] font-bold text-rose-700">Corrección Limpia:</span>
+                              {(['A', 'B', 'C', 'D'] as const).map((letter) => (
+                                <button
+                                  key={letter}
+                                  type="button"
+                                  onClick={() =>
+                                    setOmrPlayerCorrections((prev) => ({
+                                      ...prev,
+                                      [qNum]: prev[qNum] === letter ? null : letter
+                                    }))
+                                  }
+                                  className={`w-5 h-5 rounded text-[9px] font-black cursor-pointer ${
+                                    corrected === letter
+                                      ? 'bg-amber-500 text-slate-950 border border-amber-700'
+                                      : 'bg-white border border-dashed border-rose-300 text-rose-700'
+                                  }`}
+                                >
+                                  {letter}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-between items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setOmrPlayerSubmitted(true)}
+                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs cursor-pointer"
+                  >
+                    Verificar Hoja OMR en Vivo ({hits}/{filaA.questions.length} aciertos)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playSound('victory');
+                      handleNextStep(60);
+                    }}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-rose-600 to-orange-600 hover:from-rose-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Entregar Hoja OMR Digital y Sellar Kardex (+60 XP)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ================= 30. MAPA DE PUNTOS CALIENTES & OCLUSIÓN VISUAL (0 TOKENS) ================= */}
           {activeBlock?.type === 'interactive_hotspot_canvas' && (

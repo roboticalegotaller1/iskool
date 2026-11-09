@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export interface PocketRemoteCommand {
   id: string;
@@ -133,9 +134,12 @@ function getOrCreateSession(
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const teacherId = (searchParams.get('teacherId') || 'default-teacher').trim().toLowerCase();
+  const providedPin = (searchParams.get('pin') || '').trim();
   const since = Number(searchParams.get('since') || '0');
 
+  const auth = await validateApiAuth(req);
   const session = getOrCreateSession(teacherId);
+  const isAuthorizedForPin = auth.authenticated || (providedPin && providedPin === session.pin);
 
   // Filtrar comandos recientes posteriores a `since`
   const recentCommands = session.commands.filter((cmd) => cmd.timestamp > since);
@@ -146,7 +150,8 @@ export async function GET(req: NextRequest) {
     teacherEmail: session.teacherEmail,
     teacherName: session.teacherName,
     campusName: session.campusName,
-    pin: session.pin,
+    pin: isAuthorizedForPin ? session.pin : '******',
+    pinProtected: true,
     connectedDevices: session.connectedDevices,
     activeLessonSnapshot: session.activeLessonSnapshot || null,
     commands: recentCommands,
@@ -156,19 +161,37 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
     const body = await req.json();
     const teacherId = String(body.teacherId || 'default-teacher').trim().toLowerCase();
     const teacherEmail = String(body.teacherEmail || 'docente@iskool.edu.mx');
     const teacherName = String(body.teacherName || 'Docente Titular');
     const campusName = String(body.campusName || 'Campus Central');
-    const pin = String(body.pin || '482915');
+    const pin = String(body.pin || '').trim();
     const actionType = body.type as PocketRemoteCommand['type'];
 
-    const session = getOrCreateSession(teacherId, teacherEmail, teacherName, campusName, pin);
+    const existingSession = sessionsMap.get(teacherId);
+    if (
+      existingSession &&
+      actionType !== 'SYNC_LESSON_STATE' &&
+      !auth.authenticated &&
+      pin &&
+      existingSession.pin &&
+      pin !== existingSession.pin
+    ) {
+      return NextResponse.json(
+        { ok: false, error: 'PIN de vinculación QR no válido para esta sesión docente.' },
+        { status: 403 }
+      );
+    }
+
+    const session = getOrCreateSession(teacherId, teacherEmail, teacherName, campusName, pin || '482915');
     session.teacherEmail = teacherEmail || session.teacherEmail;
     session.teacherName = teacherName || session.teacherName;
     session.campusName = campusName || session.campusName;
-    session.pin = pin || session.pin;
+    if (actionType === 'SYNC_LESSON_STATE' && pin) {
+      session.pin = pin;
+    }
     session.updatedAt = Date.now();
 
     if (actionType === 'SYNC_LESSON_STATE' && body.lessonSnapshot) {

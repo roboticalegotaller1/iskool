@@ -1,9 +1,17 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
+import { validateApiAuth } from '@/lib/authValidator';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+  }
+  const auth = await validateApiAuth(req);
+  if (!auth.authenticated || !['superadmin', 'admin'].includes(auth.user?.role || '')) {
+    return NextResponse.json({ error: 'Acceso restringido a Superusuario en entorno local.' }, { status: 401 });
+  }
   sharp.cache(false);
 
   const brainDir = 'C:/Users/kami-/.gemini/antigravity-ide/brain/857a2b8b-6bf7-44b2-a4b6-0eba05c0008a';

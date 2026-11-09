@@ -33,7 +33,13 @@ const ISKOOL_PROTECTED_PREFIXES = [
   '/parent',
   '/studio',
   '/billing',
-  '/superadmin'
+  '/superadmin',
+  '/superuser',
+  '/api/vault/reassign',
+  '/api/mail',
+  '/api/fiscal',
+  '/api/store',
+  '/api/studio'
 ];
 
 // Rutas protegidas de IBIME (Sub-módulos que requieren rol específico)

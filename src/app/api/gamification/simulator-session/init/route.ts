@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createGameSessionToken, getMinimumPlausibleTime } from '@/lib/gameSecurity';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +10,12 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
     const body = await req.json();
     const { studentId, simulatorId, difficulty, teacherId } = body;
+    const effectiveStudentId = auth.authenticated && auth.user?.role === 'student' ? auth.user.id : studentId;
 
-    if (!studentId || !simulatorId) {
+    if (!effectiveStudentId || !simulatorId) {
       return NextResponse.json(
         { error: 'Faltan parámetros requeridos: studentId y simulatorId' },
         { status: 400 }
@@ -21,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Generar token firmado con Nonce y SessionId
     const { token, payload } = createGameSessionToken({
-      studentId: String(studentId),
+      studentId: String(effectiveStudentId),
       simulatorId: String(simulatorId),
       difficulty: difficulty ? String(difficulty) : 'medium',
       teacherId: teacherId ? String(teacherId) : undefined

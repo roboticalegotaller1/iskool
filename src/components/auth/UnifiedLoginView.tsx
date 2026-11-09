@@ -21,7 +21,11 @@ import {
   Building2,
   Globe,
   Award,
-  CheckCircle2
+  CheckCircle2,
+  QrCode,
+  Camera,
+  Users,
+  X
 } from 'lucide-react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
@@ -60,6 +64,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   const [showDemoSelector, setShowDemoSelector] = useState<boolean>(!isPublicMode);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
   const [isCodeOrCurpMode, setIsCodeOrCurpMode] = useState(false);
+  const [showQrBadgeModal, setShowQrBadgeModal] = useState(false);
 
   // Detección inteligente en vivo del rol según correo, matrícula o CURP escrito
   const detectedRoleLabel = React.useMemo(() => {
@@ -712,6 +717,66 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               )}
             </button>
 
+            {/* Acceso Instantáneo con Gafete Escolar QR + 4 Roles Visuales en 1 Clic */}
+            <div className="grid grid-cols-1 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowQrBadgeModal(true)}
+                className="w-full py-2.5 px-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-200 text-xs font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+              >
+                <QrCode className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Acceso con Gafete Escolar QR (1 Toque · Sin Contraseña)</span>
+              </button>
+
+              <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                {[
+                  {
+                    label: 'Profesor',
+                    sub: 'Aula 1-2-3',
+                    email: 'alejandro.mendoza@ibime.edu.mx',
+                    color: 'hover:border-blue-400 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 text-blue-700 dark:text-blue-300'
+                  },
+                  {
+                    label: 'Familia',
+                    sub: 'Resumen 5s',
+                    email: 'familia.morales@ibime.edu.mx',
+                    color: 'hover:border-emerald-400 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
+                  },
+                  {
+                    label: 'Alumno',
+                    sub: 'Misión 3D',
+                    email: 'iker.morales@ibime.edu.mx',
+                    color: 'hover:border-purple-400 hover:bg-purple-50/70 dark:hover:bg-purple-950/40 text-purple-700 dark:text-purple-300'
+                  },
+                  {
+                    label: 'Dirección',
+                    sub: 'Cabina 360',
+                    email: isIbimeMode ? 'directora.general@ibime.edu.mx' : 'admin@iskool.edu.mx',
+                    color: 'hover:border-amber-400 hover:bg-amber-50/70 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-300'
+                  }
+                ].map((quickRole) => (
+                  <button
+                    key={quickRole.label}
+                    type="button"
+                    onClick={() => {
+                      setEmail(quickRole.email);
+                      setPassword('ISkoolPassword2026!');
+                      setErrorMsg('');
+                    }}
+                    className={`p-2 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/70 text-center transition-all cursor-pointer ${quickRole.color}`}
+                    title={`Autocompletar acceso rápido para ${quickRole.label}`}
+                  >
+                    <span className="block text-[11px] font-extrabold leading-tight">
+                      {quickRole.label}
+                    </span>
+                    <span className="block text-[9px] text-zinc-400 dark:text-zinc-500 font-semibold mt-0.5">
+                      {quickRole.sub}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Separador */}
             <div className="relative my-2 flex items-center justify-center">
               <div className="border-t border-zinc-200 dark:border-zinc-800 w-full" />
@@ -996,6 +1061,116 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
         </div>
       </div>
+
+      {/* Modal de Lector de Gafete Escolar QR en 1 Toque */}
+      {showQrBadgeModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300">
+                  <QrCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black">Lector de Gafete Escolar QR</h3>
+                  <p className="text-[11px] text-slate-300">Acceso sin teclado para alumnos, docentes y familias</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQrBadgeModal(false)}
+                className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 transition-colors cursor-pointer"
+                aria-label="Cerrar lector QR"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Visor Simulado de Cámara con Marco Esmeralda */}
+              <div className="relative rounded-2xl bg-slate-950 p-5 border-2 border-dashed border-emerald-500/60 flex flex-col items-center justify-center text-center overflow-hidden">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-emerald-400 mb-2 animate-pulse">
+                  <Camera className="w-7 h-7" />
+                </div>
+                <p className="text-xs font-extrabold text-white">
+                  Acerca tu Gafete Escolar QR a la cámara o elige tu gafete digital:
+                </p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Token criptográfico firmado Zero-Trust (HttpOnly)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-wider text-zinc-400">
+                  Simular Lectura Instantánea de Gafete Oficial:
+                </p>
+                {[
+                  {
+                    title: 'Gafete Docente · Prof. Claire Dubois (Francés FLE / Inglés)',
+                    role: 'Portal Docente 1-2-3',
+                    email: isIbimeMode ? 'claire.dubois@ibime.edu.mx' : 'profesor@iskool.edu.mx',
+                    badge: 'DOCENTE'
+                  },
+                  {
+                    title: 'Gafete Familiar · Familia Morales (Tutor Verificado)',
+                    role: 'Resumen en 5 Segundos',
+                    email: isIbimeMode ? 'familia.montes01@ibime.edu.mx' : 'familia@iskool.edu.mx',
+                    badge: 'FAMILIA'
+                  },
+                  {
+                    title: 'Gafete Alumno · Iker Morales (Primaria / Secundaria)',
+                    role: 'Cabina de Misión 3D',
+                    email: isIbimeMode ? 'std-ibime-montes-01' : 'std-pa',
+                    badge: 'ALUMNO'
+                  },
+                  {
+                    title: 'Gafete Directivo / Superusuario · Dirección General',
+                    role: 'Centro de Mando 360',
+                    email: isIbimeMode ? 'directora.general@ibime.edu.mx' : 'superadmin@iskool.mx',
+                    badge: 'DIRECCIÓN'
+                  }
+                ].map((card) => (
+                  <button
+                    key={card.badge}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setShowQrBadgeModal(false);
+                      setEmail(card.email);
+                      setPassword('ISkoolPassword2026!');
+                      setIsSubmitting(true);
+                      try {
+                        const result = await login(card.email, 'ISkoolPassword2026!');
+                        if (result.success && result.user) {
+                          await routeUserByRole(result.user);
+                        } else {
+                          setErrorMsg(result.error || 'No se pudo validar el gafete QR.');
+                          setIsSubmitting(false);
+                        }
+                      } catch {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    className="w-full p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 flex items-center justify-between text-left transition-all cursor-pointer"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <p className="text-xs font-extrabold text-zinc-900 dark:text-white truncate">
+                        {card.title}
+                      </p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {card.role}
+                      </p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-black shrink-0">
+                      {card.badge} →
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

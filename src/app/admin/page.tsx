@@ -76,19 +76,22 @@ import {
   getSchoolDeletionAuditLogs
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution, isCorporateInstitution } from '@/types';
-import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
+import dynamic from 'next/dynamic';
 import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/components/admin/CEOExecutiveDashboard';
-import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
-import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
-import { IndependentTeachersSuperUserStudio } from '@/components/admin/IndependentTeachersSuperUserStudio';
-import { CorporateEnterprisesSuperUserStudio } from '@/components/admin/CorporateEnterprisesSuperUserStudio';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
-import { SuperUserCommandCenter } from '@/components/admin/SuperUserCommandCenter';
+import { SuperUserFourQuadrantCockpit } from '@/components/ergonomics/SuperUserFourQuadrantCockpit';
+
+const ExecutiveAnalyticsStudio = dynamic(() => import('@/components/admin/ExecutiveAnalyticsStudio'), { ssr: false });
+const CEOEmailCommunicationsModal = dynamic(() => import('@/components/admin/CEOEmailCommunicationsModal').then(m => m.CEOEmailCommunicationsModal), { ssr: false });
+const SuperUserCompendiumStudio = dynamic(() => import('@/components/books/SuperUserCompendiumStudio').then(m => m.SuperUserCompendiumStudio), { ssr: false });
+const IndependentTeachersSuperUserStudio = dynamic(() => import('@/components/admin/IndependentTeachersSuperUserStudio').then(m => m.IndependentTeachersSuperUserStudio), { ssr: false });
+const CorporateEnterprisesSuperUserStudio = dynamic(() => import('@/components/admin/CorporateEnterprisesSuperUserStudio').then(m => m.CorporateEnterprisesSuperUserStudio), { ssr: false });
+const SuperUserCommandCenter = dynamic(() => import('@/components/admin/SuperUserCommandCenter').then(m => m.SuperUserCommandCenter), { ssr: false });
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium' | 'command_center';
 
@@ -1596,6 +1599,11 @@ export default function SuperUserAdminPage() {
 
           {/* MAIN CONTAINER: DIRECTORIO DE COLEGIOS */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6 sm:space-y-8">
+            <SuperUserFourQuadrantCockpit
+              activeSchoolsCount={institutionsList.length || 18}
+              onQuickCreateSchool={() => setShowAddSchoolModal(true)}
+              onOpenSecurityAuditTab={() => setActiveTab('command_center')}
+            />
             
             {/* PANORAMIC HERO BANNER */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-200/80 p-5 sm:p-8 shadow-xs">

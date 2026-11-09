@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
-import { signSessionToken } from '@/lib/sessionToken';
 
 interface AuthContextType {
   session: any | null;
@@ -942,51 +941,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const isIbimeTenant = finalUser.school_id === 'sch-ibime' || (finalUser.email && finalUser.email.toLowerCase().includes('ibime'));
       const resolvedTenant = isIbimeTenant ? 'ibime' : 'iskool';
-      const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
-      const opposingCookieName = resolvedTenant === 'ibime' ? 'iskool_session' : 'ibime_session';
 
-      let issuedToken: string | null = null;
       try {
-        const res = await fetch('/api/auth/session', {
+        await fetch('/api/auth/session', {
           method: 'POST',
           cache: 'no-store',
           credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             access_token: sessionObj?.access_token,
+            password: effectivePass,
             user: finalUser
           })
         });
-        if (res.ok) {
-          const data = await res.json().catch(() => null);
-          if (data?.token) {
-            issuedToken = data.token;
-          }
-        }
       } catch {
         // No bloquear la interfaz ante latencia de red secundaria
       }
 
-      if (!issuedToken) {
-        try {
-          issuedToken = await signSessionToken({
-            id: finalUser.id,
-            email: finalUser.email || undefined,
-            role: finalUser.role,
-            school_id: finalUser.school_id || (isIbimeTenant ? 'sch-ibime' : undefined),
-            tenant_id: resolvedTenant,
-            first_name: finalUser.first_name,
-            last_name: finalUser.last_name
-          });
-        } catch {}
-      }
-
-      if (issuedToken) {
-        const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = `${cookieName}=${issuedToken}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
-        document.cookie = `${opposingCookieName}=; path=/; max-age=0; SameSite=Lax${secureAttr}`;
-        document.cookie = `tenant-id=${resolvedTenant}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
-      }
+      const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `tenant-id=${resolvedTenant}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
     }
     if (isPlatformSuperUser(finalUser)) {
       if (typeof window !== 'undefined') {

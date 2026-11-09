@@ -86,6 +86,7 @@ import { PetSvgRenderer } from '@/components/pet/PetSvgRenderer';
 import { HatchingCinematicModal } from '@/components/pet/HatchingCinematicModal';
 import { PetHomeSanctuaryModal } from '@/components/pet/PetHomeSanctuaryModal';
 import { ELEMENTAL_PET_RACES } from '@/components/pet/types';
+import { StudentMissionFocusBanner } from '@/components/ergonomics/StudentMissionFocusBanner';
 
 export default function StudentDashboard() {
   const { user, loading } = useAuth();
@@ -435,6 +436,20 @@ export default function StudentDashboard() {
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.15)_0%,rgba(15,23,42,0)_70%)] pointer-events-none z-0" />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 relative z-10">
+        <StudentMissionFocusBanner
+          studentName={`${detailedStudent?.first_name || user?.first_name || 'Explorador'}`.trim()}
+          level={rawStats?.level || 8}
+          streakDays={rawStats?.current_streak || 14}
+          coins={rawStats?.coins || 380}
+          activeQuestTitle={missions?.[0]?.quests?.[0]?.title || missions?.[0]?.title}
+          onStartActiveQuest={() => {
+            const firstQuest = missions?.[0]?.quests?.[0];
+            if (firstQuest) {
+              setActivePlayingQuest(firstQuest);
+            }
+          }}
+          onOpenPetSanctuary={() => setIsPetModalOpen(true)}
+        />
         
         {/* =========================================================================
             ZONA 1: HUD DEL HÉROE Y REVELACIÓN PROGRESIVA

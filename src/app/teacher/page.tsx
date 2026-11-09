@@ -70,6 +70,7 @@ const RosterImporterModal = dynamic(
 
 import { IndependentTeacherGroupManagerModal } from '@/components/teacher/IndependentTeacherGroupManagerModal';
 import { useClassroomStore } from '@/store/useClassroomStore';
+import { TeacherThreeStepAutopilotBar } from '@/components/ergonomics/TeacherThreeStepAutopilotBar';
 
 // Catálogo de PDAs por asignatura oficial SEP (NEM 2024 y MCCEMS)
 const PDA_CATALOG: Record<string, string[]> = {
@@ -1029,6 +1030,20 @@ function TeacherDashboardContent() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Barra de Piloto Automático 1-2-3 con Control QR de Bolsillo y Semáforo de Asistencia */}
+        {currentMenuTab === 'hub' && (
+          <TeacherThreeStepAutopilotBar
+            groupName={ceoMirrorTelemetry.groupLabel}
+            subjectName={ceoMirrorTelemetry.subjectLabel}
+            students={availableTeacherStudents.slice(0, 8).map(st => ({
+              id: st.id,
+              name: `${st.first_name} ${st.last_name_1 || ''}`.trim()
+            }))}
+            onOpenPlanningTab={() => setCurrentMenuTab('planning')}
+            onOpenLiveClassModal={() => setIsLiveClassModalOpen(true)}
+          />
         )}
 
         {/* VISTA GUIADA EN 3 PASOS SIMPLES (REVELACIÓN PROGRESIVA PARA CURVA DE APRENDIZAJE CERO) */}

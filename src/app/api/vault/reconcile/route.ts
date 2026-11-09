@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { InstitutionalMemoryReconcileService } from '@/lib/institutionalMemory';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -25,12 +26,20 @@ export function timingSafeTokenCheck(provided: string, expected: string): boolea
   return crypto.timingSafeEqual(bufProvided, bufExpected);
 }
 
-const DEFAULT_VAULT_RECONCILE_TOKEN = 'iskool-vault-gitops-reconcile-2026-hermetic';
-
 /**
  * Valida la autenticación para la reconciliación segura de la Bóveda Curricular.
+ * Acepta sesión autenticada (validateApiAuth) con rol directivo/coordinación o token secreto de servidor.
  */
-function validateReconcileSecurity(request: NextRequest): { authorized: boolean; reason?: string } {
+async function validateReconcileSecurity(request: NextRequest): Promise<{ authorized: boolean; reason?: string }> {
+  const authResult = await validateApiAuth(request);
+  if (authResult.authenticated && authResult.user) {
+    const allowedRoles = ['superadmin', 'admin', 'owner', 'ceo', 'director', 'coordinator'];
+    if (allowedRoles.includes(authResult.user.role || '')) {
+      return { authorized: true };
+    }
+    return { authorized: false, reason: 'Rol insuficiente para reconciliar la Bóveda Curricular.' };
+  }
+
   const syncTokenHeader = (request.headers.get('x-vault-sync-token') || '').trim();
   const authHeader = request.headers.get('authorization') || '';
   const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : '';
@@ -42,14 +51,6 @@ function validateReconcileSecurity(request: NextRequest): { authorized: boolean;
     process.env.INTERNAL_API_SECRET ||
     process.env.CRON_SECRET;
 
-  // Permitir siempre el token institucional canónico del workflow programado
-  if (
-    (syncTokenHeader && timingSafeTokenCheck(syncTokenHeader, DEFAULT_VAULT_RECONCILE_TOKEN)) ||
-    (bearerToken && timingSafeTokenCheck(bearerToken, DEFAULT_VAULT_RECONCILE_TOKEN))
-  ) {
-    return { authorized: true };
-  }
-
   if (configuredSecret) {
     if (
       (syncTokenHeader && timingSafeTokenCheck(syncTokenHeader, configuredSecret)) ||
@@ -60,9 +61,7 @@ function validateReconcileSecurity(request: NextRequest): { authorized: boolean;
     return { authorized: false, reason: 'Token de sincronización inválido' };
   }
 
-  // Si en producción aún no se ha definido VAULT_RECONCILE_SECRET en variables de entorno,
-  // permitir la reconciliación diagnóstica desatendida sin fallar con HTTP 401.
-  return { authorized: true };
+  return { authorized: false, reason: 'Autenticación requerida: Sesión directiva HttpOnly o VAULT_RECONCILE_SECRET.' };
 }
 
 /**
@@ -71,7 +70,7 @@ function validateReconcileSecurity(request: NextRequest): { authorized: boolean;
  */
 export async function POST(request: NextRequest) {
   try {
-    const security = validateReconcileSecurity(request);
+    const security = await validateReconcileSecurity(request);
     if (!security.authorized) {
       return NextResponse.json(
         {
@@ -132,7 +131,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const security = validateReconcileSecurity(request);
+    const security = await validateReconcileSecurity(request);
     if (!security.authorized) {
       return NextResponse.json(
         { error: 'No autorizado', reason: security.reason || 'Token de sincronización inválido' },
