@@ -635,6 +635,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
+    // Salvaguarda dura: jamás bloquear la interfaz más de 2.8s en "Comprobando credenciales..."
+    const hardTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 2800);
+
     // Check active session on mount (Zero-Trust: Cookies HttpOnly prioritarias)
     const checkSession = async () => {
       try {
@@ -644,12 +649,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.removeItem('auth_current_user');
         }
 
-        // 2. Consulta al endpoint seguro de sesión perimetral con Cookie HttpOnly
+        // 2. Consulta al endpoint seguro de sesión perimetral con Cookie HttpOnly (con timeout de 2s)
         try {
+          const controller = new AbortController();
+          const tId = setTimeout(() => controller.abort(), 2000);
           const sessionRes = await fetch('/api/auth/session', {
             cache: 'no-store',
-            credentials: 'same-origin'
+            credentials: 'same-origin',
+            signal: controller.signal
           });
+          clearTimeout(tId);
           if (sessionRes.ok) {
             const sessionData = await sessionRes.json();
             if (sessionData.authenticated && sessionData.user) {
@@ -688,8 +697,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch {}
         }
 
-        // 3. Verificación de sesión en Supabase SDK
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        // 3. Verificación de sesión en Supabase SDK (con timeout de 2s para evitar bloqueo en CDN)
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), 2000)
+        );
+        const { data: { session: currentSession } } = await Promise.race([sessionPromise, timeoutPromise]);
         setSession(currentSession);
         if (currentSession?.user) {
           const u = currentSession.user;
@@ -751,6 +764,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (err) {
         console.warn("Autenticación inicial de sesión completada.");
       } finally {
+        clearTimeout(hardTimeout);
         setLoading(false);
       }
     };
