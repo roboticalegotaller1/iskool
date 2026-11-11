@@ -277,7 +277,7 @@ export class WorkOsService {
           authorEmail: 'direccion@ibime.edu.mx',
           action: 'Creación y delegación inicial de tarea',
           type: 'status_change',
-          details: `Caso asignado a ${taskData.primaryAssignee?.name || 'Responsable'} con SLA de ${slaHours} horas.`
+          details: `Caso asignado a ${taskData.primaryAssignee?.name || 'Responsable'} con Tiempo de respuesta de ${slaHours} horas.`
         }
       ],
       isOverdue: false,
@@ -659,7 +659,7 @@ export class WorkOsService {
       authorEmail: params.reassignedByEmail || 'direccion@ibime.edu.mx',
       action: `Reasignación y nueva delegación (${params.sectionName})`,
       type: 'status_change',
-      details: `Expediente reasignado formalmente a ${params.newAssigneeName} (${params.newAssigneeEmail}) con nuevo SLA de ${params.slaHours}h. Notas de transferencia: ${params.delegationNotes?.trim() || 'Sin notas adicionales'}. Progreso reiniciado al 0%.`
+      details: `Expediente reasignado formalmente a ${params.newAssigneeName} (${params.newAssigneeEmail}) con nuevo Tiempo de respuesta de ${params.slaHours}h. Notas de transferencia: ${params.delegationNotes?.trim() || 'Sin notas adicionales'}. Progreso reiniciado al 0%.`
     });
 
     this.saveTasks(tenantId, tasks);
@@ -1025,7 +1025,7 @@ export class WorkOsService {
       authorEmail: 'sistema@ibime.edu.mx',
       action: `Inyección de Escenario Oficial: ${scenario.title}`,
       type: 'status_change',
-      details: `Caso inyectado para pruebas del departamento ${seed.sectionName}. SLA activo de ${scenario.slaHours}h.`
+      details: `Caso inyectado para pruebas del departamento ${seed.sectionName}. Tiempo de respuesta activo de ${scenario.slaHours}h.`
     });
     this.saveTasks(tenantId, this.getTasks(tenantId).map(t => t.id === newTask.id ? newTask : t));
 
@@ -1311,7 +1311,7 @@ export class WorkOsService {
         aiAnalysis: {
           riskScore: 28,
           riskLevel: 'BAJO',
-          summary: 'Trámite fiscal estándar con documentación completa. Se anticipa cumplimiento holgado del SLA.',
+          summary: 'Trámite fiscal estándar con documentación completa. Se anticipa cumplimiento holgado del Tiempo de respuesta.',
           suggestedNextAction: 'Timbrar CFDI 4.0 y enviar por correo al tutor.'
         }
       },

@@ -1124,7 +1124,7 @@ export default function BentoAdmissionsKanban({
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h4 className="font-black text-slate-900 text-sm">Automatizaciones del Pipeline de Admisiones</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Reglas automáticas de notificación, escalamiento SLA y sincronización interdepartamental.</p>
+              <p className="text-xs text-slate-500 mt-0.5">Reglas automáticas de notificación, escalamiento por Tiempo de respuesta y sincronización interdepartamental.</p>
             </div>
             <span className="text-xs font-bold bg-amber-50 text-amber-800 px-3 py-1 rounded-xl border border-amber-200">
               ⚡ 4 Reglas Activas
@@ -1279,7 +1279,7 @@ export default function BentoAdmissionsKanban({
             <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/80 space-y-2">
               <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
                 <TrendingUp size={14} className="text-blue-600" />
-                Alerta de Estancamiento SLA
+                Alerta de Estancamiento (Tiempo de respuesta)
               </span>
               <p className="text-xs text-slate-600 leading-snug">
                 "Los aspirantes con más de 7 días en Fase 3 (Diagnóstico) tienen 3.2x más riesgo de enfriamiento. Se recomienda llamada telefónica directa de la Dirección Académica."

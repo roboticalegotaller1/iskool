@@ -71,6 +71,8 @@ const RosterImporterModal = dynamic(
 import { IndependentTeacherGroupManagerModal } from '@/components/teacher/IndependentTeacherGroupManagerModal';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { TeacherThreeStepAutopilotBar } from '@/components/ergonomics/TeacherThreeStepAutopilotBar';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { normalizeOrgSchoolId } from '@/lib/services/organizationService';
 
 // Catálogo de PDAs por asignatura oficial SEP (NEM 2024 y MCCEMS)
 const PDA_CATALOG: Record<string, string[]> = {
@@ -208,6 +210,34 @@ function TeacherDashboardContent() {
   );
 
   const currentTeacher = user as UserProfile;
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const teacherOrgSchoolId = useMemo(
+    () =>
+      normalizeOrgSchoolId(
+        querySchoolId || currentTeacher?.school_id || activeSchoolId || (isIbime ? 'sch-ibime' : 'sch-test-case')
+      ),
+    [querySchoolId, currentTeacher?.school_id, activeSchoolId, isIbime]
+  );
+  const orgSchoolGraph = useOrganizationStore((s) => s.graphsBySchool[teacherOrgSchoolId]);
+  const provisionedOrgTeacherNode = useMemo(() => {
+    if (!orgSchoolGraph || !currentTeacher) return null;
+    const emailClean = (currentTeacher.email || '').trim().toLowerCase();
+    const idClean = (currentTeacher.id || '').trim().toLowerCase();
+    return (
+      orgSchoolGraph.nodes.find(
+        (n) =>
+          n.category === 'profesor' &&
+          (n.username.toLowerCase() === emailClean ||
+            `usr-org-${n.nodeId}`.toLowerCase() === idClean)
+      ) || null
+    );
+  }, [orgSchoolGraph, currentTeacher]);
+  const provisionedOrgTeacherSchedule = useMemo(() => {
+    if (!orgSchoolGraph || !provisionedOrgTeacherNode) return [];
+    return orgSchoolGraph.timetablePlacements.filter(
+      (p) => p.teacherNodeId === provisionedOrgTeacherNode.nodeId
+    );
+  }, [orgSchoolGraph, provisionedOrgTeacherNode]);
   const isSuperUser = useIsSuperUser();
   const effectiveTeacherId = queryTeacherId || currentTeacher?.id;
   const normalizedTeacherId = effectiveTeacherId === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : effectiveTeacherId;
@@ -228,7 +258,6 @@ function TeacherDashboardContent() {
   const attendanceList = useSchoolAdminStore(state => state.attendanceList);
   const parentMessages = useSchoolAdminStore(state => state.parentMessages);
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
-  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
   const saveAttendanceList = useSchoolAdminStore(state => state.saveAttendanceList);
   const sendParentMessage = useSchoolAdminStore(state => state.sendParentMessage);
 
@@ -985,6 +1014,53 @@ function TeacherDashboardContent() {
       <Header />
 
       <main className="flex-1 w-full max-w-[1860px] mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-4 flex flex-col gap-4 overflow-x-clip">
+        {provisionedOrgTeacherNode && (
+          <div
+            data-testid="provisioned-teacher-org-portal-card"
+            className="bg-white rounded-2xl border border-slate-200 px-5 py-4 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+          >
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-black uppercase text-emerald-700">
+                  Portal Académico Asignado · 5. Organización
+                </span>
+                <span className="text-xs font-bold text-slate-600">
+                  Plantel: {provisionedOrgTeacherNode.campusName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                {provisionedOrgTeacherNode.subjects
+                  .filter((s) => s.subjectName.trim())
+                  .map((subj) => (
+                    <span
+                      key={subj.id}
+                      style={{ borderColor: subj.contourColor }}
+                      className="px-2.5 py-1 rounded-xl border-2 bg-slate-50 text-xs font-bold text-slate-800"
+                    >
+                      {subj.subjectName}
+                    </span>
+                  ))}
+              </div>
+            </div>
+
+            {provisionedOrgTeacherSchedule.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {provisionedOrgTeacherSchedule.slice(0, 5).map((slot) => (
+                  <div
+                    key={slot.id}
+                    style={{ borderColor: slot.contourColor }}
+                    className="px-3 py-1.5 rounded-xl bg-slate-50 border-l-4 text-xs"
+                  >
+                    <span className="font-bold text-slate-900 block">{slot.subjectName}</span>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      {slot.day} {slot.startTime}–{slot.endTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Barra Superior de Conmutación de Complejidad (Modo Guiado en 3 Pasos vs Modo Experto) */}
         {currentMenuTab === 'hub' && (

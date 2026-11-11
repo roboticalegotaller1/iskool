@@ -801,8 +801,8 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
   },
   {
     id: 'auto-02-sla-80',
-    name: 'Advertencia de Riesgo al 80% del Plazo SLA',
-    description: 'Cuando el tiempo transcurrido alcance el 80% del SLA establecido sin estar resuelto, marcar como Urgente y alertar al responsable.',
+    name: 'Advertencia de Riesgo al 80% del Plazo de Tiempo de respuesta',
+    description: 'Cuando el tiempo transcurrido alcance el 80% del Tiempo de respuesta establecido sin estar resuelto, marcar como Urgente y alertar al responsable.',
     enabled: true,
     trigger: 'SLA_THRESHOLD_80',
     action: 'MARK_URGENT',
@@ -812,7 +812,7 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
   {
     id: 'auto-03-escalar-ceo',
     name: 'Auto-Escalamiento a Dirección General',
-    description: 'Si una tarea crítica no presenta avances tras superar el 100% del SLA, escalar automáticamente al CEO como superior inmediato.',
+    description: 'Si una tarea crítica no presenta avances tras superar el 100% del Tiempo de respuesta, escalar automáticamente al CEO como superior inmediato.',
     enabled: true,
     trigger: 'PROGRESS_BELOW_25_AFTER_12H',
     action: 'AUTO_ESCALATE_CEO',

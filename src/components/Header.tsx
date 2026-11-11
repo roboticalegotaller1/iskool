@@ -16,6 +16,7 @@ import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 import { BackButton } from '@/components/navigation/BackButton';
 import { UniversalCommandBar } from '@/components/navigation/UniversalCommandBar';
+import { VibratoryProtocolAlertOverlay } from '@/components/alerts/VibratoryProtocolAlertOverlay';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -221,7 +222,12 @@ export const Header: React.FC = () => {
 
   // En la Arquitectura Dual UX (Bifronte), TeacherLayout y StudentLayout gestionan sus propios encabezados especializados:
   // TeacherNavbar ("Diseño Minimalista") y StudentHUD ("Entorno Inmersivo").
-  if (pathname.startsWith('/teacher') || pathname.startsWith('/student')) {
+  if (pathname.startsWith('/teacher')) {
+    return hasMounted ? (
+      <VibratoryProtocolAlertOverlay schoolId={effectiveSchoolId} forceTeacherMode />
+    ) : null;
+  }
+  if (pathname.startsWith('/student')) {
     return null;
   }
 
@@ -637,6 +643,14 @@ export const Header: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Alerta Vibratoria Jerárquica SLA y Mensajes Padre-Profesor en Tiempo Real */}
+      {hasMounted && (
+        <VibratoryProtocolAlertOverlay
+          schoolId={effectiveSchoolId}
+          forceTeacherMode={pathname.startsWith('/teacher')}
+        />
       )}
     </header>
   );

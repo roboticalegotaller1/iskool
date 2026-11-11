@@ -677,7 +677,7 @@ export function formatCleanMatterCode(code?: string | null): string {
  */
 export function formatCleanSlaText(slaText?: string | null, slaHours?: number): string {
   if (!slaText) return `${slaHours || 12}h restantes`;
-  return slaText.replace(/^[⏱️⏳\s]+/u, '').trim() || `${slaHours || 12}h restantes`;
+  return slaText.replace(/^[⏱️⏳\s]+/u, '').replace(/\bSLA\b/g, 'Tiempo de respuesta').trim() || `${slaHours || 12}h restantes`;
 }
 
 /**

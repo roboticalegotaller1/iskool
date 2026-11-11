@@ -238,9 +238,9 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
       localStorage.setItem(`workos_ai_sla_hours_${tenantId}`, String(slaEscalateHours));
       localStorage.setItem(`workos_ai_auto_ceo_${tenantId}`, String(autoEscalateCeo));
       localStorage.setItem(`workos_ai_notify_seeds_${tenantId}`, String(notifySeedDelegates));
-      onTriggerToast('Umbrales y políticas de Predicción de Riesgo SLA actualizados.');
+      onTriggerToast('Umbrales y políticas de Predicción de Riesgo de Tiempo de respuesta actualizados.');
     } catch {
-      onTriggerToast('Umbrales de SLA guardados localmente.');
+      onTriggerToast('Umbrales de Tiempo de respuesta guardados localmente.');
     }
   };
 
@@ -805,7 +805,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                       <th className="py-3.5 px-4">Asunto / Tarea</th>
                       <th className="py-3.5 px-4">Departamento</th>
                       <th className="py-3.5 px-4">Responsable(s)</th>
-                      <th className="py-3.5 px-4">SLA Restante</th>
+                      <th className="py-3.5 px-4">Tiempo de respuesta</th>
                       <th className="py-3.5 px-4">Progreso</th>
                       <th className="py-3.5 px-4 text-right">Acciones</th>
                     </tr>
@@ -1121,7 +1121,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">
-                    Cronograma Gantt de Plazos y Vencimientos SLA
+                    Cronograma Gantt de Plazos y Vencimientos de Tiempo de respuesta
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Proyección visual de plazos de atención y cumplimiento horario por departamento.
@@ -1147,7 +1147,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                           {t.matterCode} · {t.title}
                         </span>
                         <span className="font-mono text-[10px] text-slate-500">
-                          SLA: {t.slaHours}h · {t.primaryAssignee.name}
+                          Tiempo de respuesta: {t.slaHours}h · {t.primaryAssignee.name}
                         </span>
                       </div>
                       <div className="w-full h-6 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-hidden relative p-1 flex items-center">
@@ -1280,7 +1280,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                   <span className="text-2xl font-black text-rose-600">{metrics.noAtendidoTasks}</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 block">Cumplimiento SLA</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 block">Cumplimiento Tiempo de respuesta</span>
                   <span className="text-2xl font-black text-indigo-600">{metrics.slaComplianceRate}%</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -1619,7 +1619,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                           <ShieldAlert className="h-4 w-4" />
                         </div>
                         <h4 className="font-black text-sm text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                          Predicción de Riesgo SLA
+                          Predicción de Riesgo Tiempo de respuesta
                         </h4>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1 transition-all ${
@@ -1659,9 +1659,9 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                         setShowSeedConfig(true);
                       }}
                       className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-600 hover:text-white text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-all flex items-center gap-1 cursor-pointer"
-                      title="Configurar Cuentas Semilla y SLAs Departamentales"
+                      title="Configurar Cuentas Semilla y Tiempo de respuesta Departamentales"
                     >
-                      <span>Configurar SLAs</span>
+                      <span>Configurar Tiempo de respuesta</span>
                       <Settings className="h-3 w-3" />
                     </button>
                   </div>
@@ -1692,7 +1692,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                       {selectedAiFeature === 'sla_risk' && (
                         <>
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                          Umbrales y Políticas de Predicción de Riesgo SLA
+                          Umbrales y Políticas de Predicción de Riesgo de Tiempo de respuesta
                         </>
                       )}
                     </h4>
@@ -1734,7 +1734,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
-                      Riesgo SLA
+                      Riesgo Tiempo de respuesta
                     </button>
                   </div>
                 </div>
@@ -2212,7 +2212,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">
-                            Umbral de Alerta Preventiva de SLA (% Consumido)
+                            Umbral de Alerta Preventiva de Tiempo de respuesta (% Consumido)
                           </label>
                           <div className="grid grid-cols-4 gap-2">
                             {[60, 70, 75, 85].map((pct) => (
@@ -2231,7 +2231,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                             ))}
                           </div>
                           <p className="text-[11px] text-slate-500 mt-1.5">
-                            Al transcurrir el {slaWarningThreshold}% del tiempo de SLA sin respuesta, el expediente se clasifica en amarillo preventivo.
+                            Al transcurrir el {slaWarningThreshold}% del Tiempo de respuesta sin respuesta, el expediente se clasifica en amarillo preventivo.
                           </p>
                         </div>
 
@@ -2318,7 +2318,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                             className="px-4 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                           >
                             <Check className="h-3.5 w-3.5" />
-                            <span>Guardar Umbrales de SLA</span>
+                            <span>Guardar Umbrales de Tiempo de respuesta</span>
                           </button>
 
                           <div className="flex items-center gap-2">
@@ -2328,7 +2328,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                               className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 transition-all flex items-center gap-1 cursor-pointer"
                             >
                               <Settings className="h-3 w-3" />
-                              <span>Configurar Cuentas Semilla & SLAs</span>
+                              <span>Configurar Cuentas Semilla & Tiempo de respuesta</span>
                             </button>
                             <button
                               type="button"

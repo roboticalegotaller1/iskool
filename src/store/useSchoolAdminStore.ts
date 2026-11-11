@@ -2274,22 +2274,35 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         set(state => ({
           staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, ...data, updated_at: new Date().toISOString() } : u)
         }));
+        try {
+          (globalThis as any).__iskoolOrgBridge?.onUpdateStaff?.(id, data);
+        } catch {}
       },
 
       deleteStaffAccount: (id) => {
         set(state => ({
           staffUsers: (state.staffUsers || []).filter(u => u.id !== id)
         }));
+        try {
+          (globalThis as any).__iskoolOrgBridge?.onDeleteStaff?.(id);
+        } catch {}
       },
 
       toggleStaffBlock: (id, isBlocked) => {
         set(state => ({
           staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, is_blocked: isBlocked, updated_at: new Date().toISOString() } : u)
         }));
+        try {
+          (globalThis as any).__iskoolOrgBridge?.onToggleBlock?.(id, isBlocked);
+        } catch {}
       },
 
       changeStaffPassword: (id, newPassword) => {
-        const pass = newPassword || generateRandomPassword(6);
+        let pass = newPassword || generateRandomPassword(6);
+        try {
+          const orgPass = (globalThis as any).__iskoolOrgBridge?.onChangePassword?.(id, newPassword);
+          if (orgPass) pass = orgPass;
+        } catch {}
         set(state => ({
           staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, temporary_password: pass, updated_at: new Date().toISOString() } : u)
         }));

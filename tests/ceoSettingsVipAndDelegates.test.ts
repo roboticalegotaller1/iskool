@@ -223,13 +223,13 @@ describe('⚙️ AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS 
       expect(fileContent).toContain('data-testid="nav-gobernanza-cuentas"');
       expect(fileContent).toContain('Gobernanza y Cuentas');
       expect(fileContent).toContain('Cuentas & OAuth 2.0');
-      expect(fileContent).toContain('Reglas VIP & SLA');
+      expect(fileContent).toContain('Reglas VIP &amp; Tiempo de respuesta');
       expect(fileContent).toContain('Plantillas Oficiales');
     });
 
-    it('debe implementar la vista de Gobernanza/Ajustes con los submódulos VIP, Delegados SLA y Plantillas Oficiales', () => {
+    it('debe implementar la vista de Gobernanza/Ajustes con los submódulos VIP, Delegados por Tiempo de respuesta y Plantillas Oficiales', () => {
       expect(fileContent).toContain("activeTab === 'ajustes'");
-      expect(fileContent).toContain('Reglas VIP de Atención Inmediata & Matriz de Delegados SLA');
+      expect(fileContent).toContain('Reglas VIP de Atención Inmediata & Matriz de Delegados por Tiempo de respuesta');
       expect(fileContent).toContain('Plantillas Oficiales');
       expect(fileContent).toContain('handleRunLiveVipTest');
       expect(fileContent).toContain('handleRunLiveDelegateTest');

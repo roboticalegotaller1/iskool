@@ -299,7 +299,7 @@ export default function LaboratorioPedagógicoPage() {
         return (
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold text-xs uppercase tracking-wide shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span>🟡 Cuadrante 2: Delegado Operativo con SLA</span>
+            <span>🟡 Cuadrante 2: Delegado Operativo con Tiempo de respuesta</span>
           </div>
         );
       case 'INFORMATIVO':
@@ -646,7 +646,7 @@ export default function LaboratorioPedagógicoPage() {
                     </div>
 
                     <div>
-                      <span className="text-slate-500 block text-[11px]">SLA de Resolución</span>
+                      <span className="text-slate-500 block text-[11px]">Tiempo de respuesta</span>
                       <span className="font-semibold text-slate-200">
                         {triageResult.sla_hours ? `${triageResult.sla_hours} horas` : 'N/A'}
                       </span>

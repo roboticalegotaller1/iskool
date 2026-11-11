@@ -47,7 +47,7 @@ export const ReassignDelegationModal: React.FC<ReassignDelegationModalProps> = (
   const [assigneeEmail, setAssigneeEmail] = useState<string>(initialSeed?.departmentAccount || '');
   const [slaHours, setSlaHours] = useState<number>(initialSeed?.slaHours || 24);
   const [delegationNotes, setDelegationNotes] = useState<string>(
-    'Reasignación manual de caso desde Urgentes / No Atendidos hacia nueva delegación departamental para cumplimiento estricto de SLA.'
+    'Reasignación manual de caso desde Urgentes / No Atendidos hacia nueva delegación departamental para cumplimiento estricto de Tiempo de respuesta.'
   );
 
   // Manejar cambio de departamento / seed
@@ -180,11 +180,11 @@ export const ReassignDelegationModal: React.FC<ReassignDelegationModalProps> = (
             </div>
           </div>
 
-          {/* Plazo SLA */}
+          {/* Plazo Tiempo de respuesta */}
           <div className="space-y-1">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-indigo-500" />
-              <span>Nuevo Plazo de Resolución Reglamentario (SLA):</span>
+              <span>Nuevo Plazo de Resolución Reglamentario (Tiempo de respuesta):</span>
             </label>
             <select
               value={slaHours}
@@ -217,7 +217,7 @@ export const ReassignDelegationModal: React.FC<ReassignDelegationModalProps> = (
           <div className="p-3 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center gap-2.5 text-[11px] text-indigo-900 dark:text-indigo-200">
             <Forward className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
             <span>
-              Al confirmar, el porcentaje de avance se establecerá automáticamente en <strong>0%</strong> y se reiniciará el temporizador de SLA en la pantalla del delegado.
+              Al confirmar, el porcentaje de avance se establecerá automáticamente en <strong>0%</strong> y se reiniciará el temporizador de Tiempo de respuesta en la pantalla del delegado.
             </span>
           </div>
 

@@ -303,7 +303,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                 </span>
               )}
               <span className={`font-mono font-bold ${countdown.isOverdue ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}`}>
-                {countdown.remainingFormatted} (SLA: {task.slaHours}h)
+                {countdown.remainingFormatted} (Tiempo de respuesta: {task.slaHours}h)
               </span>
             </div>
           </div>
@@ -413,7 +413,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                       Conclusión y Cierre Definitivo de Expediente (100%)
                     </h3>
                     <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
-                      Al confirmar la resolución, el CEO verá el caso con distintivo verde <strong className="font-mono">RESUELTO</strong>, tiempo SLA consumido y trazabilidad de minutos.
+                      Al confirmar la resolución, el CEO verá el caso con distintivo verde <strong className="font-mono">RESUELTO</strong>, Tiempo de respuesta consumido y trazabilidad de minutos.
                     </p>
                   </div>
                 </div>
@@ -624,7 +624,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                     <label className="text-xs font-black text-slate-700 dark:text-slate-300">
                       Fecha y Hora de Cita Programada:
                     </label>
-                    <span className="text-[10px] text-amber-600 font-bold">Permite agendar más allá del SLA</span>
+                    <span className="text-[10px] text-amber-600 font-bold">Permite agendar más allá del Tiempo de respuesta</span>
                   </div>
                   <input
                     type="datetime-local"

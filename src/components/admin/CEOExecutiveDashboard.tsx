@@ -103,6 +103,9 @@ import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
+import { CEOOrganizationStudio } from './organization/CEOOrganizationStudio';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { normalizeOrgSchoolId } from '@/lib/services/organizationService';
 import { CEOEmailCommunicationsModal, IMailInitialDraftPayload } from './CEOEmailCommunicationsModal';
 import { SofiaCopilotConsole } from './SofiaCopilotConsole';
 import { useAdmissionsPipeline } from '@/hooks/useAdmissionsPipeline';
@@ -2054,6 +2057,23 @@ export default function CEOExecutiveDashboard({
 
   const activeImailCriticalCount = (metrics.totalStudents > 0 || isTestCaseSchool) ? 3 : 0;
 
+  // Identificador institucional canónico y herméticamente aislado para 5. Organización (cada colegio/CEO tiene su propio grafo)
+  const resolvedOrgSchoolId = useMemo(() => {
+    const rawCandidate =
+      corporateTheme?.id ||
+      schoolId ||
+      currentInstitution?.id ||
+      holding?.id ||
+      (holding?.slug ? `sch-${holding.slug}` : isIbime ? 'sch-ibime' : isTestCaseSchool ? 'sch-test-case' : 'sch-jjrosseau');
+    return normalizeOrgSchoolId(rawCandidate);
+  }, [corporateTheme?.id, schoolId, currentInstitution?.id, holding?.id, holding?.slug, isIbime, isTestCaseSchool]);
+
+  const activeSchoolOrgGraph = useOrganizationStore((s) => s.graphsBySchool[resolvedOrgSchoolId]);
+  const activeSchoolOrgPayroll = useMemo(() => {
+    return useOrganizationStore.getState().getPayrollSummary(resolvedOrgSchoolId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedOrgSchoolId, activeSchoolOrgGraph]);
+
   const navMenuItems: Array<{ id: string; label: string; icon: any; desc: string; highlight?: boolean; badge?: string }> = [
     { 
       id: 'inicio', 
@@ -2079,18 +2099,25 @@ export default function CEOExecutiveDashboard({
       icon: DollarSign, 
       desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : isTestCaseSchool ? 'What-If, CFDI 4.0 & BI' : 'EBITDA, CFDI 4.0 & BI' 
     },
+    {
+      id: 'organizacion',
+      label: '5. Organización',
+      icon: Network,
+      desc: 'Organigrama, Cuentas & Horarios',
+      highlight: true,
+    },
     ...(!isCorporate ? [{
       id: 'portal_academico',
-      label: '5. Portal Académico',
+      label: '6. Portal Académico',
       icon: Home,
       desc: 'Alumnos 360° & Espejo Aula',
       highlight: true
     }] : []),
     {
       id: 'imail_triage',
-      label: isCorporate ? '5. iMail & Triage' : '6. iMail & Triage',
+      label: isCorporate ? '6. iMail & Triage' : '7. iMail & Triage',
       icon: Mail,
-      desc: 'Decision Dock & Radar SLA',
+      desc: 'Decision Dock & Tiempo de respuesta',
       highlight: true,
       badge: activeImailCriticalCount > 0 ? String(activeImailCriticalCount) : undefined
     }
@@ -3274,6 +3301,69 @@ export default function CEOExecutiveDashboard({
                   <span>Exportar Dictamen de Consejo (CSV)</span>
                 </button>
               </div>
+
+              {/* ENLACE AUTOMÁTICO DE NÓMINA RECURRENTE DESDE 5. ORGANIZACIÓN (AISLADO POR COLEGIO / CEO) */}
+              {activeSchoolOrgPayroll && activeSchoolOrgPayroll.rows.length > 0 && (
+                <div
+                  data-testid="finance-recurring-org-payroll-card"
+                  className="bg-white p-5 rounded-2xl border border-emerald-200 shadow-2xs space-y-3"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-black text-emerald-700 uppercase">
+                          Enlace Recurrente · 5. Organización
+                        </span>
+                        <span className="text-xs font-bold text-slate-500">
+                          {activeSchoolOrgPayroll.rows.length} cuenta(s) activa(s) ·{' '}
+                          {activeSchoolOrgPayroll.totalTeachersConsolidatedCount} profesor(es) consolidado(s)
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-black text-slate-900 mt-1">
+                        Compromiso Mensual Recurrente de Nómina Organizacional
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                          Total Mensual Recurrente
+                        </span>
+                        <span className="text-base font-black font-mono text-emerald-700">
+                          ${activeSchoolOrgPayroll.totalMonthlyPayrollMxn.toLocaleString('es-MX')} MXN
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleNavClick('organizacion')}
+                        className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer"
+                      >
+                        Editar en 5. Organización
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {activeSchoolOrgPayroll.rows.map((row) => (
+                      <div
+                        key={row.nodeId}
+                        className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 truncate">{row.fullName}</div>
+                          <div className="text-[10px] text-slate-500 truncate">
+                            {row.category === 'profesor'
+                              ? `1 Profesor consolidado · ${row.weeklyHours}h/sem (${row.subjectsCount || 1} mat.)`
+                              : row.roleTitle}
+                          </div>
+                        </div>
+                        <span className="font-mono font-black text-slate-900 shrink-0">
+                          ${row.monthlyRecurringTotalMxn.toLocaleString('es-MX')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* TARJETAS C-SUITE METRICS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -5323,6 +5413,22 @@ export default function CEOExecutiveDashboard({
                 initialQuery={ragQuery}
                 onNavigateTab={handleNavClick}
                 isEmbeddedView={true}
+              />
+            </div>
+          )}
+
+          {/* ======================================================= */}
+          {/* MÓDULO 5. ORGANIZACIÓN (AISLADO HERMÉTICAMENTE POR CEO)  */}
+          {/* ======================================================= */}
+          {activeTab === 'organizacion' && (
+            <div className="animate-in fade-in duration-100">
+              <CEOOrganizationStudio
+                key={resolvedOrgSchoolId}
+                schoolId={resolvedOrgSchoolId}
+                schoolName={institutionalDisplayName || holding.name || 'Institución'}
+                campuses={holding.campuses.map((c) => ({ id: c.id, name: c.name }))}
+                onTriggerToast={triggerToast}
+                onNavigateToModule={handleNavClick}
               />
             </div>
           )}

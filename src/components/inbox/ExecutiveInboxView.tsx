@@ -118,7 +118,7 @@ export const ExecutiveInboxView: React.FC<ExecutiveInboxProps> = ({
         >
           <span className="text-xs font-semibold text-sky-700 flex items-center gap-1.5">→ 112 a Otras Áreas</span>
           <span className="text-3xl font-black text-slate-900 mt-2">{stats.delegar}</span>
-          <span className="text-xs text-slate-500 mt-1">Con SLA y seguimiento</span>
+          <span className="text-xs text-slate-500 mt-1">Con Tiempo de respuesta y seguimiento</span>
         </button>
 
         <button

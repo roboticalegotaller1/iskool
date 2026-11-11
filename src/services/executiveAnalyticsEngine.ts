@@ -1749,9 +1749,9 @@ export const executeAnalyticQuery = (
         focus1Action = 'Autorizar consolidación de rutas de distribución en corredores de alta densidad.';
       } else if (isTech) {
         dim1Title = 'Arquitectura Cloud & Microservicios';
-        dim1Lead = 'SLA de infraestructura en la nube y latencia p99';
+        dim1Lead = 'Tiempo de respuesta de infraestructura en la nube y latencia p99';
         dim1Lag = 'Disponibilidad ininterrumpida de plataformas SaaS';
-        dim1Val = '99.98% SLA';
+        dim1Val = '99.98% Tiempo de respuesta';
         dim1Meta = '99.95% Meta';
         dim1Risk = 'Picos de concurrencia y límites de escalabilidad horizontal';
 
@@ -1762,7 +1762,7 @@ export const executeAnalyticQuery = (
         dim2Meta = '100% Meta';
         dim2Risk = 'Retraso en parches de seguridad para dependencias críticas';
 
-        radarKeyNote = `Alta disponibilidad de nube al 99.98% SLA, ciclo de entregas en 94.2% de velocidad de sprint y dispersión quincenal de nómina de ingenieros senior (${corpPayrollFormatted}).`;
+        radarKeyNote = `Alta disponibilidad de nube al 99.98% Tiempo de respuesta, ciclo de entregas en 94.2% de velocidad de sprint y dispersión quincenal de nómina de ingenieros senior (${corpPayrollFormatted}).`;
         focus1Title = 'Despliegue de Modelos de IA & LLM Ops Enterprise';
         focus1Area = 'Infraestructura Cloud Kubernetes & Clústeres GPU';
         focus1Lead = 'Monitoreo de latencia y costo de inferencia en modelos de optimización.';
@@ -1844,7 +1844,7 @@ export const executeAnalyticQuery = (
           id: 'kpi-strat-uptime',
           label: isRetail ? 'Nivel de Servicio OTIF' : (isTech ? 'Disponibilidad Cloud' : 'Disponibilidad Operativa (Uptime)'),
           value: isRetail ? '98.5%' : (isTech ? '99.98%' : '99.4%'),
-          subtext: isRetail ? 'Entregas a tiempo y completas' : (isTech ? 'SLA de infraestructura' : 'Meta: > 99.0% en líneas de ensamble'),
+          subtext: isRetail ? 'Entregas a tiempo y completas' : (isTech ? 'Tiempo de respuesta de infraestructura' : 'Meta: > 99.0% en líneas de ensamble'),
           color: 'emerald',
           trend: { direction: 'up', value: 'Excelente' }
         },
@@ -1871,7 +1871,7 @@ export const executeAnalyticQuery = (
         title: 'Auditoría Cuatridimensional de Eficiencia y Operaciones Corporativas',
         subtitle: 'Cumplimiento Operativo Real vs Estándar Industrial (100%)',
         labels: [
-          isRetail ? 'Logística OTIF' : (isTech ? 'Uptime Cloud SLA' : 'Uptime Operativo Planta'),
+          isRetail ? 'Logística OTIF' : (isTech ? 'Uptime Cloud Tiempo de respuesta' : 'Uptime Operativo Planta'),
           isRetail ? 'Calidad & Exhibición' : (isTech ? 'Seguridad ISO 27001' : 'Seguridad ISO 45001'),
           'Capacitación Técnica B2B',
           'Dispersión Presupuestal'
@@ -2298,11 +2298,11 @@ export const executeAnalyticQuery = (
 1. **${report.phases[0].name} (${report.phases[0].department}):**  
    • Leads: **${report.phases[0].leadCount} familias** (${report.phases[0].candidateCount} aspirantes) | Valor Estimado: ${formatMXN(report.phases[0].monetaryValueMXN)}  
 2. **${report.phases[1].name} (${report.phases[1].department}):**  
-   • Tours: **${report.phases[1].leadCount} familias** (${report.phases[1].candidateCount} aspirantes) | Conversión: ${report.phases[1].conversionRateFromPrevious}% | SLA: ${report.phases[1].slaDays} días  
+   • Tours: **${report.phases[1].leadCount} familias** (${report.phases[1].candidateCount} aspirantes) | Conversión: ${report.phases[1].conversionRateFromPrevious}% | Tiempo de respuesta: ${report.phases[1].slaDays} días  
 3. **${report.phases[2].name} (${report.phases[2].department}):**  
-   • Diagnóstico: **${report.phases[2].leadCount} familias** (${report.phases[2].candidateCount} aspirantes) | Conversión: ${report.phases[2].conversionRateFromPrevious}% | SLA: ${report.phases[2].slaDays} días  
+   • Diagnóstico: **${report.phases[2].leadCount} familias** (${report.phases[2].candidateCount} aspirantes) | Conversión: ${report.phases[2].conversionRateFromPrevious}% | Tiempo de respuesta: ${report.phases[2].slaDays} días  
 4. **${report.phases[3].name} (${report.phases[3].department}):**  
-   • Asignación: **${report.phases[3].leadCount} familias** (${report.phases[3].candidateCount} aspirantes) | Conversión: ${report.phases[3].conversionRateFromPrevious}% | SLA: ${report.phases[3].slaDays} días  
+   • Asignación: **${report.phases[3].leadCount} familias** (${report.phases[3].candidateCount} aspirantes) | Conversión: ${report.phases[3].conversionRateFromPrevious}% | Tiempo de respuesta: ${report.phases[3].slaDays} días  
 5. **${report.phases[4].name} (${report.phases[4].department}):**  
    • Matrícula Pagada: **${report.phases[4].leadCount} familias** (${report.phases[4].candidateCount} matriculados en Control Escolar) | Ingreso Confirmado: ${formatMXN(report.financial.confirmedEnrolledRevenueMXN)}
 
@@ -2402,7 +2402,7 @@ export const executeAnalyticQuery = (
           '5 Fases Departamentales (Captación, Tours, Diagnóstico, Carta Asignación, Matrícula)',
           'Meta de Ocupación Escolar (3,740 / 3,900 Asientos Contratados)',
           'Valor Financiero del Pipeline y LTV Anual por Alumno',
-          'Velocidad de Cierre SLA vs Benchmark de Mercado'
+          'Velocidad de Cierre Tiempo de respuesta vs Benchmark de Mercado'
         ],
         filtersApplied: [
           `Sede: ${report.campusName}`,

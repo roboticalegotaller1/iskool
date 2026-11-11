@@ -102,7 +102,7 @@ export const SeedAccountsConfigPanel: React.FC<SeedAccountsConfigPanelProps> = (
     if (sampleScenario) {
       handleInjectScenario(sampleScenario);
     } else {
-      onTriggerToast(`🧪 Enrutamiento verificado: Petición enviada a ${seed.departmentAccount} (SLA: ${seed.slaHours}h).`);
+      onTriggerToast(`🧪 Enrutamiento verificado: Petición enviada a ${seed.departmentAccount} (Tiempo de respuesta: ${seed.slaHours}h).`);
     }
   };
 
@@ -141,8 +141,8 @@ export const SeedAccountsConfigPanel: React.FC<SeedAccountsConfigPanelProps> = (
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed">
             {isCeo
-              ? 'Como Director General (CEO), usted cuenta con permisos plenos para modificar nombres de departamento, plazos SLA y correos departamentales. Cada cuenta puede conmutarse a un servidor real en cualquier momento.'
-              : 'Usted puede actualizar su nombre y correo personal de contacto. La cuenta departamental general y los plazos SLA son administrados por Dirección General para garantizar la estandarización institucional.'}
+              ? 'Como Director General (CEO), usted cuenta con permisos plenos para modificar nombres de departamento, plazos de Tiempo de respuesta y correos departamentales. Cada cuenta puede conmutarse a un servidor real en cualquier momento.'
+              : 'Usted puede actualizar su nombre y correo personal de contacto. La cuenta departamental general y los plazos de Tiempo de respuesta son administrados por Dirección General para garantizar la estandarización institucional.'}
           </p>
         </div>
 
@@ -180,7 +180,7 @@ export const SeedAccountsConfigPanel: React.FC<SeedAccountsConfigPanelProps> = (
 
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700">
-                    SLA: {seed.slaHours}h
+                    Tiempo de respuesta: {seed.slaHours}h
                   </span>
 
                   {/* Conmutador Simulado / Real */}
@@ -254,11 +254,11 @@ export const SeedAccountsConfigPanel: React.FC<SeedAccountsConfigPanelProps> = (
                   />
                 </div>
 
-                {/* Plazo SLA y Palabras Clave */}
+                {/* Plazo Tiempo de respuesta y Palabras Clave */}
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Plazo de Resolución (SLA):
+                      Plazo de Resolución (Tiempo de respuesta):
                     </label>
                     <select
                       id={`seed-sla-${seed.sectionKey}`}

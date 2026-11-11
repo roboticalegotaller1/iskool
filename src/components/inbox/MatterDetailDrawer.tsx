@@ -138,7 +138,7 @@ export const MatterDetailDrawer: React.FC<MatterDetailProps> = ({
                   disabled={isSubmitting}
                   className="rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 text-xs font-bold"
                 >
-                  Delegar con SLA
+                  Delegar con Tiempo de respuesta
                 </button>
               </div>
             </div>

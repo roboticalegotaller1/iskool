@@ -85,6 +85,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import { SuperUserFourQuadrantCockpit } from '@/components/ergonomics/SuperUserFourQuadrantCockpit';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { getUnifiedInstitutionAccounts, normalizeOrgSchoolId } from '@/lib/services/organizationService';
+import SuperUserAccountsControlModal from '@/components/admin/SuperUserAccountsControlModal';
 
 const ExecutiveAnalyticsStudio = dynamic(() => import('@/components/admin/ExecutiveAnalyticsStudio'), { ssr: false });
 const CEOEmailCommunicationsModal = dynamic(() => import('@/components/admin/CEOEmailCommunicationsModal').then(m => m.CEOEmailCommunicationsModal), { ssr: false });
@@ -434,6 +437,60 @@ export default function SuperUserAdminPage() {
   const [staffRoleFilter, setStaffRoleFilter] = useState<'all' | 'director' | 'coordinator' | 'billing'>('all');
   const [staffSearchQuery, setStaffSearchQuery] = useState('');
   const debouncedStaffSearch = useDebounce(staffSearchQuery, 300);
+
+  // Control Total de Cuentas Creadas por CEOs (Sincronización en Tiempo Real 0ms en Super Usuario)
+  const graphsBySchool = useOrganizationStore((s) => s.graphsBySchool);
+  const hydrateAllSchoolsFromServer = useOrganizationStore((s) => s.hydrateAllSchoolsFromServer);
+  const hydrateFromServer = useOrganizationStore((s) => s.hydrateFromServer);
+  const [accountsControlModalSchoolId, setAccountsControlModalSchoolId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const instIds = (institutionsList || []).map((i) => i.id);
+    hydrateAllSchoolsFromServer(instIds);
+
+    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('iskool_org_realtime_v1');
+        bc.onmessage = (ev) => {
+          if (ev?.data?.schoolId) {
+            hydrateFromServer(ev.data.schoolId);
+          } else {
+            hydrateAllSchoolsFromServer(instIds);
+          }
+        };
+        return () => bc.close();
+      } catch {
+        // Fallback silencioso
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const globalAccountsTotals = useMemo(() => {
+    const schoolIds = Array.from(
+      new Set([
+        ...(institutionsList || []).map((i) => normalizeOrgSchoolId(i.id)),
+        'sch-ibime',
+        'sch-jjrosseau',
+        'sch-montessori',
+        'sch-test-case',
+        'emp-bmw',
+        'emp-ventas',
+        'emp-tech',
+        ...Object.keys(graphsBySchool || {}).map((k) => normalizeOrgSchoolId(k)),
+      ])
+    );
+    let totalAccountsCount = 0;
+    let orgTotalCount = 0;
+    let orgAdminCount = 0;
+    for (const sId of schoolIds) {
+      const sum = getUnifiedInstitutionAccounts(sId, graphsBySchool[sId], staffUsers);
+      totalAccountsCount += sum.totalAccountsCount;
+      orgTotalCount += sum.orgTotalCount;
+      orgAdminCount += sum.orgAdminCount;
+    }
+    return { totalAccountsCount, orgTotalCount, orgAdminCount };
+  }, [institutionsList, graphsBySchool, staffUsers]);
 
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [copiedStaffPasswordId, setCopiedStaffPasswordId] = useState<string | null>(null);
@@ -1605,7 +1662,17 @@ export default function SuperUserAdminPage() {
                   </Link>
                 </nav>
 
-                {/* Primary CTA */}
+                {/* Primary CTAs */}
+                <button
+                  type="button"
+                  data-testid="superuser-global-accounts-control-btn"
+                  onClick={() => setAccountsControlModalSchoolId('ALL')}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all cursor-pointer shrink-0"
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Cuentas Creadas ({globalAccountsTotals.totalAccountsCount})</span>
+                </button>
+
                 <button
                   onClick={() => setShowAddSchoolModal(true)}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-sm shadow-indigo-600/20 transition-all cursor-pointer shrink-0"
@@ -1843,6 +1910,12 @@ export default function SuperUserAdminPage() {
                   const instTeachersCount = instTeachers.length;
                   const instCampusesCount = instCampuses.length;
                   const instTokens = inst.aiTokensConsumed || (isTest ? 48200 : 0);
+                  const instNormSchoolId = normalizeOrgSchoolId(inst.id);
+                  const instAccountsSummary = getUnifiedInstitutionAccounts(
+                    instNormSchoolId,
+                    graphsBySchool[instNormSchoolId],
+                    staffUsers
+                  );
 
                   return (
                     <div
@@ -1960,8 +2033,8 @@ export default function SuperUserAdminPage() {
                           </p>
                         </div>
 
-                        {/* Indicadores clave */}
-                        <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-center">
+                        {/* Indicadores clave (5 cajas incluyendo Cuentas Creadas en vivo) */}
+                        <div className="grid grid-cols-5 gap-1.5 pt-2 border-t border-slate-100 text-center">
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <span className="text-xs font-black text-slate-900 block">{instCampusesCount}</span>
                             <span className="text-[9px] font-bold text-slate-500 uppercase">{isIndependent ? 'Sede' : 'Planteles'}</span>
@@ -1974,10 +2047,62 @@ export default function SuperUserAdminPage() {
                             <span className="text-xs font-black text-emerald-600 block">{instTeachersCount}</span>
                             <span className="text-[9px] font-bold text-slate-500 uppercase">Docentes</span>
                           </div>
+                          <button
+                            type="button"
+                            data-testid={`superuser-card-accounts-kpi-${inst.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAccountsControlModalSchoolId(inst.id);
+                            }}
+                            title="Ver y controlar todas las cuentas creadas en esta institución"
+                            className="p-2 rounded-xl bg-indigo-50/80 hover:bg-indigo-100 border border-indigo-200 transition-colors cursor-pointer"
+                          >
+                            <span
+                              data-testid={`superuser-card-accounts-count-${inst.id}`}
+                              className="text-xs font-black text-indigo-700 block"
+                            >
+                              {instAccountsSummary.totalAccountsCount}
+                            </span>
+                            <span className="text-[9px] font-black text-indigo-600 uppercase">Cuentas</span>
+                          </button>
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <span className="text-xs font-black text-purple-600 block">{(instTokens / 1000).toFixed(0)}k</span>
                             <span className="text-[9px] font-bold text-slate-500 uppercase">Tokens IA</span>
                           </div>
+                        </div>
+
+                        {/* Barra de Reflejo Inmediato y Control Total de Cuentas Creadas (CEO & Administración) */}
+                        <div
+                          data-testid={`superuser-card-accounts-strip-${inst.id}`}
+                          className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-xs"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <KeyRound className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                              <span className="text-[11px] font-black tracking-tight truncate">
+                                {instAccountsSummary.totalAccountsCount} Cuentas Creadas
+                              </span>
+                              {instAccountsSummary.orgTotalCount > 0 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[9px] font-black uppercase">
+                                  +{instAccountsSummary.orgTotalCount} CEO Org
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-300 truncate mt-0.5">
+                              {instAccountsSummary.orgAdminCount} en Administración · {instAccountsSummary.orgTeacherCount} Profesores · {instAccountsSummary.nonOrgStaffCount} Staff
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            data-testid={`superuser-control-accounts-btn-${inst.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAccountsControlModalSchoolId(inst.id);
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-black uppercase tracking-wider shrink-0 transition-colors cursor-pointer shadow-xs"
+                          >
+                            Controlar Cuentas
+                          </button>
                         </div>
 
                         {/* Datos de contacto / ubicación */}
@@ -2204,6 +2329,53 @@ export default function SuperUserAdminPage() {
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Programas B2B</span>
                       </div>
                     </div>
+
+                    {/* Control de Cuentas Creadas en Empresas B2B */}
+                    {(() => {
+                      const corpIds = ['emp-bmw', 'emp-ventas', 'emp-tech'];
+                      const corpTotals = corpIds.reduce(
+                        (acc, id) => {
+                          const s = getUnifiedInstitutionAccounts(id, graphsBySchool[id], staffUsers);
+                          acc.total += s.totalAccountsCount;
+                          acc.admin += s.orgAdminCount;
+                          acc.org += s.orgTotalCount;
+                          return acc;
+                        },
+                        { total: 0, admin: 0, org: 0 }
+                      );
+                      return (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-3.5 py-2.5 flex items-center justify-between gap-2 shadow-xs"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <KeyRound className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                              <span
+                                data-testid="superuser-card-accounts-count-corporate"
+                                className="text-[11px] font-black tracking-tight truncate"
+                              >
+                                {corpTotals.total} Cuentas Corporativas Creadas
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-300 truncate mt-0.5">
+                              {corpTotals.admin} en Administración B2B · {corpTotals.org} en Org CEO
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            data-testid="superuser-control-accounts-btn-corporate"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAccountsControlModalSchoolId('emp-bmw');
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-black uppercase tracking-wider shrink-0 transition-colors cursor-pointer"
+                          >
+                            Controlar Cuentas
+                          </button>
+                        </div>
+                      );
+                    })()}
 
                     {/* Datos de ubicación y holdings */}
                     <div className="text-[11px] text-slate-500 space-y-1 pt-1">
@@ -3350,7 +3522,15 @@ export default function SuperUserAdminPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  data-testid="superuser-staff-tab-control-modal-btn"
+                  onClick={() => setAccountsControlModalSchoolId(effectiveSchoolId || 'ALL')}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-xs font-black transition-all cursor-pointer"
+                >
+                  <KeyRound className="h-4 w-4 text-amber-400" /> Control Total de Cuentas (CEO & Admin)
+                </button>
                 <button
                   onClick={() => {
                     setNewStaffForm({
@@ -3682,7 +3862,16 @@ export default function SuperUserAdminPage() {
                               </div>
                             </td>
                             <td className="p-4">
-                              {isDirector ? (
+                              {(staff as any).org_role_title ? (
+                                <div className="flex flex-col items-start gap-1">
+                                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/40">
+                                    <ShieldCheck className="h-3 w-3" /> {(staff as any).org_role_title}
+                                  </span>
+                                  <span className="text-[10px] font-bold text-amber-300">
+                                    Creada en 5. Organización CEO
+                                  </span>
+                                </div>
+                              ) : isDirector ? (
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
                                   <Crown className="h-3 w-3" /> Director General
                                 </span>
@@ -7710,6 +7899,17 @@ export default function SuperUserAdminPage() {
           onTriggerToast={(msg) => setDeletionFeedback(msg)}
         />
       )}
+
+      {/* Consola de Control Total del Super Usuario sobre Todas las Cuentas Creadas (CEO & Administración) */}
+      <SuperUserAccountsControlModal
+        isOpen={accountsControlModalSchoolId !== null}
+        onClose={() => setAccountsControlModalSchoolId(null)}
+        initialSchoolId={accountsControlModalSchoolId || 'ALL'}
+        institutions={(institutionsList || []).map((inst) => ({
+          id: inst.id,
+          name: inst.name,
+        }))}
+      />
 
     </div>
   );

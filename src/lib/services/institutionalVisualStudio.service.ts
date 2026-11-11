@@ -412,7 +412,7 @@ function buildStructuredVisualPrompt(req: InstitutionalVisualRequest): string {
       `Datos exactos a graficar con máxima claridad:`,
       `- Subtítulo: "${campus} · Corte ${todayStr} · Total analizado: ${m.totalCount} correos"`,
       `- Cuadrante 1 (Rojo Crítico): "ATENCIÓN INMEDIATA CEO: ${m.ceoCount}" (Oficios SEP: ${m.sepCount || 0})`,
-      `- Cuadrante 2 (Ámbar SLA): "DELEGADOS CON SLA ACTIVO: ${m.delegatedCount}"`,
+      `- Cuadrante 2 (Ámbar Tiempo de respuesta): "DELEGADOS CON TIEMPO DE RESPUESTA ACTIVO: ${m.delegatedCount}"`,
       `- Cuadrante 3 (Azul Informativo): "BOLETINES E INFORMATIVOS: ${m.infoCount}"`,
       `- Cuadrante 4 (Púrpura Filtrado): "RUIDO Y PROMOCIONES FILTRADAS: ${m.spamCount}"`,
       `- Foco Prioritario: "${topUrgent.slice(0, 68)}"`,
@@ -505,11 +505,11 @@ async function renderDeterministicStudioFallback(
 
         <g transform="translate(328, 184)">
           <rect width="262" height="210" rx="24" fill="#FFFFFF" stroke="#FDE68A" stroke-width="3"/>
-          <rect x="22" y="22" width="170" height="28" rx="14" fill="#FFFBEB"/>
-          <text x="36" y="41" font-family="Arial, sans-serif" font-size="12" font-weight="900" fill="#B45309">2. DELEGADOS SLA</text>
+          <rect x="22" y="22" width="215" height="28" rx="14" fill="#FFFBEB"/>
+          <text x="36" y="41" font-family="Arial, sans-serif" font-size="11" font-weight="900" fill="#B45309">2. TIEMPO DE RESPUESTA</text>
           <text x="24" y="122" font-family="Arial, sans-serif" font-size="68" font-weight="900" fill="#92400E">${m.delegatedCount}</text>
           <text x="24" y="158" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#475569">Coordinaciones de Plantel</text>
-          <text x="24" y="182" font-family="Arial, sans-serif" font-size="12" fill="#64748B">Seguimiento SLA 12h–24h</text>
+          <text x="24" y="182" font-family="Arial, sans-serif" font-size="12" fill="#64748B">Tiempo de respuesta 12h–24h</text>
         </g>
 
         <g transform="translate(612, 184)">

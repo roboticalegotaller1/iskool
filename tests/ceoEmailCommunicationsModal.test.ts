@@ -54,7 +54,7 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
   it('debe incorporar las 15 fases de inteligencia pedagógica y ejecutiva', () => {
     // Fases de triage y cuadrantes
     expect(content).toContain('Atención Inmediata CEO');
-    expect(content).toContain('Delegado con SLA');
+    expect(content).toContain('Delegado con Tiempo de respuesta');
     expect(content).toContain('Informativo');
     expect(content).toContain('SPAM_DESCARTADO');
 

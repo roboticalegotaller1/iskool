@@ -875,7 +875,7 @@ function runZeroTokenTriageEngine(
       assigned_role: role,
       delegate_email: emailDel,
       sla_hours: sla,
-      why_shown_to_director: `Trámite financiero o aclaración derivado al área de Cobranza con SLA de ${sla}h.`,
+      why_shown_to_director: `Trámite financiero o aclaración derivado al área de Cobranza con Tiempo de respuesta de ${sla}h.`,
       recommended_action: `Canalizar a ${role} (${emailDel}) para emisión de comprobante y timbrado SAT.`
     };
   }
@@ -965,7 +965,7 @@ function runZeroTokenTriageEngine(
       assigned_role: 'Coordinación de Personal y Nómina',
       delegate_email: 'recursos.humanos@ibime.edu.mx',
       sla_hours: 24,
-      why_shown_to_director: 'Trámite laboral o consulta de personal docente y prestaciones derivado a Recursos Humanos con SLA de 24h.',
+      why_shown_to_director: 'Trámite laboral o consulta de personal docente y prestaciones derivado a Recursos Humanos con Tiempo de respuesta de 24h.',
       recommended_action: 'Canalizar a Recursos Humanos y Nómina para cálculo de prestaciones y respuesta formal.'
     };
   }
@@ -1157,7 +1157,7 @@ function runZeroTokenTriageEngine(
       assigned_department: 'Sistemas y Soporte Técnico',
       assigned_role: 'Soporte Técnico',
       sla_hours: 12,
-      why_shown_to_director: 'Incidencia técnica o solicitud de acceso a plataformas canalizada al área de Sistemas con SLA de 12h.',
+      why_shown_to_director: 'Incidencia técnica o solicitud de acceso a plataformas canalizada al área de Sistemas con Tiempo de respuesta de 12h.',
       recommended_action: 'Restablecer credenciales y validar enrolamiento del usuario en plataforma.'
     };
   }

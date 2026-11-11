@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
 import { signSessionToken } from '@/lib/sessionToken';
 import { resolveCanonicalDemoUser } from '@/lib/auth/demoCatalog';
+import { OrganizationServerService } from '@/lib/services/organizationService';
 import { z } from 'zod';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -162,26 +163,78 @@ export async function POST(req: NextRequest) {
       const u = body.user;
       const identifier = u.email || u.id;
       const suppliedPass = typeof body.password === 'string' ? body.password.trim() : '';
-      const hasSeedToken = typeof token === 'string' && token.startsWith('seed-session-');
-      const isIbimeCandidate = String(identifier || '').toLowerCase().includes('ibime') || u.school_id === 'sch-ibime';
-      const isCredentialValid =
-        !suppliedPass ||
-        VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) ||
-        isIbimeCandidate ||
-        hasSeedToken;
 
-      if (identifier && isCredentialValid) {
-        const canonicalDemo = resolveCanonicalDemoUser(identifier);
-        if (canonicalDemo) {
-          // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor
+      // 2A. Verificación prioritaria para cuentas generadas en 5. Organización (con rotación de clave obligatoria)
+      if (identifier) {
+        const orgAuth = OrganizationServerService.authenticateOrganizationalUser(
+          String(identifier),
+          suppliedPass
+        );
+        if (orgAuth.matched) {
+          if (!orgAuth.validPassword) {
+            return NextResponse.json(
+              {
+                success: false,
+                code: 'INVALID_ORG_PASSWORD',
+                error: 'Contraseña incorrecta o contraseña temporal ya reemplazada.',
+              },
+              { status: 401 }
+            );
+          }
+          if (orgAuth.mustChangePassword) {
+            return NextResponse.json(
+              {
+                success: false,
+                code: 'MUST_CHANGE_INITIAL_PASSWORD',
+                mustChangePassword: true,
+                username: orgAuth.node?.username,
+                error: 'Primer ingreso detectado: debe establecer su nueva contraseña personal.',
+              },
+              { status: 403 }
+            );
+          }
+          const node = orgAuth.node!;
+          const mappedRole =
+            node.category === 'profesor'
+              ? 'teacher'
+              : node.subRole === 'director_general'
+              ? 'director'
+              : node.subRole === 'finanzas'
+              ? 'billing'
+              : 'coordinator';
           authUser = {
-            id: canonicalDemo.id,
-            email: canonicalDemo.email,
-            role: canonicalDemo.role,
-            school_id: canonicalDemo.school_id,
-            first_name: canonicalDemo.first_name,
-            last_name: canonicalDemo.last_name
+            id: `usr-org-${node.nodeId}`,
+            email: node.username,
+            role: mappedRole,
+            school_id: node.schoolId || 'sch-test-case',
+            first_name: node.firstName || node.roleTitle,
+            last_name: [node.paternalLastName, node.maternalLastName].filter(Boolean).join(' '),
           };
+        }
+      }
+
+      if (!authUser) {
+        const hasSeedToken = typeof token === 'string' && token.startsWith('seed-session-');
+        const isIbimeCandidate = String(identifier || '').toLowerCase().includes('ibime') || u.school_id === 'sch-ibime';
+        const isCredentialValid =
+          !suppliedPass ||
+          VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) ||
+          isIbimeCandidate ||
+          hasSeedToken;
+
+        if (identifier && isCredentialValid) {
+          const canonicalDemo = resolveCanonicalDemoUser(identifier);
+          if (canonicalDemo) {
+            // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor
+            authUser = {
+              id: canonicalDemo.id,
+              email: canonicalDemo.email,
+              role: canonicalDemo.role,
+              school_id: canonicalDemo.school_id,
+              first_name: canonicalDemo.first_name,
+              last_name: canonicalDemo.last_name
+            };
+          }
         }
       }
     }

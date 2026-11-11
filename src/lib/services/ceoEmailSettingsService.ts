@@ -9,6 +9,11 @@ import {
   getDefaultOfficialTemplates,
   getDefaultSettings
 } from './ceoEmailSettingsTypes';
+import {
+  OrganizationServerService,
+  buildDynamicSlaDelegatesFromGraph,
+  normalizeOrgSchoolId,
+} from './organizationService';
 
 function getNodeFs() {
   if (typeof window === 'undefined') {
@@ -91,18 +96,33 @@ export const CeoEmailSettingsService = {
    */
   getSettings(tenantId: string): CeoEmailSettings {
     const cleanId = (tenantId || 'e1000000-0000-0000-0000-000000000001').trim();
+    const orgSchoolId = normalizeOrgSchoolId(cleanId);
+    const dynamicOrgDelegates = buildDynamicSlaDelegatesFromGraph(
+      OrganizationServerService.getGraph(orgSchoolId)
+    );
+    const isLaboratorio = orgSchoolId === 'sch-test-case';
     let current = memoryStore.get(cleanId);
 
     if (!current) {
       current = {
         tenantId: cleanId,
         vipEmails: getDefaultVipRules(cleanId),
-        delegates: getDefaultDelegates(cleanId),
+        delegates:
+          dynamicOrgDelegates.length > 0 || isLaboratorio
+            ? dynamicOrgDelegates
+            : getDefaultDelegates(cleanId),
         templates: getDefaultOfficialTemplates(cleanId),
         updatedAt: new Date().toISOString()
       };
       memoryStore.set(cleanId, current);
       saveToDisk(memoryStore);
+    } else if (dynamicOrgDelegates.length > 0 || isLaboratorio) {
+      // Cuando un colegio/CEO tiene cuentas generadas en 5. Organización (o en Laboratorio Pedagógico),
+      // solo aparecen las cuentas generadas de su propio organigrama sin contaminar otros colegios.
+      current = {
+        ...current,
+        delegates: dynamicOrgDelegates,
+      };
     }
 
     return current;

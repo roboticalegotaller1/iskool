@@ -7,12 +7,19 @@ import { useRouter } from 'next/navigation';
 import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
 
 interface AuthContextType {
   session: any | null;
   user: UserProfile | null;
   loading: boolean;
-  login: (email: string, userPassword?: string) => Promise<{ success: boolean; user?: UserProfile; error?: string }>;
+  login: (email: string, userPassword?: string) => Promise<{
+    success: boolean;
+    user?: UserProfile;
+    error?: string;
+    mustChangePassword?: boolean;
+    username?: string;
+  }>;
   logout: () => Promise<void>;
 }
 
@@ -832,7 +839,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
-  const login = async (email: string, userPassword?: string): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+  const login = async (email: string, userPassword?: string): Promise<{
+    success: boolean;
+    user?: UserProfile;
+    error?: string;
+    mustChangePassword?: boolean;
+    username?: string;
+  }> => {
     // 1. Validación de entrada formal (soporte para credenciales de demostración)
     const cleanEmail = email ? email.trim().toLowerCase() : '';
     if (!cleanEmail) {
@@ -843,6 +856,80 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     setLoading(true);
+
+    // 1A. Verificación prioritaria para cuentas generadas en 5. Organización (con rotación de clave obligatoria)
+    const orgCheck = useOrganizationStore
+      .getState()
+      .authenticateOrgAccount(cleanEmail, userPassword || '');
+    if (orgCheck.matched) {
+      if (!orgCheck.validPassword) {
+        setLoading(false);
+        return {
+          success: false,
+          error: 'Contraseña incorrecta o la contraseña inicial dada por el CEO ya dejó de funcionar.',
+        };
+      }
+      if (orgCheck.mustChangePassword) {
+        setLoading(false);
+        return {
+          success: false,
+          mustChangePassword: true,
+          username: orgCheck.node?.username || cleanEmail,
+          error: 'Primer ingreso detectado: debe establecer su nueva contraseña personal.',
+        };
+      }
+
+      const orgNode = orgCheck.node!;
+      const mappedRole: UserProfile['role'] =
+        orgNode.category === 'profesor'
+          ? 'teacher'
+          : orgNode.subRole === 'director_general'
+          ? 'director'
+          : orgNode.subRole === 'finanzas'
+          ? 'billing'
+          : 'coordinator';
+      const orgUser: UserProfile = {
+        id: `usr-org-${orgNode.nodeId}`,
+        email: orgNode.username,
+        first_name: orgNode.firstName || orgNode.roleTitle,
+        last_name: [orgNode.paternalLastName, orgNode.maternalLastName].filter(Boolean).join(' '),
+        role: mappedRole,
+        school_id: orgNode.schoolId || 'sch-test-case',
+        campus_name: orgNode.campusName,
+        is_blocked: false,
+        created_at: orgNode.createdAt,
+        updated_at: new Date().toISOString(),
+      };
+      const orgSession = {
+        access_token: `org-session-${orgNode.nodeId}-${Date.now()}`,
+        user: orgUser,
+      };
+      setSession(orgSession);
+      setUser(orgUser);
+
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(orgUser));
+        } catch {}
+        try {
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: orgSession.access_token,
+              password: (userPassword || '').trim(),
+              user: orgUser,
+            }),
+          });
+        } catch {}
+      }
+      useSchoolAdminStore.getState().syncUserSchool(orgUser);
+      setLoading(false);
+      return { success: true, user: orgUser };
+    }
+
     const resolvedUser = getDemoUser(cleanEmail);
     const isIbime = resolvedUser.school_id === 'sch-ibime' || (resolvedUser.email && resolvedUser.email.toLowerCase().includes('ibime'));
 

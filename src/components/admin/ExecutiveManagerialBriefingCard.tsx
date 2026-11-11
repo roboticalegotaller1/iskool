@@ -65,7 +65,7 @@ export const ExecutiveManagerialBriefingCard: React.FC<ExecutiveManagerialBriefi
     const radarKeyNote = isRetail
       ? `Eficiencia en cadena de suministro con 98.5% OTIF, rotación de inventarios en 96.8% y dispersión de nómina de especialistas en tiempo (${corpPayrollFormatted} quincenal).`
       : isTech
-      ? `Alta disponibilidad de nube al 99.98% SLA, ciclo de entregas en 94.2% de velocidad de sprint y dispersión quincenal de nómina de ingenieros senior (${corpPayrollFormatted} quincenal).`
+      ? `Alta disponibilidad de nube al 99.98% Tiempo de respuesta, ciclo de entregas en 94.2% de velocidad de sprint y dispersión quincenal de nómina de ingenieros senior (${corpPayrollFormatted} quincenal).`
       : `Disponibilidad operativa (Uptime) en líneas de ensamble del 99.4% (meta >99.0%), con un cumplimiento del 98.2% en certificaciones de seguridad industrial ISO 45001 y 100% de nómina técnica especializada dispersada (${corpPayrollFormatted} quincenal).`;
 
     const focus1 = isRetail ? {
@@ -81,10 +81,10 @@ export const ExecutiveManagerialBriefingCard: React.FC<ExecutiveManagerialBriefi
       action: 'Autorizar consolidación de rutas de distribución en corredores de alta densidad.'
     } : isTech ? {
       title: 'Despliegue de Modelos de IA & LLM Ops',
-      tag: 'Foco Técnico 1 · Cloud SLA',
+      tag: 'Foco Técnico 1 · Cloud Tiempo de respuesta',
       days: '14 Días',
       area: 'Infraestructura Cloud Kubernetes & Clústeres GPU',
-      metricLabel: 'SLA Uptime',
+      metricLabel: 'Tiempo de respuesta Uptime',
       metricVal: '99.98%',
       metricTarget: '99.95%',
       lead: 'Monitoreo de latencia y costo de inferencia en modelos de optimización.',
@@ -452,14 +452,14 @@ export const ExecutiveManagerialBriefingCard: React.FC<ExecutiveManagerialBriefi
                       {isRetail ? 'Logística y Cadena de Suministro' : (isTech ? 'Arquitectura Cloud & Microservicios' : 'Manufactura y Robótica KUKA')}
                     </td>
                     <td className="py-3 px-4 text-slate-600">
-                      {isRetail ? 'Rotación de inventarios y Sell-Through rate' : (isTech ? 'SLA de infraestructura en la nube y latencia p99' : 'Uptime de celdas automatizadas y soldadura láser')}
+                      {isRetail ? 'Rotación de inventarios y Sell-Through rate' : (isTech ? 'Tiempo de respuesta de infraestructura en la nube y latencia p99' : 'Uptime de celdas automatizadas y soldadura láser')}
                     </td>
                     <td className="py-3 px-4 text-slate-600">
                       {isRetail ? 'Cumplimiento de entrega On-Time In-Full (OTIF)' : (isTech ? 'Disponibilidad ininterrumpida de plataformas SaaS' : 'Disponibilidad de línea sin paros no programados')}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span className="px-2.5 py-1 rounded bg-blue-50 text-blue-700 border border-blue-200 font-bold font-mono text-[11px]">
-                        {isRetail ? '98.5% OTIF' : (isTech ? '99.98% SLA' : '99.4% Uptime')}
+                        {isRetail ? '98.5% OTIF' : (isTech ? '99.98% Tiempo de respuesta' : '99.4% Uptime')}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-center">

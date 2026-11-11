@@ -612,7 +612,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         assigned_role: params.recipientDepartment,
         assigned_email: params.recipientEmail,
         sla_hours: 4,
-        sla_remaining_text: '⏱️ Enviado hace instantes · SLA 4h',
+        sla_remaining_text: '⏱️ Enviado hace instantes · Tiempo de respuesta 4h',
         sender_name: `${params.recipientName} (${params.recipientDepartment})`,
         sender_email: params.recipientEmail,
         provenance_doc: `Segundo Cerebro · Expediente ${params.studentEnrollmentId}`,

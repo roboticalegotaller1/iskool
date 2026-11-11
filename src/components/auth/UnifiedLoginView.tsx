@@ -34,6 +34,8 @@ import { supabase } from '@/lib/supabaseClient';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import { isPlatformSuperUser } from '@/types';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { FirstLoginPasswordRotationModal } from './FirstLoginPasswordRotationModal';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
 
@@ -101,6 +103,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   }, [email]);
 
   const { login, logout, loading: authLoading, user } = useAuth();
+  const [pendingRotation, setPendingRotation] = useState<{
+    username: string;
+    currentTempPassword: string;
+  } | null>(null);
   const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
   const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
@@ -352,6 +358,14 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     
     try {
       const result = await login(email.trim(), password);
+      if (result.mustChangePassword) {
+        setIsSubmitting(false);
+        setPendingRotation({
+          username: result.username || email.trim().toLowerCase(),
+          currentTempPassword: password,
+        });
+        return;
+      }
       if (result.success && result.user) {
         if (isPlatformSuperUser(result.user)) {
           if (typeof window !== 'undefined') {
@@ -1170,6 +1184,36 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {pendingRotation && (
+        <FirstLoginPasswordRotationModal
+          username={pendingRotation.username}
+          currentTempPassword={pendingRotation.currentTempPassword}
+          onCancel={() => setPendingRotation(null)}
+          onCompleteRotation={async (newPersonalPassword) => {
+            const rotRes = await useOrganizationStore
+              .getState()
+              .completeFirstLoginPasswordRotation(
+                pendingRotation.username,
+                pendingRotation.currentTempPassword,
+                newPersonalPassword
+              );
+            if (!rotRes.success) {
+              return { success: false, error: rotRes.error };
+            }
+            const loginRes = await login(pendingRotation.username, newPersonalPassword);
+            if (loginRes.success && loginRes.user) {
+              setPendingRotation(null);
+              await routeUserByRole(loginRes.user);
+              return { success: true };
+            }
+            return {
+              success: false,
+              error: loginRes.error || 'Contraseña actualizada, pero no fue posible iniciar sesión.',
+            };
+          }}
+        />
       )}
     </div>
   );

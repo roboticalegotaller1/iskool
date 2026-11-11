@@ -160,7 +160,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
       score: 99,
       benchmark: 99,
       status: 'Óptimo',
-      observation: isRetail ? '98.5% de cumplimiento OTIF sin cuellos de botella.' : (isTech ? '99.98% de disponibilidad SLA ininterrumpida.' : 'Disponibilidad de línea de 99.4% (meta >99.0%).')
+      observation: isRetail ? '98.5% de cumplimiento OTIF sin cuellos de botella.' : (isTech ? '99.98% de disponibilidad Tiempo de respuesta ininterrumpida.' : 'Disponibilidad de línea de 99.4% (meta >99.0%).')
     },
     {
       dimension: isRetail ? 'II. Auditoría Comercial en Puntos de Venta' : (isTech ? 'II. Ciberseguridad & DevSecOps ISO 27001' : 'II. Seguridad Industrial y Celdas de Alto Voltaje'),

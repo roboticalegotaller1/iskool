@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStudentStore, useCurrentStudentStats, useCurrentStudentAvatar, useCurrentStudentProfile } from '@/store/useStudentStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
@@ -21,6 +21,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ParentFiveSecondSummaryCard } from '@/components/ergonomics/ParentFiveSecondSummaryCard';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { normalizeOrgSchoolId } from '@/lib/services/organizationService';
 
 export interface SystemParentAccount {
   id: string;
@@ -121,6 +123,12 @@ export default function ParentDashboard() {
   const parentMessages = useSchoolAdminStore(state => state.parentMessages);
   const markMessageAsRead = useSchoolAdminStore(state => state.markMessageAsRead);
   const replyToParentMessage = useSchoolAdminStore(state => state.replyToParentMessage);
+  const sendParentMessage = useSchoolAdminStore(state => state.sendParentMessage);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const dispatchParentMessageAlert = useOrganizationStore(state => state.dispatchParentMessageAlert);
+  const [directTeacherMsg, setDirectTeacherMsg] = useState('');
+  const [selectedOrgTeacherUsername, setSelectedOrgTeacherUsername] = useState('');
+  const [directMsgSentToast, setDirectMsgSentToast] = useState(false);
   
   const [selectedParentAccount, setSelectedParentAccount] = useState<SystemParentAccount>(SYSTEM_PARENT_ACCOUNTS[0]);
   
@@ -134,6 +142,15 @@ export default function ParentDashboard() {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
+
+  const parentOrgSchoolId = useMemo(
+    () =>
+      normalizeOrgSchoolId(
+        user?.school_id || activeSchoolId || currentParent?.school_id || 'sch-test-case'
+      ),
+    [user?.school_id, activeSchoolId, currentParent?.school_id]
+  );
+  const orgLabGraph = useOrganizationStore(state => state.graphsBySchool[parentOrgSchoolId]);
 
   const [parentComment, setParentComment] = useState<Record<string, string>>({});
   const [currentTab, setCurrentTab] = useState<'achievements' | 'messages'>('achievements');
@@ -1098,6 +1115,101 @@ export default function ParentDashboard() {
               <Bell className="h-5 w-5 text-amber-500 animate-pulse" />
               Bandeja de Avisos y Alertas Escolares
             </h2>
+
+            {/* Comunicación Directa Fluida con el Profesor (Dispara Alerta Vibratoria Emergente en Portal Docente) */}
+            <form
+              data-testid="parent-direct-teacher-message-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!directTeacherMsg.trim()) return;
+                const orgTeachers = (orgLabGraph?.nodes || []).filter(
+                  (n) => n.category === 'profesor' && n.isProvisioned
+                );
+                const chosen =
+                  orgTeachers.find((t) => t.username === selectedOrgTeacherUsername) ||
+                  orgTeachers[0];
+                const teacherDisplayName = chosen
+                  ? [chosen.firstName, chosen.paternalLastName, chosen.maternalLastName]
+                      .filter(Boolean)
+                      .join(' ') || chosen.roleTitle
+                  : 'Docente Titular';
+
+                sendParentMessage({
+                  student_id: currentStudent?.id || 'std-1',
+                  parent_id: currentParent.id,
+                  teacher_id: chosen ? `usr-org-${chosen.nodeId}` : 'usr-teacher-1',
+                  subject: `Mensaje directo de familia · ${currentStudent?.first_name || 'Alumno'}`,
+                  message: directTeacherMsg.trim(),
+                  type: 'aviso',
+                } as any);
+
+                dispatchParentMessageAlert({
+                  schoolId: parentOrgSchoolId,
+                  parentName: `${currentParent.first_name || 'Familia'} ${currentParent.last_name || ''}`.trim(),
+                  studentName: `${currentStudent?.first_name || ''} ${currentStudent?.last_name || ''}`.trim() || 'Alumno',
+                  targetTeacherUsername: chosen?.username,
+                  targetTeacherName: teacherDisplayName,
+                  subject: `Mensaje directo de Padre de Familia (${currentStudent?.first_name || 'Alumno'})`,
+                  message: directTeacherMsg.trim(),
+                });
+
+                setDirectTeacherMsg('');
+                setDirectMsgSentToast(true);
+                setTimeout(() => setDirectMsgSentToast(false), 3000);
+              }}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-3"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-blue-600" />
+                    <span>Comunicación Directa con el Profesor</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    El profesor recibirá una alerta vibratoria inmediata en su portal para responderte con fluidez.
+                  </p>
+                </div>
+                {(orgLabGraph?.nodes || []).some((n) => n.category === 'profesor' && n.isProvisioned) && (
+                  <select
+                    data-testid="parent-select-org-teacher"
+                    value={selectedOrgTeacherUsername}
+                    onChange={(e) => setSelectedOrgTeacherUsername(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800"
+                  >
+                    {(orgLabGraph?.nodes || [])
+                      .filter((n) => n.category === 'profesor' && n.isProvisioned)
+                      .map((t) => (
+                        <option key={t.nodeId} value={t.username}>
+                          {[t.firstName, t.paternalLastName].filter(Boolean).join(' ') || t.username}
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  data-testid="parent-direct-teacher-message-input"
+                  value={directTeacherMsg}
+                  onChange={(e) => setDirectTeacherMsg(e.target.value)}
+                  placeholder="Escribe un mensaje directo para el profesor..."
+                  className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+                <button
+                  type="submit"
+                  data-testid="parent-direct-teacher-send-btn"
+                  className="px-4 py-2.5 rounded-xl bg-[#1D68FF] hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  <span>Enviar al Profesor</span>
+                </button>
+              </div>
+              {directMsgSentToast && (
+                <div className="text-xs font-bold text-emerald-700">
+                  ✓ Mensaje enviado con alerta vibratoria en vivo al Portal Académico del profesor.
+                </div>
+              )}
+            </form>
 
             {parentMessages.filter(m => m.student_id === currentStudent?.id || m.parent_id === currentParent.id).length === 0 ? (
               <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-16 text-center flex flex-col items-center justify-center gap-4 shadow-sm">

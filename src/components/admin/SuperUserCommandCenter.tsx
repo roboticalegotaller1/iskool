@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -35,6 +35,9 @@ import { useSuperUserTokenMetrics } from '@/hooks/useIsSuperUser';
 import { StudentDeletionAuditLog, UserProfile } from '@/types';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { getUnifiedInstitutionAccounts, normalizeOrgSchoolId } from '@/lib/services/organizationService';
+import SuperUserAccountsControlModal from '@/components/admin/SuperUserAccountsControlModal';
 
 type CommandCenterTab = 'governance' | 'tokens' | 'vault' | 'audit';
 
@@ -60,6 +63,34 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
   const toggleSchoolSuspension = useSchoolAdminStore((s) => s.toggleSchoolSuspension);
   const updateIndependentTeacherQuota = useSchoolAdminStore((s) => s.updateIndependentTeacherQuota);
   const studentDeletionAuditLogs = useSchoolAdminStore((s) => s.studentDeletionAuditLogs) || [];
+
+  // Sincronización en tiempo real 0ms con 5. Organización CEO
+  const graphsBySchool = useOrganizationStore((s) => s.graphsBySchool);
+  const hydrateAllSchoolsFromServer = useOrganizationStore((s) => s.hydrateAllSchoolsFromServer);
+  const hydrateFromServer = useOrganizationStore((s) => s.hydrateFromServer);
+  const [accountsControlSchoolId, setAccountsControlSchoolId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const instIds = (institutionsList || []).map((i) => i.id);
+    hydrateAllSchoolsFromServer(instIds);
+
+    if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+      try {
+        const bc = new BroadcastChannel('iskool_org_realtime_v1');
+        bc.onmessage = (ev) => {
+          if (ev?.data?.schoolId) {
+            hydrateFromServer(ev.data.schoolId);
+          } else {
+            hydrateAllSchoolsFromServer(instIds);
+          }
+        };
+        return () => bc.close();
+      } catch {
+        // Fallback silencioso
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Telemetría de tokens
   const { totalTokensConsumed, totalTokenQuota, estimatedCostUsd } = useSuperUserTokenMetrics();
@@ -360,6 +391,12 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
                 const instTeachers = getSchoolTeachers(teachersList, inst.id, instCampuses);
                 const isSuspended = inst.status === 'inactive';
                 const isSelected = activeSchoolId === inst.id;
+                const instNormId = normalizeOrgSchoolId(inst.id);
+                const instAccountsSummary = getUnifiedInstitutionAccounts(
+                  instNormId,
+                  graphsBySchool[instNormId],
+                  staffUsers
+                );
 
                 return (
                   <div
@@ -407,8 +444,8 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
                         />
                       </div>
 
-                      {/* Métricas rápidas */}
-                      <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 text-center">
+                      {/* Métricas rápidas incluyendo Cuentas Creadas en vivo */}
+                      <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 text-center">
                         <div className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/50">
                           <span className="text-xs font-black text-slate-900 dark:text-white block">{instCampuses.length}</span>
                           <span className="text-[9px] font-bold text-slate-400 uppercase">Planteles</span>
@@ -421,6 +458,34 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
                           <span className="text-xs font-black text-emerald-600 block">{instTeachers.length}</span>
                           <span className="text-[9px] font-bold text-slate-400 uppercase">Docentes</span>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => setAccountsControlSchoolId(inst.id)}
+                          className="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
+                          title="Controlar cuentas creadas en esta institución"
+                        >
+                          <span className="text-xs font-black text-indigo-700 dark:text-indigo-300 block">
+                            {instAccountsSummary.totalAccountsCount}
+                          </span>
+                          <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase">
+                            Cuentas
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="mt-2.5 rounded-xl bg-slate-900 text-white px-3 py-2 flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-black truncate">
+                            {instAccountsSummary.totalAccountsCount} Cuentas Creadas ({instAccountsSummary.orgAdminCount} Admin · {instAccountsSummary.orgTotalCount} Org CEO)
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setAccountsControlSchoolId(inst.id)}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-black uppercase shrink-0 cursor-pointer"
+                        >
+                          Controlar Cuentas
+                        </button>
                       </div>
                     </div>
 
@@ -876,6 +941,16 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
         )}
 
       </main>
+
+      <SuperUserAccountsControlModal
+        isOpen={accountsControlSchoolId !== null}
+        onClose={() => setAccountsControlSchoolId(null)}
+        initialSchoolId={accountsControlSchoolId || 'ALL'}
+        institutions={(institutionsList || []).map((inst) => ({
+          id: inst.id,
+          name: inst.name,
+        }))}
+      />
     </div>
   );
 }

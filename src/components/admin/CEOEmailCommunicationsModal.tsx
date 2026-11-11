@@ -133,6 +133,8 @@ import {
   CustomCeoTheme,
   DEFAULT_CUSTOM_THEME
 } from '@/lib/services/ceoEmailSettingsTypes';
+import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { normalizeOrgSchoolId } from '@/lib/services/organizationService';
 import {
   formatCdmxTime,
   formatCdmxDate,
@@ -1354,6 +1356,22 @@ export function CEOEmailCommunicationsModal({
   const schoolSlug = holding?.slug || schoolId?.replace(/^sch-/, '') || (isIbime ? 'ibime' : 'colegio');
   const schoolDomain = useMemo(() => getSchoolDomain(schoolName, schoolSlug, schoolId), [schoolName, schoolSlug, schoolId]);
   const currentTenantId = useMemo(() => getTenantId(schoolId, holding?.id, isIbime), [schoolId, holding?.id, isIbime]);
+  const resolvedOrgSchoolId = useMemo(
+    () => normalizeOrgSchoolId(schoolId || holding?.id || currentTenantId),
+    [schoolId, holding?.id, currentTenantId]
+  );
+  const activeSchoolOrgGraph = useOrganizationStore((s) => s.graphsBySchool[resolvedOrgSchoolId]);
+  const orgGeneratedDelegates = useMemo(() => {
+    return useOrganizationStore.getState().getDynamicSlaDelegates(resolvedOrgSchoolId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolvedOrgSchoolId, activeSchoolOrgGraph]);
+  const useOrgGeneratedDelegatesOnly = isTestCaseSchool || orgGeneratedDelegates.length > 0;
+  const orgRevokedArchiveNodes = useMemo(() => {
+    if (!activeSchoolOrgGraph) return [];
+    return activeSchoolOrgGraph.nodes.filter(
+      (n) => n.isProvisioned && !n.permissions.imail_triage
+    );
+  }, [activeSchoolOrgGraph]);
   const campuses = useMemo(() => {
     if (holding?.campuses && holding.campuses.length > 0) return holding.campuses;
     return [{ id: 'central', name: isIbime ? 'Campus Montes (Sede Matriz)' : `${schoolName} · Plantel Central`, location: 'Sede Matriz' }];
@@ -1583,9 +1601,9 @@ export function CEOEmailCommunicationsModal({
                 category: vm.category || 'Gestión Operativa Delegada',
                 urgency: vm.urgency || 'MEDIA',
                 destination: 'DELEGADO_CON_SLA',
-                why_shown: vm.why_shown || 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con SLA.',
+                why_shown: vm.why_shown || 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con Tiempo de respuesta.',
                 reincidence_count: vm.reincidence_count || 1,
-                recommended_action: vm.recommended_action || 'Seguimiento por coordinación de plantel según SLA asignado.',
+                recommended_action: vm.recommended_action || 'Seguimiento por coordinación de plantel según Tiempo de respuesta asignado.',
                 suggested_draft_reply: vm.suggested_draft_reply || '',
                 assigned_role: vm.assigned_role || 'Coordinación Operativa',
                 assigned_email: vm.assigned_email || 'coordinacion@ibime.edu.mx',
@@ -2114,7 +2132,7 @@ export function CEOEmailCommunicationsModal({
       const data = await res.json();
       if (data.success && data.settings) {
         setSettingsData(data.settings);
-        onTriggerToast(`✅ Delegado actualizado: ${delegateName} (${delegateEmail}) con SLA de ${slaHours}h`);
+        onTriggerToast(`✅ Delegado actualizado: ${delegateName} (${delegateEmail}) con Tiempo de respuesta de ${slaHours}h`);
       } else {
         onTriggerToast(data.error || 'Error al actualizar delegado');
       }
@@ -2898,7 +2916,7 @@ export function CEOEmailCommunicationsModal({
       category: 'principal',
       triage_badge: {
         quadrant: matter.destination as any,
-        label: matter.destination === 'ATENCION_CEO' ? '🔴 ATENCIÓN INMEDIATA CEO' : '🟡 DELEGADO CON SLA',
+        label: matter.destination === 'ATENCION_CEO' ? '🔴 ATENCIÓN INMEDIATA CEO' : '🟡 DELEGADO CON TIEMPO DE RESPUESTA',
         color: matter.destination === 'ATENCION_CEO' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-700 border-amber-200',
         linkedMatterId: matter.id
       }
@@ -3230,7 +3248,7 @@ Por indicación de Dirección General, se le delega formalmente la atención y r
 EXPEDIENTE: ${matter.matter_code}
 SECCIÓN ASIGNADA: ${delegate.sectionName}
 DELEGADO(A) RESPONSABLE: ${delegate.delegateName} <${delegate.delegateEmail}>
-PLAZO MÁXIMO DE RESOLUCIÓN (SLA): ${delegate.slaHours} Horas
+TIEMPO DE RESPUESTA MÁXIMO: ${delegate.slaHours} Horas
 REMITENTE ORIGINAL: ${matter.sender_name} <${matter.sender_email}>
 FECHA DE RECEPCIÓN: ${matter.received_at || 'Hoy'}
 PLANTEL: ${matter.campus || 'IBIME'}
@@ -3340,7 +3358,18 @@ Favor de atender y dar seguimiento directo al remitente dentro del plazo institu
       setDelegatingMatter(null);
       setSelectedMatter(delegatedMatterUpdated);
 
-      onTriggerToast(`✅ Asunto reenviado y delegado a ${delegate.delegateName} (${delegate.delegateEmail}) · ${delegate.sectionName} (SLA: ${delegate.slaHours}h)`);
+      useOrganizationStore.getState().dispatchHierarchicalSlaAlert({
+        schoolId: resolvedOrgSchoolId,
+        fromNodeId: 'ceo-root',
+        fromName: directorTitle,
+        fromRoleLabel: 'Superior en Organigrama · Dirección General',
+        targetDelegateEmail: delegate.delegateEmail,
+        subject: matter.title,
+        message: (matter as any).summary || matter.title,
+        slaHours: delegate.slaHours,
+      });
+
+      onTriggerToast(`✅ Asunto reenviado y delegado a ${delegate.delegateName} (${delegate.delegateEmail}) · ${delegate.sectionName} (Tiempo de respuesta: ${delegate.slaHours}h)`);
     } catch (err: any) {
       onTriggerToast('Error al delegar asunto: ' + err.message);
     } finally {
@@ -3349,9 +3378,11 @@ Favor de atender y dar seguimiento directo al remitente dentro del plazo institu
   };
 
   const getSectionDelegate = (sectionKey: string): SectionDelegateConfig => {
-    const list = settingsData?.delegates && settingsData.delegates.length > 0
-      ? settingsData.delegates
-      : getDefaultDelegates(currentTenantId);
+    const list = useOrgGeneratedDelegatesOnly
+      ? orgGeneratedDelegates
+      : (settingsData?.delegates && settingsData.delegates.length > 0
+          ? settingsData.delegates
+          : getDefaultDelegates(currentTenantId));
     const found = list.find(d => d.sectionKey === sectionKey);
     if (found) return found;
     return list[0] || {
@@ -4142,7 +4173,7 @@ ${schoolName}`
               : isDel
               ? 'DELEGADO_CON_PLAZO'
               : 'INFORMATIVO',
-            label: isCeo ? 'ATENCIÓN CEO' : isDel ? 'DELEGADO SLA' : 'INFORMATIVO',
+            label: isCeo ? 'ATENCIÓN CEO' : isDel ? 'DELEGADO · TIEMPO DE RESPUESTA' : 'INFORMATIVO',
             color: 'bg-[#F4F4F5] text-[#09090B] border-[#E4E4E7]',
             linkedMatterId: m.id,
           },
@@ -6949,14 +6980,14 @@ Comité de Seguridad y Protección Escolar`
           category: e.triage_badge?.label?.replace('🟡', '').trim() || 'Gestión Operativa Delegada',
           urgency: 'MEDIA',
           destination: 'DELEGADO_CON_SLA',
-          why_shown: 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con SLA.',
+          why_shown: 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con Tiempo de respuesta.',
           reincidence_count: 1,
-          recommended_action: 'Seguimiento por coordinación de plantel según SLA asignado.',
+          recommended_action: 'Seguimiento por coordinación de plantel según Tiempo de respuesta asignado.',
           suggested_draft_reply: '',
           assigned_role: 'Coordinación Operativa / Plantel',
           assigned_email: e.recipient_email || 'coordinacion@iskool.mx',
           sla_hours: 24,
-          sla_remaining_text: '⏱️ SLA 24-48h',
+          sla_remaining_text: '⏱️ Tiempo de respuesta: 24-48h',
           sender_name: e.sender_name || 'Remitente Institucional',
           sender_email: e.sender_email || 'buzon@iskool.mx',
           provenance_doc: `Buzón Institucional (${e.sender_email})`,
@@ -7036,7 +7067,7 @@ Comité de Seguridad y Protección Escolar`
         entry.matter.reincidence_count = entry.count;
         entry.matter.title = `${cleanTitle} (${entry.count} eventos agrupados)`;
         entry.matter.summary = `Expediente unificado: Se han consolidado ${entry.count} notificaciones reincidentes de este asunto. Última incidencia: ${item.received_at || 'Reciente'}.`;
-        entry.matter.why_shown = `Patrón recurrente detectado (${entry.count} incidencias vinculadas). Se unifican en un solo expediente para evitar dispersión en la bandeja y resolver con un solo SLA.`;
+        entry.matter.why_shown = `Patrón recurrente detectado (${entry.count} incidencias vinculadas). Se unifican en un solo expediente para evitar dispersión en la bandeja y resolver con un solo Tiempo de respuesta.`;
       }
     });
 
@@ -7163,14 +7194,14 @@ Comité de Seguridad y Protección Escolar`
       } else {
         answer = `No se registran oficios o requerimientos pendientes de Supervisión Escolar SEP en el buzón actualmente.`;
       }
-    } else if (lower.includes('delegado') || lower.includes('área') || lower.includes('coordinaci') || lower.includes('cobranza') || lower.includes('sla')) {
-      answer = `Hay ${catchupMetrics.delegatedCount} asuntos turnados a Delegados Operativos con SLA vigente (en Cobranza, Control Escolar, Coordinación Académica o Logística) bajo resolución y seguimiento desatendido.`;
+    } else if (lower.includes('delegado') || lower.includes('área') || lower.includes('coordinaci') || lower.includes('cobranza') || lower.includes('sla') || lower.includes('tiempo de respuesta')) {
+      answer = `Hay ${catchupMetrics.delegatedCount} asuntos turnados a Delegados Operativos con Tiempo de respuesta vigente (en Cobranza, Control Escolar, Coordinación Académica o Logística) bajo resolución y seguimiento desatendido.`;
     } else if (lower.includes('informativo') || lower.includes('circular') || lower.includes('webinar')) {
       answer = `Hay ${catchupMetrics.infoCount} correos informativos procesados (circulares institucionales, notificaciones de plataformas educativas y avisos generales) archivados con acuse automático.`;
     } else if (lower.includes('cuántos') || lower.includes('total') || lower.includes('resumen') || lower.includes('estadística')) {
-      answer = `Resumen en tiempo real: ${catchupMetrics.totalCount} correos analizados. Distribución: ${catchupMetrics.ceoCount} Atención Inmediata CEO, ${catchupMetrics.delegatedCount} Delegados con SLA, ${catchupMetrics.infoCount} Informativos y ${catchupMetrics.spamCount} Spam/Promociones.`;
+      answer = `Resumen en tiempo real: ${catchupMetrics.totalCount} correos analizados. Distribución: ${catchupMetrics.ceoCount} Atención Inmediata CEO, ${catchupMetrics.delegatedCount} Delegados con Tiempo de respuesta, ${catchupMetrics.infoCount} Informativos y ${catchupMetrics.spamCount} Spam/Promociones.`;
     } else {
-      answer = `En tiempo real se analizaron ${catchupMetrics.totalCount} correos: ${catchupMetrics.ceoCount} requieren atención directa del CEO, ${catchupMetrics.delegatedCount} fueron derivados a departamentos con SLA, ${catchupMetrics.infoCount} son informativos y ${catchupMetrics.spamCount} corresponden a publicidad/spam archivado.`;
+      answer = `En tiempo real se analizaron ${catchupMetrics.totalCount} correos: ${catchupMetrics.ceoCount} requieren atención directa del CEO, ${catchupMetrics.delegatedCount} fueron derivados a departamentos con Tiempo de respuesta, ${catchupMetrics.infoCount} son informativos y ${catchupMetrics.spamCount} corresponden a publicidad/spam archivado.`;
     }
 
     setCatchupConversation(prev => [...prev, { q, a: answer }]);
@@ -7228,7 +7259,7 @@ Comité de Seguridad y Protección Escolar`
         >
           <div className="flex items-center gap-2.5 min-w-0">
             <Sliders className={`h-4 w-4 shrink-0 ${isGovVipSlaActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
-            <span className="text-xs tracking-tight truncate">Reglas VIP & SLA</span>
+            <span className="text-xs tracking-tight truncate">Reglas VIP &amp; Tiempo de respuesta</span>
           </div>
           <span className="font-mono text-[10px] text-[#64748B] tabular-nums shrink-0">
             {(settingsData?.vipEmails?.length || 0) + (settingsData?.delegates?.length || 0)}
@@ -7478,7 +7509,7 @@ Comité de Seguridad y Protección Escolar`
                     }
                   },
                   {
-                    label: `Cumplimiento SLA y Ejecución Delegada (${delegatedMattersList.length})`,
+                    label: `Tiempo de respuesta y Ejecución Delegada (${delegatedMattersList.length})`,
                     hint: '3',
                     run: () => {
                       const next: typeof activeTab = 'inbox';
@@ -7690,7 +7721,7 @@ Comité de Seguridad y Protección Escolar`
                 </span>
               </button>
 
-              {/* 3. Cumplimiento SLA (Unifica Asuntos Delegados y Tablero por Área) */}
+              {/* 3. Tiempo de respuesta (Unifica Asuntos Delegados y Tablero por Área) */}
               <button
                 type="button"
                 data-testid="nav-cumplimiento-sla"
@@ -7706,7 +7737,7 @@ Comité de Seguridad y Protección Escolar`
                     : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
-                <span className="truncate">Cumplimiento SLA</span>
+                <span className="truncate">Tiempo de respuesta</span>
                 <span className={`font-mono text-[11px] shrink-0 ${
                   activeTab === 'work_os' || (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') ? 'text-[#1E40AF] font-bold' : 'text-[#64748B]'
                 }`}>
@@ -7844,7 +7875,7 @@ Comité de Seguridad y Protección Escolar`
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] font-medium">
                   <span className="h-2 w-2 rounded-full bg-[#F59E0B]" />
-                  <span>SLA #F59E0B</span>
+                  <span>Tiempo de respuesta #F59E0B</span>
                 </span>
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#1E40AF] border border-[#BFDBFE] font-medium">
                   <span className="h-2 w-2 rounded-full bg-[#2563EB]" />
@@ -7896,7 +7927,7 @@ Comité de Seguridad y Protección Escolar`
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-lg font-bold text-[#0F172A] tracking-tight">
-                      Cumplimiento SLA y Ejecución Delegada Unificada
+                      Tiempo de respuesta y Ejecución Delegada Unificada
                     </h2>
                     <p className="text-xs text-[#475569]">
                       Seguimiento centralizado de asuntos delegados por Dirección General y tableros operativos de sede.
@@ -7937,7 +7968,7 @@ Comité de Seguridad y Protección Escolar`
                       <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">{slaItems.length}</span>
                       <span
                         className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7] shrink-0"
-                        title="Delegado con SLA activo"
+                        title="Delegado con Tiempo de respuesta activo"
                       />
                     </div>
                     <span className="text-xs font-medium text-[#475569] mt-1 block">Asuntos en Seguimiento</span>
@@ -7950,7 +7981,7 @@ Comité de Seguridad y Protección Escolar`
                         title="Cumplimiento institucional en plazo"
                       />
                     </div>
-                    <span className="text-xs font-medium text-[#475569] mt-1 block">En Plazo SLA</span>
+                    <span className="text-xs font-medium text-[#475569] mt-1 block">En Tiempo de respuesta</span>
                   </div>
                   <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#E11D48] shadow-2xs">
                     <div className="flex items-center justify-between">
@@ -7990,7 +8021,7 @@ Comité de Seguridad y Protección Escolar`
                             <span className="col-span-4 text-[#0F172A] font-bold">{group.area}</span>
                             <span className="col-span-2 hidden sm:block">Sede</span>
                             <span className="col-span-2 hidden md:block">Responsable</span>
-                            <span className="col-span-2">Plazo SLA</span>
+                            <span className="col-span-2">Tiempo de respuesta</span>
                             <span className="col-span-2 text-right">Acción</span>
                           </div>
                           <div className="divide-y divide-[#E2E8F0]">
@@ -8011,7 +8042,7 @@ Comité de Seguridad y Protección Escolar`
                                           ? 'bg-[#E11D48] ring-2 ring-[#FFE4E6]'
                                           : 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]'
                                       }`}
-                                      title={isUrgentSla ? 'SLA Crítico (<= 12h)' : 'Delegado en curso'}
+                                      title={isUrgentSla ? 'Tiempo de respuesta Crítico (<= 12h)' : 'Delegado en curso'}
                                     />
                                     <span className="font-mono text-[11px] font-bold text-[#1E40AF] shrink-0">
                                       #{cleanCode.replace(/^MAT-[A-Z]+-\d+-/, 'SLA-')}
@@ -8227,7 +8258,7 @@ Comité de Seguridad y Protección Escolar`
                               : 'bg-[#FFF1F2] text-[#9F1239] border-[#FECDD3]';
 
                             const pillText = isDelegatedMatter
-                              ? 'Delegado SLA'
+                              ? 'Delegado · Tiempo de respuesta'
                               : isSepMatter
                               ? 'SEP · Oficial'
                               : 'CEO · Crítico';
@@ -8371,7 +8402,7 @@ Comité de Seguridad y Protección Escolar`
                                     {selectedMatter.destination === 'ATENCION_CEO'
                                       ? 'Atención Inmediata CEO'
                                       : selectedMatter.destination === 'DELEGADO_CON_SLA'
-                                      ? 'Delegado con SLA'
+                                      ? 'Delegado con Tiempo de respuesta'
                                       : 'Informativo Institucional'}
                                   </span>
                                 </span>
@@ -8615,11 +8646,11 @@ Comité de Seguridad y Protección Escolar`
                             </div>
                           </div>
 
-                          {/* Fila Única Suiza: Delegar con SLA */}
+                          {/* Fila Única Suiza: Delegar con Tiempo de respuesta */}
                           <div className="pt-3 border-t border-[#E2E8F0] flex items-center gap-2 flex-wrap">
                             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475569] mr-1">
                               <span className="h-2 w-2 rounded-full bg-[#F59E0B] border border-[#B45309]" />
-                              <span>Delegar con SLA:</span>
+                              <span>Delegar con Tiempo de respuesta:</span>
                             </span>
                             {[
                               { key: 'academica' as const, label: 'Académica' },
@@ -8652,7 +8683,7 @@ Comité de Seguridad y Protección Escolar`
                           <FileCheck className="h-8 w-8 text-[#94A3B8] mx-auto" />
                           <h4 className="text-sm font-semibold text-[#0F172A]">Selecciona un expediente</h4>
                           <p className="text-xs text-[#64748B] max-w-sm mx-auto">
-                            Elige un caso de la cola izquierda para revisar su norma en Bóveda Curricular, aprobar la respuesta oficial o delegar con SLA.
+                            Elige un caso de la cola izquierda para revisar su norma en Bóveda Curricular, aprobar la respuesta oficial o delegar con Tiempo de respuesta.
                           </p>
                         </div>
                       )}
@@ -11061,7 +11092,7 @@ Comité de Seguridad y Protección Escolar`
                           <th className="px-5 py-3">Departamento / Área</th>
                           <th className="px-5 py-3">Responsable Directivo</th>
                           <th className="px-5 py-3">Correo Institucional</th>
-                          <th className="px-5 py-3 text-right">SLA Máx</th>
+                          <th className="px-5 py-3 text-right">Tiempo de respuesta</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E2E8F0]">
@@ -12036,14 +12067,14 @@ Comité de Seguridad y Protección Escolar`
                         ? 'Catálogo de Comunicados Oficiales y Plantillas'
                         : settingsSubTab === 'apariencia'
                         ? 'Estudio de Apariencia y Paletas Institucionales'
-                        : 'Reglas VIP de Atención Inmediata & Matriz de Delegados SLA'}
+                        : 'Reglas VIP de Atención Inmediata & Matriz de Delegados por Tiempo de respuesta'}
                     </h2>
                     <p className="text-[13px] font-normal text-[#475569] mt-0.5">
                       {settingsSubTab === 'plantillas'
                         ? 'Personaliza las redacciones oficiales predeterminadas de Dirección General.'
                         : settingsSubTab === 'apariencia'
                         ? 'Configura el tema visual y distintivos cromáticos de la consola.'
-                        : 'Vista consolidada 50/50: Remitentes prioritarios del CEO (#E11D48) y enrutamiento por departamento con SLA (#F59E0B).'}
+                        : 'Vista consolidada 50/50: Remitentes prioritarios del CEO (#E11D48) y enrutamiento por departamento con Tiempo de respuesta (#F59E0B).'}
                     </p>
                   </div>
 
@@ -12138,7 +12169,7 @@ Comité de Seguridad y Protección Escolar`
                             </h3>
                           </div>
                           <p className="text-[12px] font-normal text-[#475569] mt-0.5">
-                            Clasificación directa con urgencia Crítica y SLA de 12h.
+                            Clasificación directa con urgencia Crítica y Tiempo de respuesta de 12h.
                           </p>
                         </div>
 
@@ -12251,15 +12282,15 @@ Comité de Seguridad y Protección Escolar`
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
                             <h3 className="text-[15px] font-semibold text-[#0F172A]">
-                              Matriz de Delegados por Sección &amp; SLA
+                              Matriz de Delegados por Sección &amp; Tiempo de respuesta
                             </h3>
                           </div>
                           <p className="text-[12px] font-normal text-[#475569] mt-0.5">
-                            Titulares responsables, correo de enrutamiento y horas de SLA por área.
+                            Titulares responsables, correo de enrutamiento y Tiempo de respuesta (horas) por área.
                           </p>
                         </div>
                         <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-medium text-[#B45309] shrink-0">
-                          {settingsData?.delegates?.length || 0} áreas activas
+                          {(useOrgGeneratedDelegatesOnly ? orgGeneratedDelegates.length : (settingsData?.delegates?.length || 0))} áreas activas
                         </span>
                       </div>
 
@@ -12271,21 +12302,46 @@ Comité de Seguridad y Protección Escolar`
                             </span>
                             <span className="text-[11px]">
                               Derivado a {delegateTestResult.delegateName} (
-                              {delegateTestResult.delegateEmail}) · SLA {delegateTestResult.slaHours}h
+                              {delegateTestResult.delegateEmail}) · Tiempo de respuesta: {delegateTestResult.slaHours}h
                             </span>
                           </div>
                           <button
                             type="button"
                             onClick={() => setDelegateTestResult(null)}
-                            className="p-1 text-[#059669] hover:text-[#065F46] cursor-pointer"
+                            className="p-1 text-[#059609] hover:text-[#065F46] cursor-pointer"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       )}
 
+                      {orgRevokedArchiveNodes.length > 0 && (
+                        <div
+                          data-testid="ceo-preserved-revoked-imail-archive"
+                          className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 space-y-1.5 text-xs text-slate-800"
+                        >
+                          <div className="font-bold text-blue-900">
+                            Respaldo Histórico CEO · Cuentas con sincronización iMail pausada ({orgRevokedArchiveNodes.length})
+                          </div>
+                          {orgRevokedArchiveNodes.map((rn) => (
+                            <div key={rn.nodeId} className="text-[11px] text-slate-700">
+                              • <strong>{rn.username}</strong>: acceso retirado,{' '}
+                              <strong>{rn.imailMailbox.preservedHistoricalEmails.length} correos históricos</strong> siguen disponibles para observación del CEO.
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="divide-y divide-[#E2E8F0]">
-                        {(settingsData?.delegates || []).map((del) => {
+                        {useOrgGeneratedDelegatesOnly && orgGeneratedDelegates.length === 0 && (
+                          <div
+                            data-testid="sla-no-default-accounts-notice"
+                            className="py-4 text-xs text-slate-500 text-center"
+                          >
+                            Cuentas por default eliminadas. Las cuentas que configures en <strong>5. Organización</strong> aparecerán automáticamente aquí como únicos delegados con Tiempo de respuesta.
+                          </div>
+                        )}
+                        {(useOrgGeneratedDelegatesOnly ? orgGeneratedDelegates : (settingsData?.delegates || [])).map((del) => {
                           const editState = inlineDelegateEdits[del.sectionKey] || {
                             delegateName: del.delegateName,
                             delegateEmail: del.delegateEmail,
@@ -12312,7 +12368,7 @@ Comité de Seguridad y Protección Escolar`
                                     disabled={isTestingDelegate}
                                     className="px-2.5 py-1 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[11px] cursor-pointer"
                                   >
-                                    Probar SLA
+                                    Probar Tiempo de respuesta
                                   </button>
                                   <button
                                     type="button"
@@ -12876,8 +12932,8 @@ Comité de Seguridad y Protección Escolar`
                           },
                           {
                             key: 'signalColor' as keyof CustomCeoTheme,
-                            title: 'Color de Señalización & Radar SLA',
-                            desc: 'Pings de radar, alertas críticas de atención inmediata, badges de SLA e indicadores de urgencia.',
+                            title: 'Color de Señalización & Tiempo de respuesta',
+                            desc: 'Pings de radar, alertas críticas de atención inmediata, badges de Tiempo de respuesta e indicadores de urgencia.',
                             value: customTheme.signalColor || '#F59E0B',
                             swatches: EXECUTIVE_COLOR_PALETTES.signals
                           },
@@ -13181,7 +13237,7 @@ Comité de Seguridad y Protección Escolar`
                                       >
                                         Aprobar con 1 Clic
                                       </button>
-                                      <span className="text-[9px] font-bold" style={{ color: cardMutedColor }}>SLA: 24h</span>
+                                      <span className="text-[9px] font-bold" style={{ color: cardMutedColor }}>Tiempo de respuesta: 24h</span>
                                     </div>
                                   </div>
                                 );
@@ -14109,14 +14165,29 @@ Comité de Seguridad y Protección Escolar`
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5 text-indigo-600" />
-                  <span>Delegados por Sección ({settingsData?.delegates?.length || 6})</span>
+                  <span>
+                    Delegados por Sección (
+                    {useOrgGeneratedDelegatesOnly
+                      ? orgGeneratedDelegates.length
+                      : (settingsData?.delegates?.length || 6)}
+                    )
+                  </span>
                 </span>
                 <span className="text-[11px] text-slate-500 font-semibold">
                   Al hacer clic se reenvía el correo con distintivo de delegar
                 </span>
               </div>
 
-              {(settingsData?.delegates && settingsData.delegates.length > 0 ? settingsData.delegates : getDefaultDelegates(currentTenantId)).map((del) => (
+              {useOrgGeneratedDelegatesOnly && orgGeneratedDelegates.length === 0 && (
+                <div className="p-4 rounded-2xl bg-white border border-dashed border-slate-200 text-xs text-slate-500 text-center">
+                  Las cuentas por default han sido eliminadas. Configura colaboradores en <strong>5. Organización</strong> para habilitarlos aquí como delegados con Tiempo de respuesta.
+                </div>
+              )}
+
+              {(useOrgGeneratedDelegatesOnly
+                ? orgGeneratedDelegates
+                : (settingsData?.delegates && settingsData.delegates.length > 0 ? settingsData.delegates : getDefaultDelegates(currentTenantId))
+              ).map((del) => (
                 <div
                   key={del.id || del.sectionKey}
                   className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-amber-400 shadow-2xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
@@ -14127,7 +14198,7 @@ Comité de Seguridad y Protección Escolar`
                         {del.sectionName}
                       </span>
                       <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        SLA: {del.slaHours}h
+                        Tiempo de respuesta: {del.slaHours}h
                       </span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -14261,7 +14332,7 @@ Comité de Seguridad y Protección Escolar`
                     </span>
                     <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]" />
                   </div>
-                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">Delegados SLA</span>
+                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">Delegados · Tiempo de respuesta</span>
                 </div>
                 <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#2563EB] bg-white shadow-2xs">
                   <div className="flex items-center justify-between">
@@ -14761,7 +14832,7 @@ Comité de Seguridad y Protección Escolar`
                     <option value="AUDIENCIA_PADRES">🔴 Audiencia con Padres (Crítico CEO)</option>
                     <option value="CONSEJO_TECNICO">🔵 Consejo Técnico (CTE)</option>
                     <option value="JUNTA_DIRECTORES">🔵 Junta de Directores</option>
-                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (SLA Delegado)</option>
+                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (Delegado · Tiempo de respuesta)</option>
                     <option value="EVENTO_INSTITUCIONAL">⚪ Evento Institucional</option>
                   </select>
                 </div>
@@ -14926,7 +14997,7 @@ Comité de Seguridad y Protección Escolar`
                     <option value="AUDIENCIA_PADRES">🔴 Audiencia con Padres (Crítico CEO)</option>
                     <option value="CONSEJO_TECNICO">🔵 Consejo Técnico (CTE)</option>
                     <option value="JUNTA_DIRECTORES">🔵 Junta de Directores</option>
-                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (SLA Delegado)</option>
+                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (Delegado · Tiempo de respuesta)</option>
                     <option value="EVENTO_INSTITUCIONAL">⚪ Evento Institucional</option>
                   </select>
                 </div>
