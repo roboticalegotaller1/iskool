@@ -53,8 +53,14 @@ export async function GET(req: NextRequest) {
 
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
-        { authenticated: false, error: authResult.error || 'No hay sesión activa.' },
-        { status: 401 }
+        { authenticated: false, user: null },
+        {
+          status: 200,
+          headers: {
+            'Cache-Control': 'private, no-cache, no-store, must-revalidate, max-age=0',
+            'Vary': 'Cookie, Authorization'
+          }
+        }
       );
     }
 

@@ -218,7 +218,20 @@ export async function middleware(request: NextRequest) {
 
   const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId') || request.nextUrl.searchParams.get('tenantId');
   const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime' || querySchoolId === 'IBIME' || querySchoolId === 'e1000000-0000-0000-0000-000000000001';
-  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones') || pathname.startsWith('/portal-ceo') || pathname.startsWith('/api/mail');
+  const isSharedAcademicPath =
+    pathname.startsWith('/teacher') ||
+    pathname.startsWith('/student') ||
+    pathname.startsWith('/parent') ||
+    pathname.startsWith('/planeaciones') ||
+    pathname.startsWith('/portal-ceo') ||
+    pathname.startsWith('/api/mail') ||
+    pathname.startsWith('/studio') ||
+    pathname.startsWith('/api/studio') ||
+    pathname.startsWith('/coordinator') ||
+    pathname.startsWith('/api/billing') ||
+    pathname.startsWith('/control-remoto-qr') ||
+    pathname.startsWith('/api/languages') ||
+    pathname.startsWith('/checkout');
   const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
 
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');

@@ -114,8 +114,10 @@ export const TeacherCommunityView: React.FC = () => {
         setActivities(prioritizeMasterclasses(combined));
       }
 
-      // 2. Obtener votos emitidos por el profesor actual
-      if (teacherId) {
+      // 2. Obtener votos emitidos por el profesor actual (solo si el ID tiene formato UUID de BD)
+      const isUuid = (val?: string) =>
+        Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+      if (teacherId && isUuid(teacherId)) {
         const { data: votesData } = await supabase
           .from('activity_votes')
           .select('activity_id')
@@ -159,6 +161,14 @@ export const TeacherCommunityView: React.FC = () => {
     setActivities(prev =>
       prev.map(act => act.id === activity.id ? { ...act, upvotes: act.upvotes + 1 } : act)
     );
+
+    const isUuid = (val?: string) =>
+      Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+
+    if (!isUuid(teacherId) || !isUuid(activity.id)) {
+      showToast('❤️ ¡Voto registrado con éxito!');
+      return;
+    }
 
     try {
       const { error } = await supabase

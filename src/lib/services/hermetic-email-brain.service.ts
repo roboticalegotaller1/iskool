@@ -286,6 +286,8 @@ export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
   // 4. Emergencias Médicas, Protección Civil y Accidentes Escolares
   civilProtectionAndMedical: [
     'accidente', 'accidente grave', 'alumno herido', 'estudiante herido', 'herido', 'lesión', 'lesion', 'fractura',
+    'luxación', 'luxacion', 'esguince', 'reporte urgente de enfermería', 'reporte urgente de enfermeria',
+    'urgencia médica', 'urgencia medica', 'trasladado a enfermería', 'trasladado a enfermeria',
     'traumatismo craneoencefálico', 'pérdida de conocimiento', 'perdida de conocimiento',
     'ambulancia', 'paramédicos', 'paramedicos', 'cruz roja', 'urgencias médicas', 'urgencias medicas',
     'seguro escolar contra accidentes', 'seguro escolar', 'póliza de seguro escolar', 'poliza de seguro escolar', 'reporte de siniestro escolar',

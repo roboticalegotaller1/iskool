@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { escapeHtml, sanitizeInternalRedirectUrl } from '@/lib/security/htmlEscape';
 import { isPrivateOrReservedIp, validateMailTarget, ALLOWED_MAIL_PORTS } from '@/lib/security/ssrfValidator';

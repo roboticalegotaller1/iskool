@@ -15,7 +15,7 @@ export interface PocketRemoteCommand {
     | 'START_PAIR_TIMER'
     | 'SELECT_LINE'
     | 'SET_GESTURE'
-    | 'TOGGLE_BLACKBOARD'
+    | 'TOGGLE_PIZARRA'
     | 'SYNC_LESSON_STATE';
   payload?: {
     lineIndex?: number;

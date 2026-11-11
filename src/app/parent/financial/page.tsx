@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { PaymentGatewayService } from '@/lib/paymentGateway';
 import { validateRfc, validateCurp } from '@/lib/fiscal/fiscalValidation';
+import { useAuth } from '@/context/AuthContext';
+import { useCurrentStudentProfile } from '@/store/useStudentStore';
 
 interface ChargeItem {
   id: string;
@@ -65,6 +67,8 @@ interface PaymentRecord {
 }
 
 export default function ParentFinancialStatementPage() {
+  const { user, loading } = useAuth();
+  const currentStudent = useCurrentStudentProfile();
   const [activeTab, setActiveTab] = useState<'pending' | 'history' | 'tax'>('pending');
   const [selectedStudent, setSelectedStudent] = useState<string>('all');
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -96,10 +100,12 @@ export default function ParentFinancialStatementPage() {
   });
 
   useEffect(() => {
-    // Cargar datos fiscales iniciales desde el backend
+    if (loading) return;
+    // Cargar datos fiscales iniciales desde el backend usando la identidad autenticada de la sesión
     async function loadBillingProfile() {
       try {
-        const res = await fetch('/api/billing/profile?parent_id=usr-parent-001');
+        const res = await fetch('/api/billing/profile');
+        if (!res.ok) return;
         const json = await res.json();
         if (json.success && json.profile) {
           setTaxData(prev => ({
@@ -120,7 +126,7 @@ export default function ParentFinancialStatementPage() {
       }
     }
     loadBillingProfile();
-  }, []);
+  }, [loading, user?.id]);
 
   const handleRfcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z0-9&Ñ]/g, '').slice(0, 13);
@@ -142,14 +148,18 @@ export default function ParentFinancialStatementPage() {
     }
   };
 
+  const activeStudentDisplayName = currentStudent
+    ? `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'Mateo López Mendoza'
+    : 'Mateo López Mendoza';
+
   // Datos estructurados de cargos pendientes
   const pendingCharges: ChargeItem[] = [
     {
       id: 'inv-001',
       invoiceNumber: 'COL-2026-00452',
       concept: 'Colegiatura de Septiembre 2026',
-      studentName: 'Mateo López Mendoza',
-      studentGrade: '3º de Secundaria — Grupo A',
+      studentName: activeStudentDisplayName,
+      studentGrade: 'Ciclo Escolar Vigente — Grupo A',
       category: 'Colegiatura',
       dueDate: '10 de Septiembre de 2026',
       subtotal: 3600.00,
@@ -162,8 +172,8 @@ export default function ParentFinancialStatementPage() {
       id: 'inv-002',
       invoiceNumber: 'COL-2026-00489',
       concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
-      studentName: 'Mateo López Mendoza',
-      studentGrade: '3º de Secundaria — Grupo A',
+      studentName: activeStudentDisplayName,
+      studentGrade: 'Ciclo Escolar Vigente — Grupo A',
       category: 'Extraescolar',
       dueDate: '15 de Septiembre de 2026',
       subtotal: 800.00,
@@ -180,7 +190,7 @@ export default function ParentFinancialStatementPage() {
       id: 'pay-001',
       receiptNumber: 'REC-2026-08102',
       concept: 'Inscripción Anual Ciclo 2026-2027',
-      studentName: 'Mateo López Mendoza',
+      studentName: activeStudentDisplayName,
       amount: 4500.00,
       paymentMethod: 'Tarjeta de Crédito (Visa ***4012)',
       paidAt: '12 de Agosto de 2026, 11:24 hrs',
@@ -191,7 +201,7 @@ export default function ParentFinancialStatementPage() {
       id: 'pay-002',
       receiptNumber: 'REC-2026-08103',
       concept: 'Paquete de Libros y Materiales Digitales',
-      studentName: 'Mateo López Mendoza',
+      studentName: activeStudentDisplayName,
       amount: 2250.00,
       paymentMethod: 'Transferencia SPEI',
       paidAt: '12 de Agosto de 2026, 11:30 hrs',
@@ -202,7 +212,7 @@ export default function ParentFinancialStatementPage() {
       id: 'pay-003',
       receiptNumber: 'REC-2026-07011',
       concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
-      studentName: 'Mateo López Mendoza',
+      studentName: activeStudentDisplayName,
       amount: 3600.00,
       paymentMethod: 'Tarjeta de Débito (Mastercard ***8831)',
       paidAt: '05 de Agosto de 2026, 09:15 hrs',
@@ -246,8 +256,8 @@ export default function ParentFinancialStatementPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          parent_id: 'usr-parent-001',
-          school_id: 'sch-001',
+          parent_id: user?.id || 'usr-parent-001',
+          school_id: user?.school_id || 'sch-001',
           rfc: taxData.rfc,
           tax_name: taxData.taxName,
           tax_regime: taxData.taxRegime,

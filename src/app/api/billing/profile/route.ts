@@ -16,6 +16,9 @@ const BillingProfilePostSchema = z.object({
   auto_invoice_on_payment: z.boolean().optional().default(true)
 });
 
+const isUuid = (val?: string | null): boolean =>
+  Boolean(val && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val));
+
 export async function GET(req: NextRequest) {
   try {
     // 1. Verificación estricta de Autenticación Zero-Trust
@@ -38,20 +41,22 @@ export async function GET(req: NextRequest) {
 
     const effectiveSchoolId = auth.user.school_id || 'sch-001';
 
-    let query = supabase
-      .from('billing_profiles')
-      .select('*')
-      .eq('parent_id', requestedParentId);
+    let data: Record<string, unknown> | null = null;
+    if (isUuid(requestedParentId)) {
+      let query = supabase
+        .from('billing_profiles')
+        .select('*')
+        .eq('parent_id', requestedParentId);
 
-    // Si no es superadmin, restringir la consulta estrictamente al colegio del usuario autenticado
-    if (!isSuperAdmin && auth.user.school_id) {
-      query = query.eq('school_id', auth.user.school_id);
-    }
+      // Si no es superadmin, restringir la consulta estrictamente al colegio del usuario autenticado
+      if (!isSuperAdmin && auth.user.school_id && isUuid(auth.user.school_id)) {
+        query = query.eq('school_id', auth.user.school_id);
+      }
 
-    const { data, error } = await query.maybeSingle();
-
-    if (error && error.code !== 'PGRST116') {
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      const dbRes = await query.maybeSingle();
+      if (!dbRes.error) {
+        data = dbRes.data;
+      }
     }
 
     // Datos por defecto si no existe registro previo en base de datos
@@ -147,20 +152,25 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString()
     };
 
-    const { data, error } = await supabase
-      .from('billing_profiles')
-      .upsert(profilePayload, { onConflict: 'parent_id,school_id' })
-      .select()
-      .maybeSingle();
+    let persistedData: Record<string, unknown> | null = null;
+    if (isUuid(parent_id) && isUuid(school_id)) {
+      const { data, error } = await supabase
+        .from('billing_profiles')
+        .upsert(profilePayload, { onConflict: 'parent_id,school_id' })
+        .select()
+        .maybeSingle();
 
-    if (error) {
-      console.warn('[BillingProfile API] Advertencia de persistencia:', error.message);
+      if (error) {
+        console.warn('[BillingProfile API] Advertencia de persistencia:', error.message);
+      } else {
+        persistedData = data;
+      }
     }
 
     return NextResponse.json({ 
       success: true, 
       message: 'Datos fiscales SAT (CFDI 4.0) actualizados con éxito.', 
-      profile: data || profilePayload 
+      profile: persistedData || profilePayload 
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

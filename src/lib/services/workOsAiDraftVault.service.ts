@@ -458,7 +458,7 @@ Redacta el texto completo directamente, sin rodeos ni explicaciones previas.`;
             ],
             generationConfig: {
               temperature: 0.3,
-              maxOutputTokens: 1200
+              maxOutputTokens: 2048
             }
           })
         });
@@ -482,7 +482,7 @@ Redacta el texto completo directamente, sin rodeos ni explicaciones previas.`;
             rawGeneratedText = candidateParts[0].text;
           }
 
-          if (rawGeneratedText) {
+          if (rawGeneratedText && rawGeneratedText.trim().length >= 120) {
             modelUsed = m;
             const meta = data.usageMetadata || {};
             const pTokens = meta.promptTokenCount || 220;
@@ -527,8 +527,8 @@ Redacta el texto completo directamente, sin rodeos ni explicaciones previas.`;
     }
   }
 
-  // Fallback pedagógico estructurado si no hay conectividad externa temporal
-  if (!rawGeneratedText) {
+  // Fallback pedagógico estructurado si no hay conectividad externa temporal o respuesta truncada
+  if (!rawGeneratedText || rawGeneratedText.trim().length < 120) {
     rawGeneratedText = `Asunto: [COMUNICADO OFICIAL] ${subject}
 Audiencia: ${audienceLabel} · Tono: ${toneLabel}
 

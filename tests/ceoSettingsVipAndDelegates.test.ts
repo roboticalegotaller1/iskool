@@ -219,24 +219,18 @@ describe('⚙️ AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS 
 
     const fileContent = fs.readFileSync(modalPath, 'utf8');
 
-    it('debe tener el botón "Ajustes" ubicado estrictamente debajo de "ROI & Telemetría"', () => {
-      const roiIndex = fileContent.indexOf("setActiveTab('roi')");
-      const ajustesIndex = fileContent.indexOf("setActiveTab('ajustes')");
-
-      expect(roiIndex).toBeGreaterThan(-1);
-      expect(ajustesIndex).toBeGreaterThan(-1);
-      expect(ajustesIndex).toBeGreaterThan(roiIndex);
-
-      expect(fileContent).toContain('id="ceo-settings-nav-btn"');
-      expect(fileContent).toContain('<Sliders');
-      expect(fileContent).toContain('Ajustes');
+    it('debe integrar el acceso consolidado a "Gobernanza y Cuentas" con sus pilares ejecutivos CASA', () => {
+      expect(fileContent).toContain('data-testid="nav-gobernanza-cuentas"');
+      expect(fileContent).toContain('Gobernanza y Cuentas');
+      expect(fileContent).toContain('Cuentas & OAuth 2.0');
+      expect(fileContent).toContain('Reglas VIP & SLA');
+      expect(fileContent).toContain('Plantillas Oficiales');
     });
 
-    it('debe implementar la vista de Ajustes con los 3 submódulos exigidos', () => {
+    it('debe implementar la vista de Gobernanza/Ajustes con los submódulos VIP, Delegados SLA y Plantillas Oficiales', () => {
       expect(fileContent).toContain("activeTab === 'ajustes'");
-      expect(fileContent).toContain('Correos de Alta Importancia (VIP)');
-      expect(fileContent).toContain('Delegados por Sección');
-      expect(fileContent).toContain('Comunicados Predeterminados');
+      expect(fileContent).toContain('Reglas VIP de Atención Inmediata & Matriz de Delegados SLA');
+      expect(fileContent).toContain('Plantillas Oficiales');
       expect(fileContent).toContain('handleRunLiveVipTest');
       expect(fileContent).toContain('handleRunLiveDelegateTest');
       expect(fileContent).toContain('handleSaveCustomDefaultTemplate');

@@ -608,14 +608,7 @@ export const usePortfolioStore = create<PortfolioStoreState>((set, get) => ({
         .select(`
           *,
           portfolio_feedback (
-            *,
-            profiles:author_id (
-              id,
-              first_name,
-              last_name,
-              role,
-              email
-            )
+            *
           )
         `)
         .order('created_at', { ascending: false });

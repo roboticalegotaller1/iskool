@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { POST } from '@/app/api/ai/historical-figure/route';
 import { NextRequest } from 'next/server';

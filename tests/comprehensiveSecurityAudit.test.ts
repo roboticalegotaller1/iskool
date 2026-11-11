@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as postLaboratorioSession } from '../src/app/api/auth/laboratorio-session/route';

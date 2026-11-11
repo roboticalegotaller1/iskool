@@ -340,7 +340,7 @@ export default function ParentDashboard() {
   };
 
   useEffect(() => {
-    if (currentStudent?.id) {
+    if (!loading && currentStudent?.id) {
       fetchStats();
       fetchPortfolioItems(undefined, currentStudent.id);
       
@@ -355,7 +355,7 @@ export default function ParentDashboard() {
       unsubscribeFromPortfolioChanges();
       unsubscribeFromStudentStats();
     };
-  }, [currentStudent?.id, fetchStats, fetchPortfolioItems, subscribeToPortfolioChanges, unsubscribeFromPortfolioChanges, subscribeToStudentStats, unsubscribeFromStudentStats]);
+  }, [loading, currentStudent?.id, fetchStats, fetchPortfolioItems, subscribeToPortfolioChanges, unsubscribeFromPortfolioChanges, subscribeToStudentStats, unsubscribeFromStudentStats]);
 
   // Filtrar los portafolios del hijo actual
   const childItems = portfolioItems.filter(item => item.student_id === currentStudent.id);

@@ -58,7 +58,7 @@ export function InstitutionalMemoryOverview() {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCycle, setSelectedCycle] = useState<string>('all');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
@@ -239,7 +239,7 @@ export function InstitutionalMemoryOverview() {
           <button
             onClick={() => loadMemories(true)}
             disabled={isRefreshing || loading}
-            title={`Última sincronización: ${lastSyncTime.toLocaleTimeString()}`}
+            title={lastSyncTime ? `Última sincronización: ${lastSyncTime.toLocaleTimeString()}` : 'Sincronizar memorias institucionales'}
             className="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-200 dark:border-indigo-900/50 flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
   generateDraftWithRealTokens,
@@ -146,7 +147,7 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
   it('debe permitir transferir un borrador de la Bóveda al Redactor con posibilidad de modificación y posterior envío', () => {
     const drafts = getDraftsFromVault(testTenantId);
     expect(drafts.length).toBeGreaterThan(0);
-    const draft = drafts[0];
+    const draft = drafts.find(d => d.subject.toLowerCase().includes('festival')) || drafts[0];
 
     // Simular transferencia al Redactor Oficial
     const transferSubject = `[COMUNICADO OFICIAL] ${draft.subject}`;

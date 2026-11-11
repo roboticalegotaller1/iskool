@@ -49,7 +49,7 @@ interface Props {
   availableTeacherAccounts: TeacherAccountOption[];
   onSelectTeacherAccount: (teacher: TeacherAccountOption) => void;
   onPlayLineAudio: (text: string, customRate?: number) => void;
-  onLaunchBlackboardWithTimer: () => void;
+  onLaunchBoardWithTimer: () => void;
   onTriggerGesture?: (gesture: AvatarGestureMode) => void;
 }
 
@@ -64,7 +64,7 @@ export const PocketRemoteQrModal: React.FC<Props> = ({
   availableTeacherAccounts,
   onSelectTeacherAccount,
   onPlayLineAudio,
-  onLaunchBlackboardWithTimer,
+  onLaunchBoardWithTimer,
   onTriggerGesture,
 }) => {
   const [choralStatus, setChoralStatus] = useState<'idle' | 'listening' | 'done'>('idle');
@@ -212,11 +212,11 @@ export const PocketRemoteQrModal: React.FC<Props> = ({
         return;
       }
 
-      if (cmd.type === 'START_PAIR_TIMER' || cmd.type === 'TOGGLE_BLACKBOARD') {
+      if (cmd.type === 'START_PAIR_TIMER' || cmd.type === 'TOGGLE_PIZARRA') {
         setLastRemoteActionBanner(
           `⏱️ Ejecutado desde QR: Lanzando Pizarrón 36pt + Cronómetro 3 Min`
         );
-        onLaunchBlackboardWithTimer();
+        onLaunchBoardWithTimer();
         return;
       }
 
@@ -279,7 +279,7 @@ export const PocketRemoteQrModal: React.FC<Props> = ({
     selectedLineIdx,
     lesson,
     onPlayLineAudio,
-    onLaunchBlackboardWithTimer,
+    onLaunchBoardWithTimer,
     onTriggerGesture,
   ]);
 
@@ -744,7 +744,7 @@ export const PocketRemoteQrModal: React.FC<Props> = ({
                   {/* Botón 4: Lanzar Cronómetro 3 Min en Parejas */}
                   <button
                     type="button"
-                    onClick={onLaunchBlackboardWithTimer}
+                    onClick={onLaunchBoardWithTimer}
                     className="w-full py-3 px-4 rounded-2xl bg-[#D97706] hover:bg-amber-600 text-white font-black text-sm flex items-center gap-3 cursor-pointer shadow-md transition-transform active:scale-98 text-left"
                   >
                     <Clock className="w-6 h-6 shrink-0" />

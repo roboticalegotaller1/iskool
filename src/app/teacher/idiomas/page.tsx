@@ -56,7 +56,7 @@ import {
   resolveCeltaPocketGuide,
   tokenizeDialogueWithStress,
 } from '@/components/languages/hybrid/hybridPedagogicalData';
-import { ClassroomBlackboardModal } from '@/components/languages/hybrid/ClassroomBlackboardModal';
+import { ClassroomBoardModal } from '@/components/languages/hybrid/ClassroomBoardModal';
 import {
   PocketRemoteQrModal,
   TeacherAccountOption,
@@ -194,8 +194,8 @@ export default function TeacherIdiomasPage() {
   );
   const [selectedMirrorId, setSelectedMirrorId] = useState<string | undefined>(undefined);
   const [activeAgendaStep, setActiveAgendaStep] = useState<1 | 2 | 3>(1);
-  const [isBlackboardModalOpen, setIsBlackboardModalOpen] = useState<boolean>(false);
-  const [blackboardStartTimer, setBlackboardStartTimer] = useState<boolean>(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState<boolean>(false);
+  const [boardStartTimer, setBoardStartTimer] = useState<boolean>(false);
   const [isPocketRemoteOpen, setIsPocketRemoteOpen] = useState<boolean>(false);
   const [isCoordinatorViewOpen, setIsCoordinatorViewOpen] = useState<boolean>(false);
   const [activeAvatarGesture, setActiveAvatarGesture] = useState<AvatarGestureMode>('auto');
@@ -942,9 +942,9 @@ export default function TeacherIdiomasPage() {
         triggerToast(
           `📱 QR [${activeTeacherQrAccount.name}]: Repitiendo en Cámara Lenta 🐢 (0.68x)`
         );
-      } else if (cmd.type === 'START_PAIR_TIMER' || cmd.type === 'TOGGLE_BLACKBOARD') {
-        setBlackboardStartTimer(cmd.type === 'START_PAIR_TIMER');
-        setIsBlackboardModalOpen(true);
+      } else if (cmd.type === 'START_PAIR_TIMER' || cmd.type === 'TOGGLE_PIZARRA') {
+        setBoardStartTimer(cmd.type === 'START_PAIR_TIMER');
+        setIsBoardModalOpen(true);
         triggerToast(
           `📱 QR [${activeTeacherQrAccount.name}]: Pizarrón 36pt + Cronómetro de Parejas activado`
         );
@@ -1402,8 +1402,8 @@ export default function TeacherIdiomasPage() {
               type="button"
               onClick={() => {
                 setActiveAgendaStep(2);
-                setBlackboardStartTimer(true);
-                setIsBlackboardModalOpen(true);
+                setBoardStartTimer(true);
+                setIsBoardModalOpen(true);
               }}
               className={`p-2 rounded-xl flex items-center justify-between gap-2 cursor-pointer transition-all text-left ${
                 activeAgendaStep === 2
@@ -1979,10 +1979,10 @@ export default function TeacherIdiomasPage() {
                   <div className="space-y-2 pt-1">
                     <button
                       type="button"
-                      data-testid="btn-classroom-blackboard"
+                      data-testid="btn-classroom-pizarra"
                       onClick={() => {
-                        setBlackboardStartTimer(false);
-                        setIsBlackboardModalOpen(true);
+                        setBoardStartTimer(false);
+                        setIsBoardModalOpen(true);
                       }}
                       className="w-full py-3 px-4 rounded-2xl bg-[#2563EB] hover:bg-blue-600 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-transform active:scale-98"
                     >
@@ -2404,15 +2404,15 @@ export default function TeacherIdiomasPage() {
             - PANTALLA HÍBRIDA 2: MODO PIZARRÓN INTERACTIVO (36pt + CRONÓMETRO PAREJAS)
             - PANTALLA HÍBRIDA 7: CONTROL REMOTO DE BOLSILLO POR QR
             ===================================================================== */}
-        <ClassroomBlackboardModal
-          isOpen={isBlackboardModalOpen}
-          onClose={() => setIsBlackboardModalOpen(false)}
+        <ClassroomBoardModal
+          isOpen={isBoardModalOpen}
+          onClose={() => setIsBoardModalOpen(false)}
           lesson={activeLesson}
           avatarSrc={resolvedAvatar3dSrc}
           celtaGuide={activeCeltaGuide}
           isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
           onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
-          initialPairTimerRunning={blackboardStartTimer}
+          initialPairTimerRunning={boardStartTimer}
         />
 
         <PocketRemoteQrModal
@@ -2426,9 +2426,9 @@ export default function TeacherIdiomasPage() {
           availableTeacherAccounts={availableTeacherAccounts}
           onSelectTeacherAccount={(teacher) => setSelectedTeacherQrId(teacher.id)}
           onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
-          onLaunchBlackboardWithTimer={() => {
-            setBlackboardStartTimer(true);
-            setIsBlackboardModalOpen(true);
+          onLaunchBoardWithTimer={() => {
+            setBoardStartTimer(true);
+            setIsBoardModalOpen(true);
           }}
           onTriggerGesture={(gesture) => setActiveAvatarGesture(gesture)}
         />

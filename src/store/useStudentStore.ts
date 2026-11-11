@@ -89,16 +89,7 @@ export const useStudentStore = create<StudentStoreState>()(
     const student = STUDENTS_LIST_SEED.find(s => s.id === studentId);
     const email = student?.email;
     if (email) {
-      try {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: 'ISkoolPassword2026!' });
-        if (error && (error.message?.includes('JWT') || error.message?.includes('future'))) {
-          await supabase.auth.signOut().catch(() => {});
-        }
-      } catch (authErr) {
-        console.warn('Silent auth fallback for switchStudent:', authErr);
-      }
-
-      // Fetch stats to sync for this specific student
+      // Fetch stats to sync for this specific student (sin sobrescribir la sesión activa de Supabase Auth)
       try {
         const dbStudentId = mapStudentIdToUuid(studentId);
         if (isUuid(dbStudentId)) {

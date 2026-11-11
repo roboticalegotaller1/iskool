@@ -23,33 +23,40 @@ export const Header: React.FC = () => {
   const { user, logout } = useAuth();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
   const activeStudentId = useStudentStore(state => state.activeStudentId);
   const switchStudent = useStudentStore(state => state.switchStudent);
   const stats = useCurrentStudentStats();
   const currentAcademicLevel = useCurrentStudentAcademicLevel();
   const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
-  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const rawActiveSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const activeSchoolId = hasMounted ? rawActiveSchoolId : null;
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
   const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
   const selectSchool = useSchoolAdminStore(state => state.selectSchool);
 
   // Exclusividad: Solo las 3 cuentas oficiales de Super Usuario (Directivos de ISkool) tienen acceso global irrestricto
-  const isSuperUser = isPlatformSuperUser(user);
+  const isSuperUser = hasMounted && isPlatformSuperUser(user);
   const canSwitchRoles = isSuperUser;
 
-  // Marca Blanca Dinámica (Zustand)
-  const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
+  // Marca Blanca Dinámica (Zustand — hidratado tras montaje para paridad estricta SSR/Cliente)
+  const rawWhiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
   const whiteLabelPrimary = useWhiteLabelStore(state => state.primaryColor);
-  const whiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
+  const rawWhiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
+  const whiteLabelLogo = hasMounted ? rawWhiteLabelLogo : '';
+  const whiteLabelSchoolName = hasMounted ? rawWhiteLabelSchoolName : '';
 
   // En el portal de alumno y padres, derivar el colegio del perfil o tenant activo
   const activeStudentProfile = detailedStudents?.find(s => s.id === activeStudentId);
-  const isIbimeActive = isSuperUser
+  const isIbimeActive = hasMounted && (isSuperUser
     ? activeSchoolId === 'sch-ibime'
     : ((typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
        user?.school_id === 'sch-ibime' || 
        activeStudentProfile?.school_id === 'sch-ibime' ||
-       user?.email?.toLowerCase().includes('ibime'));
+       Boolean(user?.email?.toLowerCase().includes('ibime'))));
 
   const studentSchoolId = isIbimeActive ? 'sch-ibime' : ((user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
     ? user.school_id

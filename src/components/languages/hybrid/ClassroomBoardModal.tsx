@@ -33,7 +33,7 @@ interface Props {
   initialPairTimerRunning?: boolean;
 }
 
-export const ClassroomBlackboardModal: React.FC<Props> = ({
+export const ClassroomBoardModal: React.FC<Props> = ({
   isOpen,
   onClose,
   lesson,

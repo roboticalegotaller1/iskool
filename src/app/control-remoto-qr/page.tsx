@@ -195,7 +195,7 @@ function MobileRemoteContent() {
       | 'START_PAIR_TIMER'
       | 'SELECT_LINE'
       | 'SET_GESTURE'
-      | 'TOGGLE_BLACKBOARD',
+      | 'TOGGLE_PIZARRA',
     label: string,
     extraPayload?: Record<string, any>
   ) => {
@@ -412,10 +412,10 @@ function MobileRemoteContent() {
               <span>Gestos en Vivo del Avatar 3D:</span>
               <button
                 type="button"
-                data-testid="mobile-btn-toggle-blackboard"
+                data-testid="mobile-btn-toggle-pizarra"
                 onClick={() =>
                   handleSendCommand(
-                    'TOGGLE_BLACKBOARD',
+                    'TOGGLE_PIZARRA',
                     '📺 Conmutando Modo Pizarrón Gigante 36pt'
                   )
                 }

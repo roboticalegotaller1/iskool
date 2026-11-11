@@ -736,7 +736,7 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0, existingBl
         position,
         data: {
           diagramTitle: 'Ruta Geográfica de la Insurgencia (1810-1811)',
-          diagramImageUrl: '/images/history/queretaro_1810_avatar.png',
+          diagramImageUrl: '/images/history/ruta_insurgencia_1810.webp',
           instructions: 'Toca cada pin numerado en el mapa cartográfico y selecciona el hito histórico correspondiente (0 Tokens):',
           hotspots: [
             {
