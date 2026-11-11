@@ -31,6 +31,8 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
   afterAll(() => {
     if (originalJsonVault !== null) {
       fs.writeFileSync(jsonVaultPath, originalJsonVault, 'utf8');
+    } else if (fs.existsSync(jsonVaultPath)) {
+      fs.writeFileSync(jsonVaultPath, '[]\n', 'utf8');
     }
     if (fs.existsSync(borradoresDir)) {
       for (const file of fs.readdirSync(borradoresDir)) {
@@ -41,6 +43,9 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
             // ignore
           }
         }
+      }
+      if (fs.readdirSync(borradoresDir).length === 0) {
+        try { fs.rmdirSync(borradoresDir); } catch {}
       }
     }
   });

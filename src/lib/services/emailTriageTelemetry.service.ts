@@ -49,14 +49,20 @@ class EmailTriageTelemetryServiceSingleton {
     this.inMemorySummary = this.loadFromDisk();
   }
 
+  private isTestEnv(): boolean {
+    return Boolean(process.env.VITEST || process.env.NODE_ENV === 'test');
+  }
+
   private loadFromDisk(): TriageTelemetrySummary {
-    try {
-      if (fs.existsSync(TELEMETRY_FILE_PATH)) {
-        const raw = fs.readFileSync(TELEMETRY_FILE_PATH, 'utf8');
-        return JSON.parse(raw);
+    if (!this.isTestEnv()) {
+      try {
+        if (fs.existsSync(TELEMETRY_FILE_PATH)) {
+          const raw = fs.readFileSync(TELEMETRY_FILE_PATH, 'utf8');
+          return JSON.parse(raw);
+        }
+      } catch {
+        // Ignorar fallback
       }
-    } catch {
-      // Ignorar fallback
     }
 
     return {
@@ -77,6 +83,7 @@ class EmailTriageTelemetryServiceSingleton {
   }
 
   private saveToDisk(): void {
+    if (this.isTestEnv()) return;
     try {
       fs.writeFileSync(TELEMETRY_FILE_PATH, JSON.stringify(this.inMemorySummary, null, 2), 'utf8');
     } catch (err) {

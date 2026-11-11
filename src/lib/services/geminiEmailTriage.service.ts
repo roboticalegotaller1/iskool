@@ -47,7 +47,12 @@ class CognitiveAIEmailTriageServiceSingleton {
     this.loadEvaluatedIdsFromDisk();
   }
 
+  private isTestEnv(): boolean {
+    return Boolean(process.env.VITEST || process.env.NODE_ENV === 'test');
+  }
+
   private loadEvaluatedIdsFromDisk(): void {
+    if (this.isTestEnv()) return;
     try {
       if (fs.existsSync(EVALUATED_EMAILS_FILE_PATH)) {
         const raw = fs.readFileSync(EVALUATED_EMAILS_FILE_PATH, 'utf8');
@@ -62,6 +67,7 @@ class CognitiveAIEmailTriageServiceSingleton {
   }
 
   private saveEvaluatedIdsToDisk(): void {
+    if (this.isTestEnv()) return;
     try {
       const list = Array.from(this.evaluatedEmailIds);
       fs.writeFileSync(EVALUATED_EMAILS_FILE_PATH, JSON.stringify(list, null, 2), 'utf8');

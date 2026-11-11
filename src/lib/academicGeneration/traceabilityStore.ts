@@ -7,19 +7,35 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { TraceabilityRecord } from './types';
 import { supabase } from '../supabaseClient';
 
 export class AcademicGenerationTraceabilityStore {
-  private static readonly STORAGE_DIR = path.resolve(process.cwd(), '.generations');
+  private static resolvedDir: string | null = null;
 
   /**
-   * Asegura que el directorio de almacenamiento local exista.
+   * Asegura que el directorio de almacenamiento exista (con respaldo en /tmp para entornos cloud serverless).
    */
-  private static ensureStorageDir(): void {
-    if (!fs.existsSync(this.STORAGE_DIR)) {
-      fs.mkdirSync(this.STORAGE_DIR, { recursive: true });
+  private static ensureStorageDir(): string {
+    if (this.resolvedDir && fs.existsSync(/*turbopackIgnore: true*/ this.resolvedDir)) {
+      return this.resolvedDir;
+    }
+    const primaryDir = path.resolve(/*turbopackIgnore: true*/ process.cwd(), '.generations');
+    try {
+      if (!fs.existsSync(/*turbopackIgnore: true*/ primaryDir)) {
+        fs.mkdirSync(/*turbopackIgnore: true*/ primaryDir, { recursive: true });
+      }
+      this.resolvedDir = primaryDir;
+      return primaryDir;
+    } catch {
+      const fallbackDir = path.join(os.tmpdir(), 'iskool-generations');
+      if (!fs.existsSync(/*turbopackIgnore: true*/ fallbackDir)) {
+        fs.mkdirSync(/*turbopackIgnore: true*/ fallbackDir, { recursive: true });
+      }
+      this.resolvedDir = fallbackDir;
+      return fallbackDir;
     }
   }
 
@@ -27,28 +43,32 @@ export class AcademicGenerationTraceabilityStore {
    * Persiste un registro completo de trazabilidad en disco y sincroniza con Supabase si está disponible.
    */
   static async save(record: TraceabilityRecord): Promise<void> {
-    this.ensureStorageDir();
+    try {
+      const storageDir = this.ensureStorageDir();
 
-    // 1. Persistencia local inmediata (archivo JSON individual nombrado por generation_id)
-    const filePath = path.join(this.STORAGE_DIR, `${record.generation_id}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(record, null, 2), 'utf-8');
+      // 1. Persistencia local inmediata (archivo JSON individual nombrado por generation_id)
+      const filePath = path.join(storageDir, `${record.generation_id}.json`);
+      fs.writeFileSync(/*turbopackIgnore: true*/ filePath, JSON.stringify(record, null, 2), 'utf-8');
 
-    // 2. Apéndice en el registro histórico consolidado (JSONL)
-    const journalPath = path.join(this.STORAGE_DIR, 'generation_journal.jsonl');
-    const summaryLine = JSON.stringify({
-      generation_id: record.generation_id,
-      grade: record.request.grade,
-      cefr: record.request.cefr,
-      skill: record.request.skill,
-      topic: record.request.topic,
-      activity_type: record.request.activity_type,
-      knowledge_doc_count: record.knowledge_document_ids.length,
-      prompt_version: record.prompt_version,
-      model: record.model,
-      validation_valid: record.validation.valid,
-      created_at: record.created_at
-    }) + '\n';
-    fs.appendFileSync(journalPath, summaryLine, 'utf-8');
+      // 2. Apéndice en el registro histórico consolidado (JSONL)
+      const journalPath = path.join(storageDir, 'generation_journal.jsonl');
+      const summaryLine = JSON.stringify({
+        generation_id: record.generation_id,
+        grade: record.request.grade,
+        cefr: record.request.cefr,
+        skill: record.request.skill,
+        topic: record.request.topic,
+        activity_type: record.request.activity_type,
+        knowledge_doc_count: record.knowledge_document_ids.length,
+        prompt_version: record.prompt_version,
+        model: record.model,
+        validation_valid: record.validation.valid,
+        created_at: record.created_at
+      }) + '\n';
+      fs.appendFileSync(/*turbopackIgnore: true*/ journalPath, summaryLine, 'utf-8');
+    } catch {
+      // Continuar de forma resiliente en entornos efímeros de solo lectura
+    }
 
     // 3. Intento de persistencia en Supabase (si existe la tabla o infraestructura)
     try {
@@ -79,12 +99,12 @@ export class AcademicGenerationTraceabilityStore {
    * Recupera un registro de trazabilidad por su ID.
    */
   static async getById(generationId: string): Promise<TraceabilityRecord | null> {
-    this.ensureStorageDir();
-    const filePath = path.join(this.STORAGE_DIR, `${generationId}.json`);
-    if (!fs.existsSync(filePath)) {
+    const storageDir = this.ensureStorageDir();
+    const filePath = path.join(storageDir, `${generationId}.json`);
+    if (!fs.existsSync(/*turbopackIgnore: true*/ filePath)) {
       return null;
     }
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fs.readFileSync(/*turbopackIgnore: true*/ filePath, 'utf-8');
     return JSON.parse(content) as TraceabilityRecord;
   }
 
@@ -92,13 +112,13 @@ export class AcademicGenerationTraceabilityStore {
    * Lista todos los registros de generaciones guardadas.
    */
   static async listAll(): Promise<TraceabilityRecord[]> {
-    this.ensureStorageDir();
-    const files = fs.readdirSync(this.STORAGE_DIR).filter(f => f.endsWith('.json') && !f.startsWith('journal'));
+    const storageDir = this.ensureStorageDir();
+    const files = fs.readdirSync(/*turbopackIgnore: true*/ storageDir).filter(f => f.endsWith('.json') && !f.startsWith('journal'));
     const records: TraceabilityRecord[] = [];
     for (const f of files) {
       try {
-        const full = path.join(this.STORAGE_DIR, f);
-        const data = JSON.parse(fs.readFileSync(full, 'utf-8'));
+        const full = path.join(storageDir, f);
+        const data = JSON.parse(fs.readFileSync(/*turbopackIgnore: true*/ full, 'utf-8'));
         records.push(data);
       } catch {
         // Ignorar archivos corruptos

@@ -447,6 +447,35 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
+  // Redirección canónica de alias internos de IBIME hacia el portal unificado (evita 404 en subrutas lógicas)
+  if (!isJsonExpected && !isServerAction) {
+    if (pathname === '/ibime/director' || pathname === '/ibime/admin') {
+      const res = NextResponse.redirect(new URL('/ibime/portal?view=ceo', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/ibime/coordinacion') {
+      const res = NextResponse.redirect(new URL('/ibime/portal?tab=sedes', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/ibime/billing') {
+      const res = NextResponse.redirect(new URL('/ibime/portal?tab=finanzas', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/ibime/teacher') {
+      const res = NextResponse.redirect(new URL('/teacher', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/ibime/student') {
+      const res = NextResponse.redirect(new URL('/student', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+  }
+
   // 6. Inyección de Headers Confiables hacia Server Components
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete('x-resolved-tenant');

@@ -34,6 +34,8 @@ describe('🌐 MIGRACIÓN A APP.ISKOOL.MX Y VERIFICACIÓN DE GOOGLE AUTH', () =>
   afterAll(() => {
     if (originalJsonVault !== null) {
       fs.writeFileSync(jsonVaultPath, originalJsonVault, 'utf8');
+    } else if (fs.existsSync(jsonVaultPath)) {
+      fs.writeFileSync(jsonVaultPath, '[]\n', 'utf8');
     }
     if (fs.existsSync(borradoresDir)) {
       for (const file of fs.readdirSync(borradoresDir)) {
@@ -44,6 +46,9 @@ describe('🌐 MIGRACIÓN A APP.ISKOOL.MX Y VERIFICACIÓN DE GOOGLE AUTH', () =>
             // ignore
           }
         }
+      }
+      if (fs.readdirSync(borradoresDir).length === 0) {
+        try { fs.rmdirSync(borradoresDir); } catch {}
       }
     }
   });

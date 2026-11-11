@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 export interface CorreoDelegatedMatter {
@@ -31,11 +32,6 @@ export interface CorreoDelegatedMatter {
  * REGLA: Cada escuela o cuenta almacena exclusivamente en Correo/[Carpeta] garantizando aislamiento total.
  */
 export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
-  const root = path.join(process.cwd(), 'Correo');
-  if (!fs.existsSync(/*turbopackIgnore: true*/ root)) {
-    fs.mkdirSync(/*turbopackIgnore: true*/ root, { recursive: true });
-  }
-
   const raw = (tenantIdOrAccount || 'IBIME').trim();
   let folder = 'IBIME';
 
@@ -50,12 +46,23 @@ export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
     folder = 'IBIME';
   }
 
-  const tenantDir = path.join(root, folder);
-  if (!fs.existsSync(/*turbopackIgnore: true*/ tenantDir)) {
-    fs.mkdirSync(/*turbopackIgnore: true*/ tenantDir, { recursive: true });
+  const primaryRoot = path.join(process.cwd(), 'Correo');
+  try {
+    if (!fs.existsSync(/*turbopackIgnore: true*/ primaryRoot)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ primaryRoot, { recursive: true });
+    }
+    const primaryTenantDir = path.join(primaryRoot, folder);
+    if (!fs.existsSync(/*turbopackIgnore: true*/ primaryTenantDir)) {
+      fs.mkdirSync(/*turbopackIgnore: true*/ primaryTenantDir, { recursive: true });
+    }
+    return primaryTenantDir;
+  } catch {
+    const tmpRoot = path.join(os.tmpdir(), 'iskool-correo-vault', folder);
+    try {
+      fs.mkdirSync(/*turbopackIgnore: true*/ tmpRoot, { recursive: true });
+    } catch {}
+    return tmpRoot;
   }
-
-  return tenantDir;
 }
 
 /**

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/api/**/*': [
       './planeaciones/**/*',
+      './personajes_historicos/**/*',
+      './Correo/**/*',
       './knowledge/**/*',
       './.index/**/*',
       './src/data/video-1080p/**/*'
@@ -24,13 +26,11 @@ const nextConfig: NextConfig = {
       './.cache/**/*',
       './public/**/*',
       './scripts/**/*',
-      './Correo/**/*',
       './temp_sales_video_assets/**/*',
       './scratch/**/*',
       './01_Arquitectura/**/*',
       './02_Frontend/**/*',
       './03_LMS_Gamification/**/*',
-      './personajes_historicos/**/*',
       './node_modules/@ffmpeg-installer/**/*',
       './node_modules/puppeteer/**/*',
       './node_modules/@xenova/transformers/node_modules/sharp/vendor/**/*',

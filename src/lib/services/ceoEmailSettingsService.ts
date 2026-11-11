@@ -28,8 +28,13 @@ const memoryStore: Map<string, CeoEmailSettings> =
   (globalThis as any).__iskoolCeoEmailSettingsStore ||
   ((globalThis as any).__iskoolCeoEmailSettingsStore = new Map());
 
+function isTestEnv(): boolean {
+  return Boolean(process.env.VITEST || process.env.NODE_ENV === 'test');
+}
+
 function loadFromDisk(): Map<string, CeoEmailSettings> {
   const map = new Map<string, CeoEmailSettings>();
+  if (isTestEnv()) return map;
   const node = getNodeFs();
   if (!node) return map;
   try {
@@ -53,6 +58,7 @@ function loadFromDisk(): Map<string, CeoEmailSettings> {
 }
 
 function saveToDisk(map: Map<string, CeoEmailSettings>) {
+  if (isTestEnv()) return;
   const node = getNodeFs();
   if (!node) return;
   try {

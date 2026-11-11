@@ -8,6 +8,8 @@ frontend:
         - if [ -n "$GOOGLE_CLIENT_ID" ]; then echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env.production; fi
         - if [ -n "$GOOGLE_CLIENT_SECRET" ]; then echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env.production; fi
         - if [ -n "$NEXT_PUBLIC_GOOGLE_CLIENT_ID" ]; then echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID" >> .env.production; fi
+        - if [ -n "$NEXT_PUBLIC_AUTH_GOOGLE_ENABLED" ]; then echo "NEXT_PUBLIC_AUTH_GOOGLE_ENABLED=$NEXT_PUBLIC_AUTH_GOOGLE_ENABLED" >> .env.production; fi
+        - if [ -n "$SUPABASE_AUTH_EXTERNAL_GOOGLE_ENABLED" ]; then echo "SUPABASE_AUTH_EXTERNAL_GOOGLE_ENABLED=$SUPABASE_AUTH_EXTERNAL_GOOGLE_ENABLED" >> .env.production; fi
         - if [ -n "$SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID" ]; then echo "SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=$SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID" >> .env.production; fi
         - if [ -n "$SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET" ]; then echo "SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=$SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET" >> .env.production; fi
         - if [ -n "$NEXT_PUBLIC_SUPABASE_URL" ]; then echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" >> .env.production; fi
@@ -19,6 +21,7 @@ frontend:
         - if [ -n "$SMTP_USER" ]; then echo "SMTP_USER=$SMTP_USER" >> .env.production; fi
         - if [ -n "$SMTP_PASS" ]; then echo "SMTP_PASS=$SMTP_PASS" >> .env.production; fi
         - if [ -n "$MOTOR_IA_API_KEY" ]; then echo "MOTOR_IA_API_KEY=$MOTOR_IA_API_KEY" >> .env.production; fi
+        - if [ -n "$AI_API_KEY" ]; then echo "AI_API_KEY=$AI_API_KEY" >> .env.production; fi
     build:
       commands:
         - npm run build
