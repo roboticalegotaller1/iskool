@@ -144,8 +144,8 @@ function resolveInstitutionalApiKey(): string {
       path.join(process.cwd(), '.env'),
     ];
     for (const file of envFiles) {
-      if (!fs.existsSync(file)) continue;
-      const lines = fs.readFileSync(file, 'utf8').split(/\r?\n/);
+      if (!fs.existsSync(/*turbopackIgnore: true*/ file)) continue;
+      const lines = fs.readFileSync(/*turbopackIgnore: true*/ file, 'utf8').split(/\r?\n/);
       for (const line of lines) {
         const match = line.trim().match(/^(?:GEMINI_API_KEY|GOOGLE_API_KEY|MOTOR_IA_API_KEY|AI_API_KEY|GOOGLE_GENERATIVE_AI_API_KEY)=(.+)$/);
         if (match && match[1]) {

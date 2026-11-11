@@ -25,7 +25,10 @@ frontend:
     postBuild:
       commands:
         - rm -rf .next/cache
+        - rm -rf .next/standalone || true
+        - rm -rf .next/dev || true
         - find .next -name "*.js.map" -type f -delete || true
+        - find .next -name "*.map" -type f -delete || true
   artifacts:
     baseDirectory: .next
     files:
