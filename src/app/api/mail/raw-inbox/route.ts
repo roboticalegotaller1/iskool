@@ -422,11 +422,19 @@ export async function GET(request: NextRequest) {
     }
     const allEmails = Array.from(emailMap.values());
 
-    let sanitizedEmails = allEmails.map((item: RawGmailItem) => {
-      const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
+    let sanitizedEmails: RawGmailItem[] = allEmails.map((item: RawGmailItem): RawGmailItem => {
+      const cleanBody = decodeEmailBodyOrSnippet(item.body_text || item.snippet, item.subject, item.sender_name);
+      const cleanSnippet = decodeEmailBodyOrSnippet(item.snippet || cleanBody, item.subject, item.sender_name).slice(0, 140);
+      const hydratedItem: RawGmailItem = {
+        ...item,
+        body_text: cleanBody,
+        snippet: cleanSnippet
+      };
+
+      const isResolved = isEmailResolvedServer(tenantId, hydratedItem.id, hydratedItem.subject);
       if (isResolved) {
         return {
-          ...item,
+          ...hydratedItem,
           is_unread: false,
           is_resolved: true,
           is_replied: true,
@@ -436,56 +444,18 @@ export async function GET(request: NextRequest) {
 
       // Re-evaluar con el motor canónico hermético para que cualquier actualización de reglas se refleje de inmediato
       const freshTriage = HermeticEmailBrainService.classifyZeroTokenEmail(
-        item.subject,
-        item.body_text || item.snippet,
-        item.sender_email,
-        item.sender_name,
+        hydratedItem.subject,
+        hydratedItem.body_text || hydratedItem.snippet,
+        hydratedItem.sender_email,
+        hydratedItem.sender_name,
         undefined,
         tenantId
       );
 
-      // Respetar clasificaciones delegadas, informativas o de spam previamente asignadas
-      if (item.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO') {
-        return {
-          ...item,
-          is_important: false,
-          category: 'actualizaciones' as const,
-          triage_badge: {
-            quadrant: 'DELEGADO_CON_PLAZO' as const,
-            label: '🟡 DELEGADO OPERATIVO',
-            color: 'bg-amber-50 text-amber-700 border-amber-200'
-          }
-        };
-      }
-      if (item.triage_badge?.quadrant === 'INFORMATIVO') {
-        return {
-          ...item,
-          is_important: false,
-          category: 'actualizaciones' as const,
-          triage_badge: {
-            quadrant: 'INFORMATIVO' as const,
-            label: '🔵 INFORMATIVO',
-            color: 'bg-blue-50 text-blue-700 border-blue-200'
-          }
-        };
-      }
-      if (item.triage_badge?.quadrant === 'SPAM_DESCARTADO') {
-        return {
-          ...item,
-          is_important: false,
-          category: 'promociones' as const,
-          triage_badge: {
-            quadrant: 'SPAM_DESCARTADO' as const,
-            label: '🟣 SPAM / PROMOCIÓN',
-            color: 'bg-purple-50 text-purple-700 border-purple-200'
-          }
-        };
-      }
-
       const isCeo = freshTriage.quadrant === 'ATENCION_CEO';
       if (isCeo) {
         return {
-          ...item,
+          ...hydratedItem,
           is_important: true,
           category: 'principal' as const,
           triage_badge: {
@@ -496,51 +466,11 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
-      const isDelegatedOperational =
-        freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
-        text.includes('menú') ||
-        text.includes('menu') ||
-        text.includes('comedor') ||
-        text.includes('cafetería') ||
-        text.includes('cafeteria') ||
-        text.includes('alimento') ||
-        text.includes('almuerzo') ||
-        text.includes('desayuno') ||
-        text.includes('refrigerio') ||
-        text.includes('prima vacacional') || 
-        text.includes('prima') || 
-        text.includes('vacacional') || 
-        text.includes('vacaciones') || 
-        text.includes('nómina') || 
-        text.includes('nomina') || 
-        text.includes('recursos humanos') || 
-        text.includes('rh') || 
-        text.includes('prestaciones') || 
-        text.includes('sueldo') || 
-        text.includes('salario') || 
-        text.includes('aguinaldo') ||
-        text.includes('taller') ||
-        text.includes('uniforme') ||
-        text.includes('credencial') ||
-        text.includes('transporte');
-
-      if (isDelegatedOperational) {
-        return {
-          ...item,
-          category: 'actualizaciones' as const,
-          triage_badge: {
-            quadrant: 'DELEGADO_CON_PLAZO' as const,
-            label: '🟡 DELEGADO OPERATIVO',
-            color: 'bg-amber-50 text-amber-700 border-amber-200'
-          }
-        };
-      }
-
       const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO';
       if (isSpam) {
         return {
-          ...item,
+          ...hydratedItem,
+          is_important: false,
           category: 'promociones' as const,
           triage_badge: {
             quadrant: 'SPAM_DESCARTADO' as const,
@@ -550,7 +480,61 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      return item;
+      const text = `${hydratedItem.subject} ${hydratedItem.body_text} ${hydratedItem.snippet}`.toLowerCase();
+      const isAutomatedExternalInfo =
+        /accounts\.google\.com|linkedin\.com|asm\.org|cgtrader|lego\.com|okx\.com/i.test(hydratedItem.sender_email || '');
+      const isDelegatedOperational =
+        !isAutomatedExternalInfo && (
+          freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
+          text.includes('menú') ||
+          text.includes('menu') ||
+          text.includes('comedor') ||
+          text.includes('cafetería') ||
+          text.includes('cafeteria') ||
+          text.includes('alimento') ||
+          text.includes('almuerzo') ||
+          text.includes('desayuno') ||
+          text.includes('refrigerio') ||
+          text.includes('prima vacacional') ||
+          text.includes('vacacional') ||
+          text.includes('vacaciones') ||
+          text.includes('nómina') ||
+          text.includes('nomina') ||
+          text.includes('recursos humanos') ||
+          /\brh\b/i.test(text) ||
+          text.includes('prestaciones') ||
+          text.includes('sueldo') ||
+          text.includes('salario') ||
+          text.includes('aguinaldo') ||
+          text.includes('taller') ||
+          text.includes('uniforme') ||
+          text.includes('credencial') ||
+          text.includes('transporte')
+        );
+
+      if (isDelegatedOperational) {
+        return {
+          ...hydratedItem,
+          is_important: false,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'DELEGADO_CON_PLAZO' as const,
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        };
+      }
+
+      return {
+        ...hydratedItem,
+        is_important: false,
+        category: 'actualizaciones' as const,
+        triage_badge: {
+          quadrant: 'INFORMATIVO' as const,
+          label: '🔵 INFORMATIVO',
+          color: 'bg-blue-50 text-blue-700 border-blue-200'
+        }
+      };
     });
 
     // Filtrar correos eliminados por la Dirección General (tombstones de servidor) y sanitizar marcas comerciales (Regla 1)
@@ -859,11 +843,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    let sanitizedEmails = emails.map((item: RawGmailItem) => {
-      const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
+    let sanitizedEmails: RawGmailItem[] = emails.map((item: RawGmailItem): RawGmailItem => {
+      const cleanBody = decodeEmailBodyOrSnippet(item.body_text || item.snippet, item.subject, item.sender_name);
+      const cleanSnippet = decodeEmailBodyOrSnippet(item.snippet || cleanBody, item.subject, item.sender_name).slice(0, 140);
+      const hydratedItem: RawGmailItem = {
+        ...item,
+        body_text: cleanBody,
+        snippet: cleanSnippet
+      };
+
+      const isResolved = isEmailResolvedServer(tenantId, hydratedItem.id, hydratedItem.subject);
       if (isResolved) {
         return {
-          ...item,
+          ...hydratedItem,
           is_unread: false,
           is_resolved: true,
           is_replied: true,
@@ -873,18 +865,18 @@ export async function POST(request: NextRequest) {
 
       // Re-evaluar con el motor canónico hermético para que cualquier actualización de reglas se refleje de inmediato
       const freshTriage = HermeticEmailBrainService.classifyZeroTokenEmail(
-        item.subject,
-        item.body_text || item.snippet,
-        item.sender_email,
-        item.sender_name,
+        hydratedItem.subject,
+        hydratedItem.body_text || hydratedItem.snippet,
+        hydratedItem.sender_email,
+        hydratedItem.sender_name,
         undefined,
         tenantId
       );
 
-      const isCeo = freshTriage.quadrant === 'ATENCION_CEO' || item.triage_badge?.quadrant === 'ATENCION_CEO';
+      const isCeo = freshTriage.quadrant === 'ATENCION_CEO';
       if (isCeo) {
         return {
-          ...item,
+          ...hydratedItem,
           is_important: true,
           category: 'principal' as const,
           triage_badge: {
@@ -895,51 +887,11 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
-      const isDelegatedOperational =
-        freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
-        text.includes('menú') ||
-        text.includes('menu') ||
-        text.includes('comedor') ||
-        text.includes('cafetería') ||
-        text.includes('cafeteria') ||
-        text.includes('alimento') ||
-        text.includes('almuerzo') ||
-        text.includes('desayuno') ||
-        text.includes('refrigerio') ||
-        text.includes('prima vacacional') || 
-        text.includes('prima') || 
-        text.includes('vacacional') || 
-        text.includes('vacaciones') || 
-        text.includes('nómina') || 
-        text.includes('nomina') || 
-        text.includes('recursos humanos') || 
-        text.includes('rh') || 
-        text.includes('prestaciones') || 
-        text.includes('sueldo') || 
-        text.includes('salario') || 
-        text.includes('aguinaldo') ||
-        text.includes('taller') ||
-        text.includes('uniforme') ||
-        text.includes('credencial') ||
-        text.includes('transporte');
-
-      if (isDelegatedOperational) {
-        return {
-          ...item,
-          category: 'actualizaciones' as const,
-          triage_badge: {
-            quadrant: 'DELEGADO_CON_PLAZO' as const,
-            label: '🟡 DELEGADO OPERATIVO',
-            color: 'bg-amber-50 text-amber-700 border-amber-200'
-          }
-        };
-      }
-
-      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO' || item.triage_badge?.quadrant === 'SPAM_DESCARTADO';
+      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO';
       if (isSpam) {
         return {
-          ...item,
+          ...hydratedItem,
+          is_important: false,
           category: 'promociones' as const,
           triage_badge: {
             quadrant: 'SPAM_DESCARTADO' as const,
@@ -949,7 +901,61 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      return item;
+      const text = `${hydratedItem.subject} ${hydratedItem.body_text} ${hydratedItem.snippet}`.toLowerCase();
+      const isAutomatedExternalInfo =
+        /accounts\.google\.com|linkedin\.com|asm\.org|cgtrader|lego\.com|okx\.com/i.test(hydratedItem.sender_email || '');
+      const isDelegatedOperational =
+        !isAutomatedExternalInfo && (
+          freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
+          text.includes('menú') ||
+          text.includes('menu') ||
+          text.includes('comedor') ||
+          text.includes('cafetería') ||
+          text.includes('cafeteria') ||
+          text.includes('alimento') ||
+          text.includes('almuerzo') ||
+          text.includes('desayuno') ||
+          text.includes('refrigerio') ||
+          text.includes('prima vacacional') || 
+          text.includes('vacacional') || 
+          text.includes('vacaciones') || 
+          text.includes('nómina') || 
+          text.includes('nomina') || 
+          text.includes('recursos humanos') || 
+          /\brh\b/i.test(text) || 
+          text.includes('prestaciones') || 
+          text.includes('sueldo') || 
+          text.includes('salario') || 
+          text.includes('aguinaldo') ||
+          text.includes('taller') ||
+          text.includes('uniforme') ||
+          text.includes('credencial') ||
+          text.includes('transporte')
+        );
+
+      if (isDelegatedOperational) {
+        return {
+          ...hydratedItem,
+          is_important: false,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'DELEGADO_CON_PLAZO' as const,
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        };
+      }
+
+      return {
+        ...hydratedItem,
+        is_important: false,
+        category: 'actualizaciones' as const,
+        triage_badge: {
+          quadrant: 'INFORMATIVO' as const,
+          label: '🔵 INFORMATIVO',
+          color: 'bg-blue-50 text-blue-700 border-blue-200'
+        }
+      };
     });
 
     // Filtrar correos eliminados por la Dirección General (tombstones de servidor) y sanitizar marcas comerciales (Regla 1)

@@ -6,7 +6,7 @@
 
 import { normalizeMexicanSpanishText } from './audio/lexicalNormalizer';
 import { applyPhoneticSubstitutions } from './audio/phoneticDictionary';
-import { attachStudioBroadcastMaster, StudioBroadcastChain } from './audio/studioBroadcastMaster';
+import { attachStudioBroadcastMaster, unlockSharedBroadcastAudioContext, StudioBroadcastChain } from './audio/studioBroadcastMaster';
 import {
   getLanguagePipeline,
   resolveTargetLocale,
@@ -1147,6 +1147,9 @@ export async function playUniversalIskoolVoice(
   };
 
   if (typeof window === 'undefined') return controller;
+
+  // Desbloquear síncronamente el AudioContext compartido durante el gesto del usuario antes de cualquier await
+  unlockSharedBroadcastAudioContext();
 
   // Detener cualquier audio o petición anterior antes de iniciar una nueva
   stopAllIskoolAudio();

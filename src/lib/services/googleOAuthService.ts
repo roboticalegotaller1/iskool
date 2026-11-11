@@ -1192,6 +1192,138 @@ export class GoogleOAuthService {
   }
 
   /**
+   * Construye un mensaje RFC 822 completo soportando texto plano puro o
+   * estructura enriquecida RFC 2387 multipart/related con activo visual inline (Content-ID).
+   */
+  static buildRfc822MimePayload(params: {
+    from: string;
+    to: string;
+    utf8Subject: string;
+    dateHeader: string;
+    uniqueMsgId: string;
+    inReplyToMessageId?: string;
+    bodyText: string;
+    bodyHtml?: string;
+    inlineVisualAttachment?: {
+      cid: string;
+      fileName: string;
+      mimeType: string;
+      base64Data: string;
+    };
+  }): string {
+    const baseHeaders = [
+      `From: ${params.from}`,
+      `To: ${params.to}`,
+      `Subject: ${params.utf8Subject}`,
+      `Date: ${params.dateHeader}`,
+      `Message-ID: ${params.uniqueMsgId}`,
+      `MIME-Version: 1.0`,
+    ];
+
+    if (params.inReplyToMessageId) {
+      const cleanRef = params.inReplyToMessageId.replace(/^<|>$/g, '');
+      baseHeaders.push(`In-Reply-To: <${cleanRef}>`);
+      baseHeaders.push(`References: <${cleanRef}>`);
+    }
+
+    const chunkB64 = (raw: string): string => {
+      const clean = raw.replace(/^data:[^;]+;base64,/, '').replace(/\s+/g, '');
+      return clean.match(/.{1,76}/g)?.join('\r\n') || '';
+    };
+
+    const escapeHtml = (str: string): string =>
+      String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    const hasInlineVisual = Boolean(
+      params.inlineVisualAttachment &&
+        params.inlineVisualAttachment.base64Data &&
+        params.inlineVisualAttachment.cid
+    );
+
+    if (!params.bodyHtml && !hasInlineVisual) {
+      baseHeaders.push(`Content-Type: text/plain; charset=utf-8`);
+      baseHeaders.push(`Content-Transfer-Encoding: 8bit`);
+      return `${baseHeaders.join('\r\n')}\r\n\r\n${params.bodyText}`;
+    }
+
+    const cleanCid = hasInlineVisual
+      ? params.inlineVisualAttachment!.cid.replace(/^<|>$/g, '').trim()
+      : '';
+
+    let effectiveHtml = params.bodyHtml || '';
+    if (!effectiveHtml) {
+      const paragraphsHtml = params.bodyText
+        .split(/\r?\n\r?\n/)
+        .map(
+          (p) =>
+            `<p style="margin:0 0 14px 0;line-height:1.65;color:#1e293b;font-size:15px;">${escapeHtml(p).replace(/\r?\n/g, '<br/>')}</p>`
+        )
+        .join('');
+      effectiveHtml = `<!DOCTYPE html><html lang="es"><body style="margin:0;padding:24px;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">` +
+        `<div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:18px;padding:28px;border:1px solid #e2e8f0;">` +
+        (hasInlineVisual
+          ? `<div style="margin:0 0 22px 0;text-align:center;"><img src="cid:${cleanCid}" alt="Comunicado Institucional Oficial" style="max-width:100%;height:auto;border-radius:14px;display:block;margin:0 auto;border:1px solid #cbd5e1;" /></div>`
+          : '') +
+        `${paragraphsHtml}</div></body></html>`;
+    } else if (hasInlineVisual && !effectiveHtml.includes(`cid:${cleanCid}`)) {
+      effectiveHtml = `<div style="margin:0 0 20px 0;text-align:center;"><img src="cid:${cleanCid}" alt="Comunicado Institucional Oficial" style="max-width:100%;height:auto;border-radius:14px;display:block;margin:0 auto;" /></div>${effectiveHtml}`;
+    }
+
+    const seed = `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    const altBoundary = `iskool_alt_${seed}`;
+    const plainB64 = chunkB64(Buffer.from(params.bodyText || '', 'utf8').toString('base64'));
+    const htmlB64 = chunkB64(Buffer.from(effectiveHtml, 'utf8').toString('base64'));
+
+    const altSectionLines = [
+      `--${altBoundary}`,
+      `Content-Type: text/plain; charset="UTF-8"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      plainB64,
+      `--${altBoundary}`,
+      `Content-Type: text/html; charset="UTF-8"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      htmlB64,
+      `--${altBoundary}--`,
+    ];
+
+    if (!hasInlineVisual) {
+      baseHeaders.push(`Content-Type: multipart/alternative; boundary="${altBoundary}"`);
+      return `${baseHeaders.join('\r\n')}\r\n\r\n${altSectionLines.join('\r\n')}`;
+    }
+
+    const relBoundary = `iskool_rel_${seed}`;
+    const att = params.inlineVisualAttachment!;
+    const safeMime = (att.mimeType || 'image/webp').replace(/[^a-zA-Z0-9/+.-]/g, '');
+    const safeName = (att.fileName || 'comunicado-oficial.webp').replace(/["\r\n]/g, '');
+    const imgB64 = chunkB64(att.base64Data);
+
+    baseHeaders.push(`Content-Type: multipart/related; type="multipart/alternative"; boundary="${relBoundary}"`);
+
+    const relatedLines = [
+      `--${relBoundary}`,
+      `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+      ``,
+      ...altSectionLines,
+      `--${relBoundary}`,
+      `Content-Type: ${safeMime}; name="${safeName}"`,
+      `Content-Transfer-Encoding: base64`,
+      `Content-ID: <${cleanCid}>`,
+      `Content-Disposition: inline; filename="${safeName}"`,
+      ``,
+      imgB64,
+      `--${relBoundary}--`,
+    ];
+
+    return `${baseHeaders.join('\r\n')}\r\n\r\n${relatedLines.join('\r\n')}`;
+  }
+
+  /**
    * Envía un correo electrónico en vivo a través de la API oficial de Google Mail (OAuth 2.0)
    */
   static async sendEmailViaGmailApi(params: {
@@ -1201,6 +1333,12 @@ export class GoogleOAuthService {
     subject: string;
     bodyText: string;
     bodyHtml?: string;
+    inlineVisualAttachment?: {
+      cid: string;
+      fileName: string;
+      mimeType: string;
+      base64Data: string;
+    };
     threadId?: string;
     inReplyToMessageId?: string;
   }): Promise<{
@@ -1232,23 +1370,17 @@ export class GoogleOAuthService {
       const messageIdDomain = sender.includes('@') ? sender.split('@')[1] : 'iskool.mx';
       const uniqueMsgId = `<${Date.now()}.${Math.random().toString(36).substring(2, 10)}@${messageIdDomain}>`;
 
-      const headers = [
-        `From: ${sender}`,
-        `To: ${recipientFormatted}`,
-        `Subject: ${utf8Subject}`,
-        `Date: ${dateHeader}`,
-        `Message-ID: ${uniqueMsgId}`,
-        `MIME-Version: 1.0`,
-        `Content-Type: text/plain; charset=utf-8`,
-        `Content-Transfer-Encoding: 8bit`
-      ];
-
-      if (params.inReplyToMessageId) {
-        headers.push(`In-Reply-To: <${params.inReplyToMessageId}>`);
-        headers.push(`References: <${params.inReplyToMessageId}>`);
-      }
-
-      const rawRfc822 = `${headers.join('\r\n')}\r\n\r\n${body}`;
+      const rawRfc822 = this.buildRfc822MimePayload({
+        from: sender,
+        to: recipientFormatted,
+        utf8Subject,
+        dateHeader,
+        uniqueMsgId,
+        inReplyToMessageId: params.inReplyToMessageId,
+        bodyText: body,
+        bodyHtml: params.bodyHtml,
+        inlineVisualAttachment: params.inlineVisualAttachment,
+      });
       const encodedMessage = Buffer.from(rawRfc822)
         .toString('base64')
         .replace(/\+/g, '-')

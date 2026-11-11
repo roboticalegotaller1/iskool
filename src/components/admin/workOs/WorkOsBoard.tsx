@@ -579,7 +579,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
     const res = WorkOsService.reassignTask(tenantId, reassigningTask.id, {
       ...params,
       reassignedByName: simulatedRole === 'ceo' ? 'Dirección General / CEO' : 'Coordinación',
-      reassignedByEmail: currentUserEmail || 'direccion@ibime.edu.mx'
+      reassignedByEmail: currentUserEmail || `direccion@${schoolDomain}`
     });
 
     if (res.success && res.task) {

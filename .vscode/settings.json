@@ -5,5 +5,9 @@
   "files.eol": "\n",
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 800,
-  "git.autorefresh": true
+  "git.autorefresh": true,
+  "livePreview.customExternalBrowser": "Chrome",
+  "debug.javascript.defaultRuntimeExecutable": {
+    "pwa-chrome": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  }
 }

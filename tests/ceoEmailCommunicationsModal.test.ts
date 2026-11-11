@@ -169,5 +169,60 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
     expect(content).toContain('/api/mail/calendar');
     expect(content).toContain('Google Calendar API (TLS 1.3)');
   });
+
+  it('debe implementar la Opción 1 en Agenda Directiva: Master-Detail Cronológico & Dossier de Audiencia 360° con 3 modos de vista integrados y colorimetría OKLCH', () => {
+    // 1. Selector de 3 vistas ejecutivas integradas sin salir de la pestaña
+    expect(content).toContain('agendaViewMode');
+    expect(content).toContain('master_detail');
+    expect(content).toContain('monthly_grid');
+    expect(content).toContain('hourly_timeline');
+    expect(content).toContain('data-testid="agenda-view-switcher"');
+
+    // 2. Colorimetría OKLCH Daylight Precision para Agenda Directiva
+    expect(content).toContain('getAgendaCategoryColorimetry');
+    expect(content).toContain('border-l-[#E11D48]');
+    expect(content).toContain('border-l-[#F59E0B]');
+    expect(content).toContain('border-l-[#2563EB]');
+    expect(content).toContain('border-l-[#64748B]');
+
+    // 3. Foso Recedido (#E2E8F0) y Dossier Spotlight 360° (#FFFFFF) con Pase Oficial WebP
+    expect(content).toContain('data-testid="agenda-events-recessed-well"');
+    expect(content).toContain('data-testid="agenda-active-dossier-spotlight"');
+    expect(content).toContain('data-testid="agenda-integrated-monthly-grid"');
+    expect(content).toContain('data-testid="agenda-hourly-timeline"');
+    expect(content).toContain('Dossier Ejecutivo 360°');
+    expect(content).toContain('Emitir Pase Oficial (WebP)');
+    expect(content).toContain('Guardar Acuerdos y Sincronizar');
+  });
+
+  it('debe implementar la Arquitectura Unificada en Gobernanza y Cuentas (Sub-Riel Izquierdo + 6 Marcas + Slide-Over Drawer con Servidor Comprimido + CASA by Google Tier 2)', () => {
+    // 1. Sub-Riel Izquierdo (Imagen 1) en foso recedido #E2E8F0 y Spotlight Derecho
+    expect(content).toContain('data-testid="governance-left-subrail"');
+    expect(content).toContain('data-testid="governance-right-spotlight"');
+    expect(content).toContain('renderGovernanceShell');
+
+    // 2. Bloque 1 Consolidado: Active Primary Account + CASA by Google Tier 2
+    expect(content).toContain('data-testid="active-primary-account-card"');
+    expect(content).toContain('data-testid="casa-tier2-badge"');
+    expect(content).toContain('CASA by Google Tier 2 Verified');
+    expect(content).toContain('https://www.googleapis.com/auth/gmail.send');
+    expect(content).toContain('https://www.googleapis.com/auth/calendar.events');
+
+    // 3. Bloque 2 Consolidado: Multi-Provider Brand Grid (Imagen 2)
+    expect(content).toContain('data-testid="multi-provider-brand-grid"');
+    expect(content).toContain('handleOpenBrandServerDrawer');
+
+    // 4. Ventana Lateral (Imagen 3): Slide-Over Drawer con Servidor Comprimido por Defecto
+    expect(content).toContain('data-testid="provider-config-slideover-drawer"');
+    expect(content).toContain('data-testid="drawer-server-accordion-toggle"');
+    expect(content).toContain('data-testid="drawer-server-accordion-panel"');
+    expect(content).toContain('TLS 1.3 Strict Enforcement');
+    expect(content).toContain('Probar Handshake');
+
+    // 5. Vista Consolidada 50/50 en Reglas VIP (#E11D48) y Matriz de Delegados SLA (#F59E0B)
+    expect(content).toContain('data-testid="vip-rules-consolidated-card"');
+    expect(content).toContain('data-testid="sla-delegates-consolidated-card"');
+  });
 });
+
 

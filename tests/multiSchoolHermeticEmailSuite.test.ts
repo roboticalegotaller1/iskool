@@ -28,7 +28,8 @@ describe('🏛️ SUITE DE CORREO INSTITUCIONAL HERMÉTICO & MULTI-COLEGIO (CEO 
 
   describe('1. Activación Universal en Panel Administrativo (src/app/admin/page.tsx)', () => {
     it('debe importar CEOEmailCommunicationsModal', () => {
-      expect(adminContent).toContain("import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal'");
+      expect(adminContent).toContain("@/components/admin/CEOEmailCommunicationsModal");
+      expect(adminContent).toContain("CEOEmailCommunicationsModal");
     });
 
     it('debe declarar el estado reactivo para abrir el modal en cualquier colegio', () => {

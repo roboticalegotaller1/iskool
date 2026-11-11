@@ -241,31 +241,66 @@ export function parseDateStringToEpochMs(str?: string | null): number | null {
     if (!isNaN(n) && n > 946684800000) return n;
   }
 
-  // 2. Intento nativo de Date (ISO 8601 o RFC 2822)
-  const native = new Date(trimmed).getTime();
-  if (!isNaN(native) && native > 946684800000) {
-    return native;
-  }
-
-  // 3. Extracción de horas y minutos si están presentes
-  let hours = 12;
-  let minutes = 0;
-  let seconds = 0;
-  const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
-  if (timeMatch) {
-    hours = parseInt(timeMatch[1], 10);
-    minutes = parseInt(timeMatch[2], 10);
-    if (timeMatch[3]) seconds = parseInt(timeMatch[3], 10);
+  // 2. Intento nativo de Date SOLO cuando contiene año explícito de 4 dígitos o formato ISO 8601.
+  // Evita el bug de V8 donde new Date("7 nov") o new Date("8 oct") asigna silenciosamente el año 2001.
+  if (/\b(19|20)\d{2}\b/.test(trimmed) || /^\d{4}-\d{2}-\d{2}T/.test(trimmed)) {
+    const native = new Date(trimmed).getTime();
+    if (!isNaN(native) && native > 946684800000) {
+      return native;
+    }
   }
 
   const strLower = trimmed.toLowerCase();
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  // 4. Casos relativos directos
+  // 3. Expresiones relativas ("Justo ahora", "Hace 15 min", "Hace 2 h", "Hace 3 d")
+  if (
+    strLower === 'justo ahora' ||
+    strLower === 'ahora' ||
+    strLower === 'reciente' ||
+    strLower.startsWith('en vivo')
+  ) {
+    return now.getTime();
+  }
+
+  const relMinMatch = strLower.match(/hace\s+(\d+)\s*(?:min|minuto|minutos|m\b)/i);
+  if (relMinMatch) {
+    const mins = parseInt(relMinMatch[1], 10);
+    if (!isNaN(mins)) return now.getTime() - mins * 60 * 1000;
+  }
+
+  const relHourMatch = strLower.match(/hace\s+(\d+)\s*(?:h\b|hr|hrs|hora|horas)/i);
+  if (relHourMatch) {
+    const hrs = parseInt(relHourMatch[1], 10);
+    if (!isNaN(hrs)) return now.getTime() - hrs * 3600 * 1000;
+  }
+
+  const relDayMatch = strLower.match(/hace\s+(\d+)\s*(?:d\b|día|dias|días)/i);
+  if (relDayMatch) {
+    const days = parseInt(relDayMatch[1], 10);
+    if (!isNaN(days)) return now.getTime() - days * 24 * 3600 * 1000;
+  }
+
+  // 4. Extracción de horas y minutos si están presentes
+  let hours = 12;
+  let minutes = 0;
+  let seconds = 0;
+  let hasExplicitTime = false;
+  const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (timeMatch) {
+    hours = parseInt(timeMatch[1], 10);
+    minutes = parseInt(timeMatch[2], 10);
+    if (timeMatch[3]) seconds = parseInt(timeMatch[3], 10);
+    hasExplicitTime = true;
+  }
+
+  // 5. Casos relativos con hora ("Hoy 09:05 hrs", "Ayer 14:50 hrs")
   if (strLower.includes('hoy') || strLower.includes('ahora')) {
     const d = new Date(now);
-    d.setHours(hours, minutes, seconds, 0);
+    if (hasExplicitTime) {
+      d.setHours(hours, minutes, seconds, 0);
+    }
     return d.getTime();
   }
   if (strLower.includes('ayer')) {
@@ -279,30 +314,54 @@ export function parseDateStringToEpochMs(str?: string | null): number | null {
     return d.getTime();
   }
 
-  // 5. Patrón español: "16 oct", "16 oct 09:22 hrs", "16 de octubre de 2026", "16 oct 2026"
+  // 6. Patrón español/inglés corto: "16 oct", "7 nov 19:25 hrs", "16 de octubre de 2026", "16 oct 2026"
+  const EN_MONTH_FALLBACK: Record<string, number> = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+  };
   const spanishDateMatch = strLower.match(/(\d{1,2})\s*(?:de\s*)?([a-záéíóúñ]{3,10})(?:\s*(?:de\s*)?(\d{4}))?/i);
   if (spanishDateMatch) {
     const day = parseInt(spanishDateMatch[1], 10);
     const monthKey = spanishDateMatch[2].normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 3);
-    const monthIndex = SPANISH_MONTH_MAP[monthKey] ?? SPANISH_MONTH_MAP[spanishDateMatch[2]];
+    const monthIndex =
+      SPANISH_MONTH_MAP[monthKey] ??
+      SPANISH_MONTH_MAP[spanishDateMatch[2]] ??
+      EN_MONTH_FALLBACK[monthKey];
     if (monthIndex !== undefined && day >= 1 && day <= 31) {
-      const year = spanishDateMatch[3] ? parseInt(spanishDateMatch[3], 10) : currentYear;
-      const d = new Date(year, monthIndex, day, hours, minutes, seconds, 0);
+      const hasYear = Boolean(spanishDateMatch[3]);
+      let year = hasYear ? parseInt(spanishDateMatch[3], 10) : currentYear;
+      let d = new Date(year, monthIndex, day, hours, minutes, seconds, 0);
+      // Si no trae año explícito y cae en el futuro (> 36h adelante, ej. "28 dic" leído en noviembre), pertenece al año anterior
+      if (!hasYear && d.getTime() > now.getTime() + 36 * 3600 * 1000) {
+        year -= 1;
+        d = new Date(year, monthIndex, day, hours, minutes, seconds, 0);
+      }
       return d.getTime();
     }
   }
 
-  // 6. Patrón numérico DD/MM/YYYY o DD-MM-YYYY
+  // 7. Patrón numérico DD/MM/YYYY o DD-MM-YYYY
   const slashMatch = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
   if (slashMatch) {
     const day = parseInt(slashMatch[1], 10);
     const month = parseInt(slashMatch[2], 10) - 1;
     let year = currentYear;
+    const hasYear = Boolean(slashMatch[3]);
     if (slashMatch[3]) {
       year = parseInt(slashMatch[3], 10);
       if (year < 100) year += 2000;
     }
-    const d = new Date(year, month, day, hours, minutes, seconds, 0);
+    let d = new Date(year, month, day, hours, minutes, seconds, 0);
+    if (!hasYear && d.getTime() > now.getTime() + 36 * 3600 * 1000) {
+      d = new Date(year - 1, month, day, hours, minutes, seconds, 0);
+    }
+    return d.getTime();
+  }
+
+  // 8. Solo hora "14:20" o "09:15 hrs" -> asumir día actual
+  if (hasExplicitTime) {
+    const d = new Date(now);
+    d.setHours(hours, minutes, seconds, 0);
     return d.getTime();
   }
 
@@ -326,41 +385,81 @@ export function parseEmailDateMs(itemOrStr?: {
   }
 
   const item = itemOrStr;
+  const nowMs = Date.now();
+  const rawTextContext = `${item.received_at || ''} ${item.timestamp || ''}`;
+  const explicitlyYear2001 = /\b2001\b/.test(rawTextContext);
 
-  // 1. Si date_ms existe y es un timestamp unix válido (> 946684800000 = año 2000)
-  if (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 946684800000) {
-    // Si date_ms cayó en medianoche exacta (00:00:00) y timestamp tiene hora y minutos específicos (ej. 21:04 hrs),
-    // enriquecer la hora respetando el día exacto de date_ms
-    const dMs = new Date(item.date_ms);
-    const isMidnight = (dMs.getUTCHours() === 0 && dMs.getUTCMinutes() === 0) || 
-                       (dMs.getUTCHours() === 6 && dMs.getUTCMinutes() === 0) || 
-                       (dMs.getHours() === 0 && dMs.getMinutes() === 0);
-    
-    if (isMidnight && item.timestamp) {
+  const healCandidateEpoch = (candidateMs: number): number | null => {
+    if (typeof candidateMs !== 'number' || isNaN(candidateMs) || candidateMs <= 946684800000) {
+      return null;
+    }
+    const dCandidate = new Date(candidateMs);
+    // Descartar timestamps contaminados por el bug de V8 (año 2001 implícito al parsear "7 nov" / "8 oct")
+    if (dCandidate.getFullYear() === 2001 && !explicitlyYear2001) {
+      return null;
+    }
+
+    // Si cayó en medianoche (00:00:00) o mediodía sintético (12:00:00) y timestamp contiene HH:mm explícito, restaurar hora real
+    const isSyntheticTime =
+      dCandidate.getSeconds() === 0 &&
+      ((dCandidate.getUTCHours() === 0 && dCandidate.getUTCMinutes() === 0) ||
+        (dCandidate.getUTCHours() === 6 && dCandidate.getUTCMinutes() === 0) ||
+        (dCandidate.getHours() === 0 && dCandidate.getMinutes() === 0) ||
+        (dCandidate.getHours() === 12 && dCandidate.getMinutes() === 0 && item.timestamp && !/\b12:00\b/.test(item.timestamp)));
+
+    if (isSyntheticTime && item.timestamp) {
       const timeMatch = item.timestamp.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
       if (timeMatch) {
         const h = parseInt(timeMatch[1], 10);
         const m = parseInt(timeMatch[2], 10);
         const s = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
-        if (h !== 0 || m !== 0) {
-          const enriched = new Date(item.date_ms);
-          enriched.setHours(h, m, s, 0);
-          return enriched.getTime();
-        }
+        dCandidate.setHours(h, m, s, 0);
       }
     }
-    return item.date_ms;
-  }
 
-  // 2. Si date_iso existe y es un ISO válido
-  if (item.date_iso) {
-    const t = new Date(item.date_iso).getTime();
-    if (!isNaN(t) && t > 946684800000) {
-      return t;
+    // Evitar que fechas sin año explícito (ej. "28 dic" leído en noviembre) floten en el futuro por encima de "Hoy"
+    if (dCandidate.getTime() > nowMs + 36 * 3600 * 1000) {
+      dCandidate.setFullYear(dCandidate.getFullYear() - 1);
+    }
+
+    return dCandidate.getTime();
+  };
+
+  // 1. Si date_ms existe y pasa la validación anti-2001 / anti-futuro
+  if (typeof item.date_ms === 'number') {
+    const healedMs = healCandidateEpoch(item.date_ms);
+    if (healedMs !== null) {
+      return healedMs;
     }
   }
 
-  // 3. Fallback: Parsear received_at primero (suele ser fecha completa con año)
+  // 2. Si date_iso existe y es un ISO válido no contaminado por año 2001
+  if (item.date_iso) {
+    const healedIso = healCandidateEpoch(new Date(item.date_iso).getTime());
+    if (healedIso !== null) {
+      return healedIso;
+    }
+  }
+
+  // 3. Reconciliación inteligente entre received_at (puede traer solo fecha "7 nov 2026") y timestamp (suele traer "7 nov 11:24 hrs" o "11:24")
+  const recHasTime = Boolean(item.received_at && /\d{1,2}:\d{2}/.test(item.received_at));
+  const tsHasTime = Boolean(item.timestamp && /\d{1,2}:\d{2}/.test(item.timestamp));
+
+  if (item.received_at && item.timestamp && !recHasTime && tsHasTime) {
+    const combined = parseDateStringToEpochMs(`${item.received_at} ${item.timestamp}`);
+    if (combined && combined > 946684800000) {
+      return combined;
+    }
+  }
+
+  if (tsHasTime && item.timestamp) {
+    const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
+    if (fromTimestamp && fromTimestamp > 946684800000) {
+      return fromTimestamp;
+    }
+  }
+
+  // 4. Fallback: Parsear received_at
   if (item.received_at) {
     const fromReceivedAt = parseDateStringToEpochMs(item.received_at);
     if (fromReceivedAt && fromReceivedAt > 946684800000) {
@@ -368,7 +467,7 @@ export function parseEmailDateMs(itemOrStr?: {
     }
   }
 
-  // 4. Fallback: Parsear timestamp visible
+  // 5. Fallback: Parsear timestamp visible
   if (item.timestamp) {
     const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
     if (fromTimestamp && fromTimestamp > 946684800000) {
@@ -398,9 +497,39 @@ export function sanitizeCommercialTrademarks(text?: string | null): string {
     .replace(/\bcanvas\b/gi, 'Lienzo Digital');
 }
 
+function decodeQuotedPrintableUtf8(input: string): string {
+  if (!input || !/=[0-9A-F]{2}|=\r?\n/i.test(input)) return input;
+  try {
+    const softStripped = input.replace(/=\r?\n/g, '');
+    if (typeof Buffer !== 'undefined') {
+      const chunks: number[] = [];
+      let i = 0;
+      while (i < softStripped.length) {
+        if (
+          softStripped[i] === '=' &&
+          i + 2 < softStripped.length &&
+          /^[0-9A-Fa-f]{2}$/.test(softStripped.slice(i + 1, i + 3))
+        ) {
+          chunks.push(parseInt(softStripped.slice(i + 1, i + 3), 16));
+          i += 3;
+        } else {
+          const utf8Bytes = Buffer.from(softStripped[i], 'utf-8');
+          for (let b = 0; b < utf8Bytes.length; b++) chunks.push(utf8Bytes[b]);
+          i += 1;
+        }
+      }
+      return Buffer.from(chunks).toString('utf-8');
+    }
+    return softStripped.replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  } catch {
+    return input;
+  }
+}
+
 function tryDecodeBase64Utf8Chunk(b64Raw: string): string | null {
   try {
-    const clean = b64Raw.replace(/\.{2,}$/, '').replace(/[^A-Za-z0-9+/=]/g, '');
+    const normalized = b64Raw.replace(/-/g, '+').replace(/_/g, '/');
+    const clean = normalized.replace(/\.{2,}$/, '').replace(/[^A-Za-z0-9+/=]/g, '');
     if (clean.length < 16) return null;
     const alignedLen = clean.length - (clean.length % 4);
     if (alignedLen < 16) return null;
@@ -419,13 +548,16 @@ function tryDecodeBase64Utf8Chunk(b64Raw: string): string | null {
 
     const decoded = new TextDecoder('utf-8', { fatal: false })
       .decode(bytes)
-      .replace(/\uFFFD+$/g, '')
+      .replace(/\uFFFD+/g, ' ')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
       .replace(/<[^>]+>/g, ' ')
+      .replace(/\[(?:image|imagen):\s*[^\]]*\]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (!decoded || decoded.length < 6) return null;
-    // Verificar que al menos el 80% sean caracteres legibles en español/ASCII
+    if (!decoded || decoded.length < 4) return null;
+    // Verificar que al menos el 78% sean caracteres legibles en español/ASCII
     let printable = 0;
     for (let i = 0; i < decoded.length; i++) {
       const code = decoded.charCodeAt(i);
@@ -433,16 +565,37 @@ function tryDecodeBase64Utf8Chunk(b64Raw: string): string | null {
         printable++;
       }
     }
-    if (printable / decoded.length < 0.8) return null;
+    if (printable / decoded.length < 0.78) return null;
     return decoded;
   } catch {
     return null;
   }
 }
 
+function stripMimeEnvelopeNoise(raw: string): string {
+  let cleaned = raw
+    // Prefijos literales IMAP ej. "(8192)", "<0>", "{8192}", "BODY[TEXT]<0>"
+    .replace(/^\s*[-–—]?\s*(?:BODY\[TEXT[^\]]*\](?:<\d+>)?\s*)?(?:\{\d+\}|\(\d+\)|<\d+>)\s*/i, '')
+    // Límites MIME multipart ej. "------=_Part_34084312_674855645.1794072260773", "=_Part_...", "--000000000000..."
+    .replace(/(?:--+|=_Part_)[=_A-Za-z0-9.-]{4,}(?:--)?/gi, ' ')
+    // Cabeceras MIME crudas incrustadas
+    .replace(/Content-Type:\s*[^\s;]+(?:\s*;\s*(?:charset|boundary|format|delsp|name)=[^\s;\r\n]+)*/gi, ' ')
+    .replace(/Content-Transfer-Encoding:\s*[A-Za-z0-9_-]+/gi, ' ')
+    .replace(/Content-Disposition:\s*[^\r\n;]+(?:\s*;\s*filename=[^\r\n]+)?/gi, ' ')
+    .replace(/Content-ID:\s*<[^>]+>/gi, ' ')
+    .replace(/MIME-Version:\s*1\.0/gi, ' ')
+    .replace(/\b(?:charset|boundary)=["']?[A-Za-z0-9_.\-+]+["']?/gi, ' ')
+    // Fragmentos truncados de cabeceras MIME al final ej. "Content-T..."
+    .replace(/\bContent-[A-Za-z-]*\.{0,3}$/gi, ' ')
+    .trim();
+
+  cleaned = decodeQuotedPrintableUtf8(cleaned);
+  return cleaned;
+}
+
 /**
- * Decodifica automáticamente cadenas Base64 (ej. invitaciones MIME de calendario o fragmentos truncados)
- * y limpia artefactos técnicos para presentar siempre un resumen ejecutivo legible en español.
+ * Decodifica automáticamente cadenas Base64, multiparts MIME y artefactos IMAP
+ * para presentar siempre un resumen ejecutivo limpio y legible en español.
  */
 export function decodeEmailBodyOrSnippet(
   rawText?: string | null,
@@ -455,38 +608,57 @@ export function decodeEmailBodyOrSnippet(
       : 'Comunicación oficial registrada en buzón institucional.';
   }
 
-  let text = rawText.trim();
+  let text = stripMimeEnvelopeNoise(rawText.trim());
 
-  // Caso 1: Todo el texto es un bloque Base64 (con o sin saltos de línea/espacios y '...' al final)
+  // Caso 1: Todo el texto restante es un bloque Base64 (con o sin espacios/saltos y '...' al final)
   const strippedForCheck = text.replace(/\.{2,}$/, '').replace(/\s+/g, '');
-  if (strippedForCheck.length >= 20 && /^[A-Za-z0-9+/=]+$/.test(strippedForCheck) && !/\s/.test(text.slice(0, 24))) {
+  if (
+    strippedForCheck.length >= 16 &&
+    /^[A-Za-z0-9+/_=-]+$/.test(strippedForCheck) &&
+    !/\s/.test(text.slice(0, Math.min(20, text.length)))
+  ) {
     const fullDecoded = tryDecodeBase64Utf8Chunk(strippedForCheck);
     if (fullDecoded) {
-      return sanitizeCommercialTrademarks(fullDecoded);
+      const postClean = fullDecoded
+        .replace(/\[(?:image|imagen):\s*[^\]]*\]/gi, ' ')
+        .replace(/https?:\/\/\S{45,}/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (postClean.length >= 6) {
+        return sanitizeCommercialTrademarks(postClean);
+      }
     }
   }
 
-  // Caso 2: Bloques Base64 incrustados dentro del texto (ej. después de 'Google Calendar · VGlIbmVz...')
+  // Caso 2: Bloques Base64 incrustados dentro del texto (ej. después de cabeceras MIME o prefijos)
   text = text.replace(
-    /(?:[A-Za-z0-9+/]{24,}(?:\s+[A-Za-z0-9+/=]{10,})*(?:\.{2,})?)/g,
+    /(?:[A-Za-z0-9+/]{20,}(?:=|\s+[A-Za-z0-9+/=]{8,})*(?:\.{2,})?)/g,
     (match) => {
+      if (/^https?:/i.test(match)) return match;
       const decodedChunk = tryDecodeBase64Utf8Chunk(match);
-      if (decodedChunk) return decodedChunk;
-      return '';
+      if (decodedChunk) return ` ${decodedChunk} `;
+      return ' ';
     }
   );
 
-  // Limpiar artefactos quoted-printable o encabezados residuales
+  // Limpiar HTML residual, etiquetas [image: ...], URLs de rastreo kilométricas y espacios
   text = text
-    .replace(/=[0-9A-F]{2}/gi, ' ')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\[(?:image|imagen):\s*[^\]]*\]/gi, ' ')
+    .replace(/https?:\/\/[^\s]{55,}/gi, '')
     .replace(/\s+/g, ' ')
-    .replace(/^[·•\-:\s]+|[·•\-:\s]+$/g, '')
+    .replace(/^[·•\-–—:\s]+|[·•\-–—:\s]+$/g, '')
     .trim();
 
-  if (!text || text.length < 8 || /[A-Za-z0-9+/]{35,}/.test(text)) {
+  if (!text || text.length < 6 || /[A-Za-z0-9+/]{35,}/.test(text)) {
     const cleanSub = sanitizeCommercialTrademarks(fallbackSubject || 'Notificación Institucional');
     const cleanSender = sanitizeCommercialTrademarks(senderName || 'Remitente Institucional');
-    return `Notificación oficial emitida por ${cleanSender} sobre «${cleanSub}». Pendiente de revisión y confirmación en el despacho directivo.`;
+    return `${cleanSender} — ${cleanSub}`;
   }
 
   return sanitizeCommercialTrademarks(text);

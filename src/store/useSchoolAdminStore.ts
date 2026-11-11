@@ -138,7 +138,7 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
 
   if (!schoolId) return allStudents;
 
-  // 1. UP Juan Jacobo Rosseau (En CEROS para inicio oficial de Prueba Beta)
+  // 1. UP Juan Jacobo Rosseau e Instituto Bilingüe IBIME (En CEROS para operación real en Producción sin seeds teóricos)
   if (schoolId === 'sch-jjrosseau') {
     return allStudents.filter(s => 
       s.school_id === 'sch-jjrosseau' && 
@@ -149,6 +149,15 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
       !s.id.startsWith('std-sec') && 
       !s.id.startsWith('std-prep') &&
       !s.id.startsWith('std-indep-') &&
+      !s.id.startsWith('c00a0eeb')
+    );
+  }
+
+  if (schoolId === 'sch-ibime') {
+    return allStudents.filter(s =>
+      s.school_id === 'sch-ibime' &&
+      !s.id.startsWith('std-ibime-') &&
+      !s.id.includes('test') &&
       !s.id.startsWith('c00a0eeb')
     );
   }
@@ -197,12 +206,22 @@ export const getSchoolTeachers = (teachersList: UserProfile[], schoolId: string 
   const allTeachers = (teachersList && teachersList.length > 0) ? teachersList : TEACHERS_LIST_SEED;
   if (!schoolId) return allTeachers;
 
-  // 1. UP Juan Jacobo Rosseau (En CEROS para inicio oficial de Prueba Beta)
+  // 1. UP Juan Jacobo Rosseau e Instituto Bilingüe IBIME (En CEROS para operación real en Producción sin seeds teóricos)
   if (schoolId === 'sch-jjrosseau') {
     return allTeachers.filter(t => 
       t.school_id === 'sch-jjrosseau' && 
       !t.id.startsWith('usr-teacher-') &&
       !t.id.startsWith('usr-indep-') &&
+      !t.first_name.toLowerCase().includes('demo') &&
+      !t.last_name.toLowerCase().includes('demo')
+    );
+  }
+
+  if (schoolId === 'sch-ibime') {
+    return allTeachers.filter(t =>
+      t.school_id === 'sch-ibime' &&
+      !t.id.startsWith('usr-teacher-ibime-') &&
+      !t.id.startsWith('usr-ibime-') &&
       !t.first_name.toLowerCase().includes('demo') &&
       !t.last_name.toLowerCase().includes('demo')
     );
@@ -257,6 +276,14 @@ export const getSchoolGroups = (groupsList: Group[], schoolId: string | null, sc
       const isIndep = g.id.startsWith('grp-indep-') || g.school_id === 'sch-profesores-independientes';
       return !isTest && !isOther && !isIndep;
     });
+  }
+
+  if (schoolId === 'sch-ibime') {
+    return allGroups.filter(g =>
+      g.school_id === 'sch-ibime' &&
+      !g.id.startsWith('grp-ibime-') &&
+      !g.id.includes('test')
+    );
   }
 
   // 3. Red de Profesores Independientes
@@ -327,6 +354,9 @@ export const getSchoolBillingRecords = (billingList: FamilyBillingRecord[], scho
     if (rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && (rec.school_id === 'sch-jjr' || rec.school_id === 'sch-test-case'))) {
       if (schoolId === 'sch-jjrosseau') {
         return !rec.studentId?.includes('test') && !rec.studentName.toLowerCase().includes('demo');
+      }
+      if (schoolId === 'sch-ibime') {
+        return !rec.id.startsWith('inv-ibime-') && !rec.studentId?.startsWith('std-ibime-');
       }
       return true;
     }
@@ -417,6 +447,9 @@ export const getSchoolParentMessages = (messagesList: ParentMessage[], schoolId:
 
   const studentIds = new Set((schoolStudents || []).map(s => s.id));
   return allMessages.filter(msg => {
+    if (schoolId === 'sch-ibime' && (msg.id.startsWith('msg-ibime-') || msg.student_id?.startsWith('std-ibime-'))) {
+      return false;
+    }
     if (msg.school_id) return msg.school_id === schoolId || (schoolId === 'sch-jjrosseau' && msg.school_id === 'sch-jjr');
     if (studentIds.size > 0) return studentIds.has(msg.student_id);
     return false;
@@ -450,6 +483,9 @@ export const getSchoolPayroll = (
   if (!schoolId) return allPayroll;
 
   return allPayroll.filter(rec => {
+    if (schoolId === 'sch-ibime' && (rec.id.startsWith('pay-ibime-') || rec.id.startsWith('pay-ib-'))) {
+      return false;
+    }
     const matchesSchool = rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && rec.school_id === 'sch-jjr');
     if (!matchesSchool) return false;
     if (campusName && campusName !== 'all') {

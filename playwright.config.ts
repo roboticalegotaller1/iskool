@@ -20,6 +20,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['list'], ['github']] : 'list',
   use: {
     baseURL: 'http://localhost:3000',
+    channel: 'chrome',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -27,8 +28,11 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] }
+      name: 'google-chrome',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome'
+      }
     }
   ],
   webServer: {

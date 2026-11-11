@@ -69,7 +69,7 @@ export const EvidencePreviewModal: React.FC<EvidencePreviewModalProps> = ({
       document.body.removeChild(a);
     } else {
       // Si no tiene dataUrl binario, descargar una copia certificada con membrete
-      const textContent = `INSTITUTO BILINGÜE IBIME - BÓVEDA CENTRAL DE EVIDENCIAS
+      const textContent = `BÓVEDA CENTRAL DE EVIDENCIAS INSTITUCIONALES
 EXPEDIENTE: ${matterCode}
 ASUNTO: ${taskTitle}
 DOCUMENTO: ${doc.fileName}
@@ -80,7 +80,7 @@ ESTADO DEL CASO: ${taskStatus} (Progreso: ${progressPercent}%)
 ==================================================
 CONSTANCIA DE RESGUARDO INSTITUCIONAL CERTIFICADO
 ==================================================
-El presente documento probatorio ha sido registrado en la Bóveda Central de Evidencias con trazabilidad inmutable de Dirección General y comités delegados de IBIME.`;
+El presente documento probatorio ha sido registrado en la Bóveda Central de Evidencias con trazabilidad inmutable de Dirección General y comités delegados.`;
       const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

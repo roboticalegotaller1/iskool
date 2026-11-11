@@ -174,6 +174,7 @@ export class WorkOsService {
 
   public static getTasks(tenantId: string): WorkOsTask[] {
     const cleanTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
+    const isProdIbime = cleanTenant === 'sch-ibime' || cleanTenant === 'ibime';
     let tasks: WorkOsTask[] = [];
 
     if (tasksMemoryStore.has(cleanTenant)) {
@@ -192,14 +193,20 @@ export class WorkOsService {
       }
     }
 
-    if (tasks.length === 0) {
-      tasks = this.generateInitialDemoTasks(cleanTenant);
-    }
+    if (isProdIbime) {
+      tasks = tasks.filter(
+        t => !t.id.startsWith('task-seed-') && t.matterCode !== 'EXP-IBIME-2026-9901'
+      );
+    } else {
+      if (tasks.length === 0) {
+        tasks = this.generateInitialDemoTasks(cleanTenant);
+      }
 
-    // Asegurar siempre la presencia activa del caso multi-delegado tripartita (más de 2 personas)
-    const hasMultiDelegated = tasks.some(t => t.matterCode === 'EXP-IBIME-2026-9901');
-    if (!hasMultiDelegated) {
-      tasks.unshift(this.createInterdisciplinaryMultiAssigneeTask(cleanTenant));
+      // Asegurar siempre la presencia activa del caso multi-delegado tripartita (en modo laboratorio / pruebas)
+      const hasMultiDelegated = tasks.some(t => t.matterCode === 'EXP-IBIME-2026-9901');
+      if (!hasMultiDelegated) {
+        tasks.unshift(this.createInterdisciplinaryMultiAssigneeTask(cleanTenant));
+      }
     }
 
     const deduplicated = this.deduplicateTasks(tasks);

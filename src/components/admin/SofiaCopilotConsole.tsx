@@ -235,8 +235,70 @@ function normalizeText(input: string): string {
     .trim();
 }
 
-// Transformador prosódico para voz humana cálida, dulce y de alta fluidez (limpia símbolos, códigos y markdown)
-function buildNaturalSpokenSummary(rawText: string): string {
+// Catálogo de las 4 mejores voces humanas neuronales (0 Tokens · 24kHz · Masterizadas a -14 LUFS)
+export type SofiaHumanVoiceId =
+  | 'es-MX-DaliaNeural'
+  | 'es-US-PalomaNeural'
+  | 'es-CO-SalomeNeural'
+  | 'es-PE-CamilaNeural';
+
+export const SOFIA_HUMAN_VOICES: Array<{
+  id: SofiaHumanVoiceId;
+  shortLabel: string;
+  fullLabel: string;
+  rate: number;
+  pitch: number;
+}> = [
+  {
+    id: 'es-MX-DaliaNeural',
+    shortLabel: 'Dalia (Dulce · MX)',
+    fullLabel: 'Voz de Sofía: Dalia Neural (Dulce, Cálida y Humana · México · 0 Tokens)',
+    rate: 1.0,
+    pitch: 1.0
+  },
+  {
+    id: 'es-US-PalomaNeural',
+    shortLabel: 'Paloma (Ejecutiva)',
+    fullLabel: 'Voz de Sofía: Paloma Neural (Ejecutiva NPR Cálida · Latinoamérica · 0 Tokens)',
+    rate: 1.0,
+    pitch: 1.0
+  },
+  {
+    id: 'es-CO-SalomeNeural',
+    shortLabel: 'Salomé (Terciopelo)',
+    fullLabel: 'Voz de Sofía: Salomé Neural (Aterciopelada y Suave · Latinoamérica · 0 Tokens)',
+    rate: 0.99,
+    pitch: 1.0
+  },
+  {
+    id: 'es-PE-CamilaNeural',
+    shortLabel: 'Camila (Cristalina)',
+    fullLabel: 'Voz de Sofía: Camila Neural (Cristalina y Natural · Latinoamérica · 0 Tokens)',
+    rate: 1.01,
+    pitch: 1.01
+  }
+];
+
+// Remuestreador lineal de alta precisión para convertir cualquier frecuencia nativa de micrófono (48kHz/44.1kHz) a 16kHz exactos
+function downsampleFloat32To16kHz(buffer: Float32Array, inputSampleRate: number): Float32Array {
+  if (!buffer || buffer.length === 0) return new Float32Array(0);
+  if (!inputSampleRate || inputSampleRate === 16000) return buffer;
+  const ratio = inputSampleRate / 16000;
+  const newLength = Math.max(1, Math.round(buffer.length / ratio));
+  const result = new Float32Array(newLength);
+  for (let i = 0; i < newLength; i++) {
+    const pos = i * ratio;
+    const index = Math.floor(pos);
+    const frac = pos - index;
+    const s0 = buffer[index] ?? 0;
+    const s1 = buffer[Math.min(buffer.length - 1, index + 1)] ?? s0;
+    result[i] = s0 + frac * (s1 - s0);
+  }
+  return result;
+}
+
+// Transformador prosódico para voz humana cálida, dulce y de alta fluidez (limpia símbolos, códigos y siglas)
+export function buildNaturalSpokenSummary(rawText: string): string {
   if (!rawText) return '';
   let clean = rawText
     // Eliminar emojis e iconos decorativos
@@ -250,13 +312,32 @@ function buildNaturalSpokenSummary(rawText: string): string {
     .replace(/\(CURP:?\s*[A-Z0-9]+\)/gi, '')
     // Eliminar comas de miles dentro de cifras (3,740 -> 3740, 24,800 -> 24800) para lectura continua sin micro-pausas
     .replace(/(?<=\d),(?=\d{3}\b)/g, '')
-    // Convertir monedas y símbolos a lenguaje hablado natural mexicano
+    // Convertir monedas, proporciones y siglas ejecutivas a fonética humana natural mexicana
     .replace(/\$([0-9]+)\.00\s*MXN/gi, '$1 pesos')
     .replace(/\$([0-9]+(?:\.\d{1,2})?)\s*MXN/gi, '$1 pesos')
+    .replace(/\$([0-9]+)\.00\b/g, '$1 pesos')
+    .replace(/\$([0-9]+(?:\.\d{1,2})?)\b/g, '$1 pesos')
     .replace(/\bMXN\s*\/\s*mes\b/gi, 'pesos al mes')
     .replace(/\/mes\b/gi, ' al mes')
     .replace(/\bMXN\b/gi, 'pesos')
+    .replace(/\b1:(\d+(?:\.\d+)?)\b/g, 'uno a $1')
+    .replace(/(\d+)\s*°/g, '$1 grados')
     .replace(/(\d+(?:\.\d+)?)\s*%/g, '$1 por ciento')
+    .replace(/\bCFDI\s*4\.0\b/gi, 'C F D I cuatro punto cero')
+    .replace(/\bCFDI\b/gi, 'C F D I')
+    .replace(/\bIEDU\b/gi, 'I E D U')
+    .replace(/\bSAT\b/g, 'S A T')
+    .replace(/\bEBITDA\b/gi, 'ebitda')
+    .replace(/\bIBIME\b/gi, 'Ibime')
+    .replace(/\bUNAM\b/gi, 'Unam')
+    .replace(/\bCCH\b/g, 'C C H')
+    .replace(/\bSEP\s+NEM\b/gi, 'Nueva Escuela Mexicana')
+    .replace(/\bNEM\s*2024\b/gi, 'Nueva Escuela Mexicana dos mil veinticuatro')
+    .replace(/\bNEM\b/g, 'Nueva Escuela Mexicana')
+    .replace(/\bSEP\b/g, 'S E P')
+    .replace(/\biMail\b/gi, 'i-meil')
+    .replace(/\bSLA\b/g, 'S L A')
+    .replace(/\bKPIs?\b/gi, 'indicadores clave')
     .replace(/\b(\d+)\.(\d+)\b/g, '$1 punto $2')
     .replace(/>=/g, ' mayor o igual a ')
     .replace(/<=/g, ' menor o igual a ')
@@ -266,7 +347,6 @@ function buildNaturalSpokenSummary(rawText: string): string {
     .replace(/\b4º\b/g, 'cuarto')
     .replace(/\b5º\b/g, 'quinto')
     .replace(/\b6º\b/g, 'sexto')
-    .replace(/\bSEP\s+NEM\b/gi, 'Nueva Escuela Mexicana')
     .replace(/\s*·\s*/g, ', ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -276,8 +356,8 @@ function buildNaturalSpokenSummary(rawText: string): string {
   if (sentences.length > 3) {
     clean = sentences.slice(0, 3).join(' ');
   }
-  if (clean.length > 420) {
-    clean = clean.slice(0, 415).replace(/\s+\S*$/, '') + '.';
+  if (clean.length > 440) {
+    clean = clean.slice(0, 435).replace(/\s+\S*$/, '') + '.';
   }
   return clean;
 }
@@ -305,8 +385,10 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
   const [micDeviceLabel, setMicDeviceLabel] = useState<string>('Micrófono del Sistema');
   const [voiceStatusNote, setVoiceStatusNote] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [activeSpeakingTurnId, setActiveSpeakingTurnId] = useState<string | null>(null);
   const [voiceOutputEnabled, setVoiceOutputEnabled] = useState<boolean>(true);
-  const [sofiaVoiceId, setSofiaVoiceId] = useState<'es-MX-DaliaNeural' | 'es-PE-CamilaNeural'>('es-MX-DaliaNeural');
+  const [autoSubmitOnSilence, setAutoSubmitOnSilence] = useState<boolean>(true);
+  const [sofiaVoiceId, setSofiaVoiceId] = useState<SofiaHumanVoiceId>('es-MX-DaliaNeural');
   const [turns, setTurns] = useState<SofiaConversationTurn[]>([]);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -319,10 +401,19 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const pcmChunksRef = useRef<Float32Array[]>([]);
+  const pcmSampleRateRef = useRef<number>(16000);
   const audioContextRef = useRef<AudioContext | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const analyserIntervalRef = useRef<any>(null);
   const recordingTimerRef = useRef<any>(null);
+  const silenceAutoSubmitTimerRef = useRef<any>(null);
+  const hasDetectedSpeechEnergyRef = useRef<boolean>(false);
+  const lastSpeechActivityAtRef = useRef<number>(0);
+  const autoSubmitOnSilenceRef = useRef<boolean>(true);
+
+  useEffect(() => {
+    autoSubmitOnSilenceRef.current = autoSubmitOnSilence;
+  }, [autoSubmitOnSilence]);
 
   const latestTranscriptRef = useRef<string>('');
   const isStoppingVoiceRef = useRef<boolean>(false);
@@ -612,36 +703,12 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
     [onDispatchIMail, onTriggerToast]
   );
 
-  // Síntesis de voz humana neuronal dulce y cálida para Sofía (/api/ai/tts · Dalia / Camila Neural 24kHz)
-  const speakSofiaResponse = useCallback(
-    (textToSpeak: string) => {
-      if (!voiceOutputEnabled || typeof window === 'undefined') {
-        return;
-      }
-      const cleanSpoken = buildNaturalSpokenSummary(textToSpeak);
-      if (!cleanSpoken) return;
-
-      stopAllIskoolAudio();
-      playUniversalIskoolVoice({
-        text: cleanSpoken,
-        voiceId: sofiaVoiceId,
-        role: 'pedagogical',
-        gender: 'female',
-        language: 'es',
-        rate: 1.03,
-        pitch: 1.01,
-        onStart: () => setIsSpeaking(true),
-        onEnd: () => setIsSpeaking(false),
-        onError: () => setIsSpeaking(false)
-      }).catch(() => {
-        setIsSpeaking(false);
-      });
-    },
-    [voiceOutputEnabled, sofiaVoiceId]
-  );
-
   // Limpieza segura de recursos de micrófono y audio
   const cleanupAudioHardware = useCallback(() => {
+    if (silenceAutoSubmitTimerRef.current) {
+      clearTimeout(silenceAutoSubmitTimerRef.current);
+      silenceAutoSubmitTimerRef.current = null;
+    }
     if (analyserIntervalRef.current) {
       clearInterval(analyserIntervalRef.current);
       analyserIntervalRef.current = null;
@@ -683,9 +750,60 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       } catch {}
       audioContextRef.current = null;
     }
+    hasDetectedSpeechEnergyRef.current = false;
+    lastSpeechActivityAtRef.current = 0;
     setAudioLevel(0);
     setRecordingSeconds(0);
   }, []);
+
+  // Síntesis de voz humana neuronal dulce, cálida y ejecutiva para Sofía (/api/ai/tts · 24kHz · -14 LUFS · 0 Tokens)
+  const speakSofiaResponse = useCallback(
+    (textToSpeak: string, options?: { forceSpeak?: boolean; turnId?: string; customVoiceId?: SofiaHumanVoiceId }) => {
+      if (typeof window === 'undefined') return;
+      if (!voiceOutputEnabled && !options?.forceSpeak) {
+        return;
+      }
+      const cleanSpoken = buildNaturalSpokenSummary(textToSpeak);
+      if (!cleanSpoken) return;
+
+      // Apagar micrófono antes de hablar para evitar retroalimentación acústica (eco de altavoces)
+      cleanupAudioHardware();
+      setIsListening(false);
+
+      const targetVoice = options?.customVoiceId || sofiaVoiceId;
+      const voiceProfile = SOFIA_HUMAN_VOICES.find(v => v.id === targetVoice) || SOFIA_HUMAN_VOICES[0];
+
+      stopAllIskoolAudio();
+      if (options?.turnId) {
+        setActiveSpeakingTurnId(options.turnId);
+      } else {
+        setActiveSpeakingTurnId(null);
+      }
+
+      playUniversalIskoolVoice({
+        text: cleanSpoken,
+        voiceId: voiceProfile.id,
+        role: 'mentor',
+        gender: 'female',
+        language: 'es',
+        rate: voiceProfile.rate,
+        pitch: voiceProfile.pitch,
+        onStart: () => setIsSpeaking(true),
+        onEnd: () => {
+          setIsSpeaking(false);
+          setActiveSpeakingTurnId(null);
+        },
+        onError: () => {
+          setIsSpeaking(false);
+          setActiveSpeakingTurnId(null);
+        }
+      }).catch(() => {
+        setIsSpeaking(false);
+        setActiveSpeakingTurnId(null);
+      });
+    },
+    [voiceOutputEnabled, sofiaVoiceId, cleanupAudioHardware]
+  );
 
   // Detener voz y micrófono al cerrar el modal
   useEffect(() => {
@@ -693,6 +811,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       hasAutoStartedOnOpenRef.current = false;
       stopAllIskoolAudio();
       setIsSpeaking(false);
+      setActiveSpeakingTurnId(null);
       cleanupAudioHardware();
       setIsListening(false);
       setIsTranscribingAudio(false);
@@ -1373,7 +1492,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
       latestTranscriptRef.current = '';
 
       if (sofiaTurn.spokenText) {
-        speakSofiaResponse(sofiaTurn.spokenText);
+        speakSofiaResponse(sofiaTurn.spokenText, { turnId: sofiaTurn.id });
       }
     },
     [
@@ -1429,17 +1548,18 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         audioChunksRef.current = [];
       }
 
-      // Recolectar muestras PCM Float32 a 16kHz capturadas directamente del micrófono
+      // Recolectar muestras PCM Float32 y remuestrear con interpolación lineal exacta a 16kHz
       let mergedPcmF32: Float32Array | null = null;
       if (pcmChunksRef.current.length > 0) {
         const totalLen = pcmChunksRef.current.reduce((acc, arr) => acc + arr.length, 0);
         if (totalLen > 1600) {
-          mergedPcmF32 = new Float32Array(totalLen);
+          const rawCombined = new Float32Array(totalLen);
           let offset = 0;
           for (const chunk of pcmChunksRef.current) {
-            mergedPcmF32.set(chunk, offset);
+            rawCombined.set(chunk, offset);
             offset += chunk.length;
           }
+          mergedPcmF32 = downsampleFloat32To16kHz(rawCombined, pcmSampleRateRef.current || 16000);
         }
         pcmChunksRef.current = [];
       }
@@ -1453,12 +1573,12 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         return;
       }
 
-      // 2. Transcribir el audio real capturado del micrófono en /api/ai/stt (Whisper Neuronal Local)
+      // 2. Transcribir el audio real capturado del micrófono en /api/ai/stt (Motor Dual es-MX 0 Tokens)
       if ((mergedPcmF32 && mergedPcmF32.length > 1600) || (recordedBlob && recordedBlob.size > 400)) {
         setIsTranscribingAudio(true);
         try {
           const formData = new FormData();
-          formData.append('language', 'es');
+          formData.append('language', 'es-MX');
 
           if (mergedPcmF32 && mergedPcmF32.length > 1600) {
             const pcmBuffer = mergedPcmF32.buffer.slice(
@@ -1473,6 +1593,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
 
           const res = await fetch('/api/ai/stt', {
             method: 'POST',
+            credentials: 'include',
             headers: {
               'x-iskool-copilot': 'sofia-ceo'
             },
@@ -1513,7 +1634,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         setIsTranscribingAudio(false);
       } else {
         setVoiceStatusNote(
-          'Grabación demasiado corta o micrófono sin señal. Mantén el micrófono abierto mientras hablas y luego pulsa "Detener y Enviar Voz".'
+          'Grabación demasiado corta o micrófono sin señal. Habla con naturalidad frente al micrófono y pulsa "Detener y Enviar Voz".'
         );
       }
 
@@ -1535,7 +1656,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
   }, [cleanupAudioHardware]);
 
   // ============================================================================
-  // INICIO DE CAPTURA DE VOZ REAL (SIN AUTO-CIERRE PREMATURO)
+  // INICIO DE CAPTURA DE VOZ REAL (HARDWARE NATIVO + VAD INTELIGENTE + STT DUAL)
   // ============================================================================
   const startVoiceRecognition = useCallback(async () => {
     if (typeof window === 'undefined') return;
@@ -1545,24 +1666,28 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
     latestTranscriptRef.current = '';
     audioChunksRef.current = [];
     pcmChunksRef.current = [];
+    hasDetectedSpeechEnergyRef.current = false;
+    lastSpeechActivityAtRef.current = Date.now();
     setVoiceStatusNote(null);
     setInterimTranscript('');
 
     stopAllIskoolAudio();
     setIsSpeaking(false);
+    setActiveSpeakingTurnId(null);
 
     setIsListening(true);
     setRecordingSeconds(0);
 
-    // Contador de duración de grabación (SIN auto-cerrar el micrófono para dejar hablar libremente al usuario)
+    // Contador de duración de grabación
     recordingTimerRef.current = setInterval(() => {
       setRecordingSeconds(prev => prev + 1);
     }, 1000);
 
-    // 1. Abrir Micrófono Físico Real con WebAudio a 16kHz + Analizador de Onda en Tiempo Real
+    // 1. Abrir Micrófono Físico Real con frecuencia nativa de hardware (evita bloqueos en drivers Windows 48kHz/44.1kHz)
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      let stream: MediaStream | null = null;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
@@ -1571,78 +1696,110 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         });
         mediaStreamRef.current = stream;
 
-        // Obtener el nombre real del micrófono conectado
         const audioTracks = stream.getAudioTracks();
         if (audioTracks.length > 0 && audioTracks[0].label) {
           setMicDeviceLabel(audioTracks[0].label);
         }
-
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioCtx) {
-          const audioCtx = new AudioCtx({ sampleRate: 16000 });
-          audioContextRef.current = audioCtx;
-          if (audioCtx.state === 'suspended') {
-            await audioCtx.resume().catch(() => {});
-          }
-
-          const source = audioCtx.createMediaStreamSource(stream);
-          const analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 512;
-          source.connect(analyser);
-
-          // Capturador directo de muestras PCM Float32 a 16kHz para el motor neuronal local (/api/ai/stt)
-          if (audioCtx.createScriptProcessor) {
-            const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-            scriptProcessorRef.current = processor;
-            processor.onaudioprocess = e => {
-              const inputData = e.inputBuffer.getChannelData(0);
-              pcmChunksRef.current.push(new Float32Array(inputData));
-            };
-            source.connect(processor);
-            processor.connect(audioCtx.destination);
-          }
-
-          // Medidor de amplitud de onda en el dominio del tiempo (mueve las barras con tu voz real)
-          const timeDomainData = new Float32Array(analyser.fftSize);
-          analyserIntervalRef.current = setInterval(() => {
-            if (audioCtx.state === 'suspended') {
-              audioCtx.resume().catch(() => {});
-            }
-            analyser.getFloatTimeDomainData(timeDomainData);
-            let sumSq = 0;
-            let peak = 0;
-            for (let i = 0; i < timeDomainData.length; i++) {
-              const sample = timeDomainData[i];
-              sumSq += sample * sample;
-              const abs = Math.abs(sample);
-              if (abs > peak) peak = abs;
-            }
-            const rms = Math.sqrt(sumSq / timeDomainData.length);
-            // Escalar de forma sensible para que la voz normal mueva las barras entre 25% y 100%
-            const visualLevel = Math.min(100, Math.round(Math.max(rms * 420, peak * 180)));
-            setAudioLevel(visualLevel);
-          }, 60);
-        }
-
-        // Grabador MediaRecorder de respaldo
-        if (typeof MediaRecorder !== 'undefined') {
-          const recorder = new MediaRecorder(stream);
-          mediaRecorderRef.current = recorder;
-          recorder.ondataavailable = e => {
-            if (e.data && e.data.size > 0) {
-              audioChunksRef.current.push(e.data);
-            }
-          };
-          recorder.start(250);
-        }
       } catch {
         setVoiceStatusNote(
-          'No se pudo acceder al micrófono físico. Verifica que el permiso de micrófono esté habilitado en el icono de candado junto a la URL.'
+          'No se pudo acceder al micrófono físico. Verifica que el permiso de micrófono esté habilitado en el icono junto a la URL.'
         );
+      }
+
+      if (stream) {
+        // 1A. Grabador MediaRecorder de respaldo (aislado en su propio bloque try/catch)
+        if (typeof MediaRecorder !== 'undefined') {
+          try {
+            const preferredMime =
+              typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : undefined;
+            const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+            mediaRecorderRef.current = recorder;
+            recorder.ondataavailable = e => {
+              if (e.data && e.data.size > 0) {
+                audioChunksRef.current.push(e.data);
+              }
+            };
+            recorder.start(200);
+          } catch {}
+        }
+
+        // 1B. Grafo WebAudio en frecuencia nativa + Remuestreador a 16kHz + Detector de Silencio Inteligente (VAD)
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          try {
+            const audioCtx = new AudioCtx();
+            audioContextRef.current = audioCtx;
+            pcmSampleRateRef.current = audioCtx.sampleRate || 48000;
+
+            if (audioCtx.state === 'suspended') {
+              await audioCtx.resume().catch(() => {});
+            }
+
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            source.connect(analyser);
+
+            if (audioCtx.createScriptProcessor) {
+              const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+              scriptProcessorRef.current = processor;
+              processor.onaudioprocess = e => {
+                if (isStoppingVoiceRef.current) return;
+                const inputData = e.inputBuffer.getChannelData(0);
+                pcmChunksRef.current.push(new Float32Array(inputData));
+              };
+              // Conectar a un nodo de ganancia 0 para evitar cualquier retroalimentación o eco en altavoces
+              const zeroGain = audioCtx.createGain();
+              zeroGain.gain.value = 0;
+              source.connect(processor);
+              processor.connect(zeroGain);
+              zeroGain.connect(audioCtx.destination);
+            }
+
+            const timeDomainData = new Float32Array(analyser.fftSize);
+            let speechFramesCount = 0;
+            analyserIntervalRef.current = setInterval(() => {
+              if (isStoppingVoiceRef.current) return;
+              if (audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(() => {});
+              }
+              analyser.getFloatTimeDomainData(timeDomainData);
+              let sumSq = 0;
+              let peak = 0;
+              for (let i = 0; i < timeDomainData.length; i++) {
+                const sample = timeDomainData[i];
+                sumSq += sample * sample;
+                const abs = Math.abs(sample);
+                if (abs > peak) peak = abs;
+              }
+              const rms = Math.sqrt(sumSq / timeDomainData.length);
+              const visualLevel = Math.min(100, Math.round(Math.max(rms * 450, peak * 195)));
+              setAudioLevel(visualLevel);
+
+              // Detección de Actividad de Voz (VAD) para Auto-Envío Inteligente al terminar de hablar
+              if (visualLevel >= 16) {
+                speechFramesCount++;
+                lastSpeechActivityAtRef.current = Date.now();
+                if (speechFramesCount >= 5) {
+                  hasDetectedSpeechEnergyRef.current = true;
+                }
+              } else if (
+                autoSubmitOnSilenceRef.current &&
+                (hasDetectedSpeechEnergyRef.current || latestTranscriptRef.current.trim().length >= 3) &&
+                Date.now() - lastSpeechActivityAtRef.current > 1850 &&
+                !isStoppingVoiceRef.current
+              ) {
+                stopAndProcessVoice();
+              }
+            }, 60);
+          } catch {}
+        }
       }
     }
 
-    // 2. Web Speech API en paralelo (si el navegador lo soporta sin bloquearlo)
+    // 2. Web Speech API en paralelo (transcripción en vivo instantánea en español mexicano)
     const SpeechRecognitionAPI =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -1668,21 +1825,47 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
           }
           const combined = `${accumulatedFinal} ${currentInterim}`.replace(/\s+/g, ' ').trim();
           if (combined) {
+            hasDetectedSpeechEnergyRef.current = true;
+            lastSpeechActivityAtRef.current = Date.now();
             latestTranscriptRef.current = combined;
             setInterimTranscript(combined);
             setInputQuery(combined);
+
+            if (silenceAutoSubmitTimerRef.current) {
+              clearTimeout(silenceAutoSubmitTimerRef.current);
+            }
+            if (autoSubmitOnSilenceRef.current && combined.length >= 3) {
+              silenceAutoSubmitTimerRef.current = setTimeout(() => {
+                if (!isStoppingVoiceRef.current) {
+                  stopAndProcessVoice();
+                }
+              }, 1850);
+            }
           }
         };
 
         recognition.onerror = () => {
-          // En Brave Browser, webkitSpeechRecognition lanza 'network'; ignoramos y seguimos grabando PCM 16kHz con el micrófono físico.
+          // Si Web Speech falla o no hay red, seguimos capturando PCM 16kHz del micrófono físico sin interrupción.
+        };
+
+        recognition.onend = () => {
+          // Si Chrome corta la sesión de Web Speech prematuramente mientras el usuario aún no termina, reanudar
+          if (!isStoppingVoiceRef.current && recognitionRef.current === recognition) {
+            if (autoSubmitOnSilenceRef.current && latestTranscriptRef.current.trim().length >= 3) {
+              stopAndProcessVoice();
+            } else {
+              try {
+                recognition.start();
+              } catch {}
+            }
+          }
         };
 
         recognitionRef.current = recognition;
         recognition.start();
       } catch {}
     }
-  }, [cleanupAudioHardware]);
+  }, [cleanupAudioHardware, stopAndProcessVoice]);
 
   const toggleVoiceRecognition = useCallback(() => {
     if (isListening) {
@@ -1818,20 +2001,49 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
             <button
               type="button"
               onClick={() => {
-                const nextVoice =
-                  sofiaVoiceId === 'es-MX-DaliaNeural' ? 'es-PE-CamilaNeural' : 'es-MX-DaliaNeural';
-                setSofiaVoiceId(nextVoice);
-                onTriggerToast(
-                  nextVoice === 'es-MX-DaliaNeural'
-                    ? 'Voz de Sofía: Dalia Neural (Dulce & Cálida · México)'
-                    : 'Voz de Sofía: Camila Neural (Suave & Natural · Latinoamérica)'
+                const currentIdx = SOFIA_HUMAN_VOICES.findIndex(v => v.id === sofiaVoiceId);
+                const nextVoiceObj = SOFIA_HUMAN_VOICES[(currentIdx + 1) % SOFIA_HUMAN_VOICES.length];
+                setSofiaVoiceId(nextVoiceObj.id);
+                onTriggerToast(`Voz de Sofía: ${nextVoiceObj.fullLabel}`);
+                speakSofiaResponse(
+                  `Hola Director, ahora te hablo con la voz neuronal ${nextVoiceObj.shortLabel}. Estoy lista para ayudarte.`,
+                  { forceSpeak: true, customVoiceId: nextVoiceObj.id }
                 );
               }}
               className="hidden sm:flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-800/90 hover:bg-indigo-950 text-indigo-200 border border-indigo-500/30 text-[11px] font-bold cursor-pointer transition-colors"
-              title="Cambiar timbre de voz neuronal humana de Sofía"
+              title="Cambiar timbre de voz neuronal humana de Sofía (0 Tokens)"
             >
               <Sparkles size={12} className="text-pink-400" />
-              <span>{sofiaVoiceId === 'es-MX-DaliaNeural' ? 'Voz: Dalia (Dulce)' : 'Voz: Camila (Suave)'}</span>
+              <span>
+                Voz: {(SOFIA_HUMAN_VOICES.find(v => v.id === sofiaVoiceId) || SOFIA_HUMAN_VOICES[0]).shortLabel}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (isSpeaking) {
+                  stopAllIskoolAudio();
+                  setIsSpeaking(false);
+                  setActiveSpeakingTurnId(null);
+                } else {
+                  const latestSofiaTurn = [...turns].reverse().find(t => t.role === 'sofia');
+                  speakSofiaResponse(
+                    latestSofiaTurn?.text ||
+                      'Hola Director, soy Sofía, tu Segundo Cerebro Ejecutivo. Mi micrófono y mi síntesis neuronal operan al cien por ciento con cero costo de tokens.',
+                    { forceSpeak: true, turnId: latestSofiaTurn?.id }
+                  );
+                }
+              }}
+              className={`px-2.5 py-2 rounded-xl border text-[11px] font-black cursor-pointer transition-all flex items-center gap-1.5 ${
+                isSpeaking
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 animate-pulse'
+                  : 'bg-indigo-500/15 hover:bg-indigo-500/30 text-indigo-200 border-indigo-500/30'
+              }`}
+              title={isSpeaking ? 'Detener locución actual de Sofía' : 'Escuchar respuesta de Sofía con voz humana'}
+            >
+              <Volume2 size={14} className={isSpeaking ? 'text-amber-300' : 'text-indigo-300'} />
+              <span className="hidden md:inline">{isSpeaking ? 'Detener Voz' : 'Probar Voz'}</span>
             </button>
 
             <button
@@ -1842,6 +2054,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
                 if (!next) {
                   stopAllIskoolAudio();
                   setIsSpeaking(false);
+                  setActiveSpeakingTurnId(null);
                 }
               }}
               className={`p-2 rounded-xl border text-xs font-bold cursor-pointer transition-colors ${
@@ -1916,25 +2129,40 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
                           ? `Reconocido: “${interimTranscript}”`
                           : audioLevel > 8
                           ? `¡Recibiendo tu voz! Nivel acústico: ${audioLevel}%`
-                          : 'Micrófono abierto — Habla ahora (sin límite de tiempo)'}
+                          : 'Micrófono abierto — Habla ahora (detección inteligente activa)'}
                       </span>
                     </div>
                     <p className="text-[11px] text-indigo-200/90">
-                      El micrófono no se cerrará solo mientras hablas. Cuando termines tu frase, haz clic en{' '}
-                      <strong className="text-emerald-300">&ldquo;Detener y Enviar Voz&rdquo;</strong>.
+                      {autoSubmitOnSilence
+                        ? 'Auto-Envío inteligente activo: al terminar tu frase y hacer una breve pausa, Sofía procesará y responderá con voz.'
+                        : 'Modo manual activo: haz clic en “Detener y Enviar Voz” cuando termines de hablar.'}
                     </p>
                   </div>
                 </div>
 
                 {isListening && (
-                  <button
-                    type="button"
-                    onClick={() => stopAndProcessVoice()}
-                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition-all shadow-md flex items-center gap-1.5 shrink-0"
-                  >
-                    <Send size={13} />
-                    <span>Detener y Enviar Voz</span>
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setAutoSubmitOnSilence(prev => !prev)}
+                      className={`px-3 py-2 rounded-xl text-[11px] font-bold border cursor-pointer transition-all ${
+                        autoSubmitOnSilence
+                          ? 'bg-indigo-500/20 text-indigo-200 border-indigo-400/40'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}
+                      title="Activar o desactivar envío automático al detectar pausa tras hablar"
+                    >
+                      ⚡ Auto-Envío: {autoSubmitOnSilence ? 'ON' : 'OFF'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => stopAndProcessVoice()}
+                      className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition-all shadow-md flex items-center gap-1.5 shrink-0"
+                    >
+                      <Send size={13} />
+                      <span>Detener y Enviar Voz</span>
+                    </button>
+                  </div>
                 )}
               </div>
             )}
@@ -1976,6 +2204,27 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
                         ⚡ {turn.latencyMs}ms · 0 Tokens
                       </span>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isSpeaking && activeSpeakingTurnId === turn.id) {
+                          stopAllIskoolAudio();
+                          setIsSpeaking(false);
+                          setActiveSpeakingTurnId(null);
+                        } else {
+                          speakSofiaResponse(turn.text, { forceSpeak: true, turnId: turn.id });
+                        }
+                      }}
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all border ${
+                        isSpeaking && activeSpeakingTurnId === turn.id
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-400/40 animate-pulse'
+                          : 'bg-slate-800/90 hover:bg-indigo-500/20 text-indigo-200 border-slate-700 hover:border-indigo-500/40'
+                      }`}
+                      title="Escuchar esta respuesta con la voz neuronal humana de Sofía"
+                    >
+                      <Volume2 size={11} />
+                      <span>{isSpeaking && activeSpeakingTurnId === turn.id ? 'Detener' : 'Escuchar'}</span>
+                    </button>
                   </div>
                   <span className="text-[11px] font-mono text-slate-500">{turn.timestamp}</span>
                 </div>
@@ -2160,7 +2409,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
               if (isListening) {
                 if (inputQuery.trim()) {
                   cancelVoiceRecording();
-                  processCommandWithSofia(inputQuery, false);
+                  processCommandWithSofia(inputQuery, true);
                 } else {
                   stopAndProcessVoice();
                 }

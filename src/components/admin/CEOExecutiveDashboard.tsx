@@ -129,8 +129,8 @@ const CrmAdmissionsStudio = dynamic(
 
 // ==========================================
 // ==========================================
-// SEED OFICIAL DEL CASO REAL INSTITUTO BILINGÜE IBIME
-// (Red de 4 Planteles en Ecatepec y Coacalco, 3,740 Alumnos, Licencia SaaS ISkool)
+// HOLDING OFICIAL EN PRODUCCIÓN: INSTITUTO BILINGÜE IBIME
+// (Red de 4 Planteles Oficiales en Ecatepec y Coacalco — Limpio de seeds teóricos para Producción)
 // ==========================================
 export const DEFAULT_IBIME_HOLDING: OrganizationHolding = {
   id: 'org-ibime-holding',
@@ -146,53 +146,53 @@ export const DEFAULT_IBIME_HOLDING: OrganizationHolding = {
       id: 'montes', 
       name: 'Campus Montes (Sede Matriz & CCH)', 
       location: 'Jardines de Morelos Secc. Montes, Ecatepec', 
-      students: 1620, 
-      teachers: 84, 
-      collectionRate: 95, 
-      admissionsInProgress: 14, 
-      academicHealth: 96, 
+      students: 0, 
+      teachers: 0, 
+      collectionRate: 0, 
+      admissionsInProgress: 0, 
+      academicHealth: 0, 
       focalIssues: 0,
-      curriculumCoverage: 96,
-      retentionRate: 97
+      curriculumCoverage: 0,
+      retentionRate: 0
     },
     { 
       id: 'lagos', 
       name: 'Campus Lagos (Fundador 2004)', 
       location: 'Jardines de Morelos Secc. Lagos, Ecatepec', 
-      students: 710, 
-      teachers: 38, 
-      collectionRate: 96, 
-      admissionsInProgress: 8, 
-      academicHealth: 95, 
+      students: 0, 
+      teachers: 0, 
+      collectionRate: 0, 
+      admissionsInProgress: 0, 
+      academicHealth: 0, 
       focalIssues: 0,
-      curriculumCoverage: 95,
-      retentionRate: 96
+      curriculumCoverage: 0,
+      retentionRate: 0
     },
     { 
       id: 'sancristobal', 
       name: 'Campus San Cristóbal (Ecatepec Centro)', 
       location: 'Av. Insurgentes, Lomas de Atzolco, Ecatepec', 
-      students: 830, 
-      teachers: 46, 
-      collectionRate: 93, 
-      admissionsInProgress: 9, 
-      academicHealth: 93, 
-      focalIssues: 1,
-      curriculumCoverage: 94,
-      retentionRate: 95
+      students: 0, 
+      teachers: 0, 
+      collectionRate: 0, 
+      admissionsInProgress: 0, 
+      academicHealth: 0, 
+      focalIssues: 0,
+      curriculumCoverage: 0,
+      retentionRate: 0
     },
     { 
       id: 'coacalco', 
       name: 'Campus Coacalco (Metropolitano)', 
       location: 'Col. Guadalupe Victoria, Ecatepec-Coacalco', 
-      students: 580, 
-      teachers: 32, 
-      collectionRate: 91, 
-      admissionsInProgress: 6, 
-      academicHealth: 92, 
-      focalIssues: 1,
-      curriculumCoverage: 93,
-      retentionRate: 94
+      students: 0, 
+      teachers: 0, 
+      collectionRate: 0, 
+      admissionsInProgress: 0, 
+      academicHealth: 0, 
+      focalIssues: 0,
+      curriculumCoverage: 0,
+      retentionRate: 0
     },
   ]
 };
@@ -209,11 +209,6 @@ export function buildHoldingForInstitution(
   teachersList?: any[]
 ): OrganizationHolding {
   if (!institution) return DEFAULT_IBIME_HOLDING;
-
-  // Caso específico IBIME
-  if (institution.id === 'sch-ibime' || institution.name?.includes('IBIME')) {
-    return DEFAULT_IBIME_HOLDING;
-  }
 
   const isCorp = isCorporateInstitution(institution) ||
                  institution.id?.startsWith('emp-') ||
@@ -887,7 +882,7 @@ export default function CEOExecutiveDashboard({
     if (effectiveId) {
       const match = institutionsList.find(i => i.id === effectiveId);
       if (match) {
-        if (propHolding && (propHolding.id.includes(match.id) || propHolding.name === match.name)) {
+        if (match.id !== 'sch-ibime' && propHolding && (propHolding.id.includes(match.id) || propHolding.name === match.name)) {
           return propHolding;
         }
         return buildHoldingForInstitution(match, campusesList, detailedStudents, teachersList);
@@ -1188,7 +1183,9 @@ export default function CEOExecutiveDashboard({
   // -----------------------------------------------------------
   const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(() => {
     if (!isCorporate) {
-      if (isIbime) return INITIAL_PROSPECTS_DATA;
+      if (isIbime) return [];
+      const totalStu = (holding.campuses || []).reduce((acc, c) => acc + c.students, 0);
+      if (!isTestCaseSchool && totalStu === 0) return [];
       const camps = holding.campuses || [];
       if (camps.length > 0) {
         return INITIAL_PROSPECTS_DATA.map((p, idx) => {
@@ -1218,8 +1215,9 @@ export default function CEOExecutiveDashboard({
       }
       setActiveReportQuery(prev => prev.includes('Estudiantes') ? 'Colaboradores y áreas operativas con asignación de recursos y estatus' : prev);
     } else {
-      if (isIbime) {
-        setProspectsList(INITIAL_PROSPECTS_DATA);
+      const totalStu = (holding.campuses || []).reduce((acc, c) => acc + c.students, 0);
+      if (isIbime || (!isTestCaseSchool && totalStu === 0)) {
+        setProspectsList(prev => prev.filter(p => p.id.startsWith('prospect-manual-')));
       } else {
         const camps = holding.campuses || [];
         setProspectsList(
@@ -1489,8 +1487,12 @@ export default function CEOExecutiveDashboard({
       sanluis: [16, 10, 6, 4, 2]
     };
 
-    const base: [number, number, number, number, number] =
-      campusBase[selectedCampusId] || campusBase['all'];
+    const totalStuInHolding = (holding.campuses || []).reduce((acc, c) => acc + c.students, 0);
+    const hasSeedFunnel = isCorporate || isTestCaseSchool || (!isIbime && totalStuInHolding > 0);
+
+    const base: [number, number, number, number, number] = hasSeedFunnel
+      ? (campusBase[selectedCampusId] || campusBase['all'])
+      : [0, 0, 0, 0, 0];
 
     const extraInStage = (stageNum: number) => {
       return prospectsList.filter(p => {
@@ -1500,7 +1502,7 @@ export default function CEOExecutiveDashboard({
     };
 
     const livePhaseCount = (idx: number) =>
-      livePipelineMetrics?.phases?.[idx]?.candidateCount || 0;
+      hasSeedFunnel ? (livePipelineMetrics?.phases?.[idx]?.candidateCount || 0) : 0;
 
     const c1 = isCorporate ? (base[0] + extraInStage(1)) : (base[0] + extraInStage(1) + livePhaseCount(0));
     const c2 = isCorporate ? (base[1] + extraInStage(2)) : (base[1] + extraInStage(2) + livePhaseCount(1));
@@ -1587,11 +1589,10 @@ export default function CEOExecutiveDashboard({
 
   // Base de facturación anual estimada según tamaño y campuses del holding
   const estimatedAnnualBilling = useMemo(() => {
-    if (isIbime) return 148500000;
     const totalStudents = holding.campuses.reduce((acc, c) => acc + c.students, 0);
     const perStudentRate = isCorporate ? 52000 : 39600;
     return Math.max(12000000, totalStudents * perStudentRate);
-  }, [isIbime, isCorporate, holding.campuses]);
+  }, [isCorporate, holding.campuses]);
 
   // Cálculo del Simulador en Tiempo Real
   const simResults = useMemo(() => {
@@ -1635,18 +1636,20 @@ export default function CEOExecutiveDashboard({
     const totalFocalIssues = list.reduce((acc, c) => acc + c.focalIssues, 0);
 
     let deltas = {
-      students: '↑ 3.2%',
-      teachers: '↑ 2.1%',
-      admissions: '↑ 15.4%',
-      collectionTrend: avgCollection >= collectionThreshold ? 'En Meta' : 'Alerta'
+      students: totalStudents > 0 ? '↑ 3.2%' : 'En Vivo',
+      teachers: totalTeachers > 0 ? '↑ 2.1%' : 'En Vivo',
+      admissions: totalAdmissions > 0 ? '↑ 15.4%' : 'En Vivo',
+      collectionTrend: totalStudents === 0 ? 'Base 0' : (avgCollection >= collectionThreshold ? 'En Meta' : 'Alerta')
     };
 
-    if (timeFilter === 'mes') {
-      deltas = { students: '↑ 3.0%', teachers: '↑ 2.0%', admissions: '↑ 15.0%', collectionTrend: 'En Seguimiento' };
-    } else if (timeFilter === 'bimestre') {
-      deltas = { students: '↑ 5.8%', teachers: '↑ 4.2%', admissions: '↑ 28.5%', collectionTrend: 'Cierre Próximo' };
-    } else if (timeFilter === 'ciclo') {
-      deltas = { students: '↑ 12.4%', teachers: '↑ 8.0%', admissions: '↑ 42.0%', collectionTrend: 'Ciclo 2026-2027' };
+    if (totalStudents > 0) {
+      if (timeFilter === 'mes') {
+        deltas = { students: '↑ 3.0%', teachers: '↑ 2.0%', admissions: '↑ 15.0%', collectionTrend: 'En Seguimiento' };
+      } else if (timeFilter === 'bimestre') {
+        deltas = { students: '↑ 5.8%', teachers: '↑ 4.2%', admissions: '↑ 28.5%', collectionTrend: 'Cierre Próximo' };
+      } else if (timeFilter === 'ciclo') {
+        deltas = { students: '↑ 12.4%', teachers: '↑ 8.0%', admissions: '↑ 42.0%', collectionTrend: 'Ciclo 2026-2027' };
+      }
     }
 
     const t1 = performance.now();
@@ -2034,7 +2037,8 @@ export default function CEOExecutiveDashboard({
       return;
     }
     stopAllIskoolAudio();
-    const speechText = `Resumen Ejecutivo de 60 segundos para ${institutionalDisplayName}. Matrícula activa consolidada: ${metrics.totalStudents} ${isCorporate ? 'colaboradores' : 'alumnos'} en ${metrics.totalCampuses} ${isCorporate ? 'plantas' : 'sedes'}, con ${metrics.avgCollection} por ciento de cobranza efectiva y ${metrics.avgCurriculum} por ciento de cobertura curricular. En iMail y Triage tienes 3 asuntos críticos pendientes de firma en el Decision Dock: autorización de beca de retención en Campus Coacalco, dictamen de mantenimiento preventivo y conciliación fiscal CFDI 4.0. Todos los sistemas operan a cero tokens.`;
+    const criticalImailCount = (metrics.totalStudents > 0 || isTestCaseSchool) ? 3 : 0;
+    const speechText = `Resumen Ejecutivo de 60 segundos para ${institutionalDisplayName}. Matrícula activa consolidada: ${metrics.totalStudents} ${isCorporate ? 'colaboradores' : 'alumnos'} en ${metrics.totalCampuses} ${isCorporate ? 'plantas' : 'sedes'}, con ${metrics.avgCollection} por ciento de cobranza efectiva y ${metrics.avgCurriculum} por ciento de cobertura curricular. En iMail y Triage tienes ${criticalImailCount} asuntos críticos pendientes de firma en el Decision Dock. Todos los sistemas operan a cero tokens.`;
     setIsPlayingOmniBriefing(true);
     triggerToast('▶ Reproduciendo Briefing Ejecutivo con Voz Humana (Sofía · 0 Tokens)...');
     playUniversalIskoolVoice(speechText, {
@@ -2046,7 +2050,9 @@ export default function CEOExecutiveDashboard({
       onStart: () => setIsPlayingOmniBriefing(true),
       onEnd: () => setIsPlayingOmniBriefing(false),
     });
-  }, [isPlayingOmniBriefing, institutionalDisplayName, metrics, isCorporate, triggerToast]);
+  }, [isPlayingOmniBriefing, institutionalDisplayName, metrics, isCorporate, isTestCaseSchool, triggerToast]);
+
+  const activeImailCriticalCount = (metrics.totalStudents > 0 || isTestCaseSchool) ? 3 : 0;
 
   const navMenuItems: Array<{ id: string; label: string; icon: any; desc: string; highlight?: boolean; badge?: string }> = [
     { 
@@ -2086,7 +2092,7 @@ export default function CEOExecutiveDashboard({
       icon: Mail,
       desc: 'Decision Dock & Radar SLA',
       highlight: true,
-      badge: '3'
+      badge: activeImailCriticalCount > 0 ? String(activeImailCriticalCount) : undefined
     }
   ];
 
@@ -2520,12 +2526,12 @@ export default function CEOExecutiveDashboard({
                 type="button"
                 onClick={() => handleNavClick('imail_triage')}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white text-indigo-950 text-[11px] font-extrabold transition-all cursor-pointer"
-                title="Abrir iMail & Triage Ejecutivo (3 asuntos críticos)"
+                title={`Abrir iMail & Triage Ejecutivo (${activeImailCriticalCount} asuntos críticos)`}
               >
                 <Mail size={13} className="text-indigo-600 shrink-0" />
                 <span className="hidden sm:inline">iMail:</span>
-                <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black">
-                  3 Críticos
+                <span className={`px-1.5 py-0.2 rounded-full text-white text-[10px] font-black ${activeImailCriticalCount > 0 ? 'bg-rose-500' : 'bg-emerald-600'}`}>
+                  {activeImailCriticalCount} Críticos
                 </span>
               </button>
               <button
@@ -2816,12 +2822,12 @@ export default function CEOExecutiveDashboard({
                       <div className="flex items-center gap-2">
                         <h2 className="font-bold text-slate-900 text-base">Focos de atención</h2>
                         <span className={`w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center ${
-                          (metrics.totalStudents > 0 || isIbime || isTestCaseSchool) ? 'bg-rose-500' : 'bg-emerald-500'
+                          (metrics.totalStudents > 0 || isTestCaseSchool) ? 'bg-rose-500' : 'bg-emerald-500'
                         }`}>
-                          {(metrics.totalStudents > 0 || isIbime || isTestCaseSchool) ? 4 : 0}
+                          {(metrics.totalStudents > 0 || isTestCaseSchool) ? 4 : 0}
                         </span>
                       </div>
-                      {(metrics.totalStudents > 0 || isIbime || isTestCaseSchool) && (
+                      {(metrics.totalStudents > 0 || isTestCaseSchool) && (
                         <button 
                           onClick={() => setIsAllFocalsOpen(true)}
                           className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
@@ -2832,7 +2838,7 @@ export default function CEOExecutiveDashboard({
                     </div>
 
                     {(() => {
-                      if (metrics.totalStudents === 0 && !isIbime && !isTestCaseSchool) {
+                      if (metrics.totalStudents === 0 && !isTestCaseSchool) {
                         return (
                           <div className="py-10 px-4 rounded-xl bg-slate-50 border border-slate-100 text-center space-y-2">
                             <CheckCircle2 size={28} className="text-emerald-500 mx-auto" />
@@ -3048,9 +3054,9 @@ export default function CEOExecutiveDashboard({
                     {!isComparativeMatrixOpen ? (
                       <div className="space-y-3.5">
                         {metrics.filteredCampuses.map((campus) => {
-                          const isWarning = campus.collectionRate < 90;
-                          const isDanger = campus.collectionRate < 85;
-                          const occRate = Math.round((campus.students / Math.max(1, campus.students * 1.2)) * 100);
+                          const isWarning = campus.students > 0 && campus.collectionRate < 90;
+                          const isDanger = campus.students > 0 && campus.collectionRate < 85;
+                          const occRate = campus.students > 0 ? Math.round((campus.students / Math.max(1, campus.students * 1.2)) * 100) : 0;
                           return (
                             <div 
                               key={campus.id} 
@@ -3067,7 +3073,7 @@ export default function CEOExecutiveDashboard({
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span className="text-[11px] text-slate-500">SEP NEM: <strong className="text-indigo-600 font-mono">{campus.curriculumCoverage ?? 0}%</strong></span>
-                                  <span className={`font-mono font-bold ${isDanger ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                  <span className={`font-mono font-bold ${campus.students === 0 ? 'text-slate-500' : isDanger ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'}`}>
                                     {campus.collectionRate}% cobranza
                                   </span>
                                 </div>
@@ -3157,7 +3163,7 @@ export default function CEOExecutiveDashboard({
                       onClick={() => setIsAllActivityOpen(true)}
                       className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
                     >
-                      <span>Ver bitácora de actividad reciente (3 eventos)</span>
+                      <span>Ver bitácora de actividad reciente ({(metrics.totalStudents > 0 || isTestCaseSchool) ? 3 : 0} eventos)</span>
                       <ChevronRight size={13} />
                     </button>
                   </div>
@@ -3554,25 +3560,24 @@ export default function CEOExecutiveDashboard({
                   cov: c.curriculumCoverage || 95,
                   ret: c.retentionRate || 96,
                   status: i === 0 ? 'Sede Central' : 'Planta Operativa'
-                })) : (isIbime ? [
-                  { id: 'montes', name: 'Campus Montes (Sede Matriz & CCH)', loc: 'Jardines de Morelos, Ecatepec', dir: 'Lic. Roberto González', rvoe: '15PPR3322G / UNAM 7998', cap: 1800, stu: 1620, tea: 84, col: 95, cov: 96, ret: 97, status: 'Sede Matriz' },
-                  { id: 'lagos', name: 'Campus Lagos (Fundador 2004)', loc: 'Jardines de Morelos Secc. Lagos', dir: 'Mtra. Patricia Salmerón', rvoe: '15PJN2222K / 15PPR3657T', cap: 800, stu: 710, tea: 38, col: 96, cov: 95, ret: 96, status: 'Líder en Cobranza' },
-                  { id: 'sancristobal', name: 'Campus San Cristóbal', loc: 'Ecatepec Centro (Insurgentes)', dir: 'Dr. Andrés Morales', rvoe: '15PPR4012S / 15PES1240K', cap: 950, stu: 830, tea: 46, col: 93, cov: 94, ret: 95, status: 'Óptimo' },
-                  { id: 'coacalco', name: 'Campus Coacalco (Metropolitano)', loc: 'Guadalupe Victoria, Ecatepec-Coacalco', dir: 'Dra. Carmen Del Valle', rvoe: '15PPR5110Z / 15PES1405M', cap: 700, stu: 580, tea: 32, col: 91, cov: 93, ret: 94, status: 'Seguimiento' }
-                ] : holding.campuses.map((c, i) => ({
+                })) : holding.campuses.map((c, i) => ({
                   id: c.id,
                   name: c.name,
                   loc: c.location,
-                  dir: `Director de Plantel #${i+1}`,
-                  rvoe: `CCT: ${c.id.toUpperCase()}-SEP`,
-                  cap: Math.round(c.students * 1.2),
+                  dir: isIbime
+                    ? (['Lic. Roberto González', 'Mtra. Patricia Salmerón', 'Dr. Andrés Morales', 'Dra. Carmen Del Valle'][i] || `Director de Plantel #${i+1}`)
+                    : `Director de Plantel #${i+1}`,
+                  rvoe: isIbime
+                    ? (['15PPR3322G / UNAM 7998', '15PJN2222K / 15PPR3657T', '15PPR4012S / 15PES1240K', '15PPR5110Z / 15PES1405M'][i] || `CCT: ${c.id.toUpperCase()}-SEP`)
+                    : `CCT: ${c.id.toUpperCase()}-SEP`,
+                  cap: Math.max(200, Math.round(c.students * 1.2)),
                   stu: c.students,
                   tea: c.teachers,
                   col: c.collectionRate,
-                  cov: c.curriculumCoverage || 95,
-                  ret: c.retentionRate || 96,
-                  status: i === 0 ? 'Plantel Central' : (c.collectionRate >= 95 ? 'Líder en Cobranza' : 'En Seguimiento')
-                })))).map((c) => {
+                  cov: c.curriculumCoverage ?? 0,
+                  ret: c.retentionRate ?? 0,
+                  status: i === 0 ? 'Sede Matriz' : (c.collectionRate >= 95 ? 'Líder en Cobranza' : (c.students === 0 ? 'Operación Limpia' : 'En Seguimiento'))
+                }))).map((c) => {
                   const occRate = ((c.stu / c.cap) * 100).toFixed(1);
                   return (
                     <div key={c.id} className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
@@ -4748,8 +4753,8 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* TELEMETRÍA EN VIVO DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS (IBIME 2026-2027) (MODO CLARO) */}
-              {!isCorporate && livePipelineMetrics && (
+              {/* TELEMETRÍA EN VIVO DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS (2026-2027) */}
+              {!isCorporate && livePipelineMetrics && (isTestCaseSchool || metrics.totalStudents > 0) && (
                 <div className="bg-white p-6 rounded-3xl text-slate-900 border border-slate-200 shadow-sm space-y-4">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div>
@@ -4791,7 +4796,7 @@ export default function CEOExecutiveDashboard({
                     <div className="flex justify-between text-[11px] text-slate-500">
                       <span>Reinscritos Base: {livePipelineMetrics.capacity.baseEnrolledSeats.toLocaleString('es-MX')}</span>
                       <span>Nuevo Ingreso CRM (Fase 5): +{livePipelineMetrics.capacity.newlyEnrolledFromCrm}</span>
-                      <span>Meta Anual: {livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} (3,740 IBIME)</span>
+                      <span>Meta Anual: {livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} ({institutionalDisplayName})</span>
                     </div>
                   </div>
                 </div>

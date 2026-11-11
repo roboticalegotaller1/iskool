@@ -359,7 +359,15 @@ export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
 function compileFastMatcher(keywords: readonly string[]): RegExp {
   const sorted = [...keywords].sort((a, b) => b.length - a.length);
   const pattern = sorted
-    .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .map(k => {
+      const escaped = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Acrónimos cortos de una sola palabra (<= 5 chars, ej. sep, cte, dif, atp, sat, nem, cct)
+      // requieren frontera de palabra estricta para jamás coincidir dentro de "September", "bacteria", "different", etc.
+      if (k.length <= 5 && /^[a-z0-9áéíóúñ]+$/i.test(k)) {
+        return `\\b${escaped}\\b`;
+      }
+      return escaped;
+    })
     .join('|');
   return new RegExp(pattern, 'i');
 }
@@ -451,7 +459,8 @@ function runZeroTokenTriageEngine(
   const spamAndMarketingSenders = [
     'gamma.app', 'hello@gamma.app', 'cinepolis', 'cinépolis', 'primeopinion', 'prime opinion',
     'play.google', 'googleplay', 'chicv', 'chicv technology', 'mercadolibre', 'mercado libre',
-    'amazon.com.mx', 'amazon.com', 'asm.org/careers', 'asm careers'
+    'amazon.com.mx', 'amazon.com', 'asm.org/careers', 'asm careers', 'okx.com', 'okx',
+    'cgtrader', 'e.crm.lego.com', 'lego® news', 'lego news', 'expotechconnect', 'kyocera'
   ];
 
   const isSpamSender = spamAndMarketingSenders.some(dom => sFromEmail.includes(dom) || sFromName.includes(dom));
@@ -564,6 +573,38 @@ function runZeroTokenTriageEngine(
       sla_hours: 12,
       why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
       recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
+    };
+  }
+
+  // 2.5 APRENDIZAJE ADAPTATIVO ZERO-TOKENS Y REGLAS MEMORIZADAS POR DIRECCIÓN GENERAL
+  const learnedRulesEarly = LearnedTriageMemoryService.getRules(tId);
+  for (const lr of learnedRulesEarly) {
+    const val = lr.patternValue.toLowerCase().trim();
+    if (lr.patternType === 'sender' && sFromEmail.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Remitente', lr.reason || 'Clasificado según instrucción directiva previa.');
+    }
+    if (lr.patternType === 'domain' && sFromEmail.split('@')[1]?.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Dominio', lr.reason || 'Dominio aprendido como ' + lr.targetQuadrant);
+    }
+  }
+
+  // 2.6 NOTIFICACIONES AUTOMÁTICAS EXTERNAS Y BOLETINES INFORMATIVOS NO ESCOLARES (Google Security, LinkedIn, ASM News)
+  const isExternalAutomatedBulletin =
+    /accounts\.google\.com|linkedin\.com|asm\.org/i.test(sFromEmail) ||
+    /\b(asm news|asm microbe|linkedin)\b/i.test(sFromName);
+  if (isExternalAutomatedBulletin && !isStudentParentCommunication) {
+    return {
+      quadrant: 'INFORMATIVO',
+      urgency: 'BAJA',
+      category: 'Notificación Informativa Externa',
+      badge: {
+        quadrant: 'INFORMATIVO',
+        label: '🔵 INFORMATIVO',
+        color: 'bg-blue-50 text-blue-700 border-blue-200'
+      },
+      gmailCategory: 'actualizaciones',
+      why_shown_to_director: 'Notificación automatizada de plataforma externa o boletín informativo clasificado para consulta general sin generar alerta crítica.',
+      recommended_action: 'Lectura opcional en Bandeja de Entrada sin escalamiento a Dirección General.'
     };
   }
 
@@ -880,26 +921,33 @@ function runZeroTokenTriageEngine(
   }
 
   // F. Recursos Humanos, Nómina Docente y Prestaciones Laborales
-  const isHRorPayroll = 
-    fullText.includes('prima vacacional') || 
-    fullText.includes('prima') || 
-    fullText.includes('vacacional') || 
-    fullText.includes('vacaciones') || 
-    fullText.includes('días de vacaciones') || 
-    fullText.includes('dias de vacaciones') || 
-    fullText.includes('nómina') || 
-    fullText.includes('nomina') || 
-    fullText.includes('recursos humanos') || 
-    fullText.includes('rh') || 
-    fullText.includes('prestaciones') || 
-    fullText.includes('sueldo') || 
-    fullText.includes('salario') || 
-    fullText.includes('aguinaldo') || 
-    fullText.includes('finiquito') || 
-    fullText.includes('liquidación') || 
-    fullText.includes('liquidacion') || 
-    fullText.includes('incapacidad') || 
-    fullText.includes('recibo de nómina');
+  const isAutomatedNonSchoolSender =
+    /accounts\.google\.com|linkedin\.com|asm\.org|cgtrader|lego\.com|okx\.com/i.test(sFromEmail) ||
+    /\b(asm news|asm microbe|linkedin)\b/i.test(sFromName);
+
+  const isHRorPayroll =
+    !isAutomatedNonSchoolSender && (
+      fullText.includes('prima vacacional') ||
+      fullText.includes('prima dominical') ||
+      fullText.includes('prima de antigüedad') ||
+      fullText.includes('vacacional') ||
+      fullText.includes('vacaciones') ||
+      fullText.includes('días de vacaciones') ||
+      fullText.includes('dias de vacaciones') ||
+      fullText.includes('nómina') ||
+      fullText.includes('nomina') ||
+      fullText.includes('recursos humanos') ||
+      /\brh\b/i.test(fullText) ||
+      fullText.includes('prestaciones') ||
+      fullText.includes('sueldo') ||
+      fullText.includes('salario') ||
+      fullText.includes('aguinaldo') ||
+      fullText.includes('finiquito') ||
+      fullText.includes('liquidación') ||
+      fullText.includes('liquidacion') ||
+      fullText.includes('incapacidad') ||
+      fullText.includes('recibo de nómina')
+    );
   if (isHRorPayroll) {
     return {
       quadrant: 'DELEGADO_CON_SLA',

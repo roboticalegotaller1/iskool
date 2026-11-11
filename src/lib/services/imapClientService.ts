@@ -1,6 +1,6 @@
 import tls from 'tls';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
-import { formatCdmxDate, formatCdmxTime, formatCdmxSmartBadge, parseEmailDateMs } from '@/utils/timeZoneUtils';
+import { formatCdmxDate, formatCdmxTime, formatCdmxSmartBadge, parseEmailDateMs, decodeEmailBodyOrSnippet } from '@/utils/timeZoneUtils';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
@@ -94,40 +94,90 @@ export function decodeQuotedPrintable(text: string): string {
 }
 
 /**
- * Extraer texto limpio de cuerpo HTML o MIME multipart
+ * Extraer texto limpio de cuerpo HTML o MIME multipart (con decodificación Base64 y Quoted-Printable UTF-8)
  */
 export function cleanEmailBody(rawBody: string): string {
   if (!rawBody) return '';
-  let body = decodeQuotedPrintable(rawBody);
 
-  // Si es multipart, buscar la sección text/plain
-  if (body.includes('Content-Type: text/plain')) {
-    const parts = body.split(/--[a-zA-Z0-9_-]+/);
+  // Limpiar artefactos de prefijo literal IMAP ej. "<0> {8192}" o "(8192)"
+  let body = rawBody
+    .replace(/^\s*(?:<\d+>\s*)?(?:\{\d+\}\r?\n|\(\d+\)\s*)/i, '')
+    .trim();
+
+  // Si contiene secciones MIME multipart, extraer text/plain (o text/html de respaldo) y su Content-Transfer-Encoding
+  if (/content-type:\s*text\/(?:plain|html)/i.test(body) || /--+[=_A-Za-z0-9.-]{6,}/.test(body)) {
+    const parts = body.split(/--+[=_A-Za-z0-9.-]{6,}--?/);
+    let plainCandidate = '';
+    let htmlCandidate = '';
+
     for (const part of parts) {
-      if (part.includes('Content-Type: text/plain')) {
-        const subParts = part.split(/\r?\n\r?\n/);
-        if (subParts.length > 1) {
-          body = subParts.slice(1).join('\n');
-          break;
-        }
+      const headerBodySplit = part.split(/\r?\n\r?\n/);
+      if (headerBodySplit.length < 2) continue;
+      const partHeaders = headerBodySplit[0];
+      const partPayload = headerBodySplit.slice(1).join('\n').trim();
+      if (!partPayload) continue;
+
+      const isPlain = /content-type:\s*text\/plain/i.test(partHeaders);
+      const isHtml = /content-type:\s*text\/html/i.test(partHeaders);
+      if (!isPlain && !isHtml) continue;
+
+      const isBase64 = /content-transfer-encoding:\s*base64/i.test(partHeaders);
+      const isQp = /content-transfer-encoding:\s*quoted-printable/i.test(partHeaders);
+
+      let decodedPart = partPayload;
+      if (isBase64) {
+        try {
+          const cleanB64 = partPayload.replace(/[^A-Za-z0-9+/=]/g, '');
+          if (cleanB64.length >= 8) {
+            decodedPart = Buffer.from(cleanB64, 'base64').toString('utf-8');
+          }
+        } catch {}
+      } else if (isQp) {
+        decodedPart = decodeQuotedPrintable(partPayload);
       }
+
+      if (isPlain && !plainCandidate) {
+        plainCandidate = decodedPart;
+      } else if (isHtml && !htmlCandidate) {
+        htmlCandidate = decodedPart;
+      }
+    }
+
+    if (plainCandidate) {
+      body = plainCandidate;
+    } else if (htmlCandidate) {
+      body = htmlCandidate;
+    }
+  } else {
+    // Si el cuerpo entero viene en Base64 plano sin cabeceras intermedias
+    const compact = body.replace(/\s+/g, '');
+    if (compact.length >= 24 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
+      try {
+        const decodedB64 = Buffer.from(compact, 'base64').toString('utf-8');
+        if (decodedB64 && /[\p{L}\s]{6,}/u.test(decodedB64)) {
+          body = decodedB64;
+        }
+      } catch {}
+    } else {
+      body = decodeQuotedPrintable(body);
     }
   }
 
-  // Eliminar etiquetas HTML residuales
+  // Eliminar etiquetas HTML residuales, cabeceras MIME y ruido visual
   body = body
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/\[(?:image|imagen):\s*[^\]]*\]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
-  return body;
+  return decodeEmailBodyOrSnippet(body);
 }
 
 /**
@@ -140,32 +190,35 @@ function classifyEmailTriage(subject: string, body: string, senderEmail?: string
 } {
   const triage = HermeticEmailBrainService.classifyZeroTokenEmail(subject, body, senderEmail, senderName);
   const fullText = `${subject} ${body}`.toLowerCase();
+  const isAutomatedExternalInfo =
+    /accounts\.google\.com|linkedin\.com|asm\.org|cgtrader|lego\.com|okx\.com/i.test(senderEmail || '');
   const isDelegatedKeyword =
-    fullText.includes('menú') ||
-    fullText.includes('menu') ||
-    fullText.includes('comedor') ||
-    fullText.includes('cafetería') ||
-    fullText.includes('cafeteria') ||
-    fullText.includes('alimento') ||
-    fullText.includes('almuerzo') ||
-    fullText.includes('desayuno') ||
-    fullText.includes('refrigerio') ||
-    fullText.includes('prima vacacional') ||
-    fullText.includes('prima') ||
-    fullText.includes('vacacional') ||
-    fullText.includes('vacaciones') ||
-    fullText.includes('nómina') ||
-    fullText.includes('nomina') ||
-    fullText.includes('recursos humanos') ||
-    fullText.includes('rh') ||
-    fullText.includes('prestaciones') ||
-    fullText.includes('sueldo') ||
-    fullText.includes('salario') ||
-    fullText.includes('aguinaldo') ||
-    fullText.includes('taller') ||
-    fullText.includes('uniforme') ||
-    fullText.includes('credencial') ||
-    fullText.includes('transporte');
+    !isAutomatedExternalInfo && (
+      fullText.includes('menú') ||
+      fullText.includes('menu') ||
+      fullText.includes('comedor') ||
+      fullText.includes('cafetería') ||
+      fullText.includes('cafeteria') ||
+      fullText.includes('alimento') ||
+      fullText.includes('almuerzo') ||
+      fullText.includes('desayuno') ||
+      fullText.includes('refrigerio') ||
+      fullText.includes('prima vacacional') ||
+      fullText.includes('vacacional') ||
+      fullText.includes('vacaciones') ||
+      fullText.includes('nómina') ||
+      fullText.includes('nomina') ||
+      fullText.includes('recursos humanos') ||
+      /\brh\b/i.test(fullText) ||
+      fullText.includes('prestaciones') ||
+      fullText.includes('sueldo') ||
+      fullText.includes('salario') ||
+      fullText.includes('aguinaldo') ||
+      fullText.includes('taller') ||
+      fullText.includes('uniforme') ||
+      fullText.includes('credencial') ||
+      fullText.includes('transporte')
+    );
 
   const isCeo = triage.quadrant === 'ATENCION_CEO';
   const isDelegado = !isCeo && (triage.quadrant === 'DELEGADO_CON_SLA' || isDelegatedKeyword);
@@ -399,15 +452,16 @@ function attemptSingleLiveImap(
           const senderEmail = senderEmailMatch ? senderEmailMatch[1].trim() : decodedFrom.replace(/["']/g, '').trim();
           const senderName = decodedFrom.split('<')[0]?.replace(/["']/g, '').trim() || senderEmail;
 
-          // Extraer Cuerpo del Correo
+          // Extraer Cuerpo del Correo (sin grupos de captura que reinyecten {8192} o <0>)
           let rawBodyText = '';
-          const bodyParts = block.split(/BODY\[TEXT[^\]]*\]\s*(\{\d+\}\r?\n)?/i);
+          const bodyParts = block.split(/BODY\[TEXT[^\]]*\](?:<\d+>)?\s*(?:\{\d+\}\r?\n|\(\d+\)\s*)?/i);
           if (bodyParts.length > 1) {
             rawBodyText = bodyParts.slice(1).join('\n').replace(/\)\r?\n(?:T03|\*\s+\d+)[\s\S]*/, '').trim();
           }
 
           const cleanBody = cleanEmailBody(rawBodyText) || decodedSubject;
-          const snippet = cleanBody.slice(0, 130) + (cleanBody.length > 130 ? '...' : '');
+          const cleanPreview = decodeEmailBodyOrSnippet(cleanBody, decodedSubject, senderName);
+          const snippet = cleanPreview.slice(0, 130) + (cleanPreview.length > 130 ? '...' : '');
 
           // Clasificación y Cuadrante Cognitivo
           const triage = classifyEmailTriage(decodedSubject, cleanBody, senderEmail, senderName);

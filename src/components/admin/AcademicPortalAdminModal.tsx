@@ -135,23 +135,19 @@ export function AcademicPortalAdminModal({
     }] as any[];
   }, [holding, schoolId, campusesList]);
 
-  // Lista base de Alumnos por campus y holding
+  // Lista base de Alumnos por campus y holding (aislando seeds teóricos de IBIME en producción)
   const baseStudentsList = useMemo<DetailedStudent[]>(() => {
-    let list: DetailedStudent[] = [];
-    if (holding?.slug === 'ibime' || schoolId === 'sch-ibime') {
-      list = [...IBIME_STUDENTS];
-    } else {
-      list = getSchoolStudents(detailedStudents, schoolId, availableCampuses);
-      if (list.length === 0) {
-        const defaultCampus = availableCampuses[0]?.name || `${holding?.name || 'Colegio'} · Plantel Central`;
-        const defaultCampusId = availableCampuses[0]?.id || `${schoolId || 'sch-default'}-matriz`;
-        list = detailedStudents.filter((s: DetailedStudent) => !s.school_id?.startsWith('emp-')).slice(0, 6).map((s: DetailedStudent) => ({
-          ...s,
-          school_id: schoolId || 'sch-default',
-          campus_id: defaultCampusId,
-          campus_name: defaultCampus
-        }));
-      }
+    let list: DetailedStudent[] = getSchoolStudents(detailedStudents, schoolId, availableCampuses);
+    const isTestCase = schoolId === 'sch-test-case' || holding?.slug === 'test-case';
+    if (list.length === 0 && isTestCase) {
+      const defaultCampus = availableCampuses[0]?.name || `${holding?.name || 'Colegio'} · Plantel Central`;
+      const defaultCampusId = availableCampuses[0]?.id || `${schoolId || 'sch-default'}-matriz`;
+      list = detailedStudents.filter((s: DetailedStudent) => !s.school_id?.startsWith('emp-')).slice(0, 6).map((s: DetailedStudent) => ({
+        ...s,
+        school_id: schoolId || 'sch-default',
+        campus_id: defaultCampusId,
+        campus_name: defaultCampus
+      }));
     }
 
     if (selectedCampusId !== 'all') {
@@ -285,12 +281,20 @@ export function AcademicPortalAdminModal({
 
   // Bitácora histórica de auditorías
   const [auditLogs, setAuditLogs] = useState<AcademicAuditLogRecord[]>(() => {
+    const isProdIbime = schoolId === 'sch-ibime' || holding?.slug === 'ibime';
     if (typeof localStorage !== 'undefined') {
       try {
         const stored = localStorage.getItem('iskool_academic_audit_log');
-        if (stored) return JSON.parse(stored);
+        if (stored) {
+          const parsed: AcademicAuditLogRecord[] = JSON.parse(stored);
+          if (isProdIbime) {
+            return parsed.filter(r => r.id !== 'aud-001' && !r.studentId?.startsWith('std-ibime-'));
+          }
+          return parsed;
+        }
       } catch (e) { }
     }
+    if (isProdIbime) return [];
     return [
       {
         id: 'aud-001',
@@ -405,9 +409,7 @@ export function AcademicPortalAdminModal({
 
   // Docentes del colegio para la Vista 2 (Supervisión Docente & Modo Espejo)
   const currentTeachers = useMemo(() => {
-    let list = (holding?.slug === 'ibime' || schoolId === 'sch-ibime')
-      ? [...IBIME_TEACHERS]
-      : getSchoolTeachers(teachersList, schoolId, availableCampuses);
+    let list = getSchoolTeachers(teachersList, schoolId, availableCampuses);
 
     if (selectedCampusId !== 'all') {
       list = list.filter(t =>

@@ -216,9 +216,9 @@ export async function middleware(request: NextRequest) {
     ? authHeader.substring(7).trim()
     : null;
 
-  const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId');
-  const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime';
-  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones') || pathname.startsWith('/portal-ceo');
+  const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId') || request.nextUrl.searchParams.get('tenantId');
+  const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime' || querySchoolId === 'IBIME' || querySchoolId === 'e1000000-0000-0000-0000-000000000001';
+  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones') || pathname.startsWith('/portal-ceo') || pathname.startsWith('/api/mail');
   const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
 
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');

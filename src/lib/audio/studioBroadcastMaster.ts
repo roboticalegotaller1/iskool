@@ -3,13 +3,17 @@
  * --------------------------------------------------------------------------------------
  * Aplica una cadena DSP de 7 etapas con calidad de estudio de grabación a cualquier
  * elemento de audio reproducible en el navegador:
- *   1. Filtro Paso-Alto Butterworth (75 Hz) — Elimina retumbos subsónicos y plosivas.
- *   2. Ecualizador de Calidez Torácica (125–140 Hz, +2.2 a +2.6 dB) — Cuerpo de micrófono de condensador.
- *   3. Corte Anti-Cajón / Resonancia Nasal (340 Hz, -1.8 dB) — Limpia coloraciones sintéticas.
- *   4. Realce de Presencia y Dicción Cristalina (3600 Hz, +2.6 dB) — Claridad en consonantes.
- *   5. De-Esser Dinámico de Sibilancia (6800 Hz, -2.2 dB) — Suaviza las "s" y "c" filosas.
- *   6. Estante de Aire Sedoso de Estudio (10500 Hz, +2.0 dB) — Brillo y respiración natural.
- *   7. Compresor Óptico Broadcast (Ratio 3:1, Attack 12ms, Release 140ms) + Cabina Acústica Sutil (2.5% Wet).
+ *   1. Filtro Paso-Alto Butterworth (65 Hz) — Elimina retumbos subsónicos y plosivas.
+ *   2. Ecualizador de Calidez Torácica (125–140 Hz) — Cuerpo de micrófono de condensador.
+ *   3. Corte Anti-Cajón / Resonancia Nasal (330 Hz) — Limpia coloraciones sintéticas.
+ *   4. Realce de Presencia y Dicción Cristalina (3550 Hz) — Claridad en consonantes.
+ *   5. De-Esser Dinámico de Sibilancia (6800 Hz) — Suaviza las "s" y "c" filosas.
+ *   6. Estante de Aire Sedoso de Estudio (11000 Hz) — Brillo y respiración natural.
+ *   7. Compresor Óptico Broadcast Transparente.
+ *
+ * Incluye un AudioContext compartido pre-desbloqueado por gestos del usuario para
+ * garantizar reproducción audible instantánea incluso tras llamadas asíncronas de red
+ * o eventos de reconocimiento de voz en Google Chrome.
  */
 
 export interface StudioBroadcastOptions {
@@ -26,6 +30,46 @@ export interface StudioBroadcastChain {
 }
 
 const processedAudioElements = new WeakMap<HTMLAudioElement, StudioBroadcastChain>();
+let sharedBroadcastAudioContext: AudioContext | null = null;
+let gestureListenersInstalled = false;
+
+export function unlockSharedBroadcastAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  const AudioContextClass =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  try {
+    if (!sharedBroadcastAudioContext || sharedBroadcastAudioContext.state === 'closed') {
+      sharedBroadcastAudioContext = new AudioContextClass({ latencyHint: 'interactive' });
+    }
+    if (sharedBroadcastAudioContext.state === 'suspended') {
+      sharedBroadcastAudioContext.resume().catch(() => {});
+    }
+    return sharedBroadcastAudioContext;
+  } catch {
+    return null;
+  }
+}
+
+function ensureGestureUnlockInstalled(): void {
+  if (typeof window === 'undefined' || gestureListenersInstalled) return;
+  gestureListenersInstalled = true;
+
+  const unlockHandler = () => {
+    unlockSharedBroadcastAudioContext();
+  };
+
+  window.addEventListener('pointerdown', unlockHandler, { passive: true, capture: true });
+  window.addEventListener('keydown', unlockHandler, { passive: true, capture: true });
+  window.addEventListener('touchstart', unlockHandler, { passive: true, capture: true });
+  window.addEventListener('click', unlockHandler, { passive: true, capture: true });
+}
+
+if (typeof window !== 'undefined') {
+  ensureGestureUnlockInstalled();
+}
 
 /**
  * Genera una respuesta al impulso (Impulse Response) de cabina de locución profesional
@@ -45,7 +89,6 @@ export function createStudioBoothImpulseBuffer(
   for (let i = 0; i < length; i++) {
     const t = i / length;
     const envelope = Math.pow(1 - t, decayRate);
-    // Reflexiones tempranas suaves con amortiguación de alta frecuencia
     left[i] = (Math.random() * 2 - 1) * envelope * 0.32;
     right[i] = (Math.random() * 2 - 1) * envelope * 0.32;
   }
@@ -54,14 +97,17 @@ export function createStudioBoothImpulseBuffer(
 
 /**
  * Conecta un HTMLAudioElement a la cadena de masterización Broadcast de 7 etapas.
- * Si el entorno (ej. pruebas unitarias JSDOM) no soporta Web Audio API,
- * falla silenciosamente permitiendo que el elemento <audio> suene de forma nativa.
+ * Si el AudioContext compartido se encuentra suspendido por políticas de autoplay asíncrono,
+ * evita secuestrar el elemento <audio> para que la reproducción nativa HTML5 (ya masterizada
+ * a -14.0 LUFS en el servidor) suene siempre al 100% sin riesgo de silencio.
  */
 export function attachStudioBroadcastMaster(
   audio: HTMLAudioElement,
   options: StudioBroadcastOptions = {}
 ): StudioBroadcastChain | null {
   if (typeof window === 'undefined' || !audio) return null;
+
+  ensureGestureUnlockInstalled();
 
   const existing = processedAudioElements.get(audio);
   if (existing) {
@@ -71,13 +117,15 @@ export function attachStudioBroadcastMaster(
     return existing;
   }
 
-  const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AudioContextClass) return null;
-
   try {
-    const ctx = new AudioContextClass({ latencyHint: 'interactive' });
-    if (ctx.state === 'suspended') {
+    const ctx = unlockSharedBroadcastAudioContext();
+    if (!ctx) return null;
+
+    // CRÍTICO: Si el AudioContext aún no está en estado 'running' (p. ej. tras callback de voz sin clic reciente),
+    // NO secuestrar el HTMLAudioElement con createMediaElementSource, permitiendo que <audio> reproduzca directamente.
+    if (ctx.state !== 'running') {
       ctx.resume().catch(() => {});
+      return null;
     }
 
     const source = ctx.createMediaElementSource(audio);
@@ -123,7 +171,7 @@ export function attachStudioBroadcastMaster(
     silkAir.frequency.value = 11000;
     silkAir.gain.value = 0.25;
 
-    // Etapa 7: Protección de Picos Transparente (Ratio 1.15:1 para no aplastar la dinámica humana del servidor)
+    // Etapa 7: Protección de Picos Transparente (Ratio 1.15:1)
     const compressor = ctx.createDynamicsCompressor();
     compressor.threshold.value = -6;
     compressor.knee.value = 12;
@@ -131,16 +179,13 @@ export function attachStudioBroadcastMaster(
     compressor.attack.value = 0.025;
     compressor.release.value = 0.18;
 
-    // Ganancia unitaria (el servidor ya entrega a -14.0 LUFS ITU-R BS.1770-4)
     const makeupGain = ctx.createGain();
     makeupGain.gain.value = 1.0;
 
-    // Analizador Espectral (F1/F2 Formantes para Lip-Sync y Telemetría)
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
     analyser.smoothingTimeConstant = 0.82;
 
-    // Encadenamiento directo sin reverberación artificial duplicada para máxima intimidad vocal humana
     source.connect(highPass);
     highPass.connect(chestWarmth);
     chestWarmth.connect(mudCut);
@@ -154,17 +199,24 @@ export function attachStudioBroadcastMaster(
 
     const cleanup = () => {
       processedAudioElements.delete(audio);
-      if (ctx.state !== 'closed') {
-        ctx.close().catch(() => {});
-      }
+      try {
+        source.disconnect();
+        highPass.disconnect();
+        chestWarmth.disconnect();
+        mudCut.disconnect();
+        presenceBoost.disconnect();
+        deEsser.disconnect();
+        silkAir.disconnect();
+        compressor.disconnect();
+        makeupGain.disconnect();
+        analyser.disconnect();
+      } catch {}
     };
 
     const chain: StudioBroadcastChain = { context: ctx, analyser, cleanup };
     processedAudioElements.set(audio, chain);
     return chain;
   } catch {
-    // Si falla la creación del grafo Web Audio, el elemento <audio> reproduce directamente
     return null;
   }
 }
-

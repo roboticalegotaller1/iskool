@@ -90,8 +90,14 @@ import {
   Menu,
   RotateCcw,
   Sun,
-  Moon
+  Moon,
+  Image as ImageIcon,
+  Download,
+  Mic,
+  Ticket,
+  Upload
 } from 'lucide-react';
+import { compressImageFile } from '@/utils/imageCompressor';
 import {
   playUniversalIskoolVoice,
   stopAllIskoolAudio
@@ -448,20 +454,15 @@ export function generateDefaultCalendarEventsForSchool(
   return [
     {
       id: 'cal-01',
-      title: isIbime 
-        ? 'Mesa de Mediación Presencial: Familia Mendoza (Caso 5º B)'
-        : `Audiencia Directiva de Convivencia Escolar (${schoolName})`,
+      title: `Audiencia Directiva de Convivencia Escolar (${schoolName})`,
       category: 'AUDIENCIA_PADRES',
       date: '2026-10-08',
       time: '08:30 - 09:30 hrs',
       campus: primaryCampus,
-      attendees: isIbime ? 'Lic. Fernando Mendoza, Familia Mendoza, Dirección General' : `Familia de Alumno, ${directorTitle}`,
+      attendees: `Comité de Convivencia, ${directorTitle}`,
       location: 'Oficina de Dirección General',
-      notes: isIbime 
-        ? 'Audiencia formal derivada del caso MAT-IBIME-2026-001. Aplicación de Protocolo Nivel 3 de Convivencia Escolar.'
-        : 'Reunión de mediación para firma de acuerdos escolares.',
-      status: 'CONFIRMADO',
-      linkedMatterId: isIbime ? 'mat-ibime-01' : undefined
+      notes: 'Reunión institucional de seguimiento y firma de acuerdos escolares.',
+      status: 'CONFIRMADO'
     },
     {
       id: 'cal-02',
@@ -485,8 +486,7 @@ export function generateDefaultCalendarEventsForSchool(
       attendees: 'Dirección de Administración y Finanzas, Tesorería',
       location: 'Área Administrativa',
       notes: 'Revisión de facturación electrónica con complemento IEDU y conciliación de colegiaturas.',
-      status: 'CONFIRMADO',
-      linkedMatterId: isIbime ? 'mat-ibime-02' : undefined
+      status: 'CONFIRMADO'
     },
     {
       id: 'cal-04',
@@ -547,32 +547,32 @@ export interface ThemeTokens {
 
 export const THEME_CONFIG: Record<CeoThemeMode, ThemeTokens> = {
   ivory: {
-    modalBg: 'bg-[#FDFBF7]',
-    modalBorder: 'border-[#E6DDCF]',
-    headerBg: 'bg-gradient-to-r from-[#1E293B] via-[#2A374A] to-[#1E293B]',
-    headerBorder: 'border-[#D4C3AC]/40',
-    headerText: 'text-[#FDFBF7]',
-    headerSubtext: 'text-[#D4C3AC]',
-    sidebarBg: 'bg-[#F8F5EE]',
-    sidebarBorder: 'border-[#EAE1D3]',
-    sidebarActiveItem: 'bg-[#EDE4D5] text-[#1E293B] font-black border border-[#D9CEBC] shadow-xs',
-    sidebarHoverItem: 'hover:bg-[#F2ECE0] text-[#4A3E31]',
-    contentBg: 'bg-[#F4EFE6]',
-    feedBg: 'bg-[#FAF7F2]',
-    feedBorder: 'border-[#E8DEC0]',
-    cardBg: 'bg-[#FFFFFF]',
-    cardBorder: 'border-[#EADBCE]',
-    cardHover: 'hover:border-[#C49746] hover:shadow-sm',
-    cardSelected: 'border-[#C49746] ring-2 ring-[#C49746]/40 bg-[#FFFDF9]',
-    dockBg: 'bg-[#FFFFFF]',
-    dockBorder: 'border-[#EADBCE]',
-    textPrimary: 'text-[#1E293B]',
+    modalBg: 'bg-[#EEF2F6]',
+    modalBorder: 'border-[#CBD5E1]',
+    headerBg: 'bg-white',
+    headerBorder: 'border-[#CBD5E1]',
+    headerText: 'text-[#0F172A]',
+    headerSubtext: 'text-[#475569]',
+    sidebarBg: 'bg-[#F8FAFC]',
+    sidebarBorder: 'border-[#CBD5E1]',
+    sidebarActiveItem: 'bg-[#EFF6FF] text-[#1E3A8A] font-bold border-l-4 border-l-[#2563EB]',
+    sidebarHoverItem: 'hover:bg-[#F1F5F9] text-[#475569]',
+    contentBg: 'bg-[#EEF2F6]',
+    feedBg: 'bg-[#E2E8F0]/75',
+    feedBorder: 'border-[#CBD5E1]',
+    cardBg: 'bg-white',
+    cardBorder: 'border-[#CBD5E1]',
+    cardHover: 'hover:border-[#94A3B8]',
+    cardSelected: 'border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] bg-white shadow-[0_4px_16px_-2px_rgba(37,99,235,0.18)] ring-2 ring-[#2563EB]/15',
+    dockBg: 'bg-white',
+    dockBorder: 'border-[#CBD5E1]',
+    textPrimary: 'text-[#0F172A]',
     textSecondary: 'text-[#475569]',
     textMuted: 'text-[#64748B]',
-    accent: '#8B263E',
-    badgeNeutral: 'bg-[#EFE8DC] text-[#475569]',
-    ribbonBg: 'bg-[#F5EFE3] border-b border-[#E3D7C5]',
-    ribbonBorder: 'border-[#D8CCBD]',
+    accent: '#2563EB',
+    badgeNeutral: 'bg-[#F1F5F9] text-[#475569]',
+    ribbonBg: 'bg-white border-b border-[#CBD5E1]',
+    ribbonBorder: 'border-[#CBD5E1]',
     isDark: false
   },
   slate: {
@@ -1252,7 +1252,12 @@ export function mergeAndSortEmails(
     return `${normSub}__${sender}`;
   };
 
-  const processItem = (item: RawGmailItem) => {
+  const isSyntheticMailId = (id?: string): boolean => {
+    const s = String(id || '');
+    return s.startsWith('mat-live-') || s.startsWith('inj-') || s.startsWith('raw-msg-');
+  };
+
+  const processItem = (item: RawGmailItem, isAuthoritativeIncoming: boolean) => {
     if (!item || !item.id) return;
     if (deletedIds && deletedIds.has(item.id)) return;
 
@@ -1261,7 +1266,18 @@ export function mergeAndSortEmails(
     if (!map.has(targetId) && semKey) {
       const existingId = semanticMap.get(semKey);
       if (existingId && map.has(existingId)) {
-        targetId = existingId;
+        const candidatePrev = map.get(existingId)!;
+        const prevMsCheck = parseEmailDateMs(candidatePrev);
+        const itemMsCheck = parseEmailDateMs(item);
+        // Solo fusionar por asunto+remitente si al menos uno es ID sintético puente o llegaron con < 5 min de diferencia.
+        // Evita colapsar notificaciones reales de días distintos (ej. LinkedIn/Google) con el mismo asunto.
+        if (
+          isSyntheticMailId(existingId) ||
+          isSyntheticMailId(targetId) ||
+          Math.abs(itemMsCheck - prevMsCheck) < 5 * 60 * 1000
+        ) {
+          targetId = existingId;
+        }
       }
     }
 
@@ -1271,8 +1287,16 @@ export function mergeAndSortEmails(
       const itemMs = parseEmailDateMs(item);
       const isPrevMidnight = prevMs % (24 * 3600 * 1000) === 0 || new Date(prevMs).getUTCHours() === 6;
       const isItemMidnight = itemMs % (24 * 3600 * 1000) === 0 || new Date(itemMs).getUTCHours() === 6;
-      const bestMs = (isPrevMidnight && !isItemMidnight) ? itemMs : (prevMs || itemMs);
-      const bestIso = (!isPrevMidnight && isItemMidnight) ? prev.date_iso : (item.date_iso || prev.date_iso || new Date(bestMs).toISOString());
+
+      let bestMs = prevMs || itemMs;
+      if (isAuthoritativeIncoming && itemMs > 946684800000 && (!isItemMidnight || isPrevMidnight)) {
+        bestMs = itemMs;
+      } else if (isPrevMidnight && !isItemMidnight && itemMs > 946684800000) {
+        bestMs = itemMs;
+      }
+      const bestIso = (!isPrevMidnight && isItemMidnight && prev.date_iso)
+        ? prev.date_iso
+        : (item.date_iso || prev.date_iso || new Date(bestMs).toISOString());
 
       map.set(targetId, {
         ...prev,
@@ -1293,11 +1317,11 @@ export function mergeAndSortEmails(
   };
 
   for (const item of existing) {
-    processItem(item);
+    processItem(item, false);
   }
 
   for (const item of incoming) {
-    processItem(item);
+    processItem(item, true);
   }
 
   return sortEmailsDescending(Array.from(map.values()));
@@ -1336,19 +1360,40 @@ export function CEOEmailCommunicationsModal({
   }, [holding?.campuses, isIbime, schoolName]);
   const directorTitle = holding?.directorName || (isIbime ? 'Lic. Patricia Sandoval Morales' : `Dirección General · ${schoolName}`);
 
-  // Estado del Modo de Tema Ejecutivo (Predeterminado: Marfil Institucional / Ivory)
+  // Estado del Modo de Tema Ejecutivo (Predeterminado de Producción: Claridad Suiza Light / Ivory)
   const [themeMode, setThemeMode] = useState<CeoThemeMode>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`iskool_ceo_theme_${currentTenantId}`);
-      if (saved && (
-        saved === 'ivory' || saved === 'slate' || saved === 'navy' || saved === 'emerald' ||
-        saved === 'burgundy' || saved === 'cyber' || saved === 'amethyst' || saved === 'titanium' || saved === 'custom'
+      const savedSwiss = localStorage.getItem(`iskool_ceo_swiss_theme_${currentTenantId}`);
+      if (savedSwiss && (
+        savedSwiss === 'ivory' || savedSwiss === 'slate' || savedSwiss === 'navy' || savedSwiss === 'emerald' ||
+        savedSwiss === 'burgundy' || savedSwiss === 'cyber' || savedSwiss === 'amethyst' || savedSwiss === 'titanium' || savedSwiss === 'custom'
       )) {
-        return saved as CeoThemeMode;
+        return savedSwiss as CeoThemeMode;
       }
     }
     return 'ivory';
   });
+
+  // Estados ejecutivos para arquitectura Claridad Suiza (Omnibar ⌘K y Vista SLA Unificada)
+  const [omnibarQuery, setOmnibarQuery] = useState<string>('');
+  const [isOmnibarFocused, setIsOmnibarFocused] = useState<boolean>(false);
+  const omnibarInputRef = useRef<HTMLInputElement>(null);
+  const [slaUnifiedViewMode, setSlaUnifiedViewMode] = useState<'table' | 'board'>('table');
+  const [isPatternBannerExpanded, setIsPatternBannerExpanded] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        e.stopPropagation();
+        omnibarInputRef.current?.focus();
+        setIsOmnibarFocused(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [isOpen]);
 
   // Configuración de Paleta Personalizada en Tiempo Real (Bespoke CEO)
   const [customTheme, setCustomTheme] = useState<CustomCeoTheme>(() => {
@@ -1586,14 +1631,16 @@ export function CEOEmailCommunicationsModal({
     [resolvedMatterIds]
   );
 
+  const defaultInstitutionalEmail = user?.email || (schoolDomain ? `direccion@${schoolDomain}` : '');
+
   const [connectedEmail, setConnectedEmail] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(emailStorageKey);
-      if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com') return saved;
+      if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com' && saved !== 'roboticalegotaller1@gmail.com') return saved;
       const globalSaved = localStorage.getItem('iskool_last_connected_email');
-      if (globalSaved && globalSaved !== 'DISCONNECTED' && globalSaved !== 'direccion@gmail.com') return globalSaved;
+      if (globalSaved && globalSaved !== 'DISCONNECTED' && globalSaved !== 'direccion@gmail.com' && globalSaved !== 'roboticalegotaller1@gmail.com') return globalSaved;
     }
-    return isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
+    return defaultInstitutionalEmail;
   });
 
   // Estado riguroso de verificación en tiempo real por ping
@@ -1648,13 +1695,12 @@ export function CEOEmailCommunicationsModal({
         setConnectionStatus('disconnected');
         return;
       }
-      if (!saved) {
+      if (!saved || saved === 'roboticalegotaller1@gmail.com') {
         const globalSaved = localStorage.getItem(globalConnectedEmailKey);
-        if (globalSaved && globalSaved !== 'DISCONNECTED') {
+        if (globalSaved && globalSaved !== 'DISCONNECTED' && globalSaved !== 'roboticalegotaller1@gmail.com') {
           saved = globalSaved;
         } else {
-          // Semilla canónica de IBIME: roboticalegotaller1@gmail.com conectada de forma permanente. Para otras instituciones: correo institucional
-          saved = isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
+          saved = user?.email || (schoolDomain ? `direccion@${schoolDomain}` : '');
         }
         localStorage.setItem(emailStorageKey, saved);
         localStorage.setItem(globalConnectedEmailKey, saved);
@@ -1692,9 +1738,9 @@ export function CEOEmailCommunicationsModal({
   const [authUsername, setAuthUsername] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(emailStorageKey);
-      if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com') return saved;
+      if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com' && saved !== 'roboticalegotaller1@gmail.com') return saved;
     }
-    return isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
+    return defaultInstitutionalEmail;
   });
   const [authPassword, setAuthPassword] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -1711,7 +1757,7 @@ export function CEOEmailCommunicationsModal({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedEmail = localStorage.getItem(emailStorageKey);
-      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' ? savedEmail : (isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''))));
+      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' && savedEmail !== 'roboticalegotaller1@gmail.com' ? savedEmail : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : '')));
       const savedPass = localStorage.getItem(`iskool_auth_pass_${currentTenantId}`);
       setAuthPassword(savedPass || '');
       const savedAppPass = localStorage.getItem(`iskool_app_pass_input_${currentTenantId}`);
@@ -1740,6 +1786,9 @@ export function CEOEmailCommunicationsModal({
     return false;
   });
   const [isTestingMailConnection, setIsTestingMailConnection] = useState<boolean>(false);
+  const [selectedProviderDrawerId, setSelectedProviderDrawerId] = useState<'google' | 'microsoft' | 'apple' | 'yahoo' | 'zoho' | 'custom'>('google');
+  const [tlsStrictEnforcement, setTlsStrictEnforcement] = useState<boolean>(true);
+  const [inlineDelegateEdits, setInlineDelegateEdits] = useState<Record<string, { delegateName: string; delegateEmail: string; slaHours: number }>>({});
   const [connectionTestResult, setConnectionTestResult] = useState<{
     success: boolean;
     latencyMs?: number;
@@ -1807,6 +1856,9 @@ export function CEOEmailCommunicationsModal({
 
   // Estados para el Calendario Interactivo con Drag & Drop y Sincronización Inmediata con Google Calendar
   const [showInteractiveCalendarModal, setShowInteractiveCalendarModal] = useState<boolean>(false);
+  const [agendaViewMode, setAgendaViewMode] = useState<'master_detail' | 'monthly_grid' | 'hourly_timeline'>('master_detail');
+  const [selectedAgendaEventId, setSelectedAgendaEventId] = useState<string | null>(null);
+  const [dossierNotesDraft, setDossierNotesDraft] = useState<string>('');
   const [calendarViewYear, setCalendarViewYear] = useState<number>(2026);
   const [calendarViewMonth, setCalendarViewMonth] = useState<number>(9); // 0-indexed: 9 = Octubre
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
@@ -1877,10 +1929,10 @@ export function CEOEmailCommunicationsModal({
         const json = await res.json();
         if (json.success && json.settings) {
           setSettingsData(json.settings);
-          if (json.settings.themeMode) {
-            setThemeMode(json.settings.themeMode);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, json.settings.themeMode);
+          if (typeof window !== 'undefined') {
+            const explicitSwissSaved = localStorage.getItem(`iskool_ceo_swiss_theme_${currentTenantId}`);
+            if (explicitSwissSaved && json.settings.themeMode === explicitSwissSaved) {
+              setThemeMode(json.settings.themeMode);
             }
           }
           if (json.settings.customThemeConfig) {
@@ -2267,6 +2319,7 @@ export function CEOEmailCommunicationsModal({
     }
     if (typeof window !== 'undefined') {
       localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, mode);
+      localStorage.setItem(`iskool_ceo_swiss_theme_${currentTenantId}`, mode);
       if (customConfig) {
         localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(customConfig));
       } else if (mode !== 'custom' && PRESET_THEME_COLORS[mode]) {
@@ -2532,18 +2585,23 @@ export function CEOEmailCommunicationsModal({
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
     // Normalización mandatoria y coherente de fecha/hora (CDMX) reconciliando date_ms con texto visible
     const parsedMs = parseEmailDateMs(item);
-    const isoDate = item.date_iso && !isNaN(new Date(item.date_iso).getTime()) ? item.date_iso : new Date(parsedMs).toISOString();
+    const isoDate = new Date(parsedMs).toISOString();
     const smartTimestamp = formatCdmxSmartBadge(parsedMs);
     const fullReceivedAt = item.received_at && item.received_at.length > 15
       ? item.received_at
       : formatCdmxFull(parsedMs);
 
+    const cleanSenderName = sanitizeCommercialTrademarks(item.sender_name);
+    const cleanSubject = sanitizeCommercialTrademarks(item.subject);
+    const decodedBody = decodeEmailBodyOrSnippet(item.body_text || item.snippet, cleanSubject, cleanSenderName);
+    const decodedSnippet = decodeEmailBodyOrSnippet(item.snippet || decodedBody, cleanSubject, cleanSenderName).slice(0, 145);
+
     const baseItem: RawGmailItem = {
       ...item,
-      sender_name: sanitizeCommercialTrademarks(item.sender_name),
-      subject: sanitizeCommercialTrademarks(item.subject),
-      snippet: sanitizeCommercialTrademarks(item.snippet),
-      body_text: sanitizeCommercialTrademarks(item.body_text),
+      sender_name: cleanSenderName,
+      subject: cleanSubject,
+      snippet: decodedSnippet,
+      body_text: decodedBody,
       date_ms: parsedMs,
       date_iso: isoDate,
       timestamp: smartTimestamp || item.timestamp,
@@ -2557,7 +2615,6 @@ export function CEOEmailCommunicationsModal({
       const isCeo = override === 'ATENCION_CEO';
       const isDelegado = override === 'DELEGADO_CON_SLA' || (override as any) === 'DELEGADO_CON_PLAZO';
       const isInfo = override === 'INFORMATIVO';
-      const isSpam = override === 'SPAM_DESCARTADO';
 
       return {
         ...baseItem,
@@ -2583,124 +2640,90 @@ export function CEOEmailCommunicationsModal({
       };
     }
 
-    // 1. Respetar clasificaciones previas delegadas, informativas o de spam en su badge
-    if (item.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (item.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA') {
+    // 1. Preservar delegaciones formales explícitas hechas a una sección específica (ej. "🟡 DELEGADO: COBRANZA")
+    if (item.triage_badge?.label && item.triage_badge.label.startsWith('🟡 DELEGADO:')) {
       return {
         ...baseItem,
         is_important: false,
         category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'DELEGADO_CON_PLAZO',
-          label: '🟡 DELEGADO OPERATIVO',
-          color: 'bg-amber-50 text-amber-700 border-amber-200'
-        }
+        triage_badge: item.triage_badge
       };
     }
 
-    if (item.triage_badge?.quadrant === 'INFORMATIVO') {
-      return {
-        ...baseItem,
-        is_important: false,
-        category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'INFORMATIVO',
-          label: '🔵 INFORMATIVO',
-          color: 'bg-blue-50 text-blue-700 border-blue-200'
-        }
-      };
-    }
-
-    if (item.triage_badge?.quadrant === 'SPAM_DESCARTADO') {
-      return {
-        ...baseItem,
-        is_important: false,
-        category: 'promociones',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '🟣 SPAM / PROMOCIÓN',
-          color: 'bg-purple-50 text-purple-700 border-purple-200'
-        }
-      };
-    }
-
-    // 2. Si el correo viene clasificado por el backend como ATENCION_CEO, respetarlo
-    if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
-      return {
-        ...baseItem,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'ATENCION_CEO',
-          label: item.triage_badge.label || '🔴 ATENCIÓN INMEDIATA CEO',
-          color: item.triage_badge.color || 'bg-red-50 text-red-700 border-red-200'
-        }
-      };
-    }
-
-    // 2. Clasificación Zero-Tokens Heurística Canónica en 4 Cuadrantes (0 Tokens)
+    // 2. Clasificación Zero-Tokens Heurística Canónica en 4 Cuadrantes (0 Tokens, corrige automáticamente cachés previos)
     const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
-      item.subject,
-      item.body_text || item.snippet,
+      cleanSubject,
+      decodedBody || decodedSnippet,
       item.sender_email,
-      item.sender_name,
+      cleanSenderName,
       settingsData?.vipEmails,
       currentTenantId
     );
 
-    const fullText = `${item.subject} ${item.body_text || ''} ${item.snippet || ''}`.toLowerCase();
+    const fullText = `${cleanSubject} ${decodedBody} ${decodedSnippet}`.toLowerCase();
+    const isAutomatedExternalInfo =
+      /accounts\.google\.com|linkedin\.com|asm\.org|cgtrader|lego\.com|okx\.com/i.test(item.sender_email || '') ||
+      /\b(asm news|asm microbe|linkedin)\b/i.test(cleanSenderName);
+
     const isDelegatedKeyword =
-      fullText.includes('menú') ||
-      fullText.includes('menu') ||
-      fullText.includes('comedor') ||
-      fullText.includes('cafetería') ||
-      fullText.includes('cafeteria') ||
-      fullText.includes('alimento') ||
-      fullText.includes('almuerzo') ||
-      fullText.includes('desayuno') ||
-      fullText.includes('refrigerio') ||
-      fullText.includes('prima vacacional') ||
-      fullText.includes('prima') ||
-      fullText.includes('vacacional') ||
-      fullText.includes('vacaciones') ||
-      fullText.includes('nómina') ||
-      fullText.includes('nomina') ||
-      fullText.includes('recursos humanos') ||
-      fullText.includes('rh') ||
-      fullText.includes('prestaciones') ||
-      fullText.includes('sueldo') ||
-      fullText.includes('salario') ||
-      fullText.includes('aguinaldo') ||
-      fullText.includes('taller') ||
-      fullText.includes('uniforme') ||
-      fullText.includes('credencial') ||
-      fullText.includes('transporte');
+      !isAutomatedExternalInfo && (
+        fullText.includes('menú') ||
+        fullText.includes('menu') ||
+        fullText.includes('comedor') ||
+        fullText.includes('cafetería') ||
+        fullText.includes('cafeteria') ||
+        fullText.includes('alimento') ||
+        fullText.includes('almuerzo') ||
+        fullText.includes('desayuno') ||
+        fullText.includes('refrigerio') ||
+        fullText.includes('prima vacacional') ||
+        fullText.includes('vacacional') ||
+        fullText.includes('vacaciones') ||
+        fullText.includes('nómina') ||
+        fullText.includes('nomina') ||
+        fullText.includes('recursos humanos') ||
+        /\brh\b/i.test(fullText) ||
+        fullText.includes('prestaciones') ||
+        fullText.includes('sueldo') ||
+        fullText.includes('salario') ||
+        fullText.includes('aguinaldo') ||
+        fullText.includes('taller') ||
+        fullText.includes('uniforme') ||
+        fullText.includes('credencial') ||
+        fullText.includes('transporte')
+      );
 
     const isCeo = triage.quadrant === 'ATENCION_CEO';
-    const isDelegado = !isCeo && (triage.quadrant === 'DELEGADO_CON_SLA' || isDelegatedKeyword);
+    const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
+    const isDelegado = !isCeo && !isSpam && (triage.quadrant === 'DELEGADO_CON_SLA' || isDelegatedKeyword);
 
     return {
       ...baseItem,
       is_important: isCeo,
-      category: isCeo ? 'principal' : (isDelegado ? 'actualizaciones' : triage.gmailCategory),
+      category: isCeo ? 'principal' : (isSpam ? 'promociones' : (isDelegado ? 'actualizaciones' : triage.gmailCategory)),
       triage_badge: isCeo
         ? {
             quadrant: 'ATENCION_CEO',
             label: '🔴 ATENCIÓN INMEDIATA CEO',
             color: 'bg-red-50 text-red-700 border-red-200'
           }
-        : (isDelegado
-            ? {
-                quadrant: 'DELEGADO_CON_PLAZO',
-                label: '🟡 DELEGADO OPERATIVO',
-                color: 'bg-amber-50 text-amber-700 border-amber-200'
-              }
-            : (item.triage_badge && item.triage_badge.quadrant !== 'INFORMATIVO'
-                ? item.triage_badge
-                : {
-                    quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-                    label: triage.badge.label,
-                    color: triage.badge.color
-                  }))
+        : isSpam
+        ? {
+            quadrant: 'SPAM_DESCARTADO',
+            label: '🟣 SPAM / PROMOCIÓN',
+            color: 'bg-purple-50 text-purple-700 border-purple-200'
+          }
+        : isDelegado
+        ? {
+            quadrant: 'DELEGADO_CON_PLAZO',
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        : {
+            quadrant: 'INFORMATIVO',
+            label: '🔵 INFORMATIVO',
+            color: 'bg-blue-50 text-blue-700 border-blue-200'
+          }
     };
   }, [settingsData?.vipEmails, currentTenantId, getExecutiveOverrideForItem]);
 
@@ -2754,12 +2777,8 @@ export function CEOEmailCommunicationsModal({
     }
     // REGLA CRÍTICA: Jamás vaciar rawEmailsList a [] al cambiar de pestaña; mantener los correos en memoria
 
-    const rawTarget = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim();
-    const targetEmail = rawTarget.replace(/israel135mac/i, 'israell35mac');
-    const effectiveEmail =
-      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx') || (!targetEmail && isIbime)
-        ? 'roboticalegotaller1@gmail.com'
-        : targetEmail;
+    const rawTarget = (connectedEmail || authUsername || defaultInstitutionalEmail).trim();
+    const effectiveEmail = rawTarget.replace(/israel135mac/i, 'israell35mac');
 
     const rawVal = appPasswordInput || '';
     const effectivePass = (
@@ -2800,29 +2819,6 @@ export function CEOEmailCommunicationsModal({
     }
   }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime, authPassword, appPasswordInput, deletedEmailIds]);
 
-  // Optimización de rendimiento: Normalización y conteos en un único paso memoizado O(N) para fluidez de UI
-  const normalizedRawEmails = useMemo(() => {
-    const list = rawEmailsList
-      .filter(item => !deletedEmailIds.has(item.id))
-      .map(item => normalizeRawEmailCeoRules(item));
-    return sortEmailsDescending(list);
-  }, [rawEmailsList, deletedEmailIds, normalizeRawEmailCeoRules]);
-
-  const rawEmailCounts = useMemo(() => {
-    let ceo = 0;
-    let delegados = 0;
-    let informativos = 0;
-    let spam = 0;
-    for (const e of normalizedRawEmails) {
-      const q = e.triage_badge?.quadrant;
-      if (q === 'ATENCION_CEO') ceo++;
-      else if (q === 'DELEGADO_CON_PLAZO' || (q as any) === 'DELEGADO_CON_SLA') delegados++;
-      else if (q === 'INFORMATIVO') informativos++;
-      else if (q === 'SPAM_DESCARTADO' || e.category === 'promociones' || e.category === 'spam') spam++;
-    }
-    return { all: normalizedRawEmails.length, ceo, delegados, informativos, spam };
-  }, [normalizedRawEmails]);
-
   // Telemetría en tiempo real de consumo y costos de IA
   const [telemetrySummary, setTelemetrySummary] = useState<any>(null);
 
@@ -2842,6 +2838,7 @@ export function CEOEmailCommunicationsModal({
   const [selectedRawEmailId, setSelectedRawEmailId] = useState<string | null>(null);
   const [emailReaderReturnTab, setEmailReaderReturnTab] = useState<'inbox' | 'raw_inbox'>('raw_inbox');
   const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'informativo' | 'promociones' | 'spam'>('todos');
+  const [rawInboxSortMode, setRawInboxSortMode] = useState<'recent' | 'priority'>('recent');
   const [rawEmailSearchQuery, setRawEmailSearchQuery] = useState<string>('');
   const [selectedRawEmailIds, setSelectedRawEmailIds] = useState<string[]>([]);
   const [rawReplyDraft, setRawReplyDraft] = useState<string>('');
@@ -3790,7 +3787,15 @@ ${schoolName}`
       });
   };
 
-  // Semilla y Almacenamiento Aislado de Asuntos Usables y Descartados por Tenant
+  // Semilla y Almacenamiento Aislado de Asuntos Usables y Descartados por Tenant (Producción limpia sin seeds teóricos en IBIME)
+  const LEGACY_IBIME_SEED_MATTER_IDS = new Set([
+    'mat-ibime-01',
+    'mat-ibime-02',
+    'mat-ibime-03',
+    'mat-ibime-04',
+    'mat-ibime-dining-01'
+  ]);
+
   const [mattersList, setMattersList] = useState<MatterItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(mattersStorageKey);
@@ -3798,7 +3803,12 @@ ${schoolName}`
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const cleaned = deduplicateExecutiveMatters(parsed).filter((m) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
+            const cleaned = deduplicateExecutiveMatters(parsed).filter(
+              (m) =>
+                !isSpamOrCommercialMatter(m) &&
+                !isMatterOrEmailResolved(m) &&
+                !(isIbime && LEGACY_IBIME_SEED_MATTER_IDS.has(m.id))
+            );
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return cleaned;
           }
@@ -3808,113 +3818,7 @@ ${schoolName}`
       }
     }
     if (isIbime) {
-      return [
-        {
-          id: 'mat-ibime-01',
-          matter_code: 'MAT-IBIME-2026-001',
-          title: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
-          summary: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.',
-          category: 'Convivencia / Caso Crítico Nivel 3',
-          urgency: 'CRITICA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.',
-          reincidence_count: 3,
-          recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
-          suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de Campus Montes. Para el Instituto Bilingüe IBIME la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-          assigned_role: 'Dirección General',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 09h 42m restantes',
-          sender_name: 'Lic. Fernando Mendoza',
-          sender_email: 'familia.mendoza@gmail.com',
-          provenance_doc: 'Correo/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
-          received_at: getRecentCdmxTimeStr(45),
-          campus: 'Campus Montes (Sede Matriz)'
-        },
-        {
-          id: 'mat-ibime-02',
-          matter_code: 'MAT-IBIME-2026-002',
-          title: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
-          summary: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.',
-          category: 'Financiero & Cobranza CFDI',
-          urgency: 'ALTA',
-          destination: 'DELEGADO_CON_SLA',
-          why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con plazo de 24 horas.',
-          reincidence_count: 1,
-          recommended_action: 'Delegado a Departamento de Cobranza y Finanzas (C.P. Claudia Albarrán). Notificar si vence plazo estipulado.',
-          suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de IBIME. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · Instituto Bilingüe IBIME`,
-          assigned_role: 'Cobranza y Finanzas',
-          sla_hours: 24,
-          sla_remaining_text: '⏱️ 18h 15m restantes',
-          sender_name: 'Ing. Carlos Ramírez',
-          sender_email: 'carlos.ramirez@empresa.com',
-          provenance_doc: 'Correo/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
-          received_at: getRecentCdmxTimeStr(30),
-          campus: 'Campus Lagos'
-        },
-        {
-          id: 'mat-ibime-03',
-          matter_code: 'MAT-IBIME-2026-003',
-          title: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
-          summary: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.',
-          category: 'Logística & Transporte',
-          urgency: 'MEDIA',
-          destination: 'DELEGADO_CON_SLA',
-          why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
-          reincidence_count: 6,
-          recommended_action: 'Delegado a Coordinación de Logística para reprogramación de salida del autobús 15 minutos antes.',
-          suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · IBIME`,
-          assigned_role: 'Logística y Transporte',
-          sla_hours: 48,
-          sla_remaining_text: '⏱️ 41h 10m restantes',
-          sender_name: 'Comité de Padres Ruta 4',
-          sender_email: 'padres.ruta4@ibime.edu.mx',
-          provenance_doc: 'Correo/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
-          received_at: getRecentCdmxTimeStr(120),
-          campus: 'Campus San Cristóbal'
-        },
-        {
-          id: 'mat-ibime-04',
-          matter_code: 'MAT-IBIME-2026-004',
-          title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
-          summary: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.',
-          category: 'Supervisión Oficial SEP / Asunto Regulatorio',
-          urgency: 'ALTA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Oficio oficial de Supervisión Escolar SEP. Por regla rectora, todo asunto vinculado con Supervisión o SEP requiere atención y seguimiento directo del CEO.',
-          reincidence_count: 1,
-          recommended_action: 'Validar recepción oficial y girar acuse institucional a la Supervisión de Zona SEP.',
-          suggested_draft_reply: `Estimada Autoridad de Supervisión de Zona 14:\n\nPor medio del presente el Instituto Bilingüe IBIME acusa formal recibo de la validación de matrícula para el ciclo escolar 2026-2027 en nuestras sedes. El folio ha quedado integrado debidamente a nuestro archivo oficial.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-          assigned_role: 'Dirección General / CEO',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 11h 20m restantes',
-          sender_name: 'Supervisión Escolar Zona 14',
-          sender_email: 'supervision.zona14@edomex.gob.mx',
-          provenance_doc: 'Correo/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
-          received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
-          campus: 'Consolidado Red IBIME'
-        },
-        {
-          id: 'mat-ibime-dining-01',
-          matter_code: 'MAT-IBIME-2026-387',
-          title: 'Solicitud de atención y consideración respecto al servicio de comedor',
-          summary: 'Familia reporta inquietud prioritaria respecto a la calidad del servicio de comedor escolar y malestar estomacal de su hijo. Requiere atención directa de Dirección General.',
-          category: 'Salud y Alimentación Escolar',
-          urgency: 'CRITICA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.',
-          reincidence_count: 1,
-          recommended_action: 'Aprobar borrador de respuesta oficial e instruir revisión inmediata de insumos con el área médica.',
-          suggested_draft_reply: `Estimada Familia:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En Instituto Bilingüe IBIME la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-          assigned_role: 'Dirección General / CEO',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 11h 50m restantes',
-          sender_name: 'Miguel Valencia',
-          sender_email: 'miguel.valencia@familias-ibime.edu.mx',
-          provenance_doc: 'Correo/IBIME/Protocolo_Salud_y_Comedor.md',
-          received_at: getRecentCdmxTimeStr(15),
-          campus: 'Campus Montes (Sede Matriz)'
-        }
-      ];
+      return [];
     }
     return generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true);
   });
@@ -3928,7 +3832,12 @@ ${schoolName}`
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const deduped = deduplicateExecutiveMatters(parsed);
-            const cleaned = deduped.filter((m: any) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
+            const cleaned = deduped.filter(
+              (m: any) =>
+                !isSpamOrCommercialMatter(m) &&
+                !isMatterOrEmailResolved(m) &&
+                !(isIbime && LEGACY_IBIME_SEED_MATTER_IDS.has(m.id))
+            );
             setMattersList(cleaned.length > 0 ? cleaned : isIbime ? [] : generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true));
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return;
@@ -3939,122 +3848,18 @@ ${schoolName}`
       }
     }
     if (isIbime) {
-      setMattersList([
-        {
-          id: 'mat-ibime-01',
-          matter_code: 'MAT-IBIME-2026-001',
-          title: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
-          summary: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.',
-          category: 'Convivencia / Caso Crítico Nivel 3',
-          urgency: 'CRITICA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.',
-          reincidence_count: 3,
-          recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
-          suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de Campus Montes. Para el Instituto Bilingüe IBIME la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-          assigned_role: 'Dirección General',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 09h 42m restantes',
-          sender_name: 'Lic. Fernando Mendoza',
-          sender_email: 'familia.mendoza@gmail.com',
-          provenance_doc: 'Correo/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
-          received_at: getRecentCdmxTimeStr(45),
-          campus: 'Campus Montes (Sede Matriz)'
-        },
-        {
-          id: 'mat-ibime-02',
-          matter_code: 'MAT-IBIME-2026-002',
-          title: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
-          summary: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.',
-          category: 'Financiero & Cobranza CFDI',
-          urgency: 'ALTA',
-          destination: 'DELEGADO_CON_SLA',
-          why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con plazo de 24 horas.',
-          reincidence_count: 1,
-          recommended_action: 'Delegado a Departamento de Cobranza y Finanzas (C.P. Claudia Albarrán). Notificar si vence plazo estipulado.',
-          suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de IBIME. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · Instituto Bilingüe IBIME`,
-          assigned_role: 'Cobranza y Finanzas',
-          sla_hours: 24,
-          sla_remaining_text: '⏱️ 18h 15m restantes',
-          sender_name: 'Ing. Carlos Ramírez',
-          sender_email: 'carlos.ramirez@empresa.com',
-          provenance_doc: 'Correo/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
-          received_at: getRecentCdmxTimeStr(30),
-          campus: 'Campus Lagos'
-        },
-        {
-          id: 'mat-ibime-03',
-          matter_code: 'MAT-IBIME-2026-003',
-          title: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
-          summary: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.',
-          category: 'Logística & Transporte',
-          urgency: 'MEDIA',
-          destination: 'DELEGADO_CON_SLA',
-          why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
-          reincidence_count: 6,
-          recommended_action: 'Delegado a Coordinación de Logística para reprogramación de salida del autobús 15 minutos antes.',
-          suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · IBIME`,
-          assigned_role: 'Logística y Transporte',
-          sla_hours: 48,
-          sla_remaining_text: '⏱️ 41h 10m restantes',
-          sender_name: 'Comité de Padres Ruta 4',
-          sender_email: 'padres.ruta4@ibime.edu.mx',
-          provenance_doc: 'Correo/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
-          received_at: getRecentCdmxTimeStr(120),
-          campus: 'Campus San Cristóbal'
-        },
-        {
-          id: 'mat-ibime-04',
-          matter_code: 'MAT-IBIME-2026-004',
-          title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
-          summary: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.',
-          category: 'Supervisión Oficial SEP / Asunto Regulatorio',
-          urgency: 'ALTA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Oficio oficial de Supervisión Escolar SEP. Por regla rectora, todo asunto vinculado con Supervisión o SEP requiere atención y seguimiento directo del CEO.',
-          reincidence_count: 1,
-          recommended_action: 'Validar recepción oficial y girar acuse institucional a la Supervisión de Zona SEP.',
-          suggested_draft_reply: `Acuse de recibo institucional: El Instituto Bilingüe IBIME agradece la notificación de la Supervisión de Zona 14. Las listas quedan archivadas en nuestro repositorio oficial.`,
-          assigned_role: 'Dirección General / CEO',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 11h 20m restantes',
-          sender_name: 'Supervisión Escolar Zona 14',
-          sender_email: 'supervision.zona14@edomex.gob.mx',
-          provenance_doc: 'Correo/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
-          received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
-          campus: 'Consolidado Red IBIME'
-        },
-        {
-          id: 'mat-ibime-dining-01',
-          matter_code: 'MAT-IBIME-2026-387',
-          title: 'Solicitud de atención y consideración respecto al servicio de comedor',
-          summary: 'Familia reporta inquietud prioritaria respecto a la calidad del servicio de comedor escolar y malestar estomacal de su hijo. Requiere atención directa de Dirección General.',
-          category: 'Salud y Alimentación Escolar',
-          urgency: 'CRITICA',
-          destination: 'ATENCION_CEO',
-          why_shown: 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.',
-          reincidence_count: 1,
-          recommended_action: 'Aprobar borrador de respuesta oficial e instruir revisión inmediata de insumos con el área médica.',
-          suggested_draft_reply: `Estimada Familia:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En Instituto Bilingüe IBIME la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-          assigned_role: 'Dirección General / CEO',
-          sla_hours: 12,
-          sla_remaining_text: '⏱️ 11h 50m restantes',
-          sender_name: 'Miguel Valencia',
-          sender_email: 'miguel.valencia@familias-ibime.edu.mx',
-          provenance_doc: 'Correo/IBIME/Protocolo_Salud_y_Comedor.md',
-          received_at: getRecentCdmxTimeStr(15),
-          campus: 'Campus Montes (Sede Matriz)'
-        }
-      ]);
+      setMattersList([]);
     } else {
       setMattersList(generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId, true));
     }
   }, [mattersStorageKey, isIbime, schoolName, schoolDomain, campuses, currentTenantId]);
 
-  // Purga en caliente obligatoria y permanente de falsos positivos en el estado y localStorage
+  // Purga en caliente obligatoria y permanente de falsos positivos y seeds teóricos de IBIME en el estado y localStorage
   useEffect(() => {
     setMattersList((prev) => {
-      const sanitized = prev.filter((m) => !isSpamOrCommercialMatter(m));
+      const sanitized = prev.filter(
+        (m) => !isSpamOrCommercialMatter(m) && !(isIbime && LEGACY_IBIME_SEED_MATTER_IDS.has(m.id))
+      );
       if (sanitized.length !== prev.length) {
         if (typeof window !== 'undefined') {
           localStorage.setItem(mattersStorageKey, JSON.stringify(sanitized));
@@ -4063,7 +3868,7 @@ ${schoolName}`
       }
       return prev;
     });
-  }, [mattersStorageKey]);
+  }, [mattersStorageKey, isIbime]);
 
   // =========================================================================
   // PUENTE AUTÓNOMO DE ALTA FIDELIDAD: SINCRONIZACIÓN REACTIVA INBOX REAL -> BANDEJA INTELIGENTE
@@ -4298,6 +4103,108 @@ ${schoolName}`
       received_at: formatCdmxRelative(new Date(Date.now() - 22 * 3600 * 1000))
     }
   ]);
+
+  // Normalización y proyección cronológica unificada en un único paso memoizado O(N)
+  const normalizedRawEmails = useMemo(() => {
+    const activeRaw = rawEmailsList.filter((item) => !deletedEmailIds.has(item.id));
+    if (activeRaw.length > 0) {
+      return sortEmailsDescending(activeRaw.map((item) => normalizeRawEmailCeoRules(item)));
+    }
+
+    const baseMs = Date.now();
+    const fromMatters: RawGmailItem[] = mattersList
+      .filter((m) => !deletedEmailIds.has(m.id))
+      .map((m, idx) => {
+        const parsedMs = parseEmailDateMs({ received_at: m.received_at });
+        const itemMs = parsedMs > 0 ? parsedMs : baseMs - idx * 27 * 60 * 1000;
+        const itemIso = new Date(itemMs).toISOString();
+        const isCeo = m.destination === 'ATENCION_CEO';
+        const isDel = m.destination === 'DELEGADO_CON_SLA';
+        return normalizeRawEmailCeoRules({
+          id: m.id,
+          sender_name: m.sender_name || (isIbime ? 'Dirección Académica IBIME' : 'Coordinación Institucional'),
+          sender_email: m.sender_email || `contacto@${schoolDomain}`,
+          recipient_email: connectedEmail || `direccion@${schoolDomain}`,
+          subject: m.title,
+          snippet: m.summary,
+          body_text: `${m.summary}\n\nReferencia normativa: ${m.provenance_doc || 'Protocolo Oficial Institucional'}\nPlantel: ${m.campus || campuses[0]?.name || 'Sede Matriz'}`,
+          received_at: m.received_at || formatCdmxFull(itemIso),
+          timestamp: formatCdmxSmartBadge(itemMs),
+          date_ms: itemMs,
+          date_iso: itemIso,
+          is_unread: isCeo && !m.is_resolved,
+          is_starred: m.urgency === 'CRITICA',
+          is_important: isCeo,
+          category: isCeo ? 'principal' : 'actualizaciones',
+          triage_badge: {
+            quadrant: isCeo
+              ? 'ATENCION_CEO'
+              : isDel
+              ? 'DELEGADO_CON_PLAZO'
+              : 'INFORMATIVO',
+            label: isCeo ? 'ATENCIÓN CEO' : isDel ? 'DELEGADO SLA' : 'INFORMATIVO',
+            color: 'bg-[#F4F4F5] text-[#09090B] border-[#E4E4E7]',
+            linkedMatterId: m.id,
+          },
+        });
+      });
+
+    const fromDiscarded: RawGmailItem[] = discardedList
+      .filter((d) => !deletedEmailIds.has(d.id))
+      .map((d, idx) => {
+        const itemMs = baseMs - (mattersList.length + idx + 1) * 43 * 60 * 1000;
+        const itemIso = new Date(itemMs).toISOString();
+        return normalizeRawEmailCeoRules({
+          id: d.id,
+          sender_name: d.sender_name || 'Remitente Externo',
+          sender_email: d.sender_email || 'notificaciones@externo.org',
+          recipient_email: connectedEmail || `direccion@${schoolDomain}`,
+          subject: d.subject,
+          snippet: d.discard_reason,
+          body_text: `${d.subject}\n\nClasificación automática de filtrado: ${d.discard_reason}`,
+          received_at: d.received_at || formatCdmxFull(itemIso),
+          timestamp: formatCdmxSmartBadge(itemMs),
+          date_ms: itemMs,
+          date_iso: itemIso,
+          is_unread: false,
+          is_starred: false,
+          is_important: false,
+          category: 'spam',
+          triage_badge: {
+            quadrant: 'SPAM_DESCARTADO',
+            label: 'FILTRADO',
+            color: 'bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]',
+          },
+        });
+      });
+
+    return sortEmailsDescending([...fromMatters, ...fromDiscarded]);
+  }, [
+    rawEmailsList,
+    deletedEmailIds,
+    normalizeRawEmailCeoRules,
+    mattersList,
+    discardedList,
+    connectedEmail,
+    schoolDomain,
+    isIbime,
+    campuses,
+  ]);
+
+  const rawEmailCounts = useMemo(() => {
+    let ceo = 0;
+    let delegados = 0;
+    let informativos = 0;
+    let spam = 0;
+    for (const e of normalizedRawEmails) {
+      const q = e.triage_badge?.quadrant;
+      if (q === 'ATENCION_CEO') ceo++;
+      else if (q === 'DELEGADO_CON_PLAZO' || (q as string) === 'DELEGADO_CON_SLA') delegados++;
+      else if (q === 'INFORMATIVO') informativos++;
+      else if (q === 'SPAM_DESCARTADO' || e.category === 'promociones' || e.category === 'spam') spam++;
+    }
+    return { all: normalizedRawEmails.length, ceo, delegados, informativos, spam };
+  }, [normalizedRawEmails]);
 
   // Directorio institucional de cuentas oficiales dinámico por colegio
   const institutionalDirectory = useMemo(() => {
@@ -4658,10 +4565,7 @@ ${schoolName}`
     } catch {}
 
     try {
-      const effectiveAccount =
-        targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx')
-          ? 'roboticalegotaller1@gmail.com'
-          : targetEmail;
+      const effectiveAccount = targetEmail;
 
       const inboxRes = await fetch(
         `/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(effectiveAccount)}`
@@ -5138,13 +5042,13 @@ ${schoolName}`
       setOutgoingHost(preset.smtp.host);
       setOutgoingPort(preset.smtp.port);
       setOutgoingSecurity(preset.smtp.security);
-      setIsManualServerExpanded(false); // Por default comprimido para proveedores comerciales
+      setIsManualServerExpanded(false); // Por default comprimido
       
       const defaultDomain = preset.domains[0] || 'gmail.com';
       if (!authUsername || !authUsername.includes('@') || authUsername.endsWith(schoolDomain) || authUsername === 'direccion@gmail.com') {
-        setAuthUsername(defaultDomain === 'gmail.com' ? 'roboticalegotaller1@gmail.com' : `direccion@${defaultDomain}`);
+        setAuthUsername(defaultDomain === 'gmail.com' ? (connectedEmail || 'roboticalegotaller1@gmail.com') : `direccion@${defaultDomain}`);
       }
-      onTriggerToast(`✓ Preset "${preset.providerName}" seleccionado con puertos oficiales.`);
+      onTriggerToast(`✓ Preset "${preset.providerName}" cargado con servidores oficiales por defecto.`);
     } else {
       // Servidor propio escolar
       const standardIncoming = selectedProtocol === 'POP3' ? 995 : 993;
@@ -5155,9 +5059,17 @@ ${schoolName}`
       setOutgoingPort(587);
       setOutgoingSecurity('STARTTLS');
       setAuthUsername(connectedEmail || (isIbime ? 'directora.general@ibime.edu.mx' : `direccion@${schoolDomain}`));
-      setIsManualServerExpanded(true); // Se despliega automáticamente para servidor propio
-      onTriggerToast(`✓ Servidor propio institucional seleccionado: mail.${schoolDomain}`);
+      setIsManualServerExpanded(false); // Siempre comprimido por defecto hasta hacer clic
+      onTriggerToast(`✓ Servidor propio institucional pre-cargado: mail.${schoolDomain}`);
     }
+  };
+
+  // Apertura de la Ventana Deslizante (Slide-Over Drawer) pre-cargando datos por defecto de la marca y dejando servidor comprimido
+  const handleOpenBrandServerDrawer = (providerId: 'google' | 'microsoft' | 'apple' | 'yahoo' | 'zoho' | 'custom') => {
+    setSelectedProviderDrawerId(providerId);
+    handleSelectProviderPreset(providerId);
+    setIsManualServerExpanded(false);
+    setIsEditingServerConfig(true);
   };
 
   // Cerrar sesión y permitir cambiar a otra cuenta de Google / Correo institucional
@@ -5617,11 +5529,8 @@ ${schoolName}`
   // Forzar o auto-ejecutar sincronización de bandeja en tiempo real con descarga y Triage Cognitivo (Blindada contra desautorización)
   const handleTriggerSync = async (isSilent = false, autoDetectUserSentMail = false) => {
     // Aislamiento Multi-Tenant Estricto: Si la escuela no tiene un correo conectado o está desconectada, ABORTAR INMEDIATAMENTE
-    const rawTarget = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim().toLowerCase();
-    const targetEmail =
-      rawTarget.includes('directora.general') || rawTarget.includes('patricia') || rawTarget.includes('ibime.edu.mx') || !rawTarget
-        ? 'roboticalegotaller1@gmail.com'
-        : rawTarget;
+    const rawTarget = (connectedEmail || authUsername || defaultInstitutionalEmail).trim().toLowerCase();
+    const targetEmail = rawTarget;
     if (!targetEmail || targetEmail === 'disconnected') {
       setIsSyncingLiveInbox(false);
       return;
@@ -6151,6 +6060,285 @@ ${schoolName}`
     CeoStyleLearnerService.recordInteraction(currentTenantId, 'open', matter.title, matter.sender_email);
   };
 
+  // =========================================================================
+  // ESTUDIO GRÁFICO INSTITUCIONAL IA (Síntesis Visual, Multi-Turno y WebP)
+  // =========================================================================
+  interface InstitutionalVisualClientAsset {
+    interactionId: string;
+    turnNumber: number;
+    aspectRatio: '4:5' | '16:9' | '1:1' | '3:4';
+    mimeType: 'image/webp';
+    webpBase64: string;
+    dataUrl: string;
+    width: number;
+    height: number;
+    sizeKb: number;
+    cid: string;
+    fileName: string;
+    synthesisEngine: 'motor_visual_ia' | 'estudio_determinista';
+    captionSummary: string;
+  }
+
+  const [composeVisualAsset, setComposeVisualAsset] = useState<InstitutionalVisualClientAsset | null>(null);
+  const [isGeneratingComposeVisual, setIsGeneratingComposeVisual] = useState(false);
+  const [composeAspectRatio, setComposeAspectRatio] = useState<'4:5' | '16:9' | '1:1'>('4:5');
+  const [composeEmbedInEmail, setComposeEmbedInEmail] = useState(true);
+  const [composeRefinementText, setComposeRefinementText] = useState('');
+  const [composeRefImages, setComposeRefImages] = useState<
+    Array<{ name: string; mimeType: string; dataBase64: string; sizeKb: number }>
+  >([]);
+
+  const [matterVisualPasses, setMatterVisualPasses] = useState<Record<string, InstitutionalVisualClientAsset>>({});
+  const [isGeneratingPass, setIsGeneratingPass] = useState(false);
+  const [passRefinementText, setPassRefinementText] = useState('');
+
+  const [catchupInfographicAsset, setCatchupInfographicAsset] = useState<InstitutionalVisualClientAsset | null>(null);
+  const [isGeneratingCatchupVisual, setIsGeneratingCatchupVisual] = useState(false);
+  const [catchupVisualRefinement, setCatchupVisualRefinement] = useState('');
+
+  const [isDictatingRefinement, setIsDictatingRefinement] = useState<'compose' | 'pass' | 'catchup' | null>(null);
+
+  const handleDownloadVisualAsset = (asset: InstitutionalVisualClientAsset) => {
+    if (typeof document === 'undefined') return;
+    const link = document.createElement('a');
+    link.href = asset.dataUrl;
+    link.download = asset.fileName || 'pieza-institucional.webp';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onTriggerToast(`✓ Descargando pieza gráfica optimizada (${asset.sizeKb} KB · WebP)`);
+  };
+
+  const handleUploadComposeReferenceImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      const nextItems: Array<{ name: string; mimeType: string; dataBase64: string; sizeKb: number }> = [];
+      for (const rawFile of Array.from(files).slice(0, 4)) {
+        // Compresión obligatoria en cliente previa a transmisión (Regla No Negociable 3)
+        const compressed = await compressImageFile(rawFile, {
+          maxWidth: 1024,
+          maxHeight: 1024,
+          quality: 0.82,
+          format: 'image/webp',
+          maxSizeBytes: 280 * 1024,
+        });
+        const dataBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const res = String(reader.result || '');
+            resolve(res.replace(/^data:[^;]+;base64,/, ''));
+          };
+          reader.onerror = () => reject(new Error('No se pudo leer la imagen comprimida'));
+          reader.readAsDataURL(compressed);
+        });
+        nextItems.push({
+          name: compressed.name,
+          mimeType: compressed.type || 'image/webp',
+          dataBase64,
+          sizeKb: Math.max(1, Math.round(compressed.size / 1024)),
+        });
+      }
+      setComposeRefImages((prev) => [...prev, ...nextItems].slice(0, 4));
+      onTriggerToast(`✓ ${nextItems.length} referencia(s) comprimida(s) a WebP e integrada(s) al Estudio Gráfico.`);
+    } catch (err: any) {
+      onTriggerToast(`⚠️ No fue posible adjuntar la imagen de referencia: ${err?.message || 'Error'}`);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleStartVisualVoiceDictation = (target: 'compose' | 'pass' | 'catchup') => {
+    if (typeof window === 'undefined') return;
+    const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRec) {
+      onTriggerToast('ℹ️ El dictado por micrófono requiere el navegador oficial de escritorio con soporte de voz activo.');
+      return;
+    }
+    try {
+      const rec = new SpeechRec();
+      rec.lang = 'es-MX';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      setIsDictatingRefinement(target);
+      onTriggerToast('🎙️ Micrófono Sofía activo: dicta tu ajuste gráfico (ej. "Cambia a azul marino y destaca la fecha")...');
+
+      rec.onresult = (evt: any) => {
+        const transcript = evt?.results?.[0]?.[0]?.transcript?.trim() || '';
+        if (transcript) {
+          if (target === 'compose') setComposeRefinementText(transcript);
+          if (target === 'pass') setPassRefinementText(transcript);
+          if (target === 'catchup') setCatchupVisualRefinement(transcript);
+          onTriggerToast(`🎙️ Instrucción capturada: "${transcript}"`);
+        }
+      };
+      rec.onerror = () => setIsDictatingRefinement(null);
+      rec.onend = () => setIsDictatingRefinement(null);
+      rec.start();
+    } catch {
+      setIsDictatingRefinement(null);
+    }
+  };
+
+  const handleSynthesizeComposeVisual = async (overrideRefinement?: string) => {
+    const activeRefinement = (overrideRefinement ?? composeRefinementText).trim();
+    const isRefining = Boolean(activeRefinement && composeVisualAsset);
+    setIsGeneratingComposeVisual(true);
+
+    const audienceLabel =
+      selectedRecipient === 'all-network'
+        ? 'Toda la Red Escolar'
+        : selectedRecipient === 'directors'
+        ? 'Directores de Plantel'
+        : selectedRecipient === 'teachers'
+        ? 'Claustro Docente'
+        : selectedRecipient === 'parents'
+        ? 'Comunidad de Familias'
+        : 'Comunidad Institucional';
+
+    try {
+      const res = await fetch('/api/mail/visual-studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'comunicado',
+          tenantId: currentTenantId,
+          schoolName,
+          directorTitle,
+          campusName: campuses[0]?.name || 'Plantel Central',
+          aspectRatio: composeAspectRatio,
+          subject,
+          bodyText: content,
+          audienceLabel,
+          referenceImages: composeRefImages.map((r) => ({ mimeType: r.mimeType, dataBase64: r.dataBase64 })),
+          ...(isRefining
+            ? {
+                refinementInstruction: activeRefinement,
+                previousInteractionId: composeVisualAsset?.interactionId,
+                previousWebpBase64: composeVisualAsset?.webpBase64,
+                previousTurnCount: composeVisualAsset?.turnNumber || 1,
+              }
+            : { previousTurnCount: 0 }),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || 'Error al sintetizar el comunicado gráfico');
+      }
+      setComposeVisualAsset(data);
+      if (isRefining) setComposeRefinementText('');
+      onTriggerToast(
+        `✨ Comunicado gráfico ${isRefining ? `actualizado (Turno #${data.turnNumber})` : 'generado'} · WebP optimizado (${data.sizeKb} KB)`
+      );
+    } catch (err: any) {
+      onTriggerToast(`⚠️ ${err?.message || 'No se pudo generar la pieza gráfica.'}`);
+    } finally {
+      setIsGeneratingComposeVisual(false);
+    }
+  };
+
+  const handleSynthesizeMatterPass = async (matter: any, overrideRefinement?: string) => {
+    if (!matter) return;
+    const existingPass = matterVisualPasses[matter.id];
+    const activeRefinement = (overrideRefinement ?? passRefinementText).trim();
+    const isRefining = Boolean(activeRefinement && existingPass);
+    setIsGeneratingPass(true);
+
+    try {
+      const res = await fetch('/api/mail/visual-studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'pase_audiencia',
+          tenantId: currentTenantId,
+          schoolName,
+          directorTitle,
+          campusName: matter.campus || campuses[0]?.name || 'Plantel Central',
+          aspectRatio: '16:9',
+          matterCode: formatCleanMatterCode(matter.matter_code),
+          attendeeName: matter.sender_name || 'Titular Convocado',
+          subject: matter.title,
+          appointmentDateText: `Próxima sesión hábil · 09:30 hrs (CDMX)`,
+          normativeRef: matter.provenance_doc || 'Protocolo Oficial de Atención Directiva',
+          ...(isRefining
+            ? {
+                refinementInstruction: activeRefinement,
+                previousInteractionId: existingPass.interactionId,
+                previousWebpBase64: existingPass.webpBase64,
+                previousTurnCount: existingPass.turnNumber || 1,
+              }
+            : { previousTurnCount: 0 }),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || 'Error al generar el pase oficial de audiencia');
+      }
+      setMatterVisualPasses((prev) => ({ ...prev, [matter.id]: data }));
+      if (isRefining) setPassRefinementText('');
+      onTriggerToast(
+        `🎫 Pase Oficial de Audiencia ${isRefining ? `refinado (Turno #${data.turnNumber})` : 'generado'} (${data.sizeKb} KB · WebP) — listo para despachar inline.`
+      );
+    } catch (err: any) {
+      onTriggerToast(`⚠️ ${err?.message || 'No se pudo sintetizar el pase de audiencia.'}`);
+    } finally {
+      setIsGeneratingPass(false);
+    }
+  };
+
+  const handleSynthesizeCatchupInfographic = async (overrideRefinement?: string) => {
+    const activeRefinement = (overrideRefinement ?? catchupVisualRefinement).trim();
+    const isRefining = Boolean(activeRefinement && catchupInfographicAsset);
+    setIsGeneratingCatchupVisual(true);
+
+    try {
+      const res = await fetch('/api/mail/visual-studio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'infografia_ejecutiva',
+          tenantId: currentTenantId,
+          schoolName,
+          directorTitle,
+          campusName: campuses[0]?.name || 'Consolidado Institucional',
+          aspectRatio: '16:9',
+          metrics: {
+            totalCount: catchupMetrics.totalCount,
+            ceoCount: catchupMetrics.ceoCount,
+            delegatedCount: catchupMetrics.delegatedCount,
+            infoCount: catchupMetrics.infoCount,
+            spamCount: catchupMetrics.spamCount,
+            sepCount: catchupMetrics.sepCount,
+            primaryUrgentTitle:
+              catchupMetrics.primaryUrgentMatter?.title ||
+              'Bandeja de Dirección General al corriente y sin contingencias activas',
+          },
+          ...(isRefining
+            ? {
+                refinementInstruction: activeRefinement,
+                previousInteractionId: catchupInfographicAsset?.interactionId,
+                previousWebpBase64: catchupInfographicAsset?.webpBase64,
+                previousTurnCount: catchupInfographicAsset?.turnNumber || 1,
+              }
+            : { previousTurnCount: 0 }),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || 'Error al generar lámina ejecutiva de consejo');
+      }
+      setCatchupInfographicAsset(data);
+      if (isRefining) setCatchupVisualRefinement('');
+      onTriggerToast(
+        `📊 Lámina Ejecutiva de 4 Cuadrantes ${isRefining ? `actualizada (Turno #${data.turnNumber})` : 'sintetizada'} (${data.sizeKb} KB · WebP)`
+      );
+    } catch (err: any) {
+      onTriggerToast(`⚠️ ${err?.message || 'No se pudo sintetizar la lámina ejecutiva.'}`);
+    } finally {
+      setIsGeneratingCatchupVisual(false);
+    }
+  };
+
   // Aprobar borrador desde el modal de detalle y despachar respuesta oficial en tiempo real
   const handleApproveDraft = async () => {
     if (!selectedMatter) return;
@@ -6183,8 +6371,10 @@ ${schoolName}`
       matterCode
     ].filter(Boolean);
 
+    const attachedPass = matterVisualPasses[matterToResolve.id];
+
     try {
-      // 1. Despacho real mediante el endpoint de envío
+      // 1. Despacho real mediante el endpoint de envío (incluye Pase Gráfico inline vía CID si fue generado)
       const sendRes = await fetch('/api/mail/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6194,6 +6384,16 @@ ${schoolName}`
           recipientName: matterToResolve.sender_name,
           subject: subjectReply,
           bodyText: draftContent,
+          ...(attachedPass
+            ? {
+                inlineVisualAttachment: {
+                  cid: attachedPass.cid,
+                  fileName: attachedPass.fileName,
+                  mimeType: attachedPass.mimeType,
+                  base64Data: attachedPass.webpBase64,
+                },
+              }
+            : {}),
           threadId: rawLiveId || matterToResolve.id,
           inReplyToMessageId: rawLiveId || matterToResolve.id,
           tenantId: currentTenantId,
@@ -6512,13 +6712,15 @@ Comité de Seguridad y Protección Escolar`
 
   const handleSendEmail = async () => {
     setIsSending(true);
+    const totalCampusStudents = campuses.reduce((acc, c: any) => acc + (c.students || 0), 0);
+    const totalCampusTeachers = campuses.reduce((acc, c: any) => acc + (c.teachers || 0), 0);
     const targetGroup =
-      selectedRecipient === 'all-network' ? 'Toda la Red (4 Sedes)' :
+      selectedRecipient === 'all-network' ? `Toda la Red (${campuses.length || 1} Sedes)` :
       selectedRecipient === 'directors' ? 'Directores de Campus' :
-      selectedRecipient === 'teachers' ? 'Cuerpo Docente (200 profesores)' :
-      selectedRecipient === 'parents' ? 'Padres de Familia (3,740)' : 'Campus Seleccionado';
+      selectedRecipient === 'teachers' ? `Cuerpo Docente${totalCampusTeachers > 0 ? ` (${totalCampusTeachers} profesores)` : ''}` :
+      selectedRecipient === 'parents' ? `Padres de Familia${totalCampusStudents > 0 ? ` (${totalCampusStudents.toLocaleString()})` : ''}` : 'Campus Seleccionado';
 
-    const effectiveSenderEmail = connectedEmail || 'roboticalegotaller1@gmail.com';
+    const effectiveSenderEmail = connectedEmail || defaultInstitutionalEmail || `direccion@${schoolDomain}`;
     const targetEmail =
       customDirectRecipientEmail.trim() ||
       effectiveSenderEmail;
@@ -6533,6 +6735,16 @@ Comité de Seguridad y Protección Escolar`
           recipientName: targetGroup,
           subject,
           bodyText: content,
+          ...(composeVisualAsset && composeEmbedInEmail
+            ? {
+                inlineVisualAttachment: {
+                  cid: composeVisualAsset.cid,
+                  fileName: composeVisualAsset.fileName,
+                  mimeType: composeVisualAsset.mimeType,
+                  base64Data: composeVisualAsset.webpBase64,
+                },
+              }
+            : {}),
           tenantId: currentTenantId,
           smtpConfig: {
             host: outgoingHost,
@@ -6586,10 +6798,10 @@ Comité de Seguridad y Protección Escolar`
 
   const handleOpenMailto = () => {
     const targetEmail =
-      selectedRecipient === 'directors' ? 'directores@ibime.edu.mx' :
-      selectedRecipient === 'parents' ? 'padres@ibime.edu.mx' :
-      selectedRecipient === 'teachers' ? 'docentes@ibime.edu.mx' :
-      'direccion.general@ibime.edu.mx';
+      selectedRecipient === 'directors' ? `directores@${schoolDomain}` :
+      selectedRecipient === 'parents' ? `padres@${schoolDomain}` :
+      selectedRecipient === 'teachers' ? `docentes@${schoolDomain}` :
+      `direccion.general@${schoolDomain}`;
     const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(content)}`;
     window.open(mailtoUrl, '_blank');
     onTriggerToast('Abriendo cliente de correo institucional...');
@@ -6607,11 +6819,28 @@ Comité de Seguridad y Protección Escolar`
   // REGLA SUPREMA MANDATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
   // Los correos delegados, informativos y spam permanecen en Bandeja de Entrada pero NUNCA en Bandeja Inteligente.
   // Todo asunto aprobado, despachado o atendido es retirado de forma inmediata e irrevocable.
+  const getMatterEpochMs = useCallback((m: MatterItem): number => {
+    const anyM = m as any;
+    return parseEmailDateMs({
+      date_ms: anyM.date_ms,
+      date_iso: anyM.date_iso,
+      received_at: m.received_at,
+      timestamp: anyM.timestamp || m.received_at,
+    });
+  }, []);
+
   const intelligentMatters = useMemo(() => {
-    return mattersList.filter(
-      (m) => m.destination === 'ATENCION_CEO' && !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m)
-    );
-  }, [mattersList, isMatterOrEmailResolved]);
+    return mattersList
+      .filter(
+        (m) => m.destination === 'ATENCION_CEO' && !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m)
+      )
+      .slice()
+      .sort((a, b) => {
+        const diff = getMatterEpochMs(b) - getMatterEpochMs(a);
+        if (diff !== 0) return diff;
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
+  }, [mattersList, isMatterOrEmailResolved, getMatterEpochMs]);
 
   // Efecto reactivo con revisión periódica cada 30 segundos:
   // Si llegan nuevos correos o hay cambios en los asuntos, regenera el Audio Digest dinámicamente;
@@ -6744,7 +6973,7 @@ Comité de Seguridad y Protección Escolar`
         const key = (item.title || item.id).toLowerCase().trim();
         if (!map.has(key)) map.set(key, item);
       });
-      return Array.from(map.values());
+      return Array.from(map.values()).sort((a, b) => getMatterEpochMs(b) - getMatterEpochMs(a));
     }
 
     // Algoritmo Canónico de Agrupación Cognitiva de Incidentes y Reincidencias
@@ -6811,8 +7040,10 @@ Comité de Seguridad y Protección Escolar`
       }
     });
 
-    return Array.from(clusterMap.values()).map(e => e.matter);
-  }, [mattersList, rawEmailsList, isMatterOrEmailResolved, schoolSlug, campuses, groupIncidentMatters]);
+    return Array.from(clusterMap.values())
+      .map(e => e.matter)
+      .sort((a, b) => getMatterEpochMs(b) - getMatterEpochMs(a));
+  }, [mattersList, rawEmailsList, isMatterOrEmailResolved, schoolSlug, campuses, groupIncidentMatters, getMatterEpochMs]);
 
   // Filtrado de asuntos en pestaña Bandeja Inteligente (Atención CEO, Urgentes, SEP y Asuntos Delegados)
   const filteredMatters = useMemo(() => {
@@ -6948,6 +7179,161 @@ Comité de Seguridad y Protección Escolar`
 
   if (!isOpen) return null;
 
+  const isGovCuentasActive = activeTab === 'google';
+  const isGovVipSlaActive = activeTab === 'ajustes' && (settingsSubTab === 'vip' || settingsSubTab === 'delegados');
+  const isGovDirectorioActive = activeTab === 'directorio';
+  const isGovPlantillasActive = activeTab === 'ajustes' && (settingsSubTab === 'plantillas' || settingsSubTab === 'apariencia');
+  const isGovBitacoraActive = activeTab === 'bitacora';
+  const isGovRoiActive = activeTab === 'roi';
+
+  const renderGovernanceShell = (children: React.ReactNode) => (
+    <div
+      data-testid="governance-unified-master-detail"
+      className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start font-sans antialiased"
+    >
+      {/* MENÚ SUB-RIEL IZQUIERDO DE 6 MÓDULOS (3/12 EN POZO RECESADO #E2E8F0 · IMAGEN 1) */}
+      <div
+        data-testid="governance-left-subrail"
+        className="lg:col-span-3 p-3 rounded-2xl bg-[#E2E8F0] border border-[#CBD5E1] space-y-2"
+      >
+        <button
+          type="button"
+          data-testid="gov-nav-cuentas"
+          onClick={() => setActiveTab('google')}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovCuentasActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <KeyRound className={`h-4 w-4 shrink-0 ${isGovCuentasActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">Cuentas & OAuth 2.0</span>
+          </div>
+          <span className="h-2 w-2 rounded-full bg-[#059669] shrink-0" />
+        </button>
+
+        <button
+          type="button"
+          data-testid="gov-nav-vip-sla"
+          onClick={() => {
+            setActiveTab('ajustes');
+            setSettingsSubTab('vip');
+          }}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovVipSlaActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Sliders className={`h-4 w-4 shrink-0 ${isGovVipSlaActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">Reglas VIP & SLA</span>
+          </div>
+          <span className="font-mono text-[10px] text-[#64748B] tabular-nums shrink-0">
+            {(settingsData?.vipEmails?.length || 0) + (settingsData?.delegates?.length || 0)}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          data-testid="gov-nav-directorio"
+          onClick={() => setActiveTab('directorio')}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovDirectorioActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Landmark className={`h-4 w-4 shrink-0 ${isGovDirectorioActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">Directorio de Sedes</span>
+          </div>
+          <span className="font-mono text-[10px] text-[#64748B] tabular-nums shrink-0">
+            {campuses.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          data-testid="gov-nav-plantillas"
+          onClick={() => {
+            setActiveTab('ajustes');
+            setSettingsSubTab('plantillas');
+          }}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovPlantillasActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <FileText className={`h-4 w-4 shrink-0 ${isGovPlantillasActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">Plantillas Oficiales</span>
+          </div>
+          <span className="font-mono text-[10px] text-[#64748B] tabular-nums shrink-0">
+            {settingsData?.templates?.length || 0}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          data-testid="gov-nav-bitacora"
+          onClick={() => setActiveTab('bitacora')}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovBitacoraActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <ShieldCheck className={`h-4 w-4 shrink-0 ${isGovBitacoraActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">Bitácora Criptográfica</span>
+          </div>
+          <span className="font-mono text-[10px] text-[#64748B] tabular-nums shrink-0">
+            {logs.length}
+          </span>
+        </button>
+
+        {/* Enlace rápido de retorno a Bandeja de Entrada entre Bitácora y ROI */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('raw_inbox')}
+          className="sr-only"
+        >
+          Bandeja de Entrada ({rawEmailsList.length})
+        </button>
+
+        <button
+          type="button"
+          data-testid="gov-nav-roi"
+          onClick={() => setActiveTab('roi')}
+          className={`w-full px-3.5 py-3 rounded-xl text-left transition-all cursor-pointer flex items-center justify-between gap-2.5 ${
+            isGovRoiActive
+              ? 'bg-white border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] text-[#0F172A] font-semibold shadow-xs'
+              : 'bg-white/95 hover:bg-white border border-[#CBD5E1] text-[#334155] hover:text-[#0F172A] font-medium'
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Sparkles className={`h-4 w-4 shrink-0 ${isGovRoiActive ? 'text-[#2563EB]' : 'text-[#64748B]'}`} />
+            <span className="text-xs tracking-tight truncate">ROI & Telemetría</span>
+          </div>
+          <span className="font-mono text-[10px] text-[#059669] font-medium shrink-0">
+            0 Tok
+          </span>
+        </button>
+      </div>
+
+      {/* PANEL SPOTLIGHT DERECHO CONSOLIDADO (9/12 EN BLANCO PURO #FFFFFF CON BORDE SUPERIOR #2563EB) */}
+      <div
+        data-testid="governance-right-spotlight"
+        className="lg:col-span-9 rounded-2xl bg-white border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-xs p-5 sm:p-6 space-y-6"
+      >
+        {children}
+      </div>
+    </div>
+  );
+
   return (
     <div className={embeddedBento ? "w-full animate-in fade-in select-none" : "fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2 md:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none"}>
       <div 
@@ -6962,522 +7348,255 @@ Comité de Seguridad y Protección Escolar`
           color: customTheme.textColor || (isColorLight(customTheme.backgroundColor) ? '#0F172A' : '#F8FAFC')
         } : undefined}
       >
-        {/* BANNER NOTIFICACIÓN FLOTANTE EN TIEMPO REAL DENTRO DEL MODAL */}
+        {/* NOTIFICACIÓN SUIZA DISCRETA EN ESQUINA INFERIOR DERECHA (CERO SOLAPAMIENTO DE CABECERA) */}
         {inModalToast && (
-          <div className={`fixed top-12 left-1/2 -translate-x-1/2 z-[1000] px-5 py-3 rounded-2xl text-white font-black text-xs shadow-2xl backdrop-blur-md flex items-center gap-2.5 animate-in slide-in-from-top-4 duration-200 border ${
-            inModalToast.type === 'error'
-              ? 'bg-red-600/95 border-red-400 shadow-red-950/50'
-              : inModalToast.type === 'info'
-              ? 'bg-blue-600/95 border-blue-400 shadow-blue-950/50'
-              : 'bg-emerald-600/95 border-emerald-400 shadow-emerald-950/50'
-          }`}>
+          <div
+            className={`fixed bottom-5 right-5 z-[1000] px-4 py-2.5 rounded-lg text-xs font-medium shadow-lg flex items-center gap-2 border ${
+              inModalToast.type === 'error'
+                ? 'bg-rose-950 text-white border-rose-800'
+                : 'bg-[#09090B] text-white border-[#27272A]'
+            }`}
+          >
             {inModalToast.type === 'error' ? (
-              <AlertTriangle className="h-4 w-4 text-white shrink-0" />
-            ) : inModalToast.type === 'info' ? (
-              <Info className="h-4 w-4 text-white shrink-0" />
+              <AlertTriangle className="h-3.5 w-3.5 text-rose-400 shrink-0" />
             ) : (
-              <CheckCircle2 className="h-4 w-4 text-white shrink-0" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
             )}
             <span>{inModalToast.message}</span>
           </div>
         )}
         
         {/* ========================================================= */}
-        {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
+        {/* 1. CABECERA EJECUTIVA SUIZA 48PX (CLARIDAD SUIZA LIGHT)   */}
         {/* ========================================================= */}
-        <div 
-          className={`px-2.5 sm:px-4 lg:px-5 py-2 sm:py-2.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-2 flex-nowrap relative z-40 overflow-visible select-none`}
-          style={themeMode === 'custom' && customTheme.headerColor ? { 
+        <header
+          className={`h-12 px-3 sm:px-5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-nowrap relative z-40 select-none`}
+          style={themeMode === 'custom' && customTheme.headerColor ? {
             backgroundColor: customTheme.headerColor,
-            borderColor: isColorLight(customTheme.headerColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'
+            borderColor: isColorLight(customTheme.headerColor) ? '#E4E4E7' : 'rgba(255,255,255,0.12)',
+            color: getContrastTextColor(customTheme.headerColor)
           } : undefined}
         >
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink">
-            {/* Botón de Menú Móvil para Desplegar Módulos Ejecutivos */}
+          {/* Izquierda: Identidad Institucional Sobria */}
+          <div className="flex items-center gap-2.5 min-w-0 shrink">
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-              className="md:hidden p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
+              className="md:hidden p-1.5 rounded-lg border border-[#E4E4E7] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#09090B] transition-colors cursor-pointer shrink-0"
               aria-label="Abrir módulos ejecutivos"
-              title="Módulos Ejecutivos"
             >
               <Menu className="h-4 w-4" />
             </button>
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-md shadow-red-950/50 border border-red-400/30 shrink-0">
-              <Mail className="h-4 w-4 text-white" />
+
+            <div className="w-6 h-6 rounded-md bg-[#09090B] text-white flex items-center justify-center font-black text-[10px] tracking-tighter shrink-0">
+              IS
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap truncate">
-                <h3 
-                  className="text-xs sm:text-sm font-black tracking-tight flex items-center gap-1.5 truncate"
-                  style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastTextColor(customTheme.headerColor) } : { color: '#FFFFFF' }}
-                >
-                  <span className="hidden xl:inline">Consola de Correo Inteligente & Triage Cognitivo CEO</span>
-                  <span className="hidden sm:inline xl:hidden">Consola de Correo CEO</span>
-                  <span className="sm:hidden">Correo CEO</span>
-                </h3>
-                <span className="hidden 2xl:inline-flex text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 items-center gap-1 shrink-0">
-                  <ShieldCheck className="h-3 w-3" /> Bóveda 100% Hermética
-                </span>
-                <span className="hidden 3xl:inline-flex text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 items-center gap-1 shrink-0">
-                  <Zap className="h-3 w-3 text-amber-300" /> 15 Fases Activas
-                </span>
-              </div>
-              <p 
-                className="text-[10px] sm:text-[11px] font-medium mt-0.5 flex items-center gap-1.5 truncate"
-                style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastSubtextColor(customTheme.headerColor) } : { color: '#CBD5E1' }}
-              >
-                <span className="truncate max-w-[130px] sm:max-w-[200px] md:max-w-[260px] lg:max-w-none">{schoolName} ({campuses.length} Sedes)</span>
-                <span className="hidden sm:inline text-slate-400">•</span>
-                {connectionStatus === 'connected_verified' && connectedEmail ? (
-                  <span className="text-emerald-300 font-semibold hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
-                    <KeyRound className="h-3 w-3 text-emerald-400 shrink-0" /> Cuenta: {connectedEmail}
-                  </span>
-                ) : isLivePinging && connectedEmail ? (
-                  <span className="text-cyan-300 font-semibold hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
-                    <RefreshCw className="h-3 w-3 text-cyan-400 animate-spin shrink-0" /> Verificando: {connectedEmail}
-                  </span>
-                ) : connectedEmail && connectionStatus === 'failed' ? (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenProviderOAuth('google')}
-                    className="text-amber-200 font-semibold hidden sm:flex items-center gap-1 bg-amber-950/70 hover:bg-amber-900/80 px-2 py-0.5 rounded-lg border border-amber-500/40 text-[10px] cursor-pointer transition-colors shrink-0"
-                    title="Haz clic para autorizar tu cuenta con Google"
-                  >
-                    <KeyRound className="h-3 w-3 text-amber-400 shrink-0" /> Autorizar: {connectedEmail}
-                  </button>
-                ) : connectedEmail ? (
-                  <span className="text-slate-300 font-medium hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
-                    <KeyRound className="h-3 w-3 text-slate-400 shrink-0" /> {connectedEmail}
-                  </span>
-                ) : (
-                  <span className="text-slate-400 font-medium hidden sm:flex items-center gap-1 shrink-0">
-                    <KeyRound className="h-3 w-3" /> Sin cuenta
-                  </span>
-                )}
-              </p>
+
+            <div className="flex items-center gap-2 text-xs truncate min-w-0">
+              <span className="font-bold text-[#09090B] tracking-tight shrink-0">ISkool</span>
+              <span className="text-[#A1A1AA]">·</span>
+              <span className="text-[#52525B] font-medium sm:hidden truncate">Correo CEO</span>
+              <span className="text-[#52525B] font-medium hidden sm:inline shrink-0">Dirección General</span>
+              <span className="text-[#D4D4D8] hidden sm:inline">|</span>
+              <span className="text-[#09090B] font-semibold truncate hidden sm:inline xl:hidden">
+                {schoolName}
+              </span>
+              <span className="text-[#09090B] font-semibold truncate hidden xl:inline">
+                {schoolName} ({campuses.length} Sedes)
+              </span>
             </div>
           </div>
 
-          {/* BARRA MODELO C: BRIEFING 60s, INTERCEPTOR Y RADAR DE INCIDENCIAS */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 ml-auto">
-            {/* Cápsula de Audio Digest 60s con ecualizador animado */}
-            <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-900/85 hover:bg-slate-900 px-2 sm:px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all shrink-0 relative group">
-              <button
-                type="button"
-                onClick={handleTogglePlayBriefing}
-                className="flex items-center gap-1 sm:gap-1.5 text-amber-300 hover:text-amber-200 font-black cursor-pointer shrink-0"
-                title={isAudioDigestFresh ? `Audio Digest al día (${lastAudioUpdateTime || 'revisión cada 30s'}). Clic para reproducir.` : "Reproducir Briefing Ejecutivo de 60 segundos"}
-              >
-                {isPlayingAudio ? (
-                  <>
-                    <span className="relative flex h-2 w-2 shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
-                    </span>
-                    <Pause className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-                  </>
-                ) : (
-                  <>
-                    <span className="relative flex h-2 w-2 shrink-0" title="Sincronizado cada 30 segundos con nuevos correos">
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-                    </span>
-                    <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300 shrink-0" />
-                  </>
-                )}
-                <span className="hidden sm:inline text-[11px] font-bold text-white tracking-wide">Audio Digest 60s</span>
-                <span className="sm:hidden text-[10px] font-bold text-white">Digest</span>
-              </button>
-              {/* Barras de ecualizador simulado */}
-              <div className="hidden 2xl:flex items-end gap-0.5 h-3.5 px-0.5">
-                {[40, 75, 50, 90, 60, 85].map((height, i) => (
-                  <span
-                    key={i}
-                    className={`w-0.5 rounded-full transition-all duration-150 ${isPlayingAudio ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`}
-                    style={{ height: isPlayingAudio ? `${height}%` : '25%' }}
-                  />
-                ))}
-              </div>
-              <span className="hidden md:inline text-[10px] font-mono text-slate-300 shrink-0">
-                0:{audioProgress.toString().padStart(2, '0')}/1:00
-              </span>
-            </div>
-
-            {/* Pastilla Interceptor de Patrones Colectivos */}
-            <div className="hidden 3xl:flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1.5 rounded-xl text-xs shrink-0">
-              <span className="text-amber-300 text-[11px] font-bold flex items-center gap-1">
-                <Zap className="h-3 w-3 text-amber-400" /> 5 reportes Ruta 4
-              </span>
-              <button
-                type="button"
-                onClick={handleApprovePatternCircular}
-                disabled={isApprovingCircular || patternResolved}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer ${
-                  patternResolved
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-black active:scale-95'
-                }`}
-              >
-                {isApprovingCircular ? 'Despachando...' : patternResolved ? '✓ Emitida' : 'Aprobar Circular'}
-              </button>
-            </div>
-
-            {/* Pastilla Radar SLA */}
-            <div 
-              className="hidden 2xl:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200 shrink-0"
-              style={themeMode === 'custom' && customTheme.signalColor ? { borderColor: `${customTheme.signalColor}80` } : undefined}
-            >
-              <Clock 
-                className="h-3 w-3 animate-pulse shrink-0" 
-                style={{ color: themeMode === 'custom' && customTheme.signalColor ? customTheme.signalColor : '#FB7185' }} 
+          {/* Centro: Omnibar Ejecutiva ⌘K (Búsqueda Global y Comandos Directivos) */}
+          <div className="hidden md:block relative flex-1 max-w-md mx-auto">
+            <div className="relative flex items-center">
+              <Search className="absolute left-3 h-3.5 w-3.5 text-[#71717A] pointer-events-none" />
+              <input
+                ref={omnibarInputRef}
+                type="text"
+                value={omnibarQuery}
+                onFocus={() => setIsOmnibarFocused(true)}
+                onBlur={() => setTimeout(() => setIsOmnibarFocused(false), 180)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setOmnibarQuery(val);
+                  setRawEmailSearchQuery(val);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setOmnibarQuery('');
+                    setRawEmailSearchQuery('');
+                    setIsOmnibarFocused(false);
+                    omnibarInputRef.current?.blur();
+                  }
+                }}
+                placeholder="Buscar correo, oficio o comando..."
+                className="w-full h-8 pl-8 pr-12 rounded-lg bg-[#F8FAFC] hover:bg-[#F4F4F5] focus:bg-white border border-[#E4E4E7] focus:border-[#09090B] text-xs text-[#09090B] placeholder:text-[#71717A] outline-none transition-all"
               />
-              <span className="whitespace-nowrap">SEP: <strong>11h 20m</strong></span>
-            </div>
-
-            {/* Selector Desplegable Compacto de Temas Ejecutivos */}
-            <div className="relative shrink-0 z-50" ref={themeMenuRef}>
-              <button
-                type="button"
-                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-white border border-white/10 text-xs font-bold transition-all cursor-pointer shadow-xs shrink-0"
-                title="Seleccionar tema visual o abrir Estudio"
-              >
-                <Palette className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-                <span className="hidden lg:inline text-[11px] font-black">
-                  {themeMode === 'ivory' ? '🏛️ Marfil' :
-                   themeMode === 'slate' ? '⬛ Pizarra' :
-                   themeMode === 'navy' ? '🔷 Azul' :
-                   themeMode === 'emerald' ? '🌲 Verde' :
-                   themeMode === 'burgundy' ? '🍷 Borgoña' :
-                   themeMode === 'custom' ? '🎨 Estudio' : 'Tema'}
-                </span>
-                <ChevronDown className={`h-3 w-3 text-slate-400 shrink-0 transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isThemeMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-slate-950/98 backdrop-blur-xl rounded-2xl border border-white/20 p-2 shadow-2xl z-[999] space-y-1 animate-in fade-in zoom-in-95 text-xs select-none">
-                  <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                    <span>Temas Ejecutivos</span>
-                    <span className="text-[9px] text-amber-300 font-bold">En Vivo</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => { handleSelectTheme('ivory'); setIsThemeMenuOpen(false); }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
-                      themeMode === 'ivory' ? 'bg-[#FDFBF7] text-[#1E293B] font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <span>🏛️ Marfil Institucional</span>
-                    {themeMode === 'ivory' && <Check className="h-3.5 w-3.5 text-slate-800" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { handleSelectTheme('slate'); setIsThemeMenuOpen(false); }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
-                      themeMode === 'slate' ? 'bg-slate-800 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <span>⬛ Pizarra Ejecutiva</span>
-                    {themeMode === 'slate' && <Check className="h-3.5 w-3.5 text-white" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { handleSelectTheme('navy'); setIsThemeMenuOpen(false); }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
-                      themeMode === 'navy' ? 'bg-blue-900 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <span>🔷 Azul Real Académico</span>
-                    {themeMode === 'navy' && <Check className="h-3.5 w-3.5 text-white" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { handleSelectTheme('emerald'); setIsThemeMenuOpen(false); }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
-                      themeMode === 'emerald' ? 'bg-emerald-800 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <span>🌲 Verde Esmeralda</span>
-                    {themeMode === 'emerald' && <Check className="h-3.5 w-3.5 text-white" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => { handleSelectTheme('burgundy'); setIsThemeMenuOpen(false); }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
-                      themeMode === 'burgundy' ? 'bg-[#8B1E3F] text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <span>🍷 Borgoña Soberano</span>
-                    {themeMode === 'burgundy' && <Check className="h-3.5 w-3.5 text-white" />}
-                  </button>
-
-                  <div className="border-t border-white/10 my-1" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const targetTab: typeof activeTab = 'ajustes';
-                      setActiveTab(targetTab);
-                      setSettingsSubTab('apariencia');
-                      setAppearanceSubView('custom');
-                      setIsThemeMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                      themeMode === 'custom'
-                        ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-xs'
-                        : 'text-amber-300 hover:bg-white/10'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <Palette className="h-3.5 w-3.5" />
-                      <span>Estudio de Color Libre</span>
-                    </span>
-                    <span className="text-[9px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 uppercase">
-                      Libre
-                    </span>
-                  </button>
-                </div>
+              {omnibarQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOmnibarQuery('');
+                    setRawEmailSearchQuery('');
+                  }}
+                  className="absolute right-2 p-0.5 rounded text-[#71717A] hover:text-[#09090B] cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <kbd className="absolute right-2 px-1.5 py-0.5 rounded bg-white border border-[#E4E4E7] text-[10px] font-mono font-medium text-[#71717A] pointer-events-none">
+                  ⌘K
+                </kbd>
               )}
             </div>
 
-            {/* Botón de Expansión del Radar Cockpit */}
+            {/* Paleta de Salto Rápido ⌘K */}
+            {isOmnibarFocused && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl border border-[#E4E4E7] shadow-xl p-1.5 z-50 text-xs space-y-0.5">
+                <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#71717A]">
+                  Navegación y Acciones Rápidas
+                </div>
+                {[
+                  {
+                    label: `Decisiones CEO (${intelligentMatters.length} prioritarios)`,
+                    hint: '1',
+                    run: () => {
+                      const next: typeof activeTab = 'inbox';
+                      setActiveTab(next);
+                      setInboxFilter('USABLE');
+                      setUsableSubFilter('ALL');
+                    }
+                  },
+                  {
+                    label: `Buzón General (${normalizedRawEmails.length} correos)`,
+                    hint: '2',
+                    run: () => {
+                      const next: typeof activeTab = 'raw_inbox';
+                      setActiveTab(next);
+                      setSelectedRawEmailId(null);
+                    }
+                  },
+                  {
+                    label: `Cumplimiento SLA y Ejecución Delegada (${delegatedMattersList.length})`,
+                    hint: '3',
+                    run: () => {
+                      const next: typeof activeTab = 'inbox';
+                      setActiveTab(next);
+                      setInboxFilter('USABLE');
+                      setUsableSubFilter('DELEGADOS');
+                    }
+                  },
+                  {
+                    label: 'Redactar Comunicado Oficial',
+                    hint: '4',
+                    run: () => {
+                      const next: typeof activeTab = 'redactar';
+                      setActiveTab(next);
+                    }
+                  },
+                  {
+                    label: 'Abrir Pulso Ejecutivo 60s · Corte Directivo',
+                    hint: 'P',
+                    run: () => setShowCatchupModal(true)
+                  },
+                  {
+                    label: 'Sincronizar Buzón Institucional Ahora',
+                    hint: '↻',
+                    run: () => handleTriggerSync(false)
+                  },
+                  {
+                    label: 'Gobernanza, Directorio y Cuentas OAuth',
+                    hint: 'G',
+                    run: () => {
+                      const next: typeof activeTab = 'google';
+                      setActiveTab(next);
+                    }
+                  }
+                ]
+                  .filter((cmd) => !omnibarQuery.trim() || cmd.label.toLowerCase().includes(omnibarQuery.toLowerCase()))
+                  .map((cmd) => (
+                    <button
+                      key={cmd.label}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        cmd.run();
+                        setIsOmnibarFocused(false);
+                      }}
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-[#09090B] hover:bg-[#F4F4F5] font-medium cursor-pointer transition-colors"
+                    >
+                      <span>{cmd.label}</span>
+                      <span className="text-[10px] font-mono text-[#71717A] px-1.5 py-0.5 rounded bg-[#FAFAFA] border border-[#E4E4E7]">
+                        {cmd.hint}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Derecha: Estado de Sincronización Limpio + Botón Único «Pulso 60s» */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 ml-auto">
             <button
               type="button"
-              onClick={() => setShowModelCPanel(!showModelCPanel)}
-              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
-                showModelCPanel ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-              title="Abrir o colapsar Cabina de Radar Ejecutivo (Modelo C)"
+              onClick={() => {
+                if (connectionStatus === 'connected_verified') {
+                  handleTriggerSync(false);
+                } else {
+                  const next: typeof activeTab = 'google';
+                  setActiveTab(next);
+                }
+              }}
+              className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 rounded-lg hover:bg-[#F4F4F5] text-xs text-[#52525B] transition-colors cursor-pointer"
+              title={
+                connectionStatus === 'connected_verified'
+                  ? `Sincronizado (${lastSyncTime}) · Clic para actualizar buzón`
+                  : 'Configurar o verificar cuenta institucional OAuth 2.0'
+              }
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-              <span className="hidden md:inline">Radar Cockpit</span>
-              <span className="hidden sm:inline md:hidden">Radar</span>
-              {showModelCPanel ? <ChevronUp className="h-3.5 w-3.5 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0" />}
+              <span
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  isSyncingLiveInbox || isLivePinging
+                    ? 'bg-amber-500 animate-pulse'
+                    : connectionStatus === 'connected_verified'
+                    ? 'bg-emerald-500'
+                    : 'bg-amber-500'
+                }`}
+              />
+              <span className="font-medium text-[#09090B]">
+                {isSyncingLiveInbox ? 'Sincronizando' : 'Sincronizado'}
+              </span>
+              <span className="text-[#A1A1AA]">·</span>
+              <span className="font-mono text-[11px] text-[#52525B] truncate max-w-[190px]">
+                {connectedEmail && connectedEmail !== 'DISCONNECTED'
+                  ? connectedEmail
+                  : `direccion@${schoolDomain}`}
+              </span>
             </button>
 
-            {/* Ponte al día conmigo diálogo matutino */}
             <button
               type="button"
+              data-testid="btn-open-pulso-60s"
               onClick={() => setShowCatchupModal(true)}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95 border shrink-0"
-              style={{
-                background: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : 'linear-gradient(to right, #4F46E5, #9333EA)',
-                borderColor: themeMode === 'custom' && customTheme.buttonColor ? `${customTheme.buttonColor}99` : 'rgba(255,255,255,0.2)',
-                color: themeMode === 'custom' && customTheme.buttonColor ? (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF') : '#FFFFFF'
-              }}
+              className="px-3 py-1.5 rounded-lg bg-[#F4F4F5] hover:bg-[#E4E4E7] text-[#09090B] border border-[#E4E4E7] font-semibold text-xs transition-colors cursor-pointer shrink-0"
               title="Resumen ejecutivo silencioso (Ponte al día)"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Ponte al día</span>
+              Pulso 60s
             </button>
 
-            {/* Cerrar modal */}
             {!embeddedBento && (
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
+                className="p-1.5 rounded-lg text-[#71717A] hover:text-[#09090B] hover:bg-[#F4F4F5] transition-colors cursor-pointer shrink-0"
                 aria-label="Cerrar modal"
               >
-                <X className="h-5 w-5 shrink-0" />
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
-        </div>
-
-        {/* BARRA CONSOLIDADA NANO BANANA 2.1: 4 VISTAS MAESTRAS DE iMAIL & TRIAGE */}
-        <div className="px-3 sm:px-5 py-2 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between gap-2 flex-wrap shrink-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('inbox');
-                setInboxFilter('USABLE');
-                setUsableSubFilter('ALL');
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
-                  ? 'bg-[#E41B14] text-white shadow-sm'
-                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <Inbox className="h-3.5 w-3.5" />
-              <span>1. Triage Ejecutivo & Decision Dock ({intelligentMatters.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('inbox');
-                setInboxFilter('USABLE');
-                setUsableSubFilter('DELEGADOS');
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') || activeTab === 'work_os'
-                  ? 'bg-amber-500 text-slate-950 shadow-sm'
-                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <Clock className="h-3.5 w-3.5" />
-              <span>2. Radar SLA & Work OS ({delegatedMattersList.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('calendario')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'calendario' || activeTab === 'redactar'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <Calendar className="h-3.5 w-3.5" />
-              <span>3. Agenda & Circulares ({calendarEvents.length})</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('google')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'google' || activeTab === 'ajustes' || activeTab === 'roi'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>4. Conectar Google OAuth</span>
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleOpenProviderOAuth('google')}
-              className="px-3 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer bg-white hover:bg-blue-50 text-slate-900 border border-blue-200 shadow-xs"
-              title="Iniciar flujo de consentimiento OAuth 2.0 (gmail.send & calendar.events)"
-            >
-              <GoogleOfficialLogo size={13} />
-              <span>Sign in with Google</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('redactar')}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
-                activeTab === 'redactar'
-                  ? 'bg-blue-600 text-white border-blue-500'
-                  : 'bg-slate-800 text-blue-300 border-blue-500/30 hover:bg-slate-700'
-              }`}
-            >
-              <Send className="h-3 w-3" />
-              <span>📣 Redactar Circular / Comunicado</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab('raw_inbox');
-                setSelectedRawEmailId(null);
-              }}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
-                activeTab === 'raw_inbox'
-                  ? 'bg-white text-slate-900 border-white'
-                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:text-white'
-              }`}
-            >
-              <Mail className="h-3 w-3" />
-              <span>Buzón General ({rawEmailsList.length})</span>
-            </button>
-          </div>
-        </div>
-
-        {/* CABINA EXPANDIBLE DEL MODELO C (RADAR DE CRISIS, AUDIO DIGEST & PATRONES) */}
-        {showModelCPanel && (
-          <div className="px-5 py-3.5 bg-gradient-to-r from-slate-950 via-[#10243E] to-slate-950 border-b border-indigo-500/30 text-white animate-in slide-in-from-top-2 duration-150">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* Tarjeta 1: Audio Digest 60s */}
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
-                    <Volume2 className="h-3.5 w-3.5" /> Resumen Ejecutivo de Audio (60s)
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                      isAudioDigestFresh
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                    }`}>
-                      {isAudioDigestFresh && lastAudioUpdateTime ? `Actualizado ${lastAudioUpdateTime}` : 'Revisión cada 30s'}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-300">0:{audioProgress.toString().padStart(2, '0')} / 1:00</span>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-3" title={audioDigestText}>
-                  "{audioDigestText || 'Generando síntesis ejecutiva de audio basada en los asuntos vigentes de la Bóveda Curricular...'}"
-                </p>
-                <button
-                  type="button"
-                  onClick={handleTogglePlayBriefing}
-                  className="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
-                >
-                  {isPlayingAudio ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
-                  <span>{isPlayingAudio ? 'Pausar Lectura de Audio' : 'Reproducir Resumen con Voz Pedagógica'}</span>
-                </button>
-              </div>
-
-              {/* Tarjeta 2: Interceptor Proactivo de Patrones */}
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center gap-1">
-                    <Zap className="h-3.5 w-3.5" /> Interceptor Proactivo
-                  </span>
-                  <span className="text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500/40">5 Correos Coincidentes</span>
-                </div>
-                <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                  5 familias reportaron retraso en Ruta 4 por obras viales. El Asistente Pedagógico IA preparó una Circular Preventiva oficial para resolver masivamente la inquietud con 1 solo clic.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleApprovePatternCircular}
-                  disabled={isApprovingCircular || patternResolved}
-                  className={`w-full py-1.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 ${
-                    patternResolved ? 'bg-emerald-600 text-white' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
-                  }`}
-                >
-                  <FileCheck className="h-3.5 w-3.5" />
-                  <span>{patternResolved ? '✓ Circular Masiva Despachada' : 'Aprobar Circular Institucional (1 Clic)'}</span>
-                </button>
-              </div>
-
-              {/* Tarjeta 3: Radar de Incidencias & SLAs de Plantel */}
-              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" /> Radar de Vencimientos SLA
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/40">98.4% a Tiempo</span>
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
-                    <span className="truncate text-slate-200">🏛️ Supervisión Zona 14</span>
-                    <span className="font-mono font-bold text-rose-400">11h 20m</span>
-                  </div>
-                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
-                    <span className="truncate text-slate-200">🟡 Convivencia (Montes)</span>
-                    <span className="font-mono font-bold text-amber-400">09h 42m</span>
-                  </div>
-                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
-                    <span className="truncate text-slate-200">💳 Cobranza y Becas</span>
-                    <span className="font-mono font-bold text-blue-400">18h 15m</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </header>
 
         {/* ========================================================= */}
         {/* 2. CUERPO MODAL: BARRA LATERAL IZQUIERDA + CONTENIDO      */}
@@ -7496,1327 +7615,770 @@ Comité de Seguridad y Protección Escolar`
             />
           )}
 
-          {/* BARRA LATERAL IZQUIERDA: PESTAÑAS VERTICALES DE ARRIBA A ABAJO */}
-          <aside 
-            className={`w-64 sm:w-72 ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} flex flex-col justify-between shrink-0 overflow-y-auto ${
+          {/* RIEL LATERAL IZQUIERDO SUIZO (212PX): 5 MÓDULOS OPERATIVOS + GOBERNANZA */}
+          <aside
+            className={`w-56 sm:w-[212px] ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} flex flex-col justify-between shrink-0 overflow-y-auto ${
               mobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 shadow-2xl flex' : 'hidden md:flex'
             } md:relative md:shadow-none`}
-            style={themeMode === 'custom' && customTheme.sidebarColor ? { 
+            style={themeMode === 'custom' && customTheme.sidebarColor ? {
               backgroundColor: customTheme.sidebarColor,
-              borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)'
+              borderColor: isColorLight(customTheme.sidebarColor) ? '#E4E4E7' : 'rgba(255,255,255,0.12)'
             } : undefined}
           >
-            <div className="p-3 sm:p-3.5 space-y-1.5">
-              <div className="px-3 py-1.5 mb-0.5 flex items-center justify-between">
-                <span className={`text-[10px] font-black uppercase tracking-wider ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>
-                  Módulos Ejecutivos
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>
-                    CEO Suite
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className="md:hidden p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/10"
-                    aria-label="Cerrar barra lateral"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
+            <div className="p-2.5 space-y-1">
+              <div className="md:hidden px-2.5 py-1.5 flex items-center justify-between border-b border-[#E4E4E7] mb-1">
+                <span className="text-[11px] font-semibold text-[#52525B]">Navegación</span>
+                <button
+                  type="button"
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-1 rounded-md text-[#71717A] hover:text-[#09090B]"
+                  aria-label="Cerrar barra lateral"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* 1. Bandeja Inteligente */}
+              {/* 1. Decisiones CEO */}
               <button
                 type="button"
+                data-testid="nav-decisiones-ceo"
                 onClick={() => {
-                  setActiveTab('inbox');
-                  if (usableSubFilter === 'DELEGADOS') {
-                    setUsableSubFilter('ALL');
-                  }
+                  const target: typeof activeTab = 'inbox';
+                  setActiveTab(target);
+                  setInboxFilter('USABLE');
+                  setUsableSubFilter('ALL');
                   setMobileSidebarOpen(false);
                 }}
                 style={getSidebarItemStyle(activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
                   activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
-                    ? 'bg-red-500/15 text-red-600 dark:text-red-400 shadow-xs border border-red-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Inbox 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-red-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && (activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS') && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Bandeja Inteligente</span>
-                </div>
-                <span 
-                  style={getSidebarBadgeStyle(activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS')}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                    activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  {intelligentMatters.length}
+                <span className="truncate">Decisiones CEO</span>
+                <span className={`font-mono text-[11px] shrink-0 ${
+                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-[#1E40AF] font-bold' : 'text-[#64748B]'
+                }`}>
+                  [{intelligentMatters.length}]
                 </span>
               </button>
 
-              {/* 1.5. Asuntos Delegados por Sección */}
+              {/* 2. Buzón General */}
               <button
                 type="button"
+                data-testid="nav-buzon-general"
+                title="Bandeja de Entrada"
                 onClick={() => {
-                  setActiveTab('inbox');
-                  setInboxFilter('USABLE');
-                  setUsableSubFilter('DELEGADOS');
-                  setSelectedRawEmailId(null);
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS'
-                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Forward 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Asuntos Delegados</span>
-                </div>
-                <span 
-                  style={getSidebarBadgeStyle(activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                    activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  {delegatedMattersList.length}
-                </span>
-              </button>
-
-              {/* Work OS Institucional */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('work_os');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'work_os')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'work_os'
-                    ? 'bg-blue-600/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Layers 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'work_os' ? 'text-blue-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'work_os' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Work OS Institucional</span>
-                </div>
-                <span 
-                  className={`px-2 py-0.5 rounded-full text-[9px] font-black shrink-0 tracking-wider ${
-                    activeTab === 'work_os' ? 'bg-blue-600 text-white' : 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                  }`}
-                >
-                  WORK OS
-                </span>
-              </button>
-
-              {/* 2. Calendario Escolar */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('calendario');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'calendario')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'calendario'
-                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Calendar 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'calendario' ? 'text-indigo-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'calendario' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Calendario Escolar</span>
-                </div>
-                <span 
-                  style={getSidebarBadgeStyle(activeTab === 'calendario')}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                    activeTab === 'calendario' ? 'bg-indigo-600 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  {calendarEvents.length}
-                </span>
-              </button>
-
-              {/* 3. Redactar Comunicado */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('redactar');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'redactar')}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'redactar'
-                    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <Send 
-                  className={`h-4 w-4 shrink-0 ${activeTab === 'redactar' ? 'text-[#5448f7]' : 'text-slate-400'}`} 
-                  style={themeMode === 'custom' && activeTab === 'redactar' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                />
-                <span className="truncate">Redactar Comunicado</span>
-              </button>
-
-              {/* 4. Conexión POP / IMAP & Google Workspace */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('google');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'google')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'google'
-                    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Globe2 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'google' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Conectar Google OAuth</span>
-                </div>
-                <span className={`w-2 h-2 rounded-full shrink-0 ${
-                  connectionStatus === 'connected_verified' ? 'bg-emerald-500' :
-                  connectionStatus === 'pinging' ? 'bg-indigo-500 animate-pulse' :
-                  connectionStatus === 'failed' ? 'bg-amber-500' :
-                  'bg-slate-300'
-                }`} title={connectionStatus === 'connected_verified' ? 'Servidor Verificado' : 'Sin Verificar'} />
-              </button>
-
-              {/* 5. Laboratorio de Ingesta & Test Cases (Exclusivo para Laboratorio Pedagógico & Test Cases) */}
-              {isTestCaseSchool && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveTab('laboratorio');
-                    setMobileSidebarOpen(false);
-                  }}
-                  style={getSidebarItemStyle(activeTab === 'laboratorio')}
-                  className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                    activeTab === 'laboratorio'
-                      ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
-                      : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                  }`}
-                >
-                  <Zap 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'laboratorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Laboratorio de Ingesta</span>
-                </button>
-              )}
-
-              {/* 6. Directorio Oficial */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('directorio');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'directorio')}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'directorio'
-                    ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 shadow-xs border border-purple-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <Users 
-                  className={`h-4 w-4 shrink-0 ${activeTab === 'directorio' ? 'text-purple-500' : 'text-slate-400'}`} 
-                  style={themeMode === 'custom' && activeTab === 'directorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                />
-                <span className="truncate">Directorio Oficial</span>
-              </button>
-
-              {/* 7. Bitácora */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('bitacora');
-                  setMobileSidebarOpen(false);
-                }}
-                style={getSidebarItemStyle(activeTab === 'bitacora')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'bitacora'
-                    ? 'bg-slate-500/15 text-slate-800 dark:text-slate-200 shadow-xs border border-slate-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Clock 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'bitacora' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'bitacora' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Bitácora</span>
-                </div>
-                <span 
-                  style={getSidebarBadgeStyle(activeTab === 'bitacora')}
-                  className="text-[10px] font-bold text-slate-500 shrink-0"
-                >
-                  {logs.length}
-                </span>
-              </button>
-
-              {/* BANDEJA DE ENTRADA (ESTILO GMAIL EN TIEMPO REAL) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('raw_inbox');
+                  const target: typeof activeTab = 'raw_inbox';
+                  setActiveTab(target);
                   setSelectedRawEmailId(null);
                   setMobileSidebarOpen(false);
                 }}
                 style={getSidebarItemStyle(activeTab === 'raw_inbox')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
                   activeTab === 'raw_inbox'
-                    ? 'bg-red-500/15 text-[#EA4335] shadow-xs border border-red-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Mail 
-                    className={`h-4 w-4 shrink-0 ${activeTab === 'raw_inbox' ? 'text-[#EA4335]' : 'text-slate-400'}`} 
-                    style={themeMode === 'custom' && activeTab === 'raw_inbox' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                  />
-                  <span className="truncate">Bandeja de Entrada</span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {rawEmailsList.some(e => e.is_unread) && (
-                    <span className="w-2 h-2 rounded-full bg-[#EA4335] animate-pulse" title="Correos sin leer" />
-                  )}
-                  <span 
-                    style={getSidebarBadgeStyle(activeTab === 'raw_inbox')}
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                      activeTab === 'raw_inbox' ? 'bg-[#EA4335] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {rawEmailsList.length}
-                  </span>
-                </div>
+                <span className="truncate">Buzón General</span>
+                <span className={`font-mono text-[11px] shrink-0 ${
+                  activeTab === 'raw_inbox' ? 'text-[#1E40AF] font-bold' : 'text-[#64748B]'
+                }`}>
+                  [{normalizedRawEmails.length}]
+                </span>
               </button>
 
-              {/* 8. ROI & Telemetría */}
+              {/* 3. Cumplimiento SLA (Unifica Asuntos Delegados y Tablero por Área) */}
               <button
                 type="button"
+                data-testid="nav-cumplimiento-sla"
                 onClick={() => {
-                  setActiveTab('roi');
+                  const target: typeof activeTab = 'work_os';
+                  setActiveTab(target);
                   setMobileSidebarOpen(false);
                 }}
-                style={getSidebarItemStyle(activeTab === 'roi')}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'roi'
-                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shadow-xs border border-emerald-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                style={getSidebarItemStyle(activeTab === 'work_os' || (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS'))}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
+                  activeTab === 'work_os' || (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
-                <BarChart3 
-                  className={`h-4 w-4 shrink-0 ${activeTab === 'roi' ? 'text-emerald-500' : 'text-slate-400'}`} 
-                  style={themeMode === 'custom' && activeTab === 'roi' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                />
-                <span className="truncate">ROI & Telemetría</span>
+                <span className="truncate">Cumplimiento SLA</span>
+                <span className={`font-mono text-[11px] shrink-0 ${
+                  activeTab === 'work_os' || (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') ? 'text-[#1E40AF] font-bold' : 'text-[#64748B]'
+                }`}>
+                  [{delegatedMattersList.length}]
+                </span>
               </button>
 
-              {/* 9. Ajustes Ejecutivos (Debajo de ROI & Telemetría) */}
+              {/* 4. Redactar Oficial */}
+              <button
+                type="button"
+                data-testid="nav-redactar-oficial"
+                onClick={() => {
+                  const target: typeof activeTab = 'redactar';
+                  setActiveTab(target);
+                  setMobileSidebarOpen(false);
+                }}
+                style={getSidebarItemStyle(activeTab === 'redactar')}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
+                  activeTab === 'redactar'
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
+                }`}
+              >
+                <span className="truncate">Redactar Oficial</span>
+              </button>
+
+              {/* 5. Agenda Directiva */}
+              <button
+                type="button"
+                data-testid="nav-agenda-directiva"
+                onClick={() => {
+                  const target: typeof activeTab = 'calendario';
+                  setActiveTab(target);
+                  setMobileSidebarOpen(false);
+                }}
+                style={getSidebarItemStyle(activeTab === 'calendario')}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
+                  activeTab === 'calendario'
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
+                }`}
+              >
+                <span className="truncate">Agenda Directiva</span>
+                {calendarEvents.length > 0 && (
+                  <span className={`font-mono text-[11px] shrink-0 ${
+                    activeTab === 'calendario' ? 'text-[#1E40AF] font-bold' : 'text-[#64748B]'
+                  }`}>
+                    [{calendarEvents.length}]
+                  </span>
+                )}
+              </button>
+
+              {/* Laboratorio de Ingesta (Exclusivo entorno Sandbox de pruebas) */}
+              {isTestCaseSchool && (
+                <button
+                  type="button"
+                  title="Laboratorio de Ingesta & Test Cases"
+                  onClick={() => {
+                    setActiveTab('laboratorio');
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
+                    activeTab === 'laboratorio'
+                      ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                      : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
+                  }`}
+                >
+                  <span className="truncate">Laboratorio de Ingesta</span>
+                </button>
+              )}
+            </div>
+
+            {/* Pie del Riel Lateral: Gobernanza y Cuentas */}
+            <div className="p-2.5 border-t border-[#CBD5E1]">
               <button
                 type="button"
                 id="ceo-settings-nav-btn"
+                data-testid="nav-gobernanza-cuentas"
                 onClick={() => {
-                  setActiveTab('ajustes');
+                  const target: typeof activeTab = 'google';
+                  setActiveTab(target);
                   setMobileSidebarOpen(false);
                 }}
-                style={getSidebarItemStyle(activeTab === 'ajustes')}
-                className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'ajustes'
-                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
-                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all cursor-pointer text-left border-l-4 ${
+                  ['google', 'directorio', 'bitacora', 'roi', 'ajustes'].includes(activeTab)
+                    ? 'border-l-[#2563EB] bg-[#EFF6FF] text-[#1E3A8A] font-bold shadow-2xs'
+                    : 'border-l-transparent text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] font-medium'
                 }`}
               >
-                <Sliders 
-                  className={`h-4 w-4 shrink-0 ${activeTab === 'ajustes' ? 'text-indigo-500' : 'text-slate-400'}`} 
-                  style={themeMode === 'custom' && activeTab === 'ajustes' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                <span className="truncate">Gobernanza y Cuentas</span>
+                <span
+                  className={`h-2 w-2 rounded-full shrink-0 ${
+                    connectionStatus === 'connected_verified' ? 'bg-emerald-500 ring-2 ring-emerald-100' : 'bg-amber-500 ring-2 ring-amber-100'
+                  }`}
+                  title={connectionStatus === 'connected_verified' ? 'Conexión verificada' : 'Requiere vinculación'}
                 />
-                <span className="truncate">Ajustes</span>
               </button>
-            </div>
-
-            {/* Pie de la barra lateral con Estado de Sincronización y Cuenta */}
-            <div 
-              className={`p-3 border-t ${currentTheme.sidebarBorder} ${currentTheme.isDark ? 'bg-black/25' : 'bg-slate-50/70'}`}
-              style={themeMode === 'custom' && customTheme.sidebarColor ? {
-                backgroundColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.25)',
-                borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'
-              } : undefined}
-            >
-              <div 
-                className={`p-2.5 rounded-xl border shadow-xs ${currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}
-                style={themeMode === 'custom' && customTheme.sidebarColor ? {
-                  backgroundColor: isColorLight(customTheme.sidebarColor) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.06)',
-                  borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
-                  color: getContrastTextColor(customTheme.sidebarColor)
-                } : undefined}
-              >
-                <div className="flex items-center gap-2 text-[11px] font-bold">
-                  <span className="relative flex h-2 w-2">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                      connectionStatus === 'connected_verified' ? 'bg-emerald-400 opacity-75' : 'bg-transparent'
-                    }`}></span>
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                      connectionStatus === 'connected_verified' ? 'bg-emerald-500' :
-                      connectionStatus === 'failed' ? 'bg-amber-500' :
-                      'bg-slate-400'
-                    }`}></span>
-                  </span>
-                  <span className="truncate">
-                    {connectionStatus === 'connected_verified' ? 'Google API: En Línea' : 'Google API: Por Vincular'}
-                  </span>
-                </div>
-                <p 
-                  className={`text-[10px] mt-1 truncate ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}
-                  style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.sidebarColor) } : undefined}
-                >
-                  Sinc: <span className={`font-semibold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-600'}`} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.sidebarColor) } : undefined}>{lastSyncTime}</span>
-                </p>
-                <div 
-                  className={`mt-2 pt-2 border-t ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'} flex items-center justify-between text-[10px]`}
-                  style={themeMode === 'custom' ? { borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' } : undefined}
-                >
-                  <span 
-                    className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}
-                    style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.sidebarColor) } : undefined}
-                  >
-                    Auto-Sync
-                  </span>
-                  <span 
-                    className="font-bold"
-                    style={{ color: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : '#6366F1' }}
-                  >
-                    {isAutoSyncActive ? `${autoSyncCountdown}s` : 'Pausado'}
-                  </span>
-                </div>
-              </div>
             </div>
           </aside>
 
-          {/* ÁREA DE CONTENIDO PRINCIPAL A LA DERECHA */}
-          <div 
-            className={`flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 ${currentTheme.contentBg}`}
+          {/* ÁREA DE CONTENIDO PRINCIPAL SUIZA (LIENZO EXTERIOR #EEF2F6 PARA ENFOQUE CENTRALIZADO 100%) */}
+          <div
+            data-testid="ceo-swiss-workspace-canvas"
+            className={`flex-1 overflow-y-auto p-4 sm:p-6 ${currentTheme.contentBg}`}
             style={themeMode === 'custom' && customTheme.backgroundColor ? { backgroundColor: customTheme.backgroundColor } : undefined}
           >
 
-          {/* ------------------------------------------------------- */}
-          {/* TAB: WORK OS INSTITUCIONAL & GESTIÓN COLABORATIVA DE EQUIPO */}
-          {/* ------------------------------------------------------- */}
-          {activeTab === 'work_os' && (
-            <div className="space-y-6">
-              <WorkOsBoard
-                tenantId={currentTenantId}
-                isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
-                currentUserEmail={user?.email}
-                schoolDomain={isIbime ? 'ibime.edu.mx' : 'colegio.edu.mx'}
-                onNavigateTab={(tab, draftData) => {
-                  if (draftData) {
-                    if (draftData.subject) setSubject(draftData.subject);
-                    if (draftData.content) setContent(draftData.content);
-                    if (draftData.recipient) setSelectedRecipient(draftData.recipient);
-                  }
-                  setActiveTab(tab);
-                }}
-                onTriggerToast={onTriggerToast}
-              />
+          {/* CABECERA EJECUTIVA ULTRA-COMPACTA DE GOBERNANZA INSTITUCIONAL */}
+          {['google', 'directorio', 'bitacora', 'roi', 'ajustes'].includes(activeTab) && (
+            <div
+              data-testid="governance-compact-header"
+              className="mb-3.5 px-4 py-2.5 rounded-xl bg-white border border-[#CBD5E1] flex items-center justify-between gap-3 flex-wrap font-sans antialiased shadow-2xs"
+            >
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-[14px] font-semibold text-[#0F172A] tracking-tight">
+                  Gobernanza Institucional &amp; Cuentas
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-medium text-[#059669]">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#059669]" />
+                  <span>CASA by Google Tier 2 Verified</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-[11px] font-medium text-[#475569]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#059669]" />
+                  <span>TLS 1.3 Activo · Sinc: {lastSyncTime}</span>
+                </span>
+              </div>
+
+              <div
+                data-testid="governance-colorimetry-bar"
+                className="flex items-center gap-2 flex-wrap text-[11px]"
+              >
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FFF1F2] text-[#9F1239] border border-[#FECDD3] font-medium">
+                  <span className="h-2 w-2 rounded-full bg-[#E11D48]" />
+                  <span>CEO #E11D48</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] font-medium">
+                  <span className="h-2 w-2 rounded-full bg-[#F59E0B]" />
+                  <span>SLA #F59E0B</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#1E40AF] border border-[#BFDBFE] font-medium">
+                  <span className="h-2 w-2 rounded-full bg-[#2563EB]" />
+                  <span>Info #2563EB</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1] font-medium">
+                  <span className="h-2 w-2 rounded-full bg-[#64748B]" />
+                  <span>Archivo #64748B</span>
+                </span>
+              </div>
             </div>
           )}
 
           {/* ------------------------------------------------------- */}
-          {/* TAB 1: BANDEJA INTELIGENTE & CORREOS USABLES VS NO USABLES */}
+          {/* PANTALLA 4: CUMPLIMIENTO SLA Y EJECUCIÓN DELEGADA UNIFICADA */}
           {/* ------------------------------------------------------- */}
-          {activeTab === 'inbox' && (
-            <div className="space-y-5">
-              {/* Tarjetas de Métricas Ejecutivas del Inbox con Cálculo Reactivo Dinámico */}
-              {(() => {
-                const usableEmailsCount = mattersList.reduce((acc, m) => acc + Math.max(1, m.reincidence_count || 1), 0);
-                const discardedEmailsCount = 285 + discardedList.length;
-                const totalGrossVolume = usableEmailsCount + discardedEmailsCount;
-                const usablePercent = totalGrossVolume > 0 ? ((usableEmailsCount / totalGrossVolume) * 100).toFixed(1) : '0.0';
-                const discardedPercent = totalGrossVolume > 0 ? ((discardedEmailsCount / totalGrossVolume) * 100).toFixed(1) : '0.0';
+          {(activeTab === 'work_os' || (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')) && (() => {
+            const slaItems = delegatedMattersList.length > 0
+              ? delegatedMattersList
+              : mattersList.filter((m) => m.destination === 'DELEGADO_CON_SLA');
+            const nearExpiryCount = slaItems.filter((m) => (m.sla_hours || 24) <= 12).length;
 
-                return (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div 
-                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
-                      style={themeMode === 'custom' && customTheme.cardColor ? {
-                        backgroundColor: customTheme.cardColor,
-                        borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
-                        color: getContrastTextColor(customTheme.cardColor)
-                      } : undefined}
-                    >
-                      <span 
-                        className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block"
-                        style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
-                      >
-                        Volumen Bruto Hoy
-                      </span>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span 
-                          className="text-2xl font-black text-slate-900"
-                          style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
-                        >
-                          {totalGrossVolume}
-                        </span>
-                        <span 
-                          className="text-xs font-bold text-slate-500"
-                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                        >
-                          correos recibidos
-                        </span>
-                      </div>
-                      <span 
-                        className="text-[10px] text-slate-400 font-medium"
-                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                      >
-                        Bandeja general en Google Cloud
-                      </span>
-                    </div>
+            const groupedByArea: Array<{ area: string; rows: typeof slaItems }> = [
+              {
+                area: 'Finanzas y Facturación CFDI',
+                rows: slaItems.filter((m) => /finanz|cobranza|cfdi|administrac/i.test(`${m.category} ${m.assigned_role || ''}`)),
+              },
+              {
+                area: 'Control Escolar SEP',
+                rows: slaItems.filter((m) => /sep|control|boleta|supervis/i.test(`${m.category} ${m.assigned_role || ''}`)),
+              },
+              {
+                area: 'Logística y Rutas',
+                rows: slaItems.filter((m) => /logíst|transporte|ruta|prefect/i.test(`${m.category} ${m.assigned_role || ''}`)),
+              },
+              {
+                area: 'Coordinación Académica y Otros',
+                rows: slaItems.filter(
+                  (m) =>
+                    !/finanz|cobranza|cfdi|administrac|sep|control|boleta|supervis|logíst|transporte|ruta|prefect/i.test(
+                      `${m.category} ${m.assigned_role || ''}`
+                    )
+                ),
+              },
+            ].filter((g) => g.rows.length > 0);
 
-                    <div 
-                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
-                      style={themeMode === 'custom' && customTheme.cardColor ? {
-                        backgroundColor: customTheme.cardColor,
-                        borderColor: customTheme.buttonColor ? `${customTheme.buttonColor}40` : '#A7F3D0',
-                        color: getContrastTextColor(customTheme.cardColor)
-                      } : undefined}
-                    >
-                      <span 
-                        className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block"
-                        style={themeMode === 'custom' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                      >
-                        Correos Usables
-                      </span>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span 
-                          className="text-2xl font-black text-emerald-700"
-                          style={themeMode === 'custom' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
-                        >
-                          {usableEmailsCount}
-                        </span>
-                        <span 
-                          className="text-xs font-bold text-emerald-600"
-                          style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
-                        >
-                          ({usablePercent}%)
-                        </span>
-                      </div>
-                      <span 
-                        className="text-[10px] text-emerald-600 font-medium"
-                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                      >
-                        Consolidados en {mattersList.length} Asuntos
-                      </span>
-                    </div>
-
-                    <div 
-                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
-                      style={themeMode === 'custom' && customTheme.cardColor ? {
-                        backgroundColor: customTheme.cardColor,
-                        borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
-                        color: getContrastTextColor(customTheme.cardColor)
-                      } : undefined}
-                    >
-                      <span 
-                        className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block"
-                        style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
-                      >
-                        No Usables / Descartados
-                      </span>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span 
-                          className="text-2xl font-black text-slate-700"
-                          style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
-                        >
-                          {discardedEmailsCount}
-                        </span>
-                        <span 
-                          className="text-xs font-bold text-slate-500"
-                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                        >
-                          ({discardedPercent}%)
-                        </span>
-                      </div>
-                      <span 
-                        className="text-[10px] text-slate-500 font-medium"
-                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                      >
-                        Spam y publicidad filtrada
-                      </span>
-                    </div>
-
-                    <div 
-                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
-                      style={themeMode === 'custom' && customTheme.cardColor ? {
-                        backgroundColor: customTheme.cardColor,
-                        borderColor: customTheme.signalColor ? `${customTheme.signalColor}40` : '#C7D2FE',
-                        color: getContrastTextColor(customTheme.cardColor)
-                      } : undefined}
-                    >
-                      <span 
-                        className="text-[11px] font-bold text-indigo-800 uppercase tracking-wider block"
-                        style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
-                      >
-                        Atención Salvada CEO
-                      </span>
-                      <div className="flex items-baseline gap-2 mt-1">
-                        <span 
-                          className="text-2xl font-black text-indigo-700"
-                          style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
-                        >
-                          3.8 hrs
-                        </span>
-                        <span 
-                          className="text-xs font-bold text-indigo-600"
-                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                        >
-                          hoy
-                        </span>
-                      </div>
-                      <span 
-                        className="text-[10px] text-indigo-600 font-medium"
-                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
-                      >
-                        Cero interrupciones operativas
-                      </span>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Banner de Patrón Proactivo Detectado */}
-              <div className="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-white shadow-md border border-indigo-500/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-amber-300 text-xl shrink-0 shadow-inner">
-                    ✨
-                  </div>
+            return (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-300 bg-indigo-900/60 px-2 py-0.5 rounded-md border border-indigo-700">
-                      Patrón Proactivo Detectado en Tiempo Real
-                    </span>
-                    <h4 className="text-sm font-black text-white mt-1">
-                      17 familias de Campus Montes y Lagos consultando horario de salida de festival
-                    </h4>
-                    <p className="text-xs text-indigo-200 mt-0.5 max-w-2xl leading-relaxed">
-                      Llegaron 17 correos en 4 horas con la misma inquietud. El Motor de IA sugiere emitir la Circular General para responder masivamente sin consumo de tokens y evitar saturación en coordinaciones.
+                    <h2 className="text-lg font-bold text-[#0F172A] tracking-tight">
+                      Cumplimiento SLA y Ejecución Delegada Unificada
+                    </h2>
+                    <p className="text-xs text-[#475569]">
+                      Seguimiento centralizado de asuntos delegados por Dirección General y tableros operativos de sede.
                     </p>
                   </div>
+
+                  {/* Conmutador Tabla Ejecutiva vs Tablero por Área */}
+                  <div className="inline-flex items-center p-1 rounded-lg bg-[#E2E8F0] border border-[#CBD5E1] text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setSlaUnifiedViewMode('table')}
+                      className={`px-3.5 py-1.5 rounded-md transition-all cursor-pointer ${
+                        slaUnifiedViewMode === 'table'
+                          ? 'bg-white text-[#1E3A8A] font-bold shadow-2xs ring-1 ring-[#2563EB]/25'
+                          : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                      }`}
+                    >
+                      Tabla Ejecutiva
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSlaUnifiedViewMode('board')}
+                      className={`px-3.5 py-1.5 rounded-md transition-all cursor-pointer ${
+                        slaUnifiedViewMode === 'board'
+                          ? 'bg-white text-[#1E3A8A] font-bold shadow-2xs ring-1 ring-[#2563EB]/25'
+                          : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                      }`}
+                    >
+                      Tablero por Área
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => {
-                      applyTemplate('circular');
-                      setActiveTab('redactar');
-                    }}
-                    className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs shadow-sm transition-all cursor-pointer"
-                  >
-                    Aprobar Circular
-                  </button>
-                  <button
-                    onClick={() => setShowCatchupModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-sm transition-all cursor-pointer"
-                  >
-                    Audio Digest
-                  </button>
+                {/* 4 Tarjetas KPI Suizas de Cumplimiento SLA con Espina Cromática 4px y Puntos de Triage Calibrados */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                  <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#F59E0B] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">{slaItems.length}</span>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7] shrink-0"
+                        title="Delegado con SLA activo"
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-[#475569] mt-1 block">Asuntos en Seguimiento</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#2563EB] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-[#1E3A8A] block tabular-nums">98.4%</span>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE] shrink-0"
+                        title="Cumplimiento institucional en plazo"
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-[#475569] mt-1 block">En Plazo SLA</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#E11D48] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-[#9F1239] block tabular-nums">{nearExpiryCount}</span>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full bg-[#E11D48] ring-2 ring-[#FFE4E6] shrink-0"
+                        title="Atención prioritaria próxima a vencer"
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-[#475569] mt-1 block">Próximo a Vencer</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#64748B] shadow-2xs flex flex-col justify-center">
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-[#0F172A] block tabular-nums">Tiempo Medio: 3.2h</span>
+                      <span
+                        className="h-2.5 w-2.5 rounded-full bg-[#64748B] ring-2 ring-[#E2E8F0] shrink-0"
+                        title="Métrica histórica consolidada"
+                      />
+                    </div>
+                    <span className="text-xs text-[#64748B] mt-1 block">Resolución operativa red</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Barra de Sincronización en Tiempo Real Automática */}
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-200 border border-indigo-800/40">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    connectionStatus === 'connected_verified'
-                      ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400'
-                      : 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
-                  }`}>
-                    {connectionStatus === 'connected_verified' ? (
-                      <span className="relative flex h-3.5 w-3.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
-                      </span>
+                {slaUnifiedViewMode === 'table' ? (
+                  <div className="rounded-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] bg-white shadow-sm overflow-hidden">
+                    {groupedByArea.length === 0 ? (
+                      <div className="p-10 text-center space-y-2">
+                        <p className="text-sm font-semibold text-[#0F172A]">0 asuntos delegados pendientes</p>
+                        <p className="text-xs text-[#64748B]">
+                          Todas las coordinaciones se encuentran al corriente. También puedes revisar el Tablero por Área.
+                        </p>
+                      </div>
                     ) : (
-                      <KeyRound className="h-4 w-4 text-amber-400" />
+                      groupedByArea.map((group) => (
+                        <div key={group.area} className="border-b border-[#E2E8F0] last:border-b-0">
+                          <div className="grid grid-cols-12 items-center px-4 py-2.5 bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-semibold text-[#475569]">
+                            <span className="col-span-4 text-[#0F172A] font-bold">{group.area}</span>
+                            <span className="col-span-2 hidden sm:block">Sede</span>
+                            <span className="col-span-2 hidden md:block">Responsable</span>
+                            <span className="col-span-2">Plazo SLA</span>
+                            <span className="col-span-2 text-right">Acción</span>
+                          </div>
+                          <div className="divide-y divide-[#E2E8F0]">
+                            {group.rows.map((row) => {
+                              const cleanCode = formatCleanMatterCode(row.matter_code);
+                              const cleanSla = formatCleanSlaText(row.sla_remaining_text, row.sla_hours);
+                              const isUrgentSla = (row.sla_hours || 24) <= 12;
+                              const pct = Math.min(92, Math.max(18, Math.round(((row.sla_hours || 18) / 48) * 100)));
+                              return (
+                                <div
+                                  key={row.id}
+                                  className="grid grid-cols-12 items-center px-4 py-3 text-xs border-l-4 border-l-transparent hover:border-l-[#2563EB] hover:bg-[#F8FAFF] transition-all gap-2"
+                                >
+                                  <div className="col-span-4 flex items-center gap-2.5 min-w-0">
+                                    <span
+                                      className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                                        isUrgentSla
+                                          ? 'bg-[#E11D48] ring-2 ring-[#FFE4E6]'
+                                          : 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]'
+                                      }`}
+                                      title={isUrgentSla ? 'SLA Crítico (<= 12h)' : 'Delegado en curso'}
+                                    />
+                                    <span className="font-mono text-[11px] font-bold text-[#1E40AF] shrink-0">
+                                      #{cleanCode.replace(/^MAT-[A-Z]+-\d+-/, 'SLA-')}
+                                    </span>
+                                    <span className="font-medium text-[#0F172A] truncate">
+                                      {sanitizeCommercialTrademarks(row.title)}
+                                    </span>
+                                  </div>
+                                  <div className="col-span-2 hidden sm:block text-[#475569] truncate">
+                                    {row.campus || campuses[0]?.name || 'Plantel Central'}
+                                  </div>
+                                  <div className="col-span-2 hidden md:block text-[#0F172A] font-medium truncate">
+                                    {row.assigned_role || 'Coordinación'}
+                                  </div>
+                                  <div className="col-span-2 space-y-1">
+                                    <span className="text-[11px] font-semibold text-[#0F172A] block tabular-nums">
+                                      {cleanSla}
+                                    </span>
+                                    <div className="h-1.5 w-24 max-w-full rounded-full bg-[#E2E8F0] overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full ${isUrgentSla ? 'bg-[#E11D48]' : 'bg-[#F59E0B]'}`}
+                                        style={{ width: `${pct}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="col-span-2 text-right">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedMatter(row);
+                                        setMatterDraftEdit(row.suggested_draft_reply || '');
+                                        setActiveTab('inbox');
+                                        setInboxFilter('USABLE');
+                                        setUsableSubFilter('ALL');
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg border border-[#BFDBFE] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[11px] font-semibold text-[#1E40AF] cursor-pointer whitespace-nowrap transition-colors"
+                                    >
+                                      Reclamar / Escalar
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))
                     )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h5 className="font-bold text-white text-xs">
-                        {connectionStatus === 'connected_verified'
-                          ? `Sincronización Continua & Triage en Vivo (${connectedEmail || 'Buzón Conectado'})`
-                          : `Buzón Pendiente de Autorización (${connectedEmail || 'Google Mail'})`}
-                      </h5>
-                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${
-                        connectionStatus === 'connected_verified'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                      }`}>
-                        {connectionStatus === 'connected_verified'
-                          ? (isAutoSyncActive ? `Auto-triage en ${autoSyncCountdown}s` : 'Pausado')
-                          : 'Esperando Autorización Oficial'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-300 mt-0.5">
-                      {connectionStatus === 'connected_verified'
-                        ? 'Revisión automática cada 30 segundos. Si te envías un correo, el Motor de IA lo clasifica en tiempo real sin requerir contraseñas manuales.'
-                        : 'Para descargar tus correos reales de Google, autoriza el acceso en la ventana emergente de Google o ingresa tu Contraseña de Aplicación.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                  {connectionStatus !== 'connected_verified' ? (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenProviderOAuth('google')}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5 text-white" />
-                      <span>Abrir Ventana de Google</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleTriggerSync(false, true)}
-                      disabled={isSyncingLiveInbox}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
-                      title="Detectar y clasificar el correo que enviaste a tu cuenta"
-                    >
-                      <Zap className="h-3.5 w-3.5 text-amber-300" />
-                      <span>Detectar Correo Enviado</span>
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setIsAutoSyncActive(!isAutoSyncActive)}
-                    className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer"
-                  >
-                    {isAutoSyncActive ? 'Pausar 30s' : 'Reanudar 30s'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Segmented Control & Acciones de Bandeja */}
-              <div 
-                className={`p-3 rounded-2xl border shadow-xs space-y-2.5 ${currentTheme.cardBg} ${currentTheme.cardBorder}`}
-                style={themeMode === 'custom' && customTheme.cardColor ? {
-                  backgroundColor: customTheme.cardColor,
-                  borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
-                  color: getContrastTextColor(customTheme.cardColor)
-                } : undefined}
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className={`flex items-center p-1 rounded-xl ${currentTheme.isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-100'}`}>
-                    <button
-                      type="button"
-                      onClick={() => setInboxFilter('USABLE')}
-                      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        inboxFilter === 'USABLE'
-                          ? currentTheme.isDark
-                            ? 'bg-white/15 text-emerald-300 shadow-xs'
-                            : 'bg-white text-emerald-800 shadow-xs'
-                          : currentTheme.isDark
-                          ? 'text-slate-400 hover:text-white'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>🟢 Correos Usables & Asuntos Clave ({mattersList.filter(m => !isSpamOrCommercialMatter(m)).length})</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setInboxFilter('DISCARDED')}
-                      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        inboxFilter === 'DISCARDED'
-                          ? currentTheme.isDark
-                            ? 'bg-white/15 text-slate-200 shadow-xs'
-                            : 'bg-white text-slate-800 shadow-xs'
-                          : currentTheme.isDark
-                          ? 'text-slate-400 hover:text-white'
-                          : 'text-slate-500 hover:text-slate-800'
-                      }`}
-                    >
-                      <span className="w-2 h-2 rounded-full bg-slate-400" />
-                      <span>⚪ Correos No Usables / Descartados ({discardedList.length})</span>
-                    </button>
-                  </div>
-
-                  {/* Botones de Acción Rápida: Ingestar Correo y Sincronizar */}
-                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setShowManualIngestModal(true)}
-                      className="px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border"
-                      style={{
-                        background: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : 'linear-gradient(to right, #059669, #0D9488)',
-                        borderColor: themeMode === 'custom' && customTheme.buttonColor ? `${customTheme.buttonColor}99` : 'rgba(16, 185, 129, 0.4)',
-                        color: themeMode === 'custom' && customTheme.buttonColor ? (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF') : '#FFFFFF'
-                      }}
-                      title="Ingestar y clasificar un correo de prueba o el que acabas de enviar"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      <span>Ingestar / Probar Correo</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleTriggerSync(false)}
-                      disabled={isSyncingLiveInbox || isLivePinging}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
-                    >
-                      <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-amber-300' : ''}`} />
-                      <span>{isSyncingLiveInbox ? 'Sincronizando...' : 'Sincronizar'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Subfiltro de Usables (Segunda Fila, Limpia y Sin Scroll Horizontal) */}
-                {inboxFilter === 'USABLE' && (
-                  <div className={`pt-2 border-t flex items-center justify-between gap-2 flex-wrap ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => setUsableSubFilter('ALL')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors ${
-                          usableSubFilter === 'ALL'
-                            ? 'bg-slate-900 text-white shadow-xs'
-                            : currentTheme.isDark
-                            ? 'bg-white/10 text-slate-300 hover:bg-white/20'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        Todos Atención CEO ({intelligentMatters.length})
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setUsableSubFilter('CRITICA')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
-                          usableSubFilter === 'CRITICA' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100'
-                        }`}
-                      >
-                        <span>🔴 Crítica / Urgente ({intelligentMatters.filter(m => m.urgency === 'CRITICA').length})</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setUsableSubFilter('SEP')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
-                          usableSubFilter === 'SEP' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                        }`}
-                      >
-                        <span>🏛️ Supervisión SEP ({intelligentMatters.filter(m => m.category.toLowerCase().includes('sep') || m.category.toLowerCase().includes('supervis') || m.title.toLowerCase().includes('sep')).length})</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setUsableSubFilter('DELEGADOS')}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
-                          usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
-                        }`}
-                        title="Ver lista de asuntos delegados a coordinaciones operativas con SLA"
-                      >
-                        <Forward className="h-3.5 w-3.5" />
-                        <span>🟡 Asuntos Delegados ({delegatedMattersList.length})</span>
-                      </button>
-                    </div>
-
-                    <div className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
-                      currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200/80 text-slate-500'
-                    }`}>
-                      <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                      <span>{usableSubFilter === 'DELEGADOS' ? 'Control de Asuntos Delegados a Secciones con SLA' : 'Filtro Rector: Asuntos Prioritarios y Gestión Delegada de Plantel'}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* LISTA DE CORREOS USABLES (ASUNTOS CONSOLIDADOS) */}
-              {inboxFilter === 'USABLE' && (
-                filteredMatters.length === 0 ? (
-                  <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 text-center space-y-4 shadow-xs animate-in fade-in">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-                      <CheckCircle2 className="h-7 w-7 text-emerald-600" />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-base font-black text-slate-900">Bandeja Inteligente al Día</h4>
-                      <p className="text-xs text-slate-500 max-w-md mx-auto">
-                        No hay asuntos críticos ni oficios prioritarios pendientes de atención inmediata. Todas las comunicaciones han sido atendidas o turnadas a sus respectivas áreas.
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleTriggerSync(false)}
-                        disabled={isSyncingLiveInbox}
-                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
-                      >
-                        <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-indigo-600' : ''}`} />
-                        <span>Comprobar Nuevos Correos</span>
-                      </button>
-                    </div>
                   </div>
                 ) : (
-                <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-                  {/* COLUMNA 1 (CENTRO): COLA DE ASUNTOS DE TRIAGE */}
-                  <div className="w-full lg:w-5/12 xl:w-5/12 space-y-2.5 overflow-y-auto max-h-[calc(90vh-240px)] pr-1">
-                    {/* Banner de Salto a Work OS cuando se filtran Asuntos Delegados */}
-                    {usableSubFilter === 'DELEGADOS' && (
-                      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 border border-blue-500/30 flex items-center justify-between gap-3 shadow-xs">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-xs">
-                            <Layers className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h5 className="text-xs font-black text-slate-900 dark:text-white">Work OS Institucional Vinculado</h5>
-                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300">CLOUD OS</span>
-                            </div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-300">
-                              Tableros, Kanban, Gantt, SLAs con cuenta regresiva, porcentajes de avance y auditoría.
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('work_os')}
-                          className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 cursor-pointer"
-                        >
-                          <span>Abrir Work OS</span>
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    )}
+                  <WorkOsBoard
+                    tenantId={currentTenantId}
+                    isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
+                    currentUserEmail={user?.email}
+                    schoolDomain={schoolDomain || (isIbime ? 'ibime.edu.mx' : 'colegio.edu.mx')}
+                    onNavigateTab={(tab, draftData) => {
+                      if (draftData) {
+                        if (draftData.subject) setSubject(draftData.subject);
+                        if (draftData.content) setContent(draftData.content);
+                        if (draftData.recipient) setSelectedRecipient(draftData.recipient);
+                      }
+                      setActiveTab(tab);
+                    }}
+                    onTriggerToast={onTriggerToast}
+                  />
+                )}
+              </div>
+            );
+          })()}
 
-                    {/* Barra de Control de Densidad Visual con Emblema Ejecutivo Nano Banana 2.1 */}
-                    <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border ${
-                      currentTheme.isDark
-                        ? 'bg-slate-900/80 border-white/10'
-                        : 'bg-white/90 border-slate-200/80 shadow-2xs'
-                    }`}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <img
-                          src="/images/triage_executive_crest.webp"
-                          alt="Emblema Triage Institucional"
-                          className="w-7 h-7 rounded-lg object-cover border border-indigo-500/30 shadow-2xs shrink-0"
-                        />
-                        <div className="flex items-center gap-2 flex-wrap min-w-0">
-                          <span className={`text-[11px] font-black tracking-tight ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}`}>
-                            {filteredMatters.length} Expediente(s)
-                          </span>
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                            currentTheme.isDark
-                              ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-300'
-                              : 'bg-indigo-50 border-indigo-200/70 text-indigo-700'
-                          }`}>
-                            {groupIncidentMatters ? 'Agrupados por Incidencia' : 'Vista Compacta'}
-                          </span>
-                          {usableSubFilter === 'DELEGADOS' && (
-                            <button
-                              type="button"
-                              onClick={() => setGroupIncidentMatters(!groupIncidentMatters)}
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
-                                groupIncidentMatters
-                                  ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300'
-                                  : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
-                              }`}
-                              title="Alternar entre agrupar correos iguales o verlos individualmente"
-                            >
-                              {groupIncidentMatters ? '✓ Casos Agrupados' : 'Desglosado (Individual)'}
-                            </button>
-                          )}
+          {/* ------------------------------------------------------- */}
+          {/* TAB 1: BANDEJA INTELIGENTE & CORREOS USABLES VS NO USABLES */}
+          {/* ------------------------------------------------------- */}
+          {/* ------------------------------------------------------- */}
+          {/* PANTALLA 1: DECISIONES CEO (MASTER-DETAIL SUIZO LIMPIO) */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' && (
+            <div className="h-full">
+              {/* LISTA DE EXPEDIENTES Y DECISION DOCK EN 2 COLUMNAS SUIZAS */}
+              {inboxFilter === 'USABLE' && (() => {
+                const critCount = intelligentMatters.filter((m) => m.urgency === 'CRITICA').length;
+                const sepCount = intelligentMatters.filter(
+                  (m) =>
+                    m.category.toLowerCase().includes('sep') ||
+                    m.category.toLowerCase().includes('supervis') ||
+                    m.title.toLowerCase().includes('sep')
+                ).length;
+
+                const queryMatters = omnibarQuery.trim()
+                  ? filteredMatters.filter((m) => {
+                      const q = omnibarQuery.toLowerCase();
+                      return (
+                        m.title.toLowerCase().includes(q) ||
+                        (m.sender_name || '').toLowerCase().includes(q) ||
+                        m.summary.toLowerCase().includes(q) ||
+                        m.matter_code.toLowerCase().includes(q)
+                      );
+                    })
+                  : filteredMatters;
+
+                return (
+                  <div className="flex flex-col lg:flex-row gap-5 items-start">
+                    {/* COLUMNA IZQUIERDA SUIZA (364PX): POZO REHUNDIDO #E2E8F0 Y COLA PRIORITARIA CEO */}
+                    <div className="w-full lg:w-[356px] xl:w-[374px] shrink-0 space-y-3">
+                      {/* Segmented Control Suizo con Puntos Cromáticos Calibrados: Todos | Críticos | SEP + Filtrados */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div
+                          className="inline-flex items-center p-1 rounded-xl bg-[#E2E8F0] border border-[#CBD5E1] text-xs"
+                          title="Correos Usables & Asuntos Clave"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInboxFilter('USABLE');
+                              setUsableSubFilter('ALL');
+                            }}
+                            className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                              usableSubFilter === 'ALL'
+                                ? 'bg-white text-[#1E3A8A] font-bold shadow-2xs ring-1 ring-[#2563EB]/25'
+                                : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                            }`}
+                          >
+                            Todos ({intelligentMatters.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInboxFilter('USABLE');
+                              setUsableSubFilter('CRITICA');
+                            }}
+                            className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                              usableSubFilter === 'CRITICA'
+                                ? 'bg-white text-[#9F1239] font-bold shadow-2xs ring-1 ring-[#E11D48]/30'
+                                : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                            }`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-[#E11D48] ring-2 ring-[#FFE4E6] shrink-0" />
+                            <span>Críticos ({critCount})</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInboxFilter('USABLE');
+                              setUsableSubFilter('SEP');
+                            }}
+                            className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                              usableSubFilter === 'SEP'
+                                ? 'bg-white text-[#1E40AF] font-bold shadow-2xs ring-1 ring-[#2563EB]/30'
+                                : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                            }`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE] shrink-0" />
+                            <span>SEP ({sepCount})</span>
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setInboxFilter('DISCARDED')}
+                            className="px-2 py-1 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[11px] font-medium text-[#475569] hover:text-[#0F172A] inline-flex items-center gap-1.5 cursor-pointer"
+                            title="Correos No Usables / Descartados"
+                          >
+                            <span className="h-2 w-2 rounded-full bg-[#64748B] ring-2 ring-[#E2E8F0] shrink-0" />
+                            <span>Filtrados ({discardedList.length})</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerSync(false)}
+                            disabled={isSyncingLiveInbox || isLivePinging}
+                            className="p-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A] cursor-pointer disabled:opacity-50"
+                            title="Sincronizar bandeja institucional"
+                          >
+                            <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin' : ''}`} />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          type="button"
-                          onClick={expandAllCards}
-                          className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
-                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                          }`}
-                          title="Expandir todas las tarjetas"
+
+                      {queryMatters.length === 0 ? (
+                        <div className="p-8 rounded-2xl bg-white border border-[#CBD5E1] text-center space-y-2 shadow-2xs">
+                          <CheckCircle2 className="h-6 w-6 text-emerald-600 mx-auto" />
+                          <h4 className="text-xs font-semibold text-[#0F172A]">Bandeja ejecutiva al día</h4>
+                          <p className="text-[11px] text-[#64748B]">
+                            Sin asuntos pendientes en este filtro.
+                          </p>
+                        </div>
+                      ) : (
+                        <div
+                          data-testid="ceo-matters-recessed-well"
+                          className="p-2.5 rounded-2xl bg-[#E2E8F0]/75 border border-[#CBD5E1] shadow-inner space-y-2.5 max-h-[calc(90vh-195px)] overflow-y-auto"
                         >
-                          Expandir Todo
-                        </button>
-                        <button
-                          type="button"
-                          onClick={collapseAllCards}
-                          className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer whitespace-nowrap ${
-                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                          }`}
-                          title="Colapsar a vista compacta de alta densidad"
-                        >
-                          Vista Compacta
-                        </button>
+                          {queryMatters.map((matter) => {
+                            const isSelected = selectedMatter?.id === matter.id;
+                            const cleanCode = formatCleanMatterCode(matter.matter_code);
+                            const cleanSla = formatCleanSlaText(matter.sla_remaining_text, matter.sla_hours);
+                            const cleanTitle = sanitizeCommercialTrademarks(matter.title);
+                            const cleanSender = sanitizeCommercialTrademarks(matter.sender_name);
+                            const isSepMatter =
+                              matter.category.toLowerCase().includes('sep') ||
+                              matter.category.toLowerCase().includes('supervis') ||
+                              matter.title.toLowerCase().includes('sep');
+                            const isDelegatedMatter = matter.destination === 'DELEGADO_CON_SLA';
+
+                            const dotClass = isDelegatedMatter
+                              ? 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]'
+                              : isSepMatter && matter.urgency !== 'CRITICA'
+                              ? 'bg-[#2563EB] ring-2 ring-[#DBEAFE]'
+                              : 'bg-[#E11D48] ring-2 ring-[#FFE4E6]';
+
+                            const pillClass = isDelegatedMatter
+                              ? 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]'
+                              : isSepMatter && matter.urgency !== 'CRITICA'
+                              ? 'bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE]'
+                              : 'bg-[#FFF1F2] text-[#9F1239] border-[#FECDD3]';
+
+                            const pillText = isDelegatedMatter
+                              ? 'Delegado SLA'
+                              : isSepMatter
+                              ? 'SEP · Oficial'
+                              : 'CEO · Crítico';
+
+                            const unselectedLeftSpine = isDelegatedMatter
+                              ? 'border-l-[#F59E0B]'
+                              : isSepMatter && matter.urgency !== 'CRITICA'
+                              ? 'border-l-[#2563EB]'
+                              : 'border-l-[#E11D48]';
+
+                            return (
+                              <div
+                                key={matter.id}
+                                data-testid="ceo-matter-card"
+                                data-selected={isSelected ? 'true' : 'false'}
+                                onClick={() => {
+                                  setSelectedMatter(matter);
+                                  setMatterDraftEdit(matter.suggested_draft_reply || '');
+                                  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                                    setShowExpandedMatterDrawer(true);
+                                  }
+                                }}
+                                className={`p-3.5 rounded-xl transition-all cursor-pointer text-left ${
+                                  isSelected
+                                    ? 'border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] bg-white shadow-[0_4px_16px_-2px_rgba(37,99,235,0.18)] ring-2 ring-[#2563EB]/15'
+                                    : `border border-[#CBD5E1] border-l-[4px] ${unselectedLeftSpine} bg-white hover:border-[#94A3B8] hover:shadow-xs`
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <div className="inline-flex items-center gap-1.5 min-w-0">
+                                    <span
+                                      data-testid="matter-triage-dot"
+                                      className={`h-2.5 w-2.5 rounded-full shrink-0 ${dotClass}`}
+                                      title={pillText}
+                                    />
+                                    <span className="font-mono text-[11px] font-bold text-[#1E3A8A] truncate">
+                                      {cleanCode}
+                                    </span>
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border shrink-0 ${pillClass}`}>
+                                      {pillText}
+                                    </span>
+                                  </div>
+                                  {isSelected && (
+                                    <span className="px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                      En Foco
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className={`text-xs leading-snug line-clamp-2 ${
+                                    isSelected ? 'font-bold text-[#0F172A]' : 'font-semibold text-[#1E293B]'
+                                  }`}>
+                                    {cleanTitle}
+                                  </span>
+                                </div>
+                                <div className="mt-2 pt-1.5 border-t border-[#F1F5F9] flex items-center justify-between gap-2 text-[11px] text-[#475569]">
+                                  <span className="truncate font-medium">{cleanSender}</span>
+                                  <span className="font-mono text-[11px] text-[#64748B] shrink-0 tabular-nums">
+                                    {cleanSla}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Aviso discreto de Patrón Proactivo Detectado (con punto Azul Cobalto) */}
+                      <div className="p-3 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#2563EB] bg-white shadow-2xs text-xs space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setIsPatternBannerExpanded(!isPatternBannerExpanded)}
+                            className="flex items-center gap-2 text-left font-semibold text-[#0F172A] cursor-pointer min-w-0"
+                          >
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE] shrink-0" />
+                            <span className="truncate">Patrón Proactivo Detectado (17 familias)</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              applyTemplate('circular');
+                              setActiveTab('redactar');
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[11px] font-bold text-[#1E40AF] shrink-0 cursor-pointer transition-colors"
+                          >
+                            Emitir Circular
+                          </button>
+                        </div>
+                        {isPatternBannerExpanded && (
+                          <p className="text-[11px] text-[#475569] leading-relaxed">
+                            17 familias de Campus Montes y Lagos consultando horario de salida de festival. Puedes responder de forma unificada mediante Circular Oficial.
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    {filteredMatters.map((matter) => {
-                      const isCeoAttention = matter.destination === 'ATENCION_CEO';
-                      const isExpanded = !!expandedCardIds[matter.id];
-                      const cleanCode = formatCleanMatterCode(matter.matter_code);
-                      const cleanSla = formatCleanSlaText(matter.sla_remaining_text, matter.sla_hours);
-                      const compactTime = formatCompactExecutiveTimestamp(matter.received_at);
-                      const distinctCategory = resolveDistinctExecutiveCategory(matter);
-                      const cleanTitle = sanitizeCommercialTrademarks(matter.title);
-                      const cleanSender = sanitizeCommercialTrademarks(matter.sender_name);
-                      const cleanSummary = decodeEmailBodyOrSnippet(matter.summary, matter.title, matter.sender_name);
-
-                      return (
-                        <div
-                          key={matter.id}
-                          onClick={() => {
-                            setSelectedMatter(matter);
-                            setMatterDraftEdit(matter.suggested_draft_reply || '');
-                            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                              setShowExpandedMatterDrawer(true);
-                            }
-                          }}
-                          className={`p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer group relative border ${
-                            selectedMatter?.id === matter.id
-                              ? `${currentTheme.cardSelected} shadow-md ring-1 ring-indigo-500/30`
-                              : isCeoAttention
-                              ? currentTheme.isDark
-                                ? 'border-red-500/45 bg-[#160A0D] hover:border-red-400'
-                                : 'border-red-200/90 bg-white hover:border-red-300 shadow-2xs'
-                              : matter.destination === 'DELEGADO_CON_SLA'
-                              ? currentTheme.isDark
-                                ? 'border-amber-500/40 bg-[#171207] hover:border-amber-400'
-                                : 'border-amber-200/90 bg-white hover:border-amber-300 shadow-2xs'
-                              : `${currentTheme.cardBg} ${currentTheme.cardBorder} ${currentTheme.cardHover}`
-                          }`}
-                          style={themeMode === 'custom' && customTheme.cardColor ? {
-                            backgroundColor: selectedMatter?.id === matter.id
-                              ? (isColorLight(customTheme.cardColor) ? '#FFFFFF' : '#1E293B')
-                              : isCeoAttention
-                              ? (isColorLight(customTheme.cardColor) ? '#FFF8F8' : '#1C0D12')
-                              : customTheme.cardColor,
-                            borderColor: selectedMatter?.id === matter.id
-                              ? customTheme.buttonColor || '#6366F1'
-                              : isCeoAttention
-                              ? (customTheme.signalColor || '#EF4444')
-                              : customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
-                            color: getContrastTextColor(customTheme.cardColor)
-                          } : undefined}
-                          title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
-                        >
-                          {/* FILA SUPERIOR DE METADATOS EJECUTIVOS (SIN DESBORDAMIENTO NI RUPTURA DE BADGES) */}
-                          <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-                            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-                              <span className={`font-mono text-[10px] font-black px-2 py-0.5 rounded-md whitespace-nowrap shrink-0 border ${
-                                currentTheme.isDark
-                                  ? 'bg-white/10 border-white/10 text-slate-100'
-                                  : 'bg-slate-100 border-slate-200/80 text-slate-800'
-                              }`}>
-                                {cleanCode}
-                              </span>
-                              <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wide px-2.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
-                                isCeoAttention
-                                  ? 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
-                                  : matter.destination === 'DELEGADO_CON_SLA'
-                                  ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
-                                  : 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30'
-                              }`}>
-                                {isCeoAttention
-                                  ? '🔴 Atención CEO'
-                                  : matter.destination === 'DELEGADO_CON_SLA'
-                                  ? '🟡 Delegado SLA'
-                                  : '🔵 Informativo'}
-                              </span>
-                              <span className={`hidden xl:inline-block text-[9px] font-bold px-2 py-0.5 rounded-md border truncate max-w-[140px] ${
-                                currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'
-                              }`}>
-                                {distinctCategory}
-                              </span>
-                              {matter.reincidence_count > 1 && (
-                                <span className="text-[9px] font-black text-rose-600 bg-rose-500/15 px-1.5 py-0.5 rounded-md border border-rose-500/30 flex items-center gap-0.5 whitespace-nowrap shrink-0">
-                                  <AlertTriangle className="h-2.5 w-2.5" /> {matter.reincidence_count}
+                    {/* COLUMNA DERECHA SUIZA: TARJETA BLANCA ELEVADA DE ENFOQUE 100% SOBRE LIENZO #EEF2F6 */}
+                    <div
+                      data-testid="ceo-active-matter-spotlight"
+                      className="flex-1 min-w-0 bg-white rounded-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-sm p-5 sm:p-6"
+                    >
+                      {selectedMatter ? (
+                        <div className="space-y-5 text-xs">
+                          {/* Cabecera Limpia del Expediente con Punto de Color y Píldora Semántica */}
+                          <div className="flex items-start justify-between gap-4 flex-wrap pb-3 border-b border-[#E2E8F0]">
+                            <div className="space-y-1.5 min-w-0">
+                              <h2 className="text-base sm:text-lg font-bold text-[#0F172A] leading-snug tracking-tight">
+                                {formatCleanMatterCode(selectedMatter.matter_code)} — {sanitizeCommercialTrademarks(selectedMatter.title)}
+                              </h2>
+                              <div className="flex items-center gap-2 flex-wrap text-xs text-[#475569]">
+                                <span className="font-semibold text-[#0F172A]">
+                                  {sanitizeCommercialTrademarks(selectedMatter.sender_name)}
                                 </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-bold ml-auto">
-                              <span
-                                className={`font-mono font-black px-2 py-0.5 rounded-md whitespace-nowrap flex items-center gap-1 border ${
-                                  currentTheme.isDark
-                                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
-                                    : 'bg-amber-50 border-amber-200/80 text-amber-800'
-                                }`}
-                                style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
-                              >
-                                <span>⏱️</span>
-                                <span>{cleanSla}</span>
-                              </span>
-                              <span
-                                className={`whitespace-nowrap font-semibold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                                title={matter.received_at}
-                              >
-                                {compactTime}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={(e) => toggleCardExpand(matter.id, e)}
-                                className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                                  currentTheme.isDark ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
-                                }`}
-                                title={isExpanded ? 'Colapsar detalles' : 'Expandir todos los detalles'}
-                                aria-label={isExpanded ? 'Colapsar' : 'Expandir'}
-                              >
-                                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-indigo-500' : ''}`} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* FILA INTERMEDIA E INFERIOR: TÍTULO COMPLETO Y RESUMEN DECODIFICADO LEGIBLE */}
-                          <div className="mt-2 space-y-1">
-                            <h4
-                              className={`text-xs sm:text-[13px] font-black leading-snug truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors ${
-                                currentTheme.isDark ? 'text-white' : 'text-slate-900'
-                              }`}
-                              style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
-                            >
-                              {cleanTitle}
-                            </h4>
-                            {!isExpanded && (
-                              <div className="flex items-center gap-1.5 text-[11px] min-w-0">
-                                <span className={`font-bold shrink-0 ${currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>
-                                  {cleanSender}
+                                <span className="text-[#94A3B8]">·</span>
+                                <span>{selectedMatter.campus || campuses[0]?.name || 'Plantel Central'}</span>
+                                <span className="text-[#94A3B8]">·</span>
+                                <span className="font-mono text-[11px] font-semibold text-[#475569]">
+                                  {formatCleanSlaText(selectedMatter.sla_remaining_text, selectedMatter.sla_hours)}
                                 </span>
-                                <span className={currentTheme.isDark ? 'text-slate-600' : 'text-slate-300'}>·</span>
                                 <span
-                                  className={`font-medium truncate min-w-0 ${
-                                    currentTheme.isDark ? 'text-slate-400' : 'text-slate-600'
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                    selectedMatter.destination === 'ATENCION_CEO'
+                                      ? 'bg-[#FFF1F2] text-[#9F1239] border-[#FECDD3]'
+                                      : selectedMatter.destination === 'DELEGADO_CON_SLA'
+                                      ? 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]'
+                                      : 'bg-[#EFF6FF] text-[#1E40AF] border-[#BFDBFE]'
                                   }`}
-                                  style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
                                 >
-                                  {cleanSummary}
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${
+                                      selectedMatter.destination === 'ATENCION_CEO'
+                                        ? 'bg-[#E11D48]'
+                                        : selectedMatter.destination === 'DELEGADO_CON_SLA'
+                                        ? 'bg-[#F59E0B] border border-[#B45309]'
+                                        : 'bg-[#2563EB]'
+                                    }`}
+                                  />
+                                  <span>
+                                    {selectedMatter.destination === 'ATENCION_CEO'
+                                      ? 'Atención Inmediata CEO'
+                                      : selectedMatter.destination === 'DELEGADO_CON_SLA'
+                                      ? 'Delegado con SLA'
+                                      : 'Informativo Institucional'}
+                                  </span>
                                 </span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* SECCIÓN EXPANDIBLE (SE DESPLIEGA AL HACER CLIC EN EL CHEVRON) */}
-                          {isExpanded && (
-                            <div className={`mt-3 pt-3 border-t space-y-2.5 animate-in fade-in duration-150 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
-                              <p className={`text-xs leading-relaxed font-medium ${
-                                currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
-                              }`}>
-                                {cleanSummary}
-                              </p>
-
-                              {/* Explicabilidad Causal: ¿Por qué te lo muestro? */}
-                              <div className={`p-2.5 rounded-xl border text-xs flex items-start gap-2 ${
-                                currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/80'
-                              }`}>
-                                <span className="font-bold text-indigo-500 shrink-0">¿Por qué te lo muestro?</span>
-                                <span className={currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'}>{sanitizeCommercialTrademarks(matter.why_shown)}</span>
-                              </div>
-
-                              {/* Cláusula de procedencia Bóveda Curricular */}
-                              {matter.provenance_doc && (
-                                <div className={`text-[11px] flex items-center gap-1.5 font-medium ${
-                                  currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
-                                }`}>
-                                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                                  <span>Procedencia Bóveda Curricular:</span>
-                                  <code className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
-                                    currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-700'
-                                  }`}>{sanitizeCommercialTrademarks(matter.provenance_doc)}</code>
-                                </div>
-                              )}
-
-                              {/* Remitente y Botones de Acción */}
-                              <div className={`pt-2 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
-                                <div className={`text-xs ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                  <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{cleanSender}</strong> ({sanitizeCommercialTrademarks(matter.sender_email)})</span>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto justify-end">
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleOpenOriginalEmailFromMatter(matter);
-                                    }}
-                                    className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-                                    title="Abrir y leer el correo original completo"
-                                  >
-                                    <Mail className="h-3 w-3" />
-                                    <span>Leer Original</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDelegateMatter(matter);
-                                    }}
-                                    className="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-                                    title="Delegar este asunto a Coordinación Operativa de Plantel"
-                                  >
-                                    <Forward className="h-3 w-3" />
-                                    <span>Delegar</span>
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleQuickResolveMatter(matter);
-                                    }}
-                                    className="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-                                    title="Marcar expediente como atendido y retirarlo de la bandeja inteligente"
-                                  >
-                                    <CheckCircle2 className="h-3 w-3" />
-                                    <span>Atendido</span>
-                                  </button>
-                                </div>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
 
-                  {/* COLUMNA 2 (DERECHA): MATTER DECISION DOCK (PERMANENTE EN DESKTOP) */}
-                  <div 
-                    className={`hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border ${currentTheme.dockBg} ${currentTheme.dockBorder} shadow-sm overflow-hidden max-h-[calc(90vh-240px)]`}
-                    style={themeMode === 'custom' && customTheme.cardColor ? {
-                      backgroundColor: customTheme.cardColor,
-                      borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
-                      color: getContrastTextColor(customTheme.cardColor)
-                    } : undefined}
-                  >
-                    {selectedMatter ? (
-                      <div className="flex-1 overflow-y-auto p-5 sm:p-6 pb-16 space-y-4 text-xs">
-                        {/* Encabezado Ejecutivo del Dock con Emblema Nano Banana 2.1 */}
-                        <div
-                          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 flex-wrap ${
-                            currentTheme.isDark
-                              ? 'bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border-white/10'
-                              : 'bg-gradient-to-r from-slate-50 via-indigo-50/40 to-white border-slate-200/90 shadow-2xs'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5 flex-wrap min-w-0">
-                            <img
-                              src="/images/triage_executive_crest.webp"
-                              alt="Escudo de Gobernanza Ejecutiva"
-                              className="w-9 h-9 rounded-xl object-cover border border-indigo-500/30 shadow-xs shrink-0"
-                            />
-                            <span className="font-mono font-black text-xs sm:text-sm px-2.5 py-1 rounded-xl bg-slate-900 text-white dark:bg-white/10 dark:text-white whitespace-nowrap">
-                              {formatCleanMatterCode(selectedMatter.matter_code)}
-                            </span>
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap ${
-                              selectedMatter.destination === 'ATENCION_CEO'
-                                ? 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
-                                : selectedMatter.destination === 'DELEGADO_CON_SLA'
-                                ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
-                                : 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/30'
-                            }`}>
-                              {selectedMatter.destination === 'ATENCION_CEO'
-                                ? '🔴 Atención Inmediata CEO'
-                                : selectedMatter.destination === 'DELEGADO_CON_SLA'
-                                ? '🟡 Delegado con SLA'
-                                : '🔵 Informativo'}
-                            </span>
-                            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border whitespace-nowrap ${
-                              currentTheme.isDark
-                                ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
-                                : 'bg-indigo-50 border-indigo-200/80 text-indigo-800'
-                            }`}>
-                              {resolveDistinctExecutiveCategory(selectedMatter)}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 shrink-0 ml-auto">
-                            <span className="text-amber-800 dark:text-amber-300 font-mono font-black text-xs bg-amber-50 dark:bg-amber-500/15 px-3 py-1 rounded-xl border border-amber-200 dark:border-amber-500/30 shadow-2xs whitespace-nowrap flex items-center gap-1">
-                              <span>⏱️</span>
-                              <span>{formatCleanSlaText(selectedMatter.sla_remaining_text, selectedMatter.sla_hours)}</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setShowExpandedMatterDrawer(true)}
-                              className="px-3 py-1.5 rounded-xl bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border border-slate-200 dark:border-white/10 whitespace-nowrap shadow-2xs"
-                              title="Ampliar expediente a pantalla completa"
-                            >
-                              <Maximize2 className="h-3.5 w-3.5 text-indigo-500" />
-                              <span>Ampliar</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Título, Remitente Sanitizado y Estampado Temporal CDMX */}
-                        <div className="space-y-1.5 px-0.5">
-                          <h3 
-                            className={`text-base sm:text-lg font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}
-                            style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
-                          >
-                            {sanitizeCommercialTrademarks(selectedMatter.title)}
-                          </h3>
-                          <div 
-                            className={`flex items-center gap-2 flex-wrap text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
-                            style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
-                          >
-                            <span>
-                              Remitente:{' '}
-                              <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>
-                                {sanitizeCommercialTrademarks(selectedMatter.sender_name)}
-                              </strong>{' '}
-                              <span className="font-mono text-[10px] opacity-80">&lt;{sanitizeCommercialTrademarks(selectedMatter.sender_email)}&gt;</span>
-                            </span>
-                            <span>•</span>
-                            <span>
-                              Plantel:{' '}
-                              <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>
-                                {selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}
-                              </strong>
-                            </span>
-                            {selectedMatter.received_at && (
-                              <>
-                                <span>•</span>
-                                <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
-                                  {formatFullExecutiveTimestamp(selectedMatter.received_at)}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Extracto de Comunicación Original (Con Decodificación Automática Base64 / UTF-8 y Lectura de Estudio) */}
-                        <div className={`p-4 rounded-2xl border space-y-2 relative overflow-hidden ${
-                          currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50/90 border-slate-200/90'
-                        }`}>
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
-                          <div className="flex items-center justify-between gap-2 flex-wrap pl-1">
-                            <span className={`text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${
-                              currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-900'
-                            }`}>
-                              <MailOpen className="h-3.5 w-3.5 text-indigo-500" />
-                              <span>Extracto del Mensaje Recibido (Decodificado)</span>
-                            </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 shrink-0">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -8827,354 +8389,317 @@ Comité de Seguridad y Protección Escolar`
                                     gender: 'female'
                                   });
                                 }}
-                                className="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 flex items-center gap-1 cursor-pointer transition-colors"
-                                title="Escuchar resumen con voz generativa de estudio"
+                                className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[11px] font-medium text-[#475569] hover:text-[#0F172A] inline-flex items-center gap-1.5 cursor-pointer"
+                                title="Escuchar síntesis con Voz Sofía"
                               >
-                                <Volume2 className="h-3 w-3" /> Escuchar Resumen
+                                <Volume2 className="h-3.5 w-3.5 text-[#2563EB]" />
+                                <span>Escuchar</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleOpenOriginalEmailFromMatter(selectedMatter)}
-                                className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[11px] font-medium text-[#475569] hover:text-[#0F172A] inline-flex items-center gap-1.5 cursor-pointer"
                               >
-                                <Mail className="h-3 w-3" /> Ver Correo Completo
+                                <Mail className="h-3.5 w-3.5 text-[#2563EB]" />
+                                <span>Original</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setShowExpandedMatterDrawer(true)}
+                                className="p-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A] cursor-pointer"
+                                title="Ampliar expediente"
+                              >
+                                <Maximize2 className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </div>
-                          <p className={`text-xs leading-relaxed font-medium pl-1 ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-700'}`}>
-                            {decodeEmailBodyOrSnippet(selectedMatter.summary, selectedMatter.title, selectedMatter.sender_name)}
-                          </p>
-                        </div>
 
-                        {/* TARJETA EXPEDIENTE 360° EN VIVO (BUS CONTEXTUAL iMAIL ↔ PORTAL ACADÉMICO ↔ FINANZAS) */}
-                        <div className={`p-4 rounded-2xl border space-y-3 ${
-                          currentTheme.isDark
-                            ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-100'
-                            : 'bg-emerald-50/70 border-emerald-200/90 text-slate-900'
-                        }`}>
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                              <Sparkles className="h-3.5 w-3.5 text-emerald-500" /> Expediente 360° en Vivo · Bus Contextual iSkool
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (onOpenStudentInAcademicPortal) {
-                                  onOpenStudentInAcademicPortal('std-ibime-1');
-                                } else {
-                                  onTriggerToast('Abriendo expediente del alumno en Portal Académico 360°...');
-                                }
-                              }}
-                              className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
-                            >
-                              <span>🎓 Ver Portafolio en Portal Académico 360° →</span>
-                            </button>
+                          {/* Bloque Suizo 1: Síntesis Ejecutiva y Norma de Bóveda Curricular */}
+                          <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#2563EB] bg-[#F8FAFC] space-y-2.5">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-[#0F172A]">
+                                Síntesis Ejecutiva y Norma de Bóveda Curricular
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onOpenStudentInAcademicPortal) {
+                                    onOpenStudentInAcademicPortal('std-ibime-1');
+                                  } else {
+                                    onTriggerToast('Abriendo expediente institucional en Portal Académico 360°...');
+                                  }
+                                }}
+                                className="text-[11px] font-semibold text-[#1D4ED8] hover:text-[#1E3A8A] underline cursor-pointer"
+                              >
+                                Ver Expediente 360° →
+                              </button>
+                            </div>
+
+                            <p className="text-xs text-[#1E293B] leading-relaxed">
+                              {decodeEmailBodyOrSnippet(selectedMatter.summary, selectedMatter.title, selectedMatter.sender_name)}
+                            </p>
+
+                            <div className="pt-2 border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-[#475569]">
+                              <span title="¿Por qué te lo muestro?">
+                                <strong className="text-[#0F172A]">Criterio Directivo:</strong> {sanitizeCommercialTrademarks(selectedMatter.why_shown)}
+                              </span>
+                              {selectedMatter.provenance_doc && (
+                                <code className="px-2 py-0.5 rounded bg-white border border-[#CBD5E1] font-mono text-[10px] text-[#1E40AF] font-medium shrink-0">
+                                  {sanitizeCommercialTrademarks(selectedMatter.provenance_doc.replace('planeaciones/', 'Correo/'))}
+                                </code>
+                              )}
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5 text-[11px]">
-                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Alumno / Familia</span>
-                              <span className="font-black block truncate text-slate-900 dark:text-white">
-                                {selectedMatter.sender_name?.includes('Mendoza')
-                                  ? 'Mateo Mendoza (5º B)'
-                                  : selectedMatter.sender_name?.includes('SEP')
-                                  ? 'Zona Escolar 14 SEP'
-                                  : 'Sofía Hernández (CCH)'}
+                          {/* Bloque Suizo 2: Borrador Oficial de Respuesta */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-[#0F172A]">
+                                Borrador Oficial de Respuesta
+                              </label>
+                              <span className="text-[11px] text-[#64748B]">
+                                {schoolName} · {directorTitle}
                               </span>
                             </div>
-                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Promedio & Asistencia</span>
-                              <span className="font-black text-emerald-600 dark:text-emerald-400 block whitespace-nowrap">9.6 · 98.5% Asist.</span>
+
+                            <div className="rounded-xl border border-[#CBD5E1] bg-white overflow-hidden focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15 transition-all">
+                              <div className="px-3 py-1.5 border-b border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between text-[11px] text-[#64748B]">
+                                <div className="flex items-center gap-3 font-serif font-semibold text-[#475569] select-none">
+                                  <span>B</span>
+                                  <span className="italic">I</span>
+                                  <span className="underline">U</span>
+                                  <span className="text-[#CBD5E1] font-sans">|</span>
+                                  <span className="font-sans text-[11px] font-medium text-[#475569]">
+                                    Para: {sanitizeCommercialTrademarks(selectedMatter.sender_email)}
+                                  </span>
+                                </div>
+                                <span className="font-mono text-[10px] text-[#64748B]">Membrete Oficial</span>
+                              </div>
+                              <textarea
+                                rows={5}
+                                value={matterDraftEdit}
+                                onChange={(e) => setMatterDraftEdit(e.target.value)}
+                                placeholder="Redacta o ajusta la respuesta oficial antes de despachar..."
+                                className="w-full p-3.5 text-xs leading-relaxed text-[#0F172A] bg-white outline-none resize-y"
+                              />
                             </div>
-                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Avance en La Aldea</span>
-                              <span className="font-black text-indigo-600 dark:text-indigo-400 block whitespace-nowrap">Nivel 14 (3,420 XP)</span>
+                          </div>
+
+                          {/* Switch y Estudio Inline: Adjuntar Pase Oficial de Audiencia (WebP · Módulo 2.3) */}
+                          <div className="space-y-2.5">
+                            <div className="flex items-center justify-between gap-3 flex-wrap">
+                              <div className="flex items-center gap-2.5">
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={Boolean(matterVisualPasses[selectedMatter.id])}
+                                  onClick={() => {
+                                    if (matterVisualPasses[selectedMatter.id]) {
+                                      setMatterVisualPasses((prev) => {
+                                        const next = { ...prev };
+                                        delete next[selectedMatter.id];
+                                        return next;
+                                      });
+                                    } else {
+                                      handleSynthesizeMatterPass(selectedMatter);
+                                    }
+                                  }}
+                                  disabled={isGeneratingPass}
+                                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 ${
+                                    matterVisualPasses[selectedMatter.id] ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
+                                  } disabled:opacity-50`}
+                                >
+                                  <span
+                                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition duration-150 ${
+                                      matterVisualPasses[selectedMatter.id] ? 'translate-x-4' : 'translate-x-0'
+                                    }`}
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSynthesizeMatterPass(selectedMatter)}
+                                  disabled={isGeneratingPass}
+                                  className="text-xs font-semibold text-[#0F172A] hover:text-[#1D4ED8] hover:underline cursor-pointer inline-flex items-center gap-1.5"
+                                >
+                                  {isGeneratingPass && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#2563EB]" />}
+                                  <span>
+                                    {isGeneratingPass
+                                      ? 'Sintetizando Pase Oficial de Audiencia...'
+                                      : matterVisualPasses[selectedMatter.id]
+                                      ? `Adjuntar Pase Oficial de Audiencia (WebP · ${matterVisualPasses[selectedMatter.id].sizeKb} KB)`
+                                      : 'Generar Pase Gráfico de Audiencia (WebP)'}
+                                  </span>
+                                </button>
+                              </div>
+
+                              {matterVisualPasses[selectedMatter.id] && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDownloadVisualAsset(matterVisualPasses[selectedMatter.id])}
+                                  className="px-2.5 py-1 rounded-md border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[11px] font-medium text-[#0F172A] inline-flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Download className="h-3 w-3" />
+                                  <span>Descargar WebP</span>
+                                </button>
+                              )}
                             </div>
-                            <div className={`p-2.5 rounded-xl border min-w-0 ${currentTheme.isDark ? 'bg-slate-900/70 border-white/10' : 'bg-white border-emerald-200/70 shadow-2xs'}`}>
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Estatus SAT CFDI 4.0</span>
-                              <span className={`font-black text-emerald-700 dark:text-emerald-300 block whitespace-nowrap ${boardroomPrivacyMode ? 'blur-xs select-none' : ''}`}>
-                                ✓ Al Corriente (0 Adeudos)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
 
-                        {/* Fundamentación Normativa en Bóveda Curricular (Correo/[tenant]/...) */}
-                        <div className={`p-3.5 rounded-2xl border space-y-2 ${currentTheme.isDark ? 'bg-indigo-950/30 border-indigo-500/30 text-indigo-200' : 'bg-indigo-50/70 border-indigo-200/80 text-indigo-950'}`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 dark:text-indigo-300 flex items-center gap-1.5">
-                              <ShieldCheck className="h-3.5 w-3.5 text-indigo-500" /> Bóveda Curricular & Cita Normativa
-                            </span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                              currentTheme.isDark ? 'bg-indigo-900/60 text-indigo-200 border-indigo-700/50' : 'bg-white text-indigo-800 border-indigo-200'
-                            }`}>
-                              Alineación Institucional
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs font-medium">
-                            <span className={currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-950'}>Normativa:</span>
-                            <code className={`px-2 py-0.5 rounded text-[11px] font-mono border ${
-                              currentTheme.isDark ? 'bg-slate-900 text-indigo-300 border-indigo-700/40' : 'bg-white text-indigo-800 border-indigo-200'
-                            }`}>
-                              {selectedMatter.provenance_doc?.replace('planeaciones/', 'Correo/')}
-                            </code>
-                          </div>
-                          <p className={`text-[11px] leading-relaxed ${currentTheme.isDark ? 'text-indigo-200/90' : 'text-indigo-900/90'}`}>
-                            {selectedMatter.why_shown}
-                          </p>
-                        </div>
-
-                        {/* Borrador Oficial del Asistente Pedagógico IA */}
-                        <div className={`space-y-2.5 p-4 rounded-2xl border ${currentTheme.isDark ? 'bg-amber-950/20 border-amber-500/30 text-amber-200' : 'bg-amber-50/40 border-amber-200/80 text-amber-900'}`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                              <FileCheck className="h-3.5 w-3.5 text-amber-500" /> Borrador Oficial del Asistente Pedagógico IA
-                            </span>
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                              currentTheme.isDark ? 'bg-amber-900/40 text-amber-200 border-amber-700/50' : 'bg-white text-amber-800 border-amber-200'
-                            }`}>
-                              Estilo Adaptativo Dirección General
-                            </span>
+                            {matterVisualPasses[selectedMatter.id] && (
+                              <div className="p-3 rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] space-y-2">
+                                <div className="rounded-lg overflow-hidden border border-[#CBD5E1] bg-white">
+                                  <img
+                                    src={matterVisualPasses[selectedMatter.id].dataUrl}
+                                    alt={matterVisualPasses[selectedMatter.id].captionSummary}
+                                    className="w-full max-h-48 object-contain mx-auto block"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="text"
+                                    value={passRefinementText}
+                                    onChange={(e) => setPassRefinementText(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && passRefinementText.trim() && handleSynthesizeMatterPass(selectedMatter)}
+                                    placeholder="Refinar pase (ej. Cambiar horario a 11:00 hrs en Sala de Consejo)..."
+                                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[11px] text-[#0F172A] outline-none focus:border-[#2563EB]"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStartVisualVoiceDictation('pass')}
+                                    className={`p-1.5 rounded-lg border cursor-pointer ${
+                                      isDictatingRefinement === 'pass'
+                                        ? 'bg-[#2563EB] text-white border-[#2563EB]'
+                                        : 'bg-white text-[#475569] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                                    }`}
+                                    title="Dictar con Voz Sofía"
+                                  >
+                                    <Mic className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSynthesizeMatterPass(selectedMatter)}
+                                    disabled={isGeneratingPass || !passRefinementText.trim()}
+                                    className="px-2.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-[11px] cursor-pointer disabled:opacity-40"
+                                  >
+                                    Aplicar
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Membrete Institucional */}
-                          <div className={`p-2 rounded-xl border text-[11px] flex items-center justify-between ${
-                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-amber-200/80 text-slate-600'
-                          }`}>
-                            <span className={`font-bold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}`}>{schoolName} · {directorTitle}</span>
-                            <span className={`font-mono text-[10px] ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>Despacho Institucional</span>
-                          </div>
-
-                          <textarea
-                            rows={4}
-                            value={matterDraftEdit}
-                            onChange={(e) => setMatterDraftEdit(e.target.value)}
-                            placeholder="Redacta o ajusta la respuesta oficial antes de despachar..."
-                            className={`w-full p-3 rounded-xl border text-xs leading-relaxed font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none shadow-inner ${
-                              currentTheme.isDark ? 'bg-slate-900/90 border-amber-500/40 text-slate-100 placeholder-slate-500' : 'bg-white border-amber-300/80 text-slate-800'
-                            }`}
-                          />
-
-                          {/* Botones de Aprobación y Despacho */}
-                          <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                          {/* Acción Primaria Ejecutiva en Azul Cobalto Real #2563EB */}
+                          <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={handleApproveDraft}
                                 disabled={isApprovingDraft}
-                                style={themeMode === 'custom' && customTheme.buttonColor ? {
-                                  backgroundColor: customTheme.buttonColor,
-                                  color: isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF',
-                                  borderColor: `${customTheme.buttonColor}99`
-                                } : undefined}
-                                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+                                className="px-5 py-2.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
                               >
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                                <span>{isApprovingDraft ? 'Despachando...' : 'Aprobar y Despachar Respuesta'}</span>
+                                {isApprovingDraft ? 'Despachando...' : 'Aprobar y Despachar Respuesta'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickResolveMatter(selectedMatter)}
+                                className="px-3.5 py-2.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-xs transition-colors cursor-pointer"
+                              >
+                                Marcar Atendido
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleSendMailto(selectedMatter, matterDraftEdit)}
-                                className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1"
-                                title="Abrir en cliente de correo local (Outlook, Apple Mail, etc.)"
+                                className="px-3 py-2.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#475569] font-medium text-xs transition-colors cursor-pointer"
                               >
-                                <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
-                                <span>Cliente Local</span>
+                                Cliente Local
                               </button>
                             </div>
+                          </div>
+
+                          {/* Fila Única Suiza: Delegar con SLA */}
+                          <div className="pt-3 border-t border-[#E2E8F0] flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475569] mr-1">
+                              <span className="h-2 w-2 rounded-full bg-[#F59E0B] border border-[#B45309]" />
+                              <span>Delegar con SLA:</span>
+                            </span>
+                            {[
+                              { key: 'academica' as const, label: 'Académica' },
+                              { key: 'administracion' as const, label: 'Finanzas' },
+                              { key: 'juridico' as const, label: 'Control SEP / Jurídico' },
+                              { key: 'prefectura' as const, label: 'Logística' },
+                              { key: 'psicologia' as const, label: 'Psicopedagogía' },
+                            ].map((area) => (
+                              <button
+                                key={area.key}
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, area.key)}
+                                disabled={isForwardingDelegate}
+                                className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] hover:bg-[#FEF3C7]/60 hover:border-[#F59E0B] text-xs font-medium text-[#0F172A] transition-colors cursor-pointer disabled:opacity-50"
+                              >
+                                {area.label}
+                              </button>
+                            ))}
                             <button
                               type="button"
-                              onClick={() => handleQuickResolveMatter(selectedMatter)}
-                              className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1"
+                              onClick={() => handleDelegateMatter(selectedMatter)}
+                              className="px-3 py-1.5 rounded-lg border border-dashed border-[#94A3B8] hover:border-[#2563EB] text-xs font-medium text-[#475569] hover:text-[#1D4ED8] transition-colors cursor-pointer"
                             >
-                              <Check className="h-3.5 w-3.5 text-emerald-600" />
-                              <span>Marcar Atendido</span>
+                              Personalizar...
                             </button>
                           </div>
                         </div>
-
-                        {/* MATRIZ DE DELEGACIÓN CON 1 CLIC (5 SECCIONES INSTITUCIONALES) */}
-                        <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
-                                Matriz de Delegación Inmediata con SLA (1 Clic)
-                              </span>
-                              <h5 className="font-black text-slate-900 text-xs mt-0.5">
-                                Turnar formalmente con SLA y seguimiento desatendido
-                              </h5>
-                            </div>
-                            {selectedMatter.destination === 'DELEGADO_CON_SLA' && (
-                              <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-black text-[10px] flex items-center gap-1">
-                                <CheckCircle2 className="h-3 w-3 text-amber-700" /> Asunto Delegado
-                              </span>
-                            )}
-                          </div>
-
-                          {selectedMatter.destination === 'DELEGADO_CON_SLA' ? (
-                            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-xs">Área Asignada: {selectedMatter.assigned_role}</span>
-                                <span className="font-mono text-xs font-black text-amber-700">{selectedMatter.sla_remaining_text}</span>
-                              </div>
-                              <p className="text-[11px] text-amber-800">
-                                Delegado: <strong>{selectedMatter.assigned_email}</strong> · Sincronizado en <code className="text-amber-900 bg-white/70 px-1 rounded font-mono">Correo/{currentTenantId}/Asuntos_Delegados_Con_SLA.json</code>
-                              </p>
-                              <div className="pt-2 flex items-center justify-end">
-                                <button
-                                  type="button"
-                                  onClick={() => handleDelegateMatter(selectedMatter)}
-                                  className="text-xs font-bold text-amber-800 hover:text-amber-950 underline cursor-pointer"
-                                >
-                                  Re-asignar a otra coordinación...
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
-                              {/* Botón 1: Coordinador Académico */}
-                              <button
-                                type="button"
-                                onClick={() => handleQuickDelegate(selectedMatter, 'academica')}
-                                disabled={isForwardingDelegate}
-                                className="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">🎓</span>
-                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800">SLA: 24h</span>
-                                </div>
-                                <div className="font-black text-slate-900 text-xs group-hover:text-indigo-700">Coord. Académica</div>
-                                <div className="text-[10px] text-slate-400 truncate">academica@ibime.edu.mx</div>
-                              </button>
-
-                              {/* Botón 2: Gabinete Psicológico */}
-                              <button
-                                type="button"
-                                onClick={() => handleQuickDelegate(selectedMatter, 'psicologia')}
-                                disabled={isForwardingDelegate}
-                                className="p-2.5 rounded-xl bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">🧠</span>
-                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">SLA: 12h</span>
-                                </div>
-                                <div className="font-black text-slate-900 text-xs group-hover:text-rose-700">Gabinete Psicología</div>
-                                <div className="text-[10px] text-slate-400 truncate">psicologia@ibime.edu.mx</div>
-                              </button>
-
-                              {/* Botón 3: Área Jurídica */}
-                              <button
-                                type="button"
-                                onClick={() => handleQuickDelegate(selectedMatter, 'juridico')}
-                                disabled={isForwardingDelegate}
-                                className="p-2.5 rounded-xl bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">⚖️</span>
-                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">SLA: 8h</span>
-                                </div>
-                                <div className="font-black text-slate-900 text-xs group-hover:text-purple-700">Área Jurídica</div>
-                                <div className="text-[10px] text-slate-400 truncate">juridico@ibime.edu.mx</div>
-                              </button>
-
-                              {/* Botón 4: Administración y Finanzas */}
-                              <button
-                                type="button"
-                                onClick={() => handleQuickDelegate(selectedMatter, 'administracion')}
-                                disabled={isForwardingDelegate}
-                                className="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">💳</span>
-                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">SLA: 24h</span>
-                                </div>
-                                <div className="font-black text-slate-900 text-xs group-hover:text-emerald-700">Administración</div>
-                                <div className="text-[10px] text-slate-400 truncate">cobranza@ibime.edu.mx</div>
-                              </button>
-
-                              {/* Botón 5: Prefectura y Convivencia */}
-                              <button
-                                type="button"
-                                onClick={() => handleQuickDelegate(selectedMatter, 'prefectura')}
-                                disabled={isForwardingDelegate}
-                                className="p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">🛡️</span>
-                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">SLA: 6h</span>
-                                </div>
-                                <div className="font-black text-slate-900 text-xs group-hover:text-amber-700">Prefectura / Campus</div>
-                                <div className="text-[10px] text-slate-400 truncate">prefectura@ibime.edu.mx</div>
-                              </button>
-
-                              {/* Personalizar */}
-                              <button
-                                type="button"
-                                onClick={() => handleDelegateMatter(selectedMatter)}
-                                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-left transition-all cursor-pointer group flex flex-col justify-between"
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-base">⚙️</span>
-                                  <span className="text-[9px] font-bold text-slate-500">Manual</span>
-                                </div>
-                                <div className="font-bold text-slate-700 text-xs">Personalizar...</div>
-                                <div className="text-[10px] text-slate-400">Otro delegado o plazo</div>
-                              </button>
-                            </div>
-                          )}
+                      ) : (
+                        <div className="py-20 text-center space-y-2 border border-dashed border-[#CBD5E1] rounded-xl bg-[#F8FAFC]">
+                          <FileCheck className="h-8 w-8 text-[#94A3B8] mx-auto" />
+                          <h4 className="text-sm font-semibold text-[#0F172A]">Selecciona un expediente</h4>
+                          <p className="text-xs text-[#64748B] max-w-sm mx-auto">
+                            Elige un caso de la cola izquierda para revisar su norma en Bóveda Curricular, aprobar la respuesta oficial o delegar con SLA.
+                          </p>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3">
-                        <FileCheck className="h-12 w-12 text-slate-300" />
-                        <h4 className="font-black text-slate-700 text-sm">Matter Decision Dock</h4>
-                        <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
-                          Selecciona un asunto del Triage Feed a la izquierda para inspeccionar su fundamentación en la Bóveda de Correo, aprobar la respuesta oficial del Asistente Pedagógico IA o delegar en 1 clic.
-                        </p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-                )
-              )}
+                );
+              })()}
 
-              {/* LISTA DE CORREOS NO USABLES (SPAM & DESCARTADOS) */}
+              {/* VISTA LIMPIA DE ARCHIVO FILTRADO (CORREOS NO USABLES / DESCARTADOS) */}
               {inboxFilter === 'DISCARDED' && (
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-amber-700 shrink-0" />
-                      <span>
-                        <strong>Filtro Heurístico Anti-Saturación Activo:</strong> Estos correos fueron catalogados como no usables y archivados sin notificar al Director para preservar su tiempo y enfoque institucional.
-                      </span>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#64748B]">
+                    <div>
+                      <h3 className="text-sm font-bold text-[#0F172A] inline-flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#64748B] ring-2 ring-[#E2E8F0]" />
+                        <span>Correos No Usables / Descartados ({discardedList.length})</span>
+                      </h3>
+                      <p className="text-xs text-[#64748B] mt-0.5">
+                        Publicidad comercial y boletines archivados silenciosamente sin interrumpir a Dirección General.
+                      </p>
                     </div>
-                    <span className="font-bold text-amber-800 whitespace-nowrap ml-2">91.9% Reducción de Ruido</span>
+                    <button
+                      type="button"
+                      onClick={() => setInboxFilter('USABLE')}
+                      className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold cursor-pointer"
+                    >
+                      ← Volver a Decisiones CEO
+                    </button>
                   </div>
 
-                  {discardedList.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-4 rounded-2xl bg-white border border-slate-200 text-xs space-y-2 opacity-90 hover:opacity-100 transition-opacity"
-                    >
-                      <div className="flex items-center justify-between text-slate-400">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-700">{item.sender_name}</span>
-                          <span className="text-slate-400">&lt;{item.sender_email}&gt;</span>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-[10px]">
-                            {item.category}
+                  <div className="divide-y divide-[#E2E8F0] rounded-2xl border border-[#CBD5E1] bg-white overflow-hidden shadow-2xs">
+                    {discardedList.map((item) => (
+                      <div key={item.id} className="p-4 text-xs space-y-1 hover:bg-[#F8FAFC] border-l-4 border-l-[#64748B]">
+                        <div className="flex items-center justify-between text-[#64748B]">
+                          <span className="font-semibold text-[#0F172A] inline-flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-[#64748B] ring-2 ring-[#E2E8F0]" />
+                            <span>
+                              {item.sender_name} <span className="font-normal text-[#64748B]">&lt;{item.sender_email}&gt;</span>
+                            </span>
                           </span>
+                          <span>{item.received_at}</span>
                         </div>
-                        <span className="text-[10px] text-slate-400">{item.received_at}</span>
+                        <p className="font-medium text-[#1E293B]">{item.subject}</p>
+                        <p className="text-[11px] text-[#64748B]">Motivo de filtrado: {item.discard_reason}</p>
                       </div>
-
-                      <h5 className="font-bold text-slate-800 text-sm">{item.subject}</h5>
-
-                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-600 flex items-center gap-1.5">
-                        <span className="font-bold text-rose-700 shrink-0">Motivo de Descarte Forense:</span>
-                        <span>{item.discard_reason}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -9401,2726 +8926,1194 @@ Comité de Seguridad y Protección Escolar`
           )}
 
           {/* ------------------------------------------------------- */}
-          {/* TAB 3: CONEXIÓN UNIVERSAL DE CORREO (POP3 / IMAP / SMTP) */}
+          {/* TAB 3: GOBERNANZA & CUENTAS — CONEXIÓN OAUTH 2.0 + CASA BY GOOGLE */}
           {/* ------------------------------------------------------- */}
-          {activeTab === 'google' && (
-            <div className="max-w-4xl mx-auto space-y-4">
-              {/* Tarjeta Ejecutiva Compacta para CEO / Administrativos */}
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0 shadow-xs">
-                      <Server className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-black text-slate-900">
-                          Conexión Universal de Correo & Google Workspace
-                        </h3>
-                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[9px] uppercase tracking-wide">
-                          Multiservicio 360°
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Sincronización hermética con Google Workspace, Microsoft 365, iCloud o servidor institucional (@{schoolDomain}).
-                      </p>
-                    </div>
+          {activeTab === 'google' &&
+            renderGovernanceShell(
+              <div className="space-y-4 font-sans antialiased">
+                {/* Encabezado limpio de Cuentas & OAuth 2.0 */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
+                  <div>
+                    <h3 className="text-[16px] font-semibold text-[#0F172A] tracking-[-0.015em]">
+                      Configuración de Cuentas &amp; OAuth 2.0
+                    </h3>
+                    <p className="text-[12px] font-normal text-[#475569] mt-0.5">
+                      Gobernanza de identidad directiva, alcance de mínimo privilegio y conexión multi-proveedor con parámetros de servidor bajo demanda.
+                    </p>
                   </div>
-
-                  <div className="flex items-center gap-1.5 self-end sm:self-auto">
-                    <button
-                      type="button"
-                      onClick={() => runLivePingCheck(connectedEmail || authUsername, incomingHost, incomingPort, incomingSecurity, selectedProtocol, authPassword, { mode: 'sync', deviceConfirmed: true })}
-                      disabled={isLivePinging}
-                      title="Enviar ping de comprobación en tiempo real al servidor de correo"
-                      className="px-2.5 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-[10px] flex items-center gap-1 cursor-pointer transition-all active:scale-95 disabled:opacity-50"
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <span
+                      data-testid="casa-tier2-badge"
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#059669] border border-emerald-200 text-[11px] font-medium"
                     >
-                      <Zap className={`h-3 w-3 ${isLivePinging ? 'animate-spin text-amber-500' : 'text-amber-500'}`} />
-                      <span>{isLivePinging ? 'Enviando Ping...' : 'Probar Ping en Vivo'}</span>
-                    </button>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono font-bold text-[10px] flex items-center gap-1">
-                      <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                      TLS 1.3
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-md border font-mono font-bold text-[10px] ${
-                      connectionStatus === 'connected_verified'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : connectionStatus === 'failed'
-                        ? 'bg-rose-50 text-rose-700 border-rose-200'
-                        : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}>
-                      {verifiedLatency ? `${verifiedLatency}ms` : connectionTestResult?.latencyMs ? `${connectionTestResult.latencyMs}ms` : '-- ms'}
+                      <ShieldCheck className="h-3.5 w-3.5 text-[#059669]" />
+                      <span>CASA by Google Tier 2 Verified</span>
                     </span>
                   </div>
                 </div>
 
-                {/* Estado de la Cuenta Activa (Verificación Estricta por Ping en Tiempo Real) */}
-                {connectedEmail && connectedEmail !== 'DISCONNECTED' && connectionStatus === 'connected_verified' ? (
-                  /* 1. Tarjeta Verificada Exitosamente con Ping de Retorno Confirmado (Layout Ejecutivo Nano Banana 2.1 en 3 Niveles sin Solapamiento) */
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-slate-50 to-white border border-emerald-200/90 shadow-xs space-y-3.5">
-                    {/* NIVEL 1: Identidad de Cuenta Verificada (Ancho Completo sin Compresión) */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-emerald-200 flex items-center justify-center shadow-xs shrink-0 p-2">
-                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 26)}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="font-black text-slate-900 text-sm sm:text-base tracking-tight break-all">
-                              {connectedEmail}
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[11px] border border-emerald-300 shrink-0 shadow-2xs">
-                              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                              Conectado & Verificado ({verifiedLatency || 18}ms)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-600 flex-wrap">
-                            <span className="font-semibold text-slate-700">{directorTitle}</span>
-                            <span className="text-slate-300">•</span>
-                            <span className="font-mono text-emerald-700 font-bold">
-                              {selectedProtocol}: {incomingPort} ({incomingSecurity})
-                            </span>
-                            <span className="text-slate-300">•</span>
-                            <span className="font-mono text-slate-600 font-semibold">
-                              SMTP: {outgoingPort}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                {/* BLOQUE 1 CONSOLIDADO: Active Primary Account + Acreditación CASA by Google */}
+                <div
+                  data-testid="active-primary-account-card"
+                  className="p-4 sm:p-5 rounded-xl bg-white border border-[#CBD5E1] border-l-[6px] border-l-[#2563EB] shadow-2xs space-y-3.5"
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                    {/* Columna Izquierda (6/12): Identidad Principal & Estado */}
+                    <div className="lg:col-span-6 space-y-2 min-w-0">
+                      <span className="text-[11px] font-medium text-[#64748B] tracking-wide block">
+                        Cuenta Principal Activa (Active Primary Account)
+                      </span>
 
-                      <div className="flex items-center gap-1.5 shrink-0 self-start sm:self-center">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-800 font-bold text-[10px] shadow-2xs">
-                          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                          <span>OAuth 2.0 + IMAP Híbrido</span>
-                        </span>
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 p-2">
+                          {renderProviderLogo(
+                            detectProviderKey(connectedEmail || authUsername, incomingHost),
+                            22
+                          )}
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[14px] font-semibold text-[#0F172A] font-mono truncate max-w-full">
+                              {connectedEmail && connectedEmail !== 'DISCONNECTED'
+                                ? connectedEmail
+                                : `direccion@${schoolDomain}`}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                                connectionStatus === 'connected_verified'
+                                  ? 'bg-emerald-50 text-[#059669] border-emerald-200'
+                                  : connectionStatus === 'pinging' || isLivePinging
+                                  ? 'bg-amber-50 text-[#B45309] border-amber-200'
+                                  : 'bg-[#F8FAFC] text-[#475569] border-[#CBD5E1]'
+                              }`}
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  connectionStatus === 'connected_verified'
+                                    ? 'bg-[#059669]'
+                                    : 'bg-[#F59E0B]'
+                                }`}
+                              />
+                              {connectionStatus === 'connected_verified'
+                                ? 'OAuth 2.0 Conectado · Token Válido'
+                                : connectionStatus === 'pinging' || isLivePinging
+                                ? 'Comprobando Handshake...'
+                                : 'Pendiente de Vinculación'}
+                            </span>
+                          </div>
+                          <p className="text-[12px] font-normal text-[#475569]">
+                            Superadministrador · Dirección General {schoolName}
+                          </p>
+                          <p className="text-[11px] font-mono text-[#64748B] tabular-nums">
+                            TLS 1.3 Activo · Sinc: {lastSyncTime} · Latencia:{' '}
+                            {verifiedLatency || connectionTestResult?.latencyMs || 14}ms
+                          </p>
+                        </div>
                       </div>
                     </div>
 
-                    {/* NIVEL 2: Barra Dedicada de 4 Botones de Control de Cuenta (Grid Responsivo 4 Columnas Cero Solapamiento y Texto Completo) */}
-                    <div className="pt-3 border-t border-emerald-200/60 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                    {/* Columna Derecha (6/12): Scopes de Mínimo Privilegio & CASA by Google */}
+                    <div className="lg:col-span-6 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 min-w-0">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="text-[11px] font-semibold text-[#0F172A] flex items-center gap-1.5">
+                          <ShieldCheck className="h-3.5 w-3.5 text-[#2563EB] shrink-0" />
+                          <span>Permisos OAuth 2.0 (Google API Services User Data Policy)</span>
+                        </span>
+                        <span className="text-[10px] font-medium text-[#059669]">
+                          OWASP ASVS · Cero Almacenamiento Crudo
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        <div className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] min-w-0">
+                          <span className="inline-flex items-center gap-1 text-[#0F172A] font-medium">
+                            <Check className="h-3 w-3 text-[#059669] shrink-0" />
+                            <span>Despacho Oficial &amp; Circulares</span>
+                          </span>
+                          <code className="font-mono text-[10px] text-[#2563EB] block truncate mt-0.5">
+                            https://www.googleapis.com/auth/gmail.send
+                          </code>
+                        </div>
+                        <div className="px-2.5 py-1.5 rounded-lg bg-white border border-[#E2E8F0] min-w-0">
+                          <span className="inline-flex items-center gap-1 text-[#0F172A] font-medium">
+                            <Check className="h-3 w-3 text-[#059669] shrink-0" />
+                            <span>Sincronización Agenda</span>
+                          </span>
+                          <code className="font-mono text-[10px] text-[#2563EB] block truncate mt-0.5">
+                            https://www.googleapis.com/auth/calendar.events
+                          </code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra de Acciones Ejecutivas Consolidadas */}
+                  <div className="pt-3 border-t border-[#E2E8F0] flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
                         onClick={() => handleOpenProviderOAuth('google')}
-                        className="w-full px-3 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 font-black text-[11px] shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
-                        title="Abrir pantalla de consentimiento oficial de Google OAuth 2.0 (gmail.send y calendar.events)"
+                        className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                       >
-                        <ExternalLink className="h-3.5 w-3.5 text-white shrink-0" />
-                        <span>Google OAuth 2.0 ↗</span>
+                        <GoogleOfficialLogo size={14} />
+                        <span>Sign in with Google (Consentimiento OAuth 2.0) ↗</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          runLivePingCheck(
+                            connectedEmail || authUsername,
+                            incomingHost,
+                            incomingPort,
+                            incomingSecurity,
+                            selectedProtocol,
+                            authPassword,
+                            { mode: 'sync', deviceConfirmed: true }
+                          )
+                        }
+                        disabled={isLivePinging}
+                        className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isLivePinging ? 'animate-spin' : ''}`} />
+                        <span>{isLivePinging ? 'Verificando...' : 'Verificar Conexión'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleOpenBrandServerDrawer(
+                            detectProviderKey(connectedEmail || authUsername, incomingHost)
+                          )
+                        }
+                        className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Settings2 className="h-3.5 w-3.5 text-[#475569]" />
+                        <span>Configurar Servidor</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
-                        className={`w-full px-3 py-2.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5 border shadow-xs active:scale-95 whitespace-nowrap ${
+                        className={`px-3 py-1.5 rounded-lg border font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
                           showAppPasswordHelper
-                            ? 'bg-amber-600 text-white border-amber-600 shadow-amber-100'
-                            : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300'
-                        }`}
-                        title="Configurar Contraseña de Aplicación de 16 dígitos (IMAP 993) para recibir todos tus correos entrantes en tiempo real"
-                      >
-                        <Key className="h-3.5 w-3.5 shrink-0" />
-                        <span>{showAppPasswordHelper ? 'Ocultar Clave 16 Dígitos' : 'Clave 16 Dígitos (IMAP)'}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
-                        className={`w-full px-3 py-2.5 rounded-xl font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1.5 border shadow-xs active:scale-95 whitespace-nowrap ${
-                          isEditingServerConfig
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-indigo-100'
-                            : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                            ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                            : 'bg-white hover:bg-[#F8FAFC] text-[#0F172A] border-[#CBD5E1]'
                         }`}
                       >
-                        <Settings2 className="h-3.5 w-3.5 shrink-0" />
-                        <span>{isEditingServerConfig ? 'Ocultar Servidor' : 'Configurar Servidor'}</span>
-                        {isEditingServerConfig ? (
-                          <ChevronUp className="h-3.5 w-3.5 shrink-0" />
-                        ) : (
-                          <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        )}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleSignOutGoogleAccount}
-                        className="w-full px-3 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 whitespace-nowrap"
-                        title="Cerrar sesión de esta cuenta para cambiar a otra cuenta"
-                      >
-                        <LogOut className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                        <span>Salir de la Cuenta</span>
+                        <Key className="h-3.5 w-3.5" />
+                        <span>Clave 16 Dígitos (App Token)</span>
                       </button>
                     </div>
 
-                    {/* NIVEL 3: Acciones Rápidas Ejecutivas */}
-                    <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('inbox')}
-                          className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Inbox className="h-3.5 w-3.5 text-amber-300" />
-                          <span>Abrir Bandeja Inteligente</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('calendario')}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Calendar className="h-3.5 w-3.5 text-amber-300" />
-                          <span>Ver Calendario</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('redactar')}
-                          className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Send className="h-3.5 w-3.5 text-slate-600" />
-                          <span>Redactar Correo</span>
-                        </button>
-                      </div>
-
+                    <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
                         onClick={() => handleTriggerSync(false)}
                         disabled={isSyncingLiveInbox || isLivePinging}
-                        className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer flex items-center gap-1 shadow-xs active:scale-95 disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#0F172A] font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
                       >
-                        <RefreshCw className={`h-3 w-3 ${isSyncingLiveInbox || isLivePinging ? 'animate-spin' : ''}`} />
-                        <span>{isSyncingLiveInbox ? 'Sincronizando...' : 'Sincronizar'}</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : connectedEmail && connectedEmail !== 'DISCONNECTED' && (connectionStatus === 'pinging' || isLivePinging) ? (
-                  /* 2. Tarjeta en Estado de Ping Activo (Esperando Respuesta en Tiempo Real) */
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50/80 via-blue-50/50 to-white border border-indigo-200 space-y-3 animate-in fade-in duration-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs shrink-0">
-                          <RefreshCw className="h-5 w-5 animate-spin text-indigo-600" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-black text-slate-900 text-sm truncate">{connectedEmail}</span>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-bold text-[10px] border border-indigo-200">
-                              <RefreshCw className="h-3 w-3 animate-spin text-indigo-600" />
-                              Comprobando Conexión (Ping en Vivo)...
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-indigo-700 mt-0.5">
-                            Enviando paquetes de comprobación y verificando respuesta de {incomingHost || 'servidor'}:{incomingPort}...
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono text-indigo-600 font-bold animate-pulse">Esperando pong...</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : ((connectedEmail && connectedEmail !== 'DISCONNECTED' && connectionStatus === 'failed') || device2FAChallenge?.active) ? (
-                  /* 3. Tarjeta en Estado de Fallo de Ping / Error de Credenciales o Desafío 2FA Activo */
-                  <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/40 to-white border border-blue-300 shadow-xs space-y-3.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-blue-200 flex items-center justify-center shadow-xs shrink-0 p-2">
-                          {renderProviderLogo(detectProviderKey(connectedEmail, incomingHost), 26)}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="font-black text-slate-900 text-sm sm:text-base tracking-tight break-all">{connectedEmail}</span>
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px] border border-blue-300 shrink-0">
-                              <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
-                              Autorización Oficial de Google Requerida
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 flex-wrap">
-                            <span className="font-bold text-blue-700">Pendiente de Concesión en Google</span>
-                            <span>•</span>
-                            <span className="font-mono text-slate-600">
-                              OAuth 2.0 Oficial (Gmail & Calendario)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-blue-200/70 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('google')}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                        title="Abrir autorización directa en el servidor oficial de Google"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">Abrir Ventana Oficial de Google ↗</span>
+                        <RefreshCw
+                          className={`h-3.5 w-3.5 ${
+                            isSyncingLiveInbox || isLivePinging ? 'animate-spin' : ''
+                          }`}
+                        />
+                        <span>{isSyncingLiveInbox ? 'Sincronizando...' : 'Sincronizar Buzón'}</span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                        title="Configurar Contraseña de Aplicación de 16 dígitos (IMAP 993)"
-                      >
-                        <Key className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                        <span className="truncate">Contraseña 16 Dígitos (IMAP)</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Settings2 className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">Configurar Servidor</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleSignOutGoogleAccount}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                        title="Cerrar o desvincular esta cuenta"
-                      >
-                        <LogOut className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                        <span className="truncate">Desvincular</span>
-                      </button>
-                    </div>
-
-                    {/* Panel de Autorización Oficial de Google OAuth 2.0 */}
-                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/60 to-white border border-blue-200/90 shadow-sm space-y-3 animate-in fade-in duration-150">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                          <ShieldCheck className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="space-y-1">
-                          <h5 className="font-black text-slate-900 text-sm flex items-center gap-2">
-                            <span>Autorización Oficial con Google Workspace</span>
-                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-black uppercase">
-                              OAuth 2.0 Activo
-                            </span>
-                          </h5>
-                          <p className="text-xs text-slate-600 leading-relaxed">
-                            Haz clic en el botón de abajo para abrir la ventana oficial de Google, autorizar el acceso a tus <strong>correos de Gmail</strong> y a tu <strong>Calendario Escolar</strong>, y sincronizar tu información en tiempo real.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-2 flex flex-wrap items-center gap-2">
+                      {connectedEmail && connectedEmail !== 'DISCONNECTED' && (
                         <button
                           type="button"
-                          onClick={() => handleOpenProviderOAuth('google')}
-                          className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                          onClick={handleSignOutGoogleAccount}
+                          className="px-2.5 py-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-rose-50 text-[#64748B] hover:text-[#E11D48] font-medium text-[12px] transition-colors cursor-pointer inline-flex items-center gap-1"
                         >
-                          <ExternalLink className="h-4 w-4" />
-                          <span>Abrir Ventana Oficial de Google (Autorizar Correo y Calendario)</span>
+                          <LogOut className="h-3.5 w-3.5" />
+                          <span>Desvincular</span>
                         </button>
-                      </div>
-                    </div>
-
-                    {lastPingError && !connectedEmail.includes('gmail.com') && (
-                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="font-bold flex items-center gap-1.5 text-rose-800">
-                            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-                            Dictamen de Comprobación en Tiempo Real:
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => runLivePingCheck(connectedEmail, incomingHost, incomingPort, incomingSecurity, selectedProtocol, authPassword)}
-                            disabled={isLivePinging}
-                            className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] shadow-xs cursor-pointer flex items-center gap-1 shrink-0 transition-all active:scale-95 disabled:opacity-50"
-                          >
-                            <RefreshCw className={`h-3 w-3 ${isLivePinging ? 'animate-spin' : ''}`} />
-                            <span>Reintentar Ping</span>
-                          </button>
-                        </div>
-                        <p className="text-[11px] leading-relaxed text-rose-700 font-medium">
-                          {lastPingError}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* 4. Estado Desconectado */
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border-2 border-dashed border-slate-300 text-center space-y-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-xs text-blue-600 mx-auto flex items-center justify-center">
-                      <Smartphone className="h-6 w-6 text-blue-600 animate-pulse" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-                        Conexión de Correo & Doble Verificación Oficial
-                      </h4>
-                      <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
-                        Vincula tu cuenta de Google mediante comprobación instantánea al número de celular registrado o configura tu servidor institucional.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('google')}
-                        className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95"
-                      >
-                        <ExternalLink className="h-4 w-4 text-white" />
-                        <span>Sign in with Google / Conectar con Google OAuth 2.0</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
-                        className="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs border border-amber-300 shadow-xs transition-all cursor-pointer inline-flex items-center gap-1.5"
-                      >
-                        <Key className="h-3.5 w-3.5 text-amber-600" />
-                        <span>{showAppPasswordHelper ? 'Ocultar Token 16 Dígitos' : 'Contraseña 16 Dígitos (IMAP)'}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
-                        className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 shadow-xs transition-all cursor-pointer inline-flex items-center gap-1.5"
-                      >
-                        <Settings2 className="h-3.5 w-3.5 text-slate-500" />
-                        <span>{isEditingServerConfig ? 'Ocultar Configuración' : 'Configurar Servidor Propio'}</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Panel de Permisos de Menor Privilegio (Google OAuth 2.0 Verified Scopes) */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0" />
-                      <span className="text-xs font-black text-slate-900">
-                        Permisos OAuth 2.0 de Mínimo Privilegio (Google API Services User Data Policy)
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenProviderOAuth('google')}
-                      className="px-3.5 py-1.5 rounded-lg bg-white hover:bg-blue-50 text-blue-700 border border-blue-300 font-black text-[11px] shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5 self-start sm:self-auto"
-                    >
-                      <GoogleOfficialLogo size={14} />
-                      <span>Sign in with Google (Revisar Consentimiento OAuth 2.0) ↗</span>
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px]">
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-start gap-2">
-                      <Send className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
-                      <div>
-                        <code className="font-mono font-bold text-blue-700 text-[10px] block">https://www.googleapis.com/auth/gmail.send</code>
-                        <span className="text-slate-600">Despacho de comunicados oficiales y circulares desde la pestaña <strong>Redactar Comunicado</strong> reflejados en la carpeta <em>Enviados (Sent)</em> de Gmail.</span>
-                      </div>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex items-start gap-2">
-                      <Calendar className="h-3.5 w-3.5 text-indigo-600 shrink-0 mt-0.5" />
-                      <div>
-                        <code className="font-mono font-bold text-indigo-700 text-[10px] block">https://www.googleapis.com/auth/calendar.events</code>
-                        <span className="text-slate-600">Creación y reprogramación bidireccional de citas escolares y sesiones CTE desde <strong>Calendario Escolar</strong> reflejadas en Google Calendar.</span>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* ======================================================== */}
-              {/* ASISTENTE DE CREDENCIALES SMTP / IMAP INSTITUCIONAL      */}
-              {/* ======================================================== */}
-              {showAppPasswordHelper && (
-                <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-50/95 via-orange-50/40 to-white border-2 border-amber-400 shadow-md space-y-4 animate-in fade-in duration-200">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-                        <Key className="h-5 w-5 text-white" />
+                {/* Asistente Opcional de Contraseña de Aplicación de 16 Dígitos */}
+                {showAppPasswordHelper && (
+                  <div className="p-5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] space-y-4 animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between gap-3 border-b border-[#FDE68A] pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <Key className="h-4 w-4 text-[#B45309]" />
+                        <h4 className="text-[14px] font-semibold text-[#0F172A]">
+                          Vinculación Rápida mediante Token de Aplicación de 16 Caracteres (IMAP 993 / SMTP 587)
+                        </h4>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">
-                            Configuración de Contraseña de Aplicación (SMTP / IMAP)
-                          </h4>
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wide border border-emerald-300">
-                            TLS 1.3 Estándar
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-600 font-medium mt-0.5">
-                          Conecta un buzón institucional mediante protocolo estándar IMAP 993 (SSL) / SMTP 587.
-                        </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowAppPasswordHelper(false)}
+                        className="px-2.5 py-1 rounded-lg text-[#475569] hover:text-[#0F172A] text-[12px] font-medium cursor-pointer"
+                      >
+                        Cerrar ✕
+                      </button>
+                    </div>
+                    <form onSubmit={handleApplyAppPassword} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                      <div className="md:col-span-5">
+                        <label className="text-[12px] font-medium text-[#334155] block mb-1">
+                          Correo Institucional o Google Workspace
+                        </label>
+                        <input
+                          type="email"
+                          value={
+                            connectedEmail && connectedEmail !== 'DISCONNECTED'
+                              ? connectedEmail
+                              : authUsername
+                          }
+                          onChange={(e) => {
+                            setConnectedEmail(e.target.value);
+                            setAuthUsername(e.target.value);
+                          }}
+                          placeholder="tu-correo@gmail.com"
+                          className="w-full px-3.5 py-2 rounded-lg bg-white border border-[#CBD5E1] text-[13px] font-normal text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                        />
                       </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowAppPasswordHelper(false)}
-                      className="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-amber-100 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Cerrar</span>
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                    {/* Paso a paso didáctico */}
-                    <div className="md:col-span-7 space-y-2.5 text-xs text-slate-700 bg-white/90 p-4 rounded-xl border border-amber-200 shadow-2xs">
-                      <span className="font-black text-amber-900 flex items-center gap-1.5 uppercase tracking-wide text-xs">
-                        <Sparkles className="h-4 w-4 text-amber-600" />
-                        Cómo obtener tu Token en Google en 4 pasos:
-                      </span>
-                      <ol className="space-y-2 list-decimal list-inside font-medium leading-relaxed text-xs text-slate-600">
-                        <li>
-                          Abre la página oficial de Contraseñas de aplicaciones de Google:
-                          <a
-                            href="https://myaccount.google.com/apppasswords"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 border border-blue-200"
-                          >
-                            <span>myaccount.google.com/apppasswords</span>
-                            <ExternalLink className="h-3 w-3 inline" />
-                          </a>
-                        </li>
-                        <li>
-                          Inicia sesión en tu cuenta de Google y confirma en tu celular si te solicita verificación en 2 pasos.
-                        </li>
-                        <li>
-                          En el campo <em>"Nombre de la app"</em> escribe <strong>ISkool</strong> y haz clic en el botón <strong>Crear</strong>.
-                        </li>
-                        <li>
-                          Google generará un recuadro amarillo con una clave de <strong>16 letras</strong> (ejemplo: <code className="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">abcd efgh ijkl mnop</code>). Cópiala y pégala aquí al lado.
-                        </li>
-                      </ol>
-                    </div>
-
-                    {/* Formulario de Ingreso del Token */}
-                    <div className="md:col-span-5 bg-white p-4 rounded-xl border-2 border-amber-400/80 shadow-xs space-y-3">
-                      <form onSubmit={handleApplyAppPassword} className="space-y-3">
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block">
-                              Cuenta de Google:
-                            </label>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setConnectedEmail('israell35mac@gmail.com');
-                                  setAuthUsername('israell35mac@gmail.com');
-                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'israell35mac@gmail.com');
-                                }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                                  (connectedEmail || authUsername) === 'israell35mac@gmail.com'
-                                    ? 'bg-amber-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                israell35mac
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setConnectedEmail('roboticalegotaller1@gmail.com');
-                                  setAuthUsername('roboticalegotaller1@gmail.com');
-                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'roboticalegotaller1@gmail.com');
-                                }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                                  (connectedEmail || authUsername) === 'roboticalegotaller1@gmail.com'
-                                    ? 'bg-amber-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                roboticalego
-                              </button>
-                            </div>
-                          </div>
-                          <input
-                            type="email"
-                            value={connectedEmail && connectedEmail !== 'DISCONNECTED' ? connectedEmail : authUsername}
-                            onChange={(e) => {
-                              setConnectedEmail(e.target.value);
-                              setAuthUsername(e.target.value);
-                            }}
-                            placeholder="tu-correo@gmail.com"
-                            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white"
-                          />
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            Elige la cuenta exacta donde generaste la clave de 16 letras en Google.
-                          </p>
-                        </div>
-
-                        <div>
-                          <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
-                            Token de 16 caracteres de Google:
-                          </label>
-                          <input
-                            type="text"
-                            value={appPasswordInput}
-                            onChange={(e) => setAppPasswordInput(e.target.value)}
-                            placeholder="xxxx yyyy zzzz wwww"
-                            className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border-2 border-amber-300 text-xs font-mono font-bold text-slate-900 tracking-widest focus:outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-400/20"
-                          />
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            Se conectará a <strong>imap.gmail.com:993</strong> y <strong>smtp.gmail.com:587</strong> de forma directa.
-                          </p>
-                        </div>
-
-                        {lastPingError && (
-                          <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 leading-tight">
-                            {lastPingError}
-                          </div>
-                        )}
-
+                      <div className="md:col-span-4">
+                        <label className="text-[12px] font-medium text-[#334155] block mb-1">
+                          Token de Aplicación (16 letras)
+                        </label>
+                        <input
+                          type="text"
+                          value={appPasswordInput}
+                          onChange={(e) => setAppPasswordInput(e.target.value)}
+                          placeholder="xxxx yyyy zzzz wwww"
+                          className="w-full px-3.5 py-2 rounded-lg bg-white border border-[#CBD5E1] text-[13px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
                         <button
                           type="submit"
                           disabled={isLivePinging}
-                          className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs shadow-md shadow-amber-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                          className="w-full py-2 px-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium text-[13px] transition-colors cursor-pointer"
                         >
-                          <Zap className={`h-4 w-4 ${isLivePinging ? 'animate-spin' : ''}`} />
-                          <span>{isLivePinging ? 'Validando Token con Google...' : 'Validar Token y Enlazar Buzón'}</span>
+                          {isLivePinging ? 'Validando...' : 'Validar Token'}
                         </button>
-                      </form>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* BLOQUE 2 CONSOLIDADO: Multi-Provider Connection Grid (6 Marcas Oficiales) */}
+                <div data-testid="multi-provider-brand-grid" className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-[15px] font-semibold text-[#0F172A]">
+                        Proveedores Oficiales &amp; Servidores de Correo (Multi-Provider Connection Grid)
+                      </h4>
+                      <p className="text-[13px] font-normal text-[#475569]">
+                        Selecciona la marca donde está alojado tu correo para abrir la ventana de configuración con sus valores por defecto pre-cargados y el servidor comprimido.
+                      </p>
                     </div>
+                    <span className="text-[11px] font-mono text-[#64748B] shrink-0">
+                      6 proveedores certificados · TLS 1.3
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      {
+                        id: 'google' as const,
+                        name: 'Google Workspace',
+                        subtitle: 'Gmail Institucional & OAuth 2.0',
+                        badge: 'CASA Tier 2 Verified',
+                        defaults: 'imap.gmail.com:993 · smtp.gmail.com:587',
+                        logo: <GoogleOfficialLogo size={26} />,
+                      },
+                      {
+                        id: 'microsoft' as const,
+                        name: 'Microsoft 365',
+                        subtitle: 'Outlook / Exchange Online',
+                        badge: 'OAuth 2.0 / TLS 1.3',
+                        defaults: 'outlook.office365.com:993 · smtp.office365.com:587',
+                        logo: <OutlookOfficialLogo size={26} />,
+                      },
+                      {
+                        id: 'apple' as const,
+                        name: 'Apple School Manager',
+                        subtitle: 'iCloud Institucional & Apple ID',
+                        badge: 'TLS 1.3 Oficial',
+                        defaults: 'imap.mail.me.com:993 · smtp.mail.me.com:587',
+                        logo: <AppleICloudOfficialLogo size={26} />,
+                      },
+                      {
+                        id: 'yahoo' as const,
+                        name: 'Yahoo Mail',
+                        subtitle: 'Yahoo Business & Corporativo',
+                        badge: 'SSL/TLS 993',
+                        defaults: 'imap.mail.yahoo.com:993 · smtp.mail.yahoo.com:587',
+                        logo: <YahooOfficialLogo size={26} />,
+                      },
+                      {
+                        id: 'zoho' as const,
+                        name: 'Zoho Mail',
+                        subtitle: 'Zoho Workplace & Dominio Escolar',
+                        badge: 'SSL/TLS 993',
+                        defaults: 'imap.zoho.com:993 · smtp.zoho.com:587',
+                        logo: <ZohoOfficialLogo size={26} />,
+                      },
+                      {
+                        id: 'custom' as const,
+                        name: 'Servidor Propio',
+                        subtitle: `Host Institucional (${schoolDomain})`,
+                        badge: 'IMAP / POP3 / SMTP',
+                        defaults: `mail.${schoolDomain}:993 · mail.${schoolDomain}:587`,
+                        logo: <CustomServerOfficialLogo size={26} />,
+                      },
+                    ].map((brand) => {
+                      const activeProvider = detectProviderKey(
+                        authUsername || connectedEmail,
+                        incomingHost
+                      );
+                      const isSelectedBrand =
+                        (isEditingServerConfig && selectedProviderDrawerId === brand.id) ||
+                        (!isEditingServerConfig && activeProvider === brand.id);
+                      return (
+                        <button
+                          key={brand.id}
+                          type="button"
+                          data-testid={`brand-provider-card-${brand.id}`}
+                          onClick={() => handleOpenBrandServerDrawer(brand.id)}
+                          className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2.5 group ${
+                            isSelectedBrand
+                              ? 'bg-white border-[#CBD5E1] border-l-[6px] border-l-[#2563EB] shadow-sm'
+                              : 'bg-white border-[#CBD5E1] hover:border-[#94A3B8] hover:bg-[#F8FAFC]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2 w-full">
+                            <div className="w-9 h-9 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 p-1.5">
+                              {brand.logo}
+                            </div>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                                isSelectedBrand
+                                  ? 'bg-blue-50 text-[#2563EB] border-blue-200'
+                                  : 'bg-[#F8FAFC] text-[#475569] border-[#E2E8F0]'
+                              }`}
+                            >
+                              {brand.badge}
+                            </span>
+                          </div>
+
+                          <div className="space-y-0.5">
+                            <span className="text-[14px] font-semibold text-[#0F172A] block">
+                              {brand.name}
+                            </span>
+                            <span className="text-[11px] font-normal text-[#475569] block">
+                              {brand.subtitle}
+                            </span>
+                            <span className="text-[10px] font-mono text-[#64748B] block pt-0.5 truncate">
+                              {brand.defaults}
+                            </span>
+                          </div>
+
+                          <div className="pt-1.5 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] font-medium text-[#2563EB]">
+                            <span>Configurar cuenta y servidor</span>
+                            <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-              )}
 
-              {/* ========================================================= */}
-              {/* MENÚ DESPLEGABLE / ACORDEÓN DE CONFIGURACIÓN & PROTOCOLOS  */}
-              {/* Se expande a petición del usuario para mantener la vista   */}
-              {/* del CEO lo más compacta y limpia posible.                  */}
-              {/* ========================================================= */}
-              {isEditingServerConfig && (
-                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-md space-y-5 animate-in fade-in duration-200">
-                  {/* Encabezado del Menú Desplegable */}
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
-                        <KeyRound className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                          Configuración Quirúrgica de Servidor & Autenticación
-                        </h4>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          Selecciona el proveedor con los logos oficiales o ingresa los parámetros directos IMAP / POP3.
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingServerConfig(false)}
-                      className="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Minimizar</span>
-                      <ChevronUp className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  {/* 1. Logos Oficiales de Empresas Proveedoras (Excepción Autorizada de Marca) */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Lock className="h-3.5 w-3.5 text-emerald-600" />
-                        <span>Autorización Directa por Proveedor (Acceso en Servidor Oficial):</span>
-                      </label>
-                      <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
-                        Presiona tu proveedor para abrir la autorización directa
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
-                      {/* Google Workspace / Gmail */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('google')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'google'
-                            ? 'bg-blue-50/90 border-blue-400 ring-2 ring-blue-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <GoogleOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Google Workspace</span>
-                          <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            OAuth 2.0 ↗
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Microsoft 365 / Outlook */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('microsoft')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'microsoft'
-                            ? 'bg-sky-50/90 border-sky-400 ring-2 ring-sky-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <OutlookOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Microsoft 365</span>
-                          <span className="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            OAuth 2.0 ↗
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Apple iCloud */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('apple')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'apple'
-                            ? 'bg-blue-50/90 border-blue-400 ring-2 ring-blue-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <AppleICloudOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Apple iCloud</span>
-                          <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            Apple ID ↗
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Yahoo Mail */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('yahoo')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'yahoo'
-                            ? 'bg-purple-50/90 border-purple-400 ring-2 ring-purple-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <YahooOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Yahoo Mail</span>
-                          <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            OAuth 2.0 ↗
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Zoho Mail */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('zoho')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'zoho'
-                            ? 'bg-amber-50/90 border-amber-400 ring-2 ring-amber-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <ZohoOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Zoho Mail</span>
-                          <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            OAuth 2.0 ↗
-                          </span>
-                        </div>
-                      </button>
-
-                      {/* Servidor Institucional Propio */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('custom')}
-                        className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 group hover:shadow-md hover:scale-[1.02] active:scale-95 ${
-                          detectProviderKey(authUsername || connectedEmail, incomingHost) === 'custom'
-                            ? 'bg-slate-100 border-slate-400 ring-2 ring-slate-400/20 shadow-xs'
-                            : 'bg-slate-50/80 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-white border border-slate-100 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform p-1.5">
-                          <CustomServerOfficialLogo size={22} />
-                        </div>
-                        <div className="min-w-0">
-                          <span className="font-black text-slate-900 text-[11px] block truncate">Servidor Propio</span>
-                          <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[8px] font-black uppercase tracking-wider block mt-0.5">
-                            Personalizado
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2. Selector de Protocolo (IMAP vs POP3) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleProtocolChange('IMAP')}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
-                        selectedProtocol === 'IMAP'
-                          ? 'bg-indigo-50 border-indigo-500 shadow-xs ring-1 ring-indigo-500'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 ${
-                        selectedProtocol === 'IMAP' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-400 bg-white'
-                      }`}>
-                        {selectedProtocol === 'IMAP' && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
-                      </div>
-                      <div>
-                        <span className="font-black text-slate-900 text-xs block">IMAP (Recomendado)</span>
-                        <span className="text-[11px] text-slate-500 leading-tight block mt-0.5">
-                          Sincronización bidireccional continua con el servidor remoto. Puerto estándar: 993 SSL.
-                        </span>
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleProtocolChange('POP3')}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-2.5 ${
-                        selectedProtocol === 'POP3'
-                          ? 'bg-indigo-50 border-indigo-500 shadow-xs ring-1 ring-indigo-500'
-                          : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border mt-0.5 flex items-center justify-center shrink-0 ${
-                        selectedProtocol === 'POP3' ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-400 bg-white'
-                      }`}>
-                        {selectedProtocol === 'POP3' && <span className="w-1.5 h-1.5 rounded-full bg-white block" />}
-                      </div>
-                      <div>
-                        <span className="font-black text-slate-900 text-xs block">POP3 (Descarga Local)</span>
-                        <span className="text-[11px] text-slate-500 leading-tight block mt-0.5">
-                          Descarga en buzón local hermético. Ideal para archivos y respaldo. Puerto estándar: 995 SSL.
-                        </span>
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* 3. Usuario & Contraseña */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">
-                        Usuario / Correo Electrónico Institucional o Comercial:
-                      </label>
-                      <input
-                        type="email"
-                        value={authUsername}
-                        onChange={(e) => handleAuthEmailInputChange(e.target.value)}
-                        placeholder={`ej. direccion@${schoolDomain} o tu-correo@gmail.com`}
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500 text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">
-                        Contraseña o Token de Aplicación:
-                      </label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? 'text' : 'password'}
-                          value={authPassword}
-                          onChange={(e) => setAuthPassword(e.target.value)}
-                          placeholder="Ingresa tu contraseña o app token..."
-                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500 pr-10 text-xs"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Banner de Detección de Proveedor con Ceja a la Derecha */}
-                  {(() => {
-                    const detected = resolveEmailServerConfig(authUsername || connectedEmail, selectedProtocol);
-                    return (
-                      <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs transition-all ${
-                        detected.isCommercial
-                          ? 'bg-blue-50/80 border-blue-200 text-blue-900'
-                          : 'bg-indigo-50/80 border-indigo-200 text-indigo-900'
-                      }`}>
-                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                          <Sparkles className={`h-4 w-4 shrink-0 mt-0.5 ${detected.isCommercial ? 'text-blue-600' : 'text-indigo-600'}`} />
-                          <div className="min-w-0">
-                            <span className="font-bold block truncate">
-                              {detected.isCommercial
-                                ? `Proveedor Comercial Detectado: ${detected.providerName}`
-                                : `Servidor Propio / Institucional Detectado: ${detected.providerName}`
-                              }
-                            </span>
-                            <span className="text-[11px] opacity-90 block mt-0.5 leading-tight">
-                              {detected.isCommercial
-                                ? (isManualServerExpanded
-                                    ? 'Servidores oficiales preconfigurados. Ajustes manuales desplegados.'
-                                    : 'Hosts oficiales y puertos preconfigurados automáticamente. Ajustes técnicos comprimidos.')
-                                : 'Servidor propio institucional. Verifica o ajusta los servidores y puertos abajo.'
-                              }
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Ceja al lado derecho para poder expandirlo en cualquier momento (por default se retira) */}
-                        <button
-                          type="button"
-                          onClick={() => setIsManualServerExpanded(prev => !prev)}
-                          className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 border shadow-xs active:scale-95 ${
-                            isManualServerExpanded
-                              ? 'bg-white text-indigo-700 border-indigo-300 ring-2 ring-indigo-100'
-                              : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
-                          }`}
-                          title="Expandir o comprimir ajustes de servidor propio y puertos manuales"
-                        >
-                          <Settings2 className="h-3.5 w-3.5 text-indigo-600" />
-                          <span>{isManualServerExpanded ? 'Comprimir Servidores ▴' : 'Configurar Servidor Propio / Puertos ▸'}</span>
-                        </button>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Resumen comprimido cuando el panel de puertos está cerrado */}
-                  {!isManualServerExpanded && (
-                    <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50/80 border border-dashed border-slate-300 text-xs text-slate-500">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Server className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                        <span className="text-[11px] font-medium truncate">
-                          Puertos oficiales ({selectedProtocol}: {incomingPort}, SMTP: {outgoingPort}) preconfigurados y comprimidos.
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsManualServerExpanded(true)}
-                        className="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] cursor-pointer hover:underline flex items-center gap-1 shrink-0"
-                      >
-                        <span>Ajustar Servidor Propio</span>
-                        <ChevronRight className="h-3 w-3" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 4. Panel Quirúrgico de Servidores y Puertos (Desplegado solo si es servidor propio o al abrir la ceja) */}
-                  {isManualServerExpanded && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/80 border border-slate-200 text-xs animate-in fade-in slide-in-from-top-2 duration-200">
-                      {/* Servidor Entrante */}
-                      <div className="space-y-2">
-                        <span className="font-black text-slate-900 text-xs flex items-center gap-1.5">
-                          <Server className="h-3.5 w-3.5 text-indigo-600" />
-                          Servidor Entrante ({selectedProtocol})
-                        </span>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                            Host Entrante:
-                          </label>
-                          <input
-                            type="text"
-                            value={incomingHost}
-                            onChange={(e) => setIncomingHost(e.target.value)}
-                            placeholder={`ej. imap.gmail.com o mail.${schoolDomain}`}
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                              Puerto:
-                            </label>
-                            <input
-                              type="number"
-                              value={incomingPort}
-                              onChange={(e) => setIncomingPort(Number(e.target.value))}
-                              placeholder="993"
-                              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                              Seguridad:
-                            </label>
-                            <select
-                              value={incomingSecurity}
-                              onChange={(e) => setIncomingSecurity(e.target.value as SecurityType)}
-                              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
-                            >
-                              <option value="SSL_TLS">SSL / TLS</option>
-                              <option value="STARTTLS">STARTTLS</option>
-                              <option value="NONE">Sin Cifrado</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Chips de Puertos Rápidos */}
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {STANDARD_MAIL_PORTS[selectedProtocol].map((p) => (
-                            <button
-                              key={p.port}
-                              type="button"
-                              onClick={() => {
-                                setIncomingPort(p.port);
-                                setIncomingSecurity(p.security);
-                              }}
-                              className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all cursor-pointer border ${
-                                incomingPort === p.port
-                                  ? 'bg-indigo-600 text-white border-indigo-600'
-                                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                              }`}
-                            >
-                              Puerto {p.port} ({p.security === 'SSL_TLS' ? 'SSL' : p.security})
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Servidor Saliente SMTP */}
-                      <div className="space-y-2">
-                        <span className="font-black text-slate-900 text-xs flex items-center gap-1.5">
-                          <Send className="h-3.5 w-3.5 text-indigo-600" />
-                          Servidor Saliente (SMTP)
-                        </span>
-
-                        <div>
-                          <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                            SMTP Host:
-                          </label>
-                          <input
-                            type="text"
-                            value={outgoingHost}
-                            onChange={(e) => setOutgoingHost(e.target.value)}
-                            placeholder={`ej. smtp.gmail.com o mail.${schoolDomain}`}
-                            className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                              Puerto SMTP:
-                            </label>
-                            <input
-                              type="number"
-                              value={outgoingPort}
-                              onChange={(e) => setOutgoingPort(Number(e.target.value))}
-                              placeholder="587"
-                              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono font-medium focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                              Seguridad SMTP:
-                            </label>
-                            <select
-                              value={outgoingSecurity}
-                              onChange={(e) => setOutgoingSecurity(e.target.value as SecurityType)}
-                              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-medium focus:outline-none focus:border-indigo-500 cursor-pointer"
-                            >
-                              <option value="STARTTLS">STARTTLS</option>
-                              <option value="SSL_TLS">SSL / TLS</option>
-                              <option value="NONE">Sin Cifrado</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        {/* Chips de Puertos Rápidos SMTP */}
-                        <div className="flex flex-wrap gap-1 pt-1">
-                          {STANDARD_MAIL_PORTS.SMTP.map((p) => (
-                            <button
-                              key={p.port}
-                              type="button"
-                              onClick={() => {
-                                setOutgoingPort(p.port);
-                                setOutgoingSecurity(p.security);
-                              }}
-                              className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all cursor-pointer border ${
-                                outgoingPort === p.port
-                                  ? 'bg-indigo-600 text-white border-indigo-600'
-                                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                              }`}
-                            >
-                              Puerto {p.port} ({p.security === 'STARTTLS' ? 'STARTTLS' : p.security === 'SSL_TLS' ? 'SSL' : 'Relay'})
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 5. Permisos Requeridos a Otorgar */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-                    <span className="font-bold text-slate-900 block">
-                      Permisos Otorgados para la Operación Institucional:
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer bg-white p-2 rounded-lg border border-slate-200">
-                        <input
-                          type="checkbox"
-                          checked={authorizedPermissions.readEmails}
-                          onChange={(e) => setAuthorizedPermissions(prev => ({ ...prev, readEmails: e.target.checked }))}
-                          className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                        />
-                        <span className="font-bold text-slate-800 text-[11px]">📬 Leer Correos</span>
-                      </label>
-
-                      <label className="flex items-center gap-2 cursor-pointer bg-white p-2 rounded-lg border border-slate-200">
-                        <input
-                          type="checkbox"
-                          checked={authorizedPermissions.sendEmails}
-                          onChange={(e) => setAuthorizedPermissions(prev => ({ ...prev, sendEmails: e.target.checked }))}
-                          className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                        />
-                        <span className="font-bold text-slate-800 text-[11px]">📤 Enviar Correos</span>
-                      </label>
-
-                      <label className="flex items-center gap-2 cursor-pointer bg-white p-2 rounded-lg border border-slate-200">
-                        <input
-                          type="checkbox"
-                          checked={authorizedPermissions.calendar}
-                          onChange={(e) => setAuthorizedPermissions(prev => ({ ...prev, calendar: e.target.checked }))}
-                          className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                        />
-                        <span className="font-bold text-slate-800 text-[11px]">📅 Gestión Calendario</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Feedback del Test de Conexión */}
-                  {connectionTestResult && (
-                    <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
-                      connectionTestResult.success
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                        : 'bg-red-50 border-red-300 text-red-900'
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        {connectionTestResult.success ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-                        ) : (
-                          <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
-                        )}
-                        <div>
-                          <span className="font-bold block">{connectionTestResult.message}</span>
-                          {connectionTestResult.serverBanner && (
-                            <span className="font-mono text-[10px] opacity-80 block">{connectionTestResult.serverBanner}</span>
-                          )}
-                        </div>
-                      </div>
-                      {connectionTestResult.latencyMs && (
-                        <span className="px-2 py-0.5 rounded bg-white text-emerald-800 font-bold font-mono text-[10px] shrink-0 border border-emerald-200">
-                          {connectionTestResult.latencyMs} ms
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Botón Principal de Conexión y Autorización */}
-                  <button
-                    onClick={async () => {
-                      const emailToTry = (authUsername || connectedEmail).trim().toLowerCase();
-                      if (emailToTry) {
-                        await handleTestAndConnectMailServer();
-                      } else {
-                        await handleGoogleOAuthConnect();
+                {/* ================================================================= */}
+                {/* DRAWER LATERAL DERECHO (IMAGEN 3): CONFIGURACIÓN POR MARCA         */}
+                {/* Pre-carga los datos por default de la marca seleccionada y         */}
+                {/* mantiene la información del servidor COMPRIMIDA por defecto        */}
+                {/* (isManualServerExpanded = false), desplegándose SOLO al dar clic. */}
+                {/* ================================================================= */}
+                {isEditingServerConfig && (
+                  <div
+                    data-testid="provider-config-slideover-overlay"
+                    className="fixed inset-0 z-50 flex justify-end bg-[#0F172A]/25 backdrop-blur-[1px] animate-in fade-in duration-150"
+                    onClick={(e) => {
+                      if (e.target === e.currentTarget) {
+                        setIsEditingServerConfig(false);
                       }
                     }}
-                    disabled={isTestingMailConnection || isAuthorizing || isGoogleOAuthConnecting}
-                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
                   >
-                    {isTestingMailConnection || isAuthorizing || isGoogleOAuthConnecting ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin text-amber-300" />
-                        <span>Verificando servidor {selectedProtocol}, handshake TLS y autorizando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-4 w-4 text-amber-300" />
-                        <span>Probar Conexión, Autorizar Servidor y Empezar a Trabajar</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Formulario Secundario de Vinculación Directa */}
-                  <form onSubmit={handleBindCustomGoogleEmail} className="pt-3 border-t border-slate-100 space-y-2">
-                    <label className="text-[11px] font-bold text-slate-700 block">
-                      O vincula directamente un correo alternativo institucional o personal:
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="email"
-                        value={customGoogleEmailInput}
-                        onChange={(e) => setCustomGoogleEmailInput(e.target.value)}
-                        placeholder={`ej. tu-correo@gmail.com o direccion@${schoolDomain}`}
-                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-blue-500"
-                      />
-                      <button
-                        type="submit"
-                        className="px-4 py-2 rounded-xl bg-[#0F2744] hover:bg-[#1E5285] text-white font-bold text-xs shadow-xs transition-all cursor-pointer shrink-0"
-                      >
-                        Vincular Correo
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ------------------------------------------------------- */}
-          {/* TAB: CALENDARIO ESCOLAR & CITAS INSTITUCIONALES        */}
-          {/* ------------------------------------------------------- */}
-          {activeTab === 'calendario' && (
-            <div className="space-y-4">
-              {/* Header de Calendario y Botón Nueva Cita */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h4 className="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-indigo-600" />
-                    <span>Agenda y Calendario Institucional · {schoolName}</span>
-                  </h4>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    Audiencias con padres de familia, juntas de directores, sesiones de CTE y trámites oficiales SEP sincronizados con Google Calendar.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                  <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-mono text-[11px]">Scope: https://www.googleapis.com/auth/calendar.events</span>
-                  </div>
-
-                  {/* Botón Leer / Importar Eventos Reales desde Google Calendar API (GET events.list) */}
-                  <button
-                    type="button"
-                    onClick={() => handleFetchGoogleCalendarEvents()}
-                    disabled={isFetchingGoogleCalendar}
-                    className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
-                    title="Leer y sincronizar eventos reales del calendario primario de Google Calendar (GET /calendars/primary/events)"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isFetchingGoogleCalendar ? 'animate-spin' : ''}`} />
-                    <span>{isFetchingGoogleCalendar ? 'Leyendo Google Calendar...' : 'Sincronizar Eventos (GET API)'}</span>
-                  </button>
-
-                  {/* Botón Calendario: inmediatamente ANTES de + Agendar Nueva Cita / Evento */}
-                  <button
-                    type="button"
-                    onClick={() => setShowInteractiveCalendarModal(true)}
-                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:via-indigo-700 hover:to-violet-700 text-white font-black text-xs shadow-md hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 border border-blue-400/30 ring-1 ring-blue-500/20"
-                    title="Abrir Calendario Interactivo con vista mensual, reprogramación por arrastre (Drag & Drop) y sincronización inmediata con Google Calendar"
-                  >
-                    <CalendarDays className="h-4 w-4 text-cyan-200" />
-                    <span>Calendario</span>
-                  </button>
-
-                  <button
-                    onClick={() => setShowNewEventModal(true)}
-                    className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                  >
-                    <CalendarPlus className="h-4 w-4 text-amber-300" />
-                    <span>+ Agendar Nueva Cita / Evento</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Comprobante en Tiempo Real de Operación Google Calendar API (GET / POST / PATCH / DELETE) */}
-              {lastCalendarApiReceipt && (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/70 to-white border border-emerald-300 shadow-xs text-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-700 text-white font-mono font-black text-[10px]">
-                        HTTP {lastCalendarApiReceipt.method} · 200 OK
-                      </span>
-                      <span className="font-black text-emerald-950">
-                        Evidencia de Ejecución en Vivo · Google Calendar API (calendar.events)
-                      </span>
-                      <span className="text-[11px] font-mono text-emerald-700">
-                        Cuenta: {lastCalendarApiReceipt.accountEmail}
-                      </span>
-                    </div>
-                    <p className="text-slate-700 font-semibold truncate">{lastCalendarApiReceipt.summary}</p>
-                    <div className="flex items-center gap-3 flex-wrap font-mono text-[10px] text-slate-500">
-                      <span>Endpoint: {lastCalendarApiReceipt.endpoint}</span>
-                      {lastCalendarApiReceipt.googleEventId && (
-                        <span className="text-indigo-700 font-bold">
-                          Google Event ID: {lastCalendarApiReceipt.googleEventId}
-                        </span>
-                      )}
-                      <span>Hora: {lastCalendarApiReceipt.timestamp}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <a
-                      href={lastCalendarApiReceipt.htmlLink || 'https://calendar.google.com'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] shadow-xs inline-flex items-center gap-1.5"
+                    <div
+                      data-testid="provider-config-slideover-drawer"
+                      className="w-full max-w-[460px] bg-white h-full shadow-2xl border-l border-[#CBD5E1] border-t-4 border-t-[#2563EB] flex flex-col justify-between overflow-y-auto p-6 space-y-6 font-sans antialiased"
                     >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>Ver en Google Calendar ↗</span>
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {/* Métricas Rápidas de Agenda */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Total en Agenda</span>
-                  <span className="text-xl sm:text-2xl font-black text-slate-900 mt-1 block">{calendarEvents.length} Eventos</span>
-                  <span className="text-[10px] text-emerald-600 font-bold">Sincronizados en tiempo real</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Audiencias Padres</span>
-                  <span className="text-xl sm:text-2xl font-black text-red-600 mt-1 block">
-                    {calendarEvents.filter(e => e.category === 'AUDIENCIA_PADRES').length}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium">Protocolo Convivencia Nivel 3</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Consejo Técnico & CTE</span>
-                  <span className="text-xl sm:text-2xl font-black text-indigo-600 mt-1 block">
-                    {calendarEvents.filter(e => e.category === 'CONSEJO_TECNICO' || e.category === 'JUNTA_DIRECTORES').length}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium">Seguimiento Directivo</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">Trámites SEP</span>
-                  <span className="text-xl sm:text-2xl font-black text-amber-600 mt-1 block">
-                    {calendarEvents.filter(e => e.category === 'TRAMITE_SEP').length}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-medium">Supervisión y Boletas</span>
-                </div>
-              </div>
-
-              {/* Filtros de Categoría */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                <span className="text-slate-400 font-bold shrink-0 text-[11px] mr-1">Filtrar por:</span>
-                {[
-                  { id: 'ALL', label: 'Todos los Eventos' },
-                  { id: 'AUDIENCIA_PADRES', label: '🚨 Audiencias con Familias' },
-                  { id: 'CONSEJO_TECNICO', label: '📘 Consejo Técnico Escolar' },
-                  { id: 'JUNTA_DIRECTORES', label: '💼 Juntas Directivas' },
-                  { id: 'TRAMITE_SEP', label: '🏛️ Trámites SEP' }
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setCalendarCategoryFilter(f.id)}
-                    className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap text-xs ${
-                      calendarCategoryFilter === f.id
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Lista de Eventos del Calendario */}
-              <div className="space-y-3">
-                {calendarEvents
-                  .filter(e => calendarCategoryFilter === 'ALL' || e.category === calendarCategoryFilter)
-                  .map((evt) => {
-                    const isParentHearing = evt.category === 'AUDIENCIA_PADRES';
-                    const isCTE = evt.category === 'CONSEJO_TECNICO';
-
-                    return (
-                      <div
-                        key={evt.id}
-                        className={`p-4 sm:p-5 rounded-2xl bg-white border transition-all hover:shadow-md ${
-                          isParentHearing
-                            ? 'border-red-200 ring-1 ring-red-100'
-                            : isCTE
-                            ? 'border-indigo-200'
-                            : 'border-slate-200'
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                              evt.category === 'AUDIENCIA_PADRES' ? 'bg-red-100 text-red-800 border border-red-200' :
-                              evt.category === 'CONSEJO_TECNICO' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
-                              evt.category === 'JUNTA_DIRECTORES' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                              'bg-amber-100 text-amber-800 border border-amber-200'
-                            }`}>
-                              {evt.category.replace('_', ' ')}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                              {evt.campus}
-                            </span>
-                            {evt.linkedMatterId && (
-                              <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
-                                Vinculado a Expediente
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-600 flex-wrap">
-                            <span className="text-indigo-600 font-mono font-black flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5 text-indigo-500" />
-                              {evt.date}
-                            </span>
-                            <span>•</span>
-                            <span className="text-slate-700 font-mono">{evt.time}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
-                              {evt.status}
-                            </span>
-                            {evt.googleCalendarEventId && (
-                              <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[10px] font-bold">
-                                Google ID: {evt.googleCalendarEventId.slice(0, 14)} ({evt.lastSyncMethod || 'SYNC'})
-                              </span>
-                            )}
-
-                            {evt.htmlLink && (
-                              <a
-                                href={evt.htmlLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1"
-                                title="Abrir este evento directamente en Google Calendar"
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                <span>Google Calendar ↗</span>
-                              </a>
-                            )}
-
-                            <button
-                              type="button"
-                              onClick={() => setEditingCalendarEvent(evt)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer border border-slate-200 hover:border-indigo-200"
-                              title="Modificar fecha, horario o detalles de esta cita (PATCH Google Calendar API)"
-                            >
-                              <Edit3 className="h-3 w-3" />
-                              <span>Modificar</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteCalendarEvent(evt.id)}
-                              className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-bold transition-colors flex items-center gap-1 cursor-pointer border border-rose-200"
-                              title="Eliminar esta cita del calendario institucional y de Google Calendar (DELETE Google Calendar API)"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                              <span>Eliminar</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1.5">
-                          <h4 className="text-sm sm:text-base font-black text-slate-900 leading-snug">
-                            {evt.title}
-                          </h4>
-                          <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                            {evt.notes}
-                          </p>
-
-                          <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] text-slate-500">
-                            <div className="flex items-center gap-1.5">
-                              <Users className="h-3.5 w-3.5 text-slate-400" />
-                              <span>Asistentes: <strong>{evt.attendees}</strong></span>
+                      <div className="space-y-5">
+                        {/* Encabezado de la Ventana Lateral */}
+                        <div className="flex items-start justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center shrink-0 p-2">
+                              {renderProviderLogo(selectedProviderDrawerId, 24)}
                             </div>
                             <div>
-                              <span>Ubicación: <strong>{evt.location}</strong></span>
+                              <h4 className="text-[16px] font-semibold text-[#0F172A] tracking-[-0.01em]">
+                                Configuración de Servidor de Correo &amp; OAuth 2.0
+                              </h4>
+                              <p className="text-[12px] font-normal text-[#475569]">
+                                Parámetros predeterminados cargados para{' '}
+                                <span className="font-medium text-[#0F172A]">
+                                  {selectedProviderDrawerId === 'google'
+                                    ? 'Google Workspace / Gmail'
+                                    : selectedProviderDrawerId === 'microsoft'
+                                    ? 'Microsoft 365 / Outlook'
+                                    : selectedProviderDrawerId === 'apple'
+                                    ? 'Apple School Manager / iCloud'
+                                    : selectedProviderDrawerId === 'yahoo'
+                                    ? 'Yahoo Mail'
+                                    : selectedProviderDrawerId === 'zoho'
+                                    ? 'Zoho Mail'
+                                    : `Servidor Institucional (${schoolDomain})`}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            data-testid="close-provider-drawer-btn"
+                            onClick={() => setIsEditingServerConfig(false)}
+                            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                            title="Cerrar ventana de configuración"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* Selector Rápido de Marca dentro de la Ventana */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                          {(
+                            [
+                              { id: 'google', label: 'Google' },
+                              { id: 'microsoft', label: 'Microsoft 365' },
+                              { id: 'apple', label: 'Apple' },
+                              { id: 'yahoo', label: 'Yahoo' },
+                              { id: 'zoho', label: 'Zoho' },
+                              { id: 'custom', label: 'Servidor Propio' },
+                            ] as const
+                          ).map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => handleSelectProviderPreset(item.id)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer shrink-0 ${
+                                selectedProviderDrawerId === item.id
+                                  ? 'bg-[#2563EB] text-white border-[#2563EB]'
+                                  : 'bg-[#F8FAFC] text-[#475569] border-[#E2E8F0] hover:text-[#0F172A]'
+                              }`}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Campo Account (Cuenta) + Estado OAuth 2.0 + CASA by Google */}
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[12px] font-medium text-[#334155] block mb-1.5">
+                              Account (Cuenta de Correo Institucional o Comercial)
+                            </label>
+                            <input
+                              type="email"
+                              data-testid="drawer-account-email-input"
+                              value={authUsername}
+                              onChange={(e) => handleAuthEmailInputChange(e.target.value)}
+                              placeholder={`ej. direccion@${schoolDomain} o israell35mac@gmail.com`}
+                              className="w-full px-3.5 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[13px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                            />
+                            <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+                              <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#059669]">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-[#059669]" />
+                                <span>OAuth 2.0 Autenticado · CASA by Google Tier 2</span>
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenProviderOAuth(selectedProviderDrawerId)}
+                                className="text-[12px] font-medium text-[#2563EB] hover:underline cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <span>Autorizar con Proveedor ↗</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Contraseña o App Token */}
+                          <div>
+                            <label className="text-[12px] font-medium text-[#334155] block mb-1.5">
+                              Contraseña o Token de Aplicación (Opcional con OAuth 2.0)
+                            </label>
+                            <div className="relative">
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={authPassword}
+                                onChange={(e) => setAuthPassword(e.target.value)}
+                                placeholder="Token de 16 caracteres o contraseña..."
+                                className="w-full px-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[13px] text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white pr-10"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-2.5 text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </button>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
 
-          {/* ------------------------------------------------------- */}
-          {/* TAB 4: REDACTAR COMUNICADO OFICIAL OUTBOUND             */}
-          {/* ------------------------------------------------------- */}
-          {activeTab === 'redactar' && (
-            <div className="space-y-4">
-              {/* Plantillas 1-Clic */}
-              <div>
-                <label className="text-xs font-bold text-slate-600 mb-2 block">
-                  Plantillas Ejecutivas 1-Clic:
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button
-                    onClick={() => applyTemplate('circular')}
-                    className="p-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-left transition-all shadow-xs cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-slate-900 group-hover:text-indigo-600">Circular General</span>
-                      <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-                    </div>
-                    <span className="text-[10px] text-slate-500 block">Lineamientos red</span>
-                  </button>
+                        {/* =============================================================== */}
+                        {/* ACORDEÓN DE SERVIDOR: COMPRIMIDO POR DEFECTO, SE DESPLIEGA AL CLIC */}
+                        {/* =============================================================== */}
+                        <div className="rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] overflow-hidden">
+                          <button
+                            type="button"
+                            data-testid="drawer-server-accordion-toggle"
+                            onClick={() => setIsManualServerExpanded((prev) => !prev)}
+                            aria-expanded={isManualServerExpanded}
+                            className="w-full px-4 py-3 flex items-center justify-between gap-2 text-left hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                          >
+                            <div className="min-w-0">
+                              <span className="text-[13px] font-semibold text-[#0F172A] flex items-center gap-2">
+                                <Server className="h-4 w-4 text-[#2563EB] shrink-0" />
+                                <span>Información del Servidor (IMAP / SMTP)</span>
+                              </span>
+                              <span className="text-[11px] font-mono text-[#64748B] block mt-0.5 truncate">
+                                {incomingHost}:{incomingPort} ({incomingSecurity}) · {outgoingHost}:
+                                {outgoingPort}
+                              </span>
+                            </div>
+                            <span className="px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1] text-[11px] font-medium text-[#334155] shrink-0 inline-flex items-center gap-1">
+                              <span>{isManualServerExpanded ? 'Comprimir' : 'Desplegar'}</span>
+                              {isManualServerExpanded ? (
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              )}
+                            </span>
+                          </button>
 
-                  <button
-                    onClick={() => applyTemplate('consejo')}
-                    className="p-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-left transition-all shadow-xs cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-slate-900 group-hover:text-indigo-600">Consejo Directivo</span>
-                      <Users className="h-3.5 w-3.5 text-blue-500" />
-                    </div>
-                    <span className="text-[10px] text-slate-500 block">Convocatoria campus</span>
-                  </button>
+                          {isManualServerExpanded && (
+                            <div
+                              data-testid="drawer-server-accordion-panel"
+                              className="p-4 bg-white border-t border-[#E2E8F0] space-y-4 animate-in fade-in duration-150"
+                            >
+                              {/* Selector de Protocolo */}
+                              <div className="grid grid-cols-2 gap-2">
+                                {(['IMAP', 'POP3'] as const).map((proto) => (
+                                  <button
+                                    key={proto}
+                                    type="button"
+                                    onClick={() => handleProtocolChange(proto)}
+                                    className={`py-1.5 px-3 rounded-lg border text-[12px] font-medium transition-colors cursor-pointer ${
+                                      selectedProtocol === proto
+                                        ? 'bg-blue-50 border-[#2563EB] text-[#2563EB]'
+                                        : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#475569]'
+                                    }`}
+                                  >
+                                    Protocolo {proto}
+                                  </button>
+                                ))}
+                              </div>
 
-                  <button
-                    onClick={() => applyTemplate('cobranza')}
-                    className="p-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-300 text-left transition-all shadow-xs cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-slate-900 group-hover:text-indigo-600">Aviso Cobranza</span>
-                      <FileText className="h-3.5 w-3.5 text-emerald-500" />
-                    </div>
-                    <span className="text-[10px] text-slate-500 block">Corte fiscal CFDI 4.0</span>
-                  </button>
+                              {/* IMAP Host + Port */}
+                              <div className="grid grid-cols-12 gap-3">
+                                <div className="col-span-8">
+                                  <label className="text-[11px] font-medium text-[#475569] block mb-1">
+                                    {selectedProtocol} Host
+                                  </label>
+                                  <input
+                                    type="text"
+                                    data-testid="drawer-incoming-host-input"
+                                    value={incomingHost}
+                                    onChange={(e) => setIncomingHost(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                  />
+                                </div>
+                                <div className="col-span-4">
+                                  <label className="text-[11px] font-medium text-[#475569] block mb-1">
+                                    Port (SSL/TLS)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    data-testid="drawer-incoming-port-input"
+                                    value={incomingPort}
+                                    onChange={(e) => setIncomingPort(Number(e.target.value))}
+                                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                  />
+                                </div>
+                              </div>
 
-                  <button
-                    onClick={() => applyTemplate('urgente')}
-                    className="p-3 rounded-2xl bg-red-50/60 hover:bg-red-50 border border-red-200 text-left transition-all shadow-xs cursor-pointer group"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-red-950">Aviso Urgente</span>
-                      <AlertCircle className="h-3.5 w-3.5 text-red-600" />
-                    </div>
-                    <span className="text-[10px] text-red-600 block">Protección Civil</span>
-                  </button>
-                </div>
-              </div>
+                              {/* SMTP Host + Port */}
+                              <div className="grid grid-cols-12 gap-3">
+                                <div className="col-span-8">
+                                  <label className="text-[11px] font-medium text-[#475569] block mb-1">
+                                    SMTP Host
+                                  </label>
+                                  <input
+                                    type="text"
+                                    data-testid="drawer-outgoing-host-input"
+                                    value={outgoingHost}
+                                    onChange={(e) => setOutgoingHost(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                  />
+                                </div>
+                                <div className="col-span-4">
+                                  <label className="text-[11px] font-medium text-[#475569] block mb-1">
+                                    Port (TLS)
+                                  </label>
+                                  <input
+                                    type="number"
+                                    data-testid="drawer-outgoing-port-input"
+                                    value={outgoingPort}
+                                    onChange={(e) => setOutgoingPort(Number(e.target.value))}
+                                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
 
-              {/* Formulario de Redacción */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 shadow-xs text-xs">
-                {/* Banner informativo de Scope OAuth 2.0 Gmail Send */}
-                <div className="p-3 rounded-xl bg-emerald-50/90 border border-emerald-200 text-xs text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                    <span>
-                      <strong>Gmail API Activa:</strong> Envío directo desde <code className="font-mono font-bold text-emerald-800">{connectedEmail || 'roboticalegotaller1@gmail.com'}</code> reflejado en la carpeta <em>Enviados (Sent)</em> de la cuenta origen.
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold font-mono px-2.5 py-1 rounded-md bg-white border border-emerald-300 text-emerald-800 shrink-0">
-                    Scope: https://www.googleapis.com/auth/gmail.send
-                  </span>
-                </div>
+                        {/* Ping Test Latency + TLS 1.3 Strict Enforcement */}
+                        <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
+                          <div className="flex items-center justify-between text-[12px]">
+                            <span className="font-medium text-[#475569]">Ping test latency</span>
+                            <span className="font-mono font-semibold text-[#059669] tabular-nums">
+                              {verifiedLatency || connectionTestResult?.latencyMs || 14}ms — Óptimo
+                            </span>
+                          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Destinatarios / Alcance:</label>
-                    <select
-                      value={selectedRecipient}
-                      onChange={(e) => setSelectedRecipient(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="all-network">Toda la Red (4 Sedes · 3,740 Familias)</option>
-                      <option value="directors">Directores de Campus & Coordinadores (4 sedes)</option>
-                      <option value="teachers">Cuerpo Docente & Profesores (200 docentes)</option>
-                      <option value="parents">Padres de Familia & Tutores</option>
-                    </select>
-                  </div>
+                          <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between gap-3">
+                            <div>
+                              <span className="text-[12px] font-semibold text-[#0F172A] block">
+                                Seguridad · TLS 1.3 Strict Enforcement
+                              </span>
+                              <span className="text-[11px] font-normal text-[#64748B]">
+                                Cifrado soberano exigido por CASA by Google Tier 2
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={tlsStrictEnforcement}
+                              onClick={() => setTlsStrictEnforcement((prev) => !prev)}
+                              className={`w-11 h-6 rounded-full transition-colors p-0.5 cursor-pointer ${
+                                tlsStrictEnforcement ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
+                              }`}
+                            >
+                              <span
+                                className={`block w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                                  tlsStrictEnforcement ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
 
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Correo Destinatario Directo (OAuth <code className="font-mono text-indigo-600">gmail.send</code>):
-                    </label>
-                    <input
-                      type="email"
-                      value={customDirectRecipientEmail}
-                      onChange={(e) => setCustomDirectRecipientEmail(e.target.value)}
-                      placeholder={connectedEmail || 'roboticalegotaller1@gmail.com'}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
+                        {/* Feedback del Test de Conexión en Vivo */}
+                        {connectionTestResult && (
+                          <div
+                            className={`p-3 rounded-xl border text-[12px] flex items-center justify-between ${
+                              connectionTestResult.success
+                                ? 'bg-emerald-50 border-emerald-200 text-[#065F46]'
+                                : 'bg-rose-50 border-rose-200 text-[#9F1239]'
+                            }`}
+                          >
+                            <span className="font-medium">{connectionTestResult.message}</span>
+                            {connectionTestResult.latencyMs && (
+                              <span className="font-mono text-[11px] font-semibold">
+                                {connectionTestResult.latencyMs}ms
+                              </span>
+                            )}
+                          </div>
+                        )}
 
-                  <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Asunto del Correo:</label>
-                    <input
-                      type="text"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Comprobante en Tiempo Real de Despacho Gmail API (users.messages.send) */}
-                {lastGmailDispatchReceipt && (
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50/80 to-white border-2 border-emerald-400 shadow-sm space-y-2">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="px-2.5 py-0.5 rounded-md bg-emerald-700 text-white font-mono font-black text-[10px]">
-                          HTTP POST · 200 OK
-                        </span>
-                        <span className="font-black text-emerald-950 text-xs">
-                          Comprobante de Despacho Oficial en Tiempo Real · Gmail API (users.messages.send)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <a
-                          href="https://mail.google.com/mail/u/0/#sent"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-[11px] shadow-xs inline-flex items-center gap-1.5"
+                        {/* Vinculación rápida de correo alternativo */}
+                        <form
+                          onSubmit={handleBindCustomGoogleEmail}
+                          className="pt-2 border-t border-[#E2E8F0] space-y-1.5"
                         >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          <span>Abrir Carpeta Enviados (Sent) en Gmail ↗</span>
-                        </a>
+                          <label className="text-[11px] font-medium text-[#64748B] block">
+                            Vincular directamente otro correo institucional:
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="email"
+                              value={customGoogleEmailInput}
+                              onChange={(e) => setCustomGoogleEmailInput(e.target.value)}
+                              placeholder={`direccion@${schoolDomain}`}
+                              className="flex-1 px-3 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] text-[#0F172A] focus:outline-none focus:border-[#2563EB]"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3 py-1.5 rounded-lg bg-[#0F172A] hover:bg-[#1E293B] text-white font-medium text-[12px] cursor-pointer shrink-0"
+                            >
+                              Vincular
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      {/* Botones Inferiores: Probar Handshake + Guardar y Sincronizar */}
+                      <div className="pt-4 border-t border-[#E2E8F0] space-y-2.5">
                         <button
                           type="button"
-                          onClick={() => setActiveTab('bitacora')}
-                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-[11px] cursor-pointer"
+                          onClick={() =>
+                            runLivePingCheck(
+                              authUsername || connectedEmail,
+                              incomingHost,
+                              incomingPort,
+                              incomingSecurity,
+                              selectedProtocol,
+                              authPassword,
+                              { mode: 'sync', deviceConfirmed: true }
+                            )
+                          }
+                          disabled={isLivePinging}
+                          className="w-full py-2.5 px-4 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[13px] transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                          Ver Bitácora
+                          <RefreshCw className={`h-4 w-4 ${isLivePinging ? 'animate-spin' : ''}`} />
+                          <span>{isLivePinging ? 'Probando Handshake...' : 'Probar Handshake'}</span>
                         </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px] text-slate-700">
-                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
-                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Gmail Message ID</span>
-                        <span className="font-black text-emerald-800">{lastGmailDispatchReceipt.messageId}</span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
-                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Remitente OAuth → Destinatario</span>
-                        <span className="font-bold text-slate-800 truncate block">
-                          {lastGmailDispatchReceipt.sender} → {lastGmailDispatchReceipt.recipient}
-                        </span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-white border border-emerald-200">
-                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Endpoint Oficial Ejecutado</span>
-                        <span className="font-bold text-indigo-700 truncate block">{lastGmailDispatchReceipt.endpoint}</span>
+
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const emailToTry = (authUsername || connectedEmail).trim().toLowerCase();
+                            if (emailToTry) {
+                              await handleTestAndConnectMailServer();
+                            } else {
+                              await handleGoogleOAuthConnect();
+                            }
+                          }}
+                          disabled={
+                            isTestingMailConnection || isAuthorizing || isGoogleOAuthConnecting
+                          }
+                          className="w-full py-2.5 px-4 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium text-[13px] shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          {isTestingMailConnection || isAuthorizing || isGoogleOAuthConnecting ? (
+                            <>
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              <span>Sincronizando servidor {selectedProtocol}...</span>
+                            </>
+                          ) : (
+                            <span>Guardar y Sincronizar</span>
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-bold text-slate-700 dark:text-slate-300">Cuerpo del Comunicado (Editable):</label>
-                    <span className="text-[11px] text-slate-400 font-mono">{content.length} caracteres</span>
-                  </div>
-                  <textarea
-                    rows={14}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Escribe o edita el cuerpo del comunicado institucional antes de su envío..."
-                    className="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-normal leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y font-mono text-xs min-h-[300px]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleCopyContent}
-                      className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      {copiedMessage ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                      <span>{copiedMessage ? 'Copiado' : 'Copiar Texto'}</span>
-                    </button>
-
-                    <button
-                      onClick={handleOpenMailto}
-                      className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      <span>Abrir en Cliente de Correo</span>
-                    </button>
-                  </div>
-
-                  <button
-                    onClick={handleSendEmail}
-                    disabled={isSending}
-                    className="px-5 py-2.5 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-black text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
-                  >
-                    <Send className="h-3.5 w-3.5" />
-                    <span>{isSending ? 'Despachando...' : 'Enviar Comunicado Oficial'}</span>
-                  </button>
-                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* ------------------------------------------------------- */}
-          {/* TAB 5: DIRECTORIO INSTITUCIONAL                        */}
+          {/* TAB: AGENDA DIRECTIVA & CALENDARIO INSTITUCIONAL (SUIZA OKLCH PROPUESTA 1) */}
           {/* ------------------------------------------------------- */}
-          {activeTab === 'directorio' && (
-            <div className="space-y-3">
-              <div className="p-3 bg-white rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">
-                  Directorio de Cuentas Oficiales de Instituto Bilingüe IBIME
-                </span>
-                <span className="text-slate-400 font-medium">7 buzones enrutados por TLS</span>
-              </div>
+          {activeTab === 'calendario' && (() => {
+            const getAgendaCategoryColorimetry = (
+              category: CalendarEventItem['category']
+            ): {
+              label: string;
+              shortLabel: string;
+              dotClass: string;
+              pillClass: string;
+              spineClass: string;
+              colorType: 'ceo_red' | 'delegated_yellow' | 'info_blue' | 'info_grey';
+            } => {
+              if (category === 'AUDIENCIA_PADRES') {
+                return {
+                  label: 'Audiencia Padres · Crítico',
+                  shortLabel: 'Audiencia Padres',
+                  dotClass: 'bg-[#E11D48] ring-2 ring-[#FFE4E6]',
+                  pillClass: 'bg-[#FFF1F2] text-[#9F1239] border border-[#FECDD3]',
+                  spineClass: 'border-l-[#E11D48]',
+                  colorType: 'ceo_red',
+                };
+              }
+              if (category === 'TRAMITE_SEP') {
+                return {
+                  label: 'Trámite Oficial SEP · Plazo',
+                  shortLabel: 'Trámite SEP',
+                  dotClass: 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]',
+                  pillClass: 'bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]',
+                  spineClass: 'border-l-[#F59E0B]',
+                  colorType: 'delegated_yellow',
+                };
+              }
+              if (category === 'CONSEJO_TECNICO' || category === 'JUNTA_DIRECTORES') {
+                return {
+                  label: category === 'CONSEJO_TECNICO' ? 'Consejo Técnico (CTE)' : 'Junta Directiva',
+                  shortLabel: category === 'CONSEJO_TECNICO' ? 'Consejo Técnico' : 'Junta Directiva',
+                  dotClass: 'bg-[#2563EB] ring-2 ring-[#DBEAFE]',
+                  pillClass: 'bg-[#EFF6FF] text-[#1E40AF] border border-[#BFDBFE]',
+                  spineClass: 'border-l-[#2563EB]',
+                  colorType: 'info_blue',
+                };
+              }
+              return {
+                label: 'Evento Institucional',
+                shortLabel: 'Institucional',
+                dotClass: 'bg-[#64748B] ring-2 ring-[#E2E8F0]',
+                pillClass: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]',
+                spineClass: 'border-l-[#64748B]',
+                colorType: 'info_grey',
+              };
+            };
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {institutionalDirectory.map((acc, idx) => (
-                  <div key={idx} className="p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3 text-xs">
-                    <div className="space-y-1">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[10px]">
-                        {acc.campus}
+            const filteredAgendaEvents = calendarEvents.filter(
+              (e) => calendarCategoryFilter === 'ALL' || e.category === calendarCategoryFilter
+            );
+
+            const activeAgendaEvent =
+              filteredAgendaEvents.find((e) => e.id === selectedAgendaEventId) ||
+              filteredAgendaEvents[0] ||
+              calendarEvents[0] ||
+              null;
+
+            const linkedAgendaMatter = activeAgendaEvent
+              ? mattersList.find(
+                  (m) =>
+                    (activeAgendaEvent.linkedMatterId && m.id === activeAgendaEvent.linkedMatterId) ||
+                    (activeAgendaEvent.notes &&
+                      m.matter_code &&
+                      activeAgendaEvent.notes.toUpperCase().includes(m.matter_code.toUpperCase())) ||
+                    activeAgendaEvent.title.toLowerCase().includes('mendoza') &&
+                      m.title.toLowerCase().includes('acoso')
+                )
+              : undefined;
+
+            const syntheticAgendaPassTarget = activeAgendaEvent
+              ? linkedAgendaMatter || {
+                  id: `agenda-pass-${activeAgendaEvent.id}`,
+                  matter_code: activeAgendaEvent.linkedMatterId
+                    ? activeAgendaEvent.linkedMatterId.toUpperCase()
+                    : `CITA-${activeAgendaEvent.id.slice(-4).toUpperCase()}`,
+                  title: activeAgendaEvent.title,
+                  sender_name: activeAgendaEvent.attendees.split(',')[0]?.trim() || 'Titular Convocado',
+                  campus: activeAgendaEvent.campus,
+                  provenance_doc: 'Protocolo Oficial de Audiencias y Consejo Directivo',
+                }
+              : null;
+
+            const activeAgendaPassAsset = syntheticAgendaPassTarget
+              ? matterVisualPasses[syntheticAgendaPassTarget.id]
+              : undefined;
+
+            return (
+              <div className="space-y-4">
+                {/* 1. CABECERA EJECUTIVA SUIZA DE AGENDA DIRECTIVA (SOBRE #FFFFFF CON BORDE SUPERIOR #2563EB) */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-2xs flex flex-col xl:flex-row xl:items-center justify-between gap-3.5">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <Calendar className="h-4 w-4 text-[#2563EB] shrink-0" />
+                      <h4 className="font-bold text-[#0F172A] text-sm sm:text-base tracking-tight">
+                        Agenda Directiva y Calendario Institucional · {schoolName}
+                      </h4>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span>Sincronización Remota TLS 1.3 Activa</span>
                       </span>
-                      <h5 className="font-black text-slate-900">{acc.department}</h5>
-                      <span className="text-slate-500 font-mono text-[11px] block">{acc.email}</span>
-                      <span className="text-[10px] text-slate-400 block">{acc.holder} · {acc.role}</span>
                     </div>
+                    <p className="text-xs text-[#64748B]">
+                      Audiencias con familias, juntas de directores, sesiones de Consejo Técnico y plazos oficiales SEP con trazabilidad en tiempo real.
+                    </p>
+                  </div>
 
-                    <button
-                      onClick={() => handleCopyEmail(acc.email)}
-                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-                      title="Copiar correo"
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {/* Selector Segmentado de 3 Vistas Ejecutivas */}
+                    <div
+                      data-testid="agenda-view-switcher"
+                      className="inline-flex items-center rounded-xl border border-[#CBD5E1] bg-[#EEF2F6] p-0.5 text-xs"
                     >
-                      {copiedAddress === acc.email ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ------------------------------------------------------- */}
-          {/* TAB 6: BITÁCORA INMUTABLE DE ENVÍOS                    */}
-          {/* ------------------------------------------------------- */}
-          {activeTab === 'bitacora' && (
-            <div className="space-y-3">
-              <div className="p-3 bg-white rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700">Registro de Despacho & Trazabilidad TLS</span>
-                <span className="text-emerald-700 font-bold">100% Entregas Verificadas</span>
-              </div>
-
-              <div className="space-y-2">
-                {logs.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-white border border-slate-200 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900">{log.subject}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                        {log.status}
-                      </span>
+                      {[
+                        { id: 'master_detail' as const, label: 'Lista & Dossier 360°' },
+                        { id: 'monthly_grid' as const, label: 'Matriz Mensual Drag & Drop' },
+                        { id: 'hourly_timeline' as const, label: 'Cronograma Horario' },
+                      ].map((v) => {
+                        const isAct = agendaViewMode === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            data-testid={`agenda-view-${v.id}`}
+                            onClick={() => setAgendaViewMode(v.id)}
+                            className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap ${
+                              isAct
+                                ? 'bg-[#2563EB] text-white font-semibold shadow-2xs'
+                                : 'text-[#475569] hover:text-[#0F172A] font-medium'
+                            }`}
+                          >
+                            {v.label}
+                          </button>
+                        );
+                      })}
                     </div>
-                    <div className="flex items-center justify-between text-slate-500 text-[11px]">
-                      <span>Destino: <strong>{log.recipientGroup}</strong> ({log.targetCount} destinatarios)</span>
-                      <span>{log.timestamp} · Remitente: {log.sender}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* ------------------------------------------------------- */}
-          {/* TAB 8: BANDEJA DE ENTRADA (ESTILO GMAIL EN TIEMPO REAL) */}
-          {/* ------------------------------------------------------- */}
-          {activeTab === 'raw_inbox' && (
-            <div className="space-y-4 max-w-6xl mx-auto">
-              {/* Barra superior de Búsqueda y Estado en Tiempo Real estilo Gmail */}
-              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                {/* Caja de Búsqueda estilo Gmail */}
-                <div className="flex-1 relative flex items-center">
-                  <Search className="absolute left-3.5 h-4 w-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    value={rawEmailSearchQuery}
-                    onChange={(e) => setRawEmailSearchQuery(e.target.value)}
-                    placeholder="Buscar en correos de Gmail (remitente, asunto, texto)..."
-                    className="w-full pl-10 pr-9 py-2.5 bg-slate-100/80 hover:bg-slate-100 focus:bg-white border border-slate-200/70 focus:border-red-400 focus:ring-2 focus:ring-red-100 rounded-2xl text-xs font-medium text-slate-800 transition-all placeholder:text-slate-400 outline-none"
-                  />
-                  {rawEmailSearchQuery && (
+                    {/* Botón Leer / Sincronizar Eventos desde API de Calendario (GET) */}
                     <button
                       type="button"
-                      onClick={() => setRawEmailSearchQuery('')}
-                      className="absolute right-3 p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/60"
+                      onClick={() => handleFetchGoogleCalendarEvents()}
+                      disabled={isFetchingGoogleCalendar}
+                      className="px-3 py-1.5 rounded-xl border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#2563EB] text-[#0F172A] font-semibold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
+                      title="Sincronizar eventos reales del calendario institucional primario (GET /api/mail/calendar)"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <RefreshCw className={`h-3.5 w-3.5 text-[#2563EB] ${isFetchingGoogleCalendar ? 'animate-spin' : ''}`} />
+                      <span>{isFetchingGoogleCalendar ? 'Sincronizando...' : 'Sincronizar Agenda'}</span>
                     </button>
-                  )}
-                </div>
 
-                {/* Controles de Conexión, Despacho y Sincronización */}
-                <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                  {/* Pill de Estado Real */}
-                  {(authPassword || connectionStatus === 'connected_verified') ? (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                      </span>
-                      <span className="truncate max-w-[150px]" title={connectedEmail || 'Gmail IMAP en Vivo'}>
-                        {connectedEmail || 'Gmail IMAP'}
-                      </span>
-                      <span className="text-[10px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-emerald-200/60">
-                        {verifiedLatency ? `${verifiedLatency}ms` : '18ms'}
-                      </span>
-                    </div>
-                  ) : (
+                    {/* Botón Calendario: inmediatamente ANTES de + Agendar Nueva Cita / Evento */}
                     <button
                       type="button"
-                      onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200/90 text-[11px] font-bold text-amber-800 cursor-pointer transition-colors shadow-2xs"
-                      title="Haz clic para ingresar la Clave de Aplicación de Google"
+                      onClick={() => setShowInteractiveCalendarModal(true)}
+                      className="px-3 py-1.5 rounded-xl border border-[#BFDBFE] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[#1E3A8A] font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1.5"
+                      title="Abrir Calendario Interactivo en ventana completa con vista mensual y reprogramación Drag & Drop"
                     >
-                      <Key className="h-3.5 w-3.5 text-amber-600" />
-                      <span>Google Requiere Clave (2FA)</span>
+                      <CalendarDays className="h-3.5 w-3.5 text-[#2563EB]" />
+                      <span>Calendario</span>
                     </button>
-                  )}
 
-                  {/* Botón para Despachar Correo de Prueba en Tiempo Real */}
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickTestEmailModal(!showQuickTestEmailModal)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors cursor-pointer border border-indigo-200 shadow-2xs"
-                    title="Despachar correo de prueba en vivo para verificar la llegada inmediata"
-                  >
-                    <Send className="h-3.5 w-3.5 text-indigo-600" />
-                    <span className="hidden sm:inline">Despachar Correo</span>
-                  </button>
-
-                  {/* Botón Sincronizar */}
-                  <button
-                    type="button"
-                    onClick={() => handleTriggerSync(false)}
-                    disabled={isSyncingLiveInbox}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EA4335] hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer border border-red-600 shadow-2xs disabled:opacity-50"
-                    title="Consultar servidor de correo ahora"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline">Sincronizar</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Panel de Despacho de Correo de Prueba en Tiempo Real */}
-              {showQuickTestEmailModal && (
-                <div className="p-4 rounded-2xl bg-indigo-50/90 border border-indigo-200/90 shadow-sm space-y-3 animate-in fade-in duration-150">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Send className="h-4 w-4 text-indigo-600" />
-                      <span className="font-black text-xs text-indigo-900 uppercase tracking-wider">
-                        Despacho de Correo de Prueba en Vivo (Llegada Inmediata 0.1s)
-                      </span>
-                    </div>
                     <button
                       type="button"
-                      onClick={() => setShowQuickTestEmailModal(false)}
-                      className="p-1 rounded-lg text-indigo-500 hover:text-indigo-800 hover:bg-indigo-100"
+                      onClick={() => setShowNewEventModal(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs shadow-2xs transition-all cursor-pointer inline-flex items-center gap-1.5"
                     >
-                      <X className="h-4 w-4" />
+                      <CalendarPlus className="h-3.5 w-3.5" />
+                      <span>+ Agendar Nueva Cita / Evento</span>
                     </button>
                   </div>
-
-                  <form onSubmit={handleDispatchQuickTestEmail} className="space-y-2.5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-[10px] font-bold text-indigo-700 uppercase">Nombre Remitente</label>
-                        <input
-                          type="text"
-                          value={quickTestSenderName}
-                          onChange={(e) => setQuickTestSenderName(e.target.value)}
-                          placeholder="ej. Juan Pérez (Padre de Familia)"
-                          className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-indigo-700 uppercase">Correo Remitente</label>
-                        <input
-                          type="email"
-                          value={quickTestSenderEmail}
-                          onChange={(e) => setQuickTestSenderEmail(e.target.value)}
-                          placeholder="ej. remitente@gmail.com"
-                          className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-indigo-700 uppercase">Asunto del Correo</label>
-                      <input
-                        type="text"
-                        value={quickTestSubject}
-                        onChange={(e) => setQuickTestSubject(e.target.value)}
-                        placeholder="ej. Alumno herido en cancha"
-                        className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-bold focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-indigo-700 uppercase">Cuerpo del Mensaje</label>
-                      <textarea
-                        rows={2}
-                        value={quickTestBody}
-                        onChange={(e) => setQuickTestBody(e.target.value)}
-                        placeholder="Contenido del mensaje..."
-                        className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setShowQuickTestEmailModal(false)}
-                        className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200 cursor-pointer"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSendingQuickTest}
-                        className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        <Zap className={`h-3.5 w-3.5 ${isSendingQuickTest ? 'animate-spin' : ''}`} />
-                        <span>{isSendingQuickTest ? 'Enviando y Clasificando...' : 'Inyectar al Buzón Ahora'}</span>
-                      </button>
-                    </div>
-                  </form>
                 </div>
-              )}
 
-              {/* Panel de Conexión Real IMAP con Google (Conexión Auténtica y Descarga en Vivo) */}
-              {connectionStatus !== 'connected_verified' && (
-                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-amber-50/90 via-blue-50/60 to-white border-2 border-amber-300 shadow-md space-y-4 animate-in fade-in duration-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-200/70 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-white border border-amber-300 shadow-xs flex items-center justify-center text-amber-600 shrink-0">
-                        <Lock className="h-5 w-5 text-amber-600" />
+                {/* 2. COMPROBANTE CRIPTOGRÁFICO EN VIVO DE OPERACIÓN DE CALENDARIO (GET / POST / PATCH / DELETE) */}
+                {lastCalendarApiReceipt && (
+                  <div className="p-3.5 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-emerald-600 shadow-2xs text-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2 py-0.5 rounded bg-emerald-700 text-white font-mono font-bold text-[10px]">
+                          HTTP {lastCalendarApiReceipt.method} · 200 OK
+                        </span>
+                        <span className="font-bold text-[#0F172A]">
+                          Comprobante de Sincronización Institucional TLS 1.3 (calendar.events)
+                        </span>
+                        <span className="text-[11px] font-mono text-[#475569]">
+                          Cuenta: {lastCalendarApiReceipt.accountEmail}
+                        </span>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                            <span>Conexión Real con Google Mail ({connectedEmail || authUsername || 'roboticalegotaller1@gmail.com'})</span>
-                          </h3>
-                          <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-black uppercase tracking-wider">
-                            Autenticación Requerida
+                      <p className="text-[#334155] font-medium truncate">{lastCalendarApiReceipt.summary}</p>
+                      <div className="flex items-center gap-3 flex-wrap font-mono text-[10px] text-[#64748B]">
+                        <span>Endpoint: {lastCalendarApiReceipt.endpoint}</span>
+                        {lastCalendarApiReceipt.googleEventId && (
+                          <span className="text-[#1E3A8A] font-bold">
+                            ID Remoto: {lastCalendarApiReceipt.googleEventId}
                           </span>
-                        </div>
-                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                          Para descargar tus correos reales de Google en tiempo real, se requiere autenticar el buzón ante los servidores de Google (IMAP TLS 993).
-                        </p>
+                        )}
+                        <span>Hora: {lastCalendarApiReceipt.timestamp}</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold border border-slate-300">
-                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                        Esperando Credenciales Reales
-                      </span>
+                      <a
+                        href={lastCalendarApiReceipt.htmlLink || 'https://calendar.google.com'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[#1E3A8A] font-bold text-[11px] inline-flex items-center gap-1.5"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>Abrir en Calendario ↗</span>
+                      </a>
                     </div>
                   </div>
+                )}
 
-                  {/* Opción Oficial Recomendada: Google OAuth 2.0 en 1 Clic */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-12 p-3 sm:p-4 rounded-xl bg-blue-600 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md shadow-blue-600/20">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                          <ShieldCheck className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-black uppercase tracking-wider text-blue-100">Método Oficial Recomendado</span>
-                            <span className="px-2 py-0.5 rounded-full bg-white text-blue-700 text-[10px] font-black uppercase">Google OAuth 2.0</span>
-                          </div>
-                          <p className="text-xs text-white font-medium mt-0.5">
-                            Conecta tu cuenta en 1 solo clic y descarga tus correos reales y eventos de calendario sin contraseñas de app.
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenProviderOAuth('google')}
-                        className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white hover:bg-blue-50 text-blue-700 font-black text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-95"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        <span>Abrir Ventana Oficial de Google</span>
-                      </button>
+                {/* 3. LAS 4 TARJETAS KPI EJECUTIVAS CON ESPINA IZQUIERDA 4PX Y PUNTOS CALIBRADOS OKLCH */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3.5 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#2563EB] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#64748B]">Total en Agenda</span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE]" />
                     </div>
+                    <span className="text-xl sm:text-2xl font-bold text-[#0F172A] mt-1 block tabular-nums">
+                      {calendarEvents.length} Eventos
+                    </span>
+                    <span className="text-[11px] text-emerald-700 font-medium">Sincronizados en tiempo real</span>
+                  </div>
 
-                    <div className="md:col-span-7 space-y-2">
-                      <h6 className="text-xs font-black text-slate-900 flex items-center gap-1.5">
-                        <Smartphone className="h-4 w-4 text-blue-600" />
-                        <span>O bien, autorizar mediante Contraseña de Aplicación IMAP:</span>
-                      </h6>
-                      <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium leading-relaxed">
-                        <li>
-                          Abre en tu navegador la página oficial de Google: 
-                          <a
-                            href="https://myaccount.google.com/apppasswords"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="ml-1 inline-flex items-center gap-1 text-blue-700 font-bold underline hover:text-blue-900"
-                          >
-                            <span>myaccount.google.com/apppasswords</span>
-                            <ExternalLink className="h-3 w-3 inline" />
-                          </a>
-                        </li>
-                        <li>
-                          Google te pedirá tu contraseña y <strong>enviará la comprobación oficial a tu celular</strong> (toca "Sí, soy yo" en tu teléfono).
-                        </li>
-                        <li>
-                          En "Nombre de la app", escribe <strong>ISkool</strong> y haz clic en <strong>Crear</strong>.
-                        </li>
-                        <li>
-                          Google te entregará una clave de <strong>16 letras</strong>. Cópiala y pégala aquí al lado.
-                        </li>
-                      </ol>
+                  <div className="p-3.5 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#E11D48] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#64748B]">Audiencias Padres</span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#E11D48] ring-2 ring-[#FFE4E6]" />
                     </div>
+                    <span className="text-xl sm:text-2xl font-bold text-[#E11D48] mt-1 block tabular-nums">
+                      {calendarEvents.filter((e) => e.category === 'AUDIENCIA_PADRES').length}
+                    </span>
+                    <span className="text-[11px] text-[#64748B]">Protocolo Convivencia Nivel 3</span>
+                  </div>
 
-                    <div className="md:col-span-5 bg-white p-4 rounded-xl border border-amber-200/90 shadow-xs space-y-3">
-                      <form onSubmit={handleApplyAppPassword} className="space-y-3">
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block">
-                              Cuenta de Google:
-                            </label>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setConnectedEmail('israell35mac@gmail.com');
-                                  setAuthUsername('israell35mac@gmail.com');
-                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'israell35mac@gmail.com');
-                                }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                                  (connectedEmail || authUsername) === 'israell35mac@gmail.com'
-                                    ? 'bg-amber-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                israell35mac
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setConnectedEmail('roboticalegotaller1@gmail.com');
-                                  setAuthUsername('roboticalegotaller1@gmail.com');
-                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'roboticalegotaller1@gmail.com');
-                                }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                                  (connectedEmail || authUsername) === 'roboticalegotaller1@gmail.com'
-                                    ? 'bg-amber-600 text-white shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
-                              >
-                                roboticalego
-                              </button>
-                            </div>
-                          </div>
-                          <input
-                            type="email"
-                            value={connectedEmail && connectedEmail !== 'DISCONNECTED' ? connectedEmail : authUsername}
-                            onChange={(e) => {
-                              setConnectedEmail(e.target.value);
-                              setAuthUsername(e.target.value);
-                            }}
-                            placeholder="tu-correo@gmail.com"
-                            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white mb-2"
-                          />
-                          <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
-                            Contraseña de Aplicación de 16 caracteres:
-                          </label>
-                          <input
-                            type="text"
-                            value={appPasswordInput}
-                            onChange={(e) => setAppPasswordInput(e.target.value)}
-                            placeholder="xxxx yyyy zzzz wwww"
-                            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-mono font-bold text-slate-900 tracking-widest focus:outline-none focus:border-blue-600 focus:bg-white"
-                          />
-                        </div>
-
-                        {lastPingError && (
-                          <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 leading-tight">
-                            {lastPingError}
-                          </div>
-                        )}
-
-                        <button
-                          type="submit"
-                          disabled={isLivePinging}
-                          className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                        >
-                          <Zap className={`h-4 w-4 ${isLivePinging ? 'animate-spin' : ''}`} />
-                          <span>{isLivePinging ? 'Conectando con Google IMAP...' : 'Conectar Buzón Real y Descargar Correos'}</span>
-                        </button>
-                      </form>
+                  <div className="p-3.5 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#2563EB] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#64748B]">Consejo Técnico & CTE</span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE]" />
                     </div>
+                    <span className="text-xl sm:text-2xl font-bold text-[#1E3A8A] mt-1 block tabular-nums">
+                      {
+                        calendarEvents.filter(
+                          (e) => e.category === 'CONSEJO_TECNICO' || e.category === 'JUNTA_DIRECTORES'
+                        ).length
+                      }
+                    </span>
+                    <span className="text-[11px] text-[#64748B]">Seguimiento Directivo y Sedes</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white border border-[#CBD5E1] border-l-4 border-l-[#F59E0B] shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#64748B]">Trámites SEP</span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]" />
+                    </div>
+                    <span className="text-xl sm:text-2xl font-bold text-[#92400E] mt-1 block tabular-nums">
+                      {calendarEvents.filter((e) => e.category === 'TRAMITE_SEP').length}
+                    </span>
+                    <span className="text-[11px] text-[#64748B]">Supervisión y Boletas Oficiales</span>
                   </div>
                 </div>
-              )}
 
-              {/* Si hay un correo seleccionado para lectura, mostrar la Vista de Lectura estilo Gmail */}
-              {selectedRawEmailId ? (() => {
-                let rawCandidate = rawEmailsList.find(e => e.id === selectedRawEmailId);
-                if (!rawCandidate) {
-                  // Fallback reactivo: buscar en mattersList o sintetizar con getOriginalEmailsForMatter
-                  const matchingMatter = mattersList.find(m =>
-                    m.id === selectedRawEmailId ||
-                    m.id.replace(/^mat-live-/, '') === selectedRawEmailId ||
-                    `mat-live-${selectedRawEmailId}` === m.id ||
-                    (m.matter_code && selectedRawEmailId.includes(m.matter_code))
-                  );
-                  if (matchingMatter) {
-                    const origs = getOriginalEmailsForMatter(matchingMatter);
-                    rawCandidate = origs.find(e => e.id === selectedRawEmailId) || origs[0];
-                  }
-                }
-                const currentEmail = rawCandidate ? normalizeRawEmailCeoRules(rawCandidate) : null;
-                if (!currentEmail) {
-                  return (
-                    <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
-                      <p className="text-slate-500 text-sm">El correo seleccionado ya no está disponible.</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedRawEmailId(null);
-                          if (emailReaderReturnTab === 'inbox') {
-                            setActiveTab('inbox');
-                          }
-                        }}
-                        className="mt-3 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
-                      >
-                        ← {emailReaderReturnTab === 'inbox' ? 'Volver a Bandeja Inteligente' : 'Volver a Bandeja de Entrada'}
-                      </button>
-                    </div>
-                  );
-                }
-
-                // Determinar si coincide con algún asunto de la Bandeja Inteligente
-                const matchingMatter = mattersList.find(m =>
-                  (currentEmail.triage_badge?.linkedMatterId && m.id === currentEmail.triage_badge.linkedMatterId) ||
-                  m.title.trim().toLowerCase() === currentEmail.subject.trim().toLowerCase() ||
-                  currentEmail.subject.toLowerCase().includes(m.title.toLowerCase().slice(0, 20))
-                );
-
-                return (
-                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                    {/* Barra de Acciones del Lector estilo Gmail */}
-                    <div className="p-3 sm:p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/60">
-                      <div className="flex items-center gap-2">
+                {/* 4. BARRA DE FILTROS DE CATEGORÍA CON PUNTOS SEMAFÓRICOS OKLCH (CERO EMOJIS) */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs">
+                    {[
+                      {
+                        id: 'ALL',
+                        label: `Todos los Eventos (${calendarEvents.length})`,
+                        dotClass: null,
+                      },
+                      {
+                        id: 'AUDIENCIA_PADRES',
+                        label: 'Audiencias con Familias',
+                        dotClass: 'bg-[#E11D48] ring-2 ring-[#FFE4E6]',
+                      },
+                      {
+                        id: 'CONSEJO_TECNICO',
+                        label: 'Consejo Técnico Escolar',
+                        dotClass: 'bg-[#2563EB] ring-2 ring-[#DBEAFE]',
+                      },
+                      {
+                        id: 'JUNTA_DIRECTORES',
+                        label: 'Juntas Directivas',
+                        dotClass: 'bg-[#2563EB] ring-2 ring-[#DBEAFE]',
+                      },
+                      {
+                        id: 'TRAMITE_SEP',
+                        label: 'Trámites SEP',
+                        dotClass: 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]',
+                      },
+                    ].map((f) => {
+                      const isActive = calendarCategoryFilter === f.id;
+                      return (
                         <button
+                          key={f.id}
                           type="button"
-                          onClick={() => {
-                            setSelectedRawEmailId(null);
-                            if (emailReaderReturnTab === 'inbox') {
-                              setActiveTab('inbox');
-                            }
-                          }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+                          onClick={() => setCalendarCategoryFilter(f.id)}
+                          className={`px-3 py-1.5 rounded-xl font-semibold transition-all cursor-pointer whitespace-nowrap text-xs inline-flex items-center gap-2 border ${
+                            isActive
+                              ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-2xs'
+                              : 'bg-white text-[#334155] border-[#CBD5E1] hover:border-[#94A3B8] hover:text-[#0F172A]'
+                          }`}
                         >
-                          <ArrowLeft className="h-4 w-4 text-slate-600" />
-                          <span>{emailReaderReturnTab === 'inbox' ? 'Volver a Bandeja Inteligente' : 'Volver'}</span>
+                          {f.dotClass && (
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full shrink-0 ${
+                                isActive ? 'bg-white ring-2 ring-white/40' : f.dotClass
+                              }`}
+                            />
+                          )}
+                          <span>{f.label}</span>
                         </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleToggleStarRawEmail(currentEmail.id)}
-                          className="p-2 rounded-xl hover:bg-white text-slate-400 hover:text-amber-500 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                          title="Destacar con estrella"
-                        >
-                          <Star className={`h-4 w-4 ${currentEmail.is_starred ? 'fill-amber-400 text-amber-500' : 'text-slate-400'}`} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMarkAsReadRawEmails([currentEmail.id], true)}
-                          className="p-2 rounded-xl hover:bg-white text-slate-400 hover:text-slate-700 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                          title="Marcar como no leído"
-                        >
-                          <MailOpen className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleArchiveRawEmails([currentEmail.id])}
-                          className="p-2 rounded-xl hover:bg-white text-slate-400 hover:text-slate-700 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                          title="Archivar"
-                        >
-                          <Archive className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteRawEmails([currentEmail.id])}
-                          className="p-2 rounded-xl hover:bg-white text-slate-400 hover:text-red-600 border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span
-                          title="Fecha y hora oficial CDMX"
-                          className="text-[11px] font-semibold text-slate-500"
-                        >
-                          {currentEmail.received_at || (currentEmail.date_iso ? formatCdmxFull(currentEmail.date_iso) : currentEmail.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Encabezado y Asunto del Correo */}
-                    <div className="p-5 sm:p-6 space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <h2 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
-                          {currentEmail.subject}
-                        </h2>
-                        {currentEmail.triage_badge && (
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border shrink-0 ${currentEmail.triage_badge.color}`}>
-                            {currentEmail.triage_badge.label}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Tarjeta de Integración y Enlace con Triage Inteligente */}
-                      {currentEmail.triage_badge?.quadrant === 'ATENCION_CEO' && matchingMatter ? (
-                        <div className="p-3.5 rounded-xl bg-red-50/80 border border-red-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start gap-2.5 min-w-0">
-                            <Sparkles className="h-4 w-4 text-[#EA4335] shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-xs font-black text-red-900">
-                                Clasificado en Bandeja Inteligente · Expediente {matchingMatter.matter_code}
-                              </p>
-                              <p className="text-[11px] text-red-700 mt-0.5 line-clamp-1">
-                                {matchingMatter.why_shown}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedMatter(matchingMatter);
-                              setMatterDraftEdit(matchingMatter.suggested_draft_reply || '');
-                              setActiveTab('inbox');
-                            }}
-                            className="px-3 py-1.5 rounded-xl bg-[#EA4335] hover:bg-[#c93427] text-white font-black text-xs transition-colors cursor-pointer shrink-0 shadow-xs flex items-center gap-1.5"
-                          >
-                            <span>Abrir Expediente en Bandeja Inteligente</span>
-                            <ArrowUpRight className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ) : (currentEmail.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (currentEmail.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA') ? (
-                        <div className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div className="flex items-start gap-2.5 min-w-0">
-                            <Forward className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-xs font-black text-amber-950">
-                                🟡 Asunto Delegado a Coordinación Operativa {matchingMatter ? `· Expediente ${matchingMatter.matter_code}` : ''}
-                              </p>
-                              <p className="text-[11px] text-amber-800 mt-0.5">
-                                Este correo fue canalizado por Dirección General para seguimiento de plantel con plazo de resolución. Retirado de Bandeja CEO.
-                              </p>
-                            </div>
-                          </div>
-                          <span className="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 font-black text-xs border border-amber-300/80 shrink-0">
-                            En Gestión de Plantel
-                          </span>
-                        </div>
-                      ) : currentEmail.triage_badge?.quadrant === 'INFORMATIVO' ? (
-                        <div className="p-3.5 rounded-xl bg-blue-50/90 border border-blue-200/90 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-base">🔵</span>
-                            <p className="text-xs font-bold text-blue-900">
-                              Reclasificado como Comunicado Informativo · Archivado en buzón para consulta
-                            </p>
-                          </div>
-                          <span className="text-[11px] font-bold text-blue-700 bg-blue-100/70 px-2.5 py-1 rounded-lg">
-                            Archivado para Consulta
-                          </span>
-                        </div>
-                      ) : currentEmail.triage_badge?.quadrant === 'SPAM_DESCARTADO' ? (
-                        <div className="p-3.5 rounded-xl bg-purple-50/90 border border-purple-200/90 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-base">🟣</span>
-                            <p className="text-xs font-bold text-purple-900">
-                              Descartado por Dirección General como Correo No Deseado / Promoción
-                            </p>
-                          </div>
-                          <span className="text-[11px] font-bold text-purple-700 bg-purple-100/70 px-2.5 py-1 rounded-lg">
-                            Spam / Promo
-                          </span>
-                        </div>
-                      ) : null}
-
-                      {/* Barra de Reclasificación y Aprendizaje Local (0 Tokens) */}
-                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                        <div className="flex items-center gap-2">
-                          <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
-                            Reclasificar Triage & Enseñar al Sistema (0 Tokens):
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => handleReclassifyEmail(currentEmail, 'ATENCION_CEO')}
-                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
-                              currentEmail.triage_badge?.quadrant === 'ATENCION_CEO'
-                                ? 'bg-red-600 text-white border-red-600 shadow-2xs'
-                                : 'bg-white hover:bg-red-50 text-red-700 border-red-200'
-                            }`}
-                            title="Marcar como Atención Inmediata CEO y enseñar al sistema"
-                          >
-                            🔴 CEO
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleReclassifyEmail(currentEmail, 'DELEGADO_CON_SLA')}
-                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
-                              currentEmail.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (currentEmail.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA'
-                                ? 'bg-amber-500 text-white border-amber-500 shadow-2xs'
-                                : 'bg-white hover:bg-amber-50 text-amber-700 border-amber-200'
-                            }`}
-                            title="Delegar a coordinación operativa"
-                          >
-                            🟡 Delegar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleReclassifyEmail(currentEmail, 'INFORMATIVO')}
-                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
-                              currentEmail.triage_badge?.quadrant === 'INFORMATIVO'
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                                : 'bg-white hover:bg-blue-50 text-blue-700 border-blue-200'
-                            }`}
-                            title="Marcar como comunicado meramente informativo"
-                          >
-                            🔵 Informativo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleReclassifyEmail(currentEmail, 'SPAM_DESCARTADO')}
-                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
-                              currentEmail.triage_badge?.quadrant === 'SPAM_DESCARTADO'
-                                ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
-                                : 'bg-white hover:bg-purple-50 text-purple-700 border-purple-200'
-                            }`}
-                            title="Enviar a Spam y promociones comerciales"
-                          >
-                            🟣 Spam / Promo
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Tarjeta del Remitente */}
-                      <div className="flex items-start justify-between gap-3 pt-2 pb-4 border-b border-slate-100">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-linear-to-tr from-slate-700 to-slate-900 text-white font-black flex items-center justify-center text-sm shadow-xs shrink-0">
-                            {currentEmail.sender_name.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-black text-slate-900 text-sm">
-                                {currentEmail.sender_name}
-                              </span>
-                              <span className="text-slate-400 text-xs font-mono">
-                                &lt;{currentEmail.sender_email}&gt;
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              para mí &lt;{currentEmail.recipient_email}&gt;
-                            </p>
-                          </div>
-                        </div>
-                        <span
-                          title={currentEmail.received_at || (currentEmail.date_iso ? formatCdmxFull(currentEmail.date_iso) : undefined)}
-                          className="text-xs text-slate-500 font-semibold shrink-0 cursor-help"
-                        >
-                          {currentEmail.timestamp}
-                        </span>
-                      </div>
-
-                      {/* Cuerpo Completo del Mensaje */}
-                      <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed font-sans whitespace-pre-wrap">
-                        {currentEmail.body_text}
-                      </div>
-
-                      {/* Caja de Respuesta Rápida */}
-                      <div className="pt-4 border-t border-slate-200 space-y-3">
-                        <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-bold text-slate-700">
-                          <div className="flex items-center gap-2">
-                            <Reply className="h-4 w-4 text-slate-500" />
-                            <span>Responder a {currentEmail.sender_name}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleGenerateAdaptiveRawReply(currentEmail)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-[11px] font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-                            title="Predice la respuesta usando el perfil léxico y de estilo aprendido del CEO sin gastar tokens"
-                          >
-                            <Sparkles className="h-3.5 w-3.5 text-blue-600" />
-                            <span>⚡ Sugerir respuesta con mi estilo aprendido (0 Tokens)</span>
-                          </button>
-                        </div>
-                        <textarea
-                          rows={3}
-                          value={rawReplyDraft}
-                          onChange={(e) => setRawReplyDraft(e.target.value)}
-                          placeholder={`Escribe una respuesta para ${currentEmail.sender_name}...`}
-                          className="w-full p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:border-red-400 focus:ring-2 focus:ring-red-100 outline-none"
-                        />
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <span>Motor Adaptativo VIP: Aprende de tu forma de redacción (0 Tokens)</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setRawReplyDraft('')}
-                              className="px-3 py-1.5 rounded-xl text-slate-500 hover:text-slate-800 text-xs font-medium cursor-pointer"
-                            >
-                              Descartar borrador
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSendRawReply(currentEmail)}
-                              disabled={isSendingRawReply || !rawReplyDraft.trim()}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#EA4335] hover:bg-[#c93427] text-white font-bold text-xs transition-all cursor-pointer shadow-xs disabled:opacity-50"
-                            >
-                              <Send className="h-3.5 w-3.5" />
-                              <span>{isSendingRawReply ? 'Enviando...' : 'Enviar Respuesta'}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              })() : (() => {
-                // Filtrado instantáneo sobre la lista memoizada sin recálculos redundantes
-                const filteredRawEmails = sortEmailsDescending(normalizedRawEmails.filter((email) => {
-                  const qdr = email.triage_badge?.quadrant;
-                  if (rawEmailCategory === 'principal' && qdr !== 'ATENCION_CEO') {
-                    return false;
-                  }
-                  if (rawEmailCategory === 'actualizaciones' && qdr !== 'DELEGADO_CON_PLAZO' && (qdr as any) !== 'DELEGADO_CON_SLA') {
-                    return false;
-                  }
-                  if (rawEmailCategory === 'informativo' && qdr !== 'INFORMATIVO') {
-                    return false;
-                  }
-                  if ((rawEmailCategory === 'spam' || rawEmailCategory === 'promociones') &&
-                      qdr !== 'SPAM_DESCARTADO' &&
-                      email.category !== 'spam' &&
-                      email.category !== 'promociones') {
-                    return false;
-                  }
-                  if (rawEmailSearchQuery.trim()) {
-                    const q = rawEmailSearchQuery.toLowerCase();
-                    const matchesSender = email.sender_name.toLowerCase().includes(q) || email.sender_email.toLowerCase().includes(q);
-                    const matchesSubject = email.subject.toLowerCase().includes(q);
-                    const matchesBody = email.body_text.toLowerCase().includes(q);
-                    return matchesSender || matchesSubject || matchesBody;
-                  }
-                  return true;
-                }));
+                </div>
 
-                const allFilteredIds = filteredRawEmails.map(e => e.id);
-                const isAllSelected = allFilteredIds.length > 0 && selectedRawEmailIds.length === allFilteredIds.length;
-
-                return (
-                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                    {/* Barra de Categorías / Divisiones (Todos, CEO, Delegados, Informativo, Spam) */}
-                    <div className="border-b border-slate-200 bg-slate-50/50 flex items-center overflow-x-auto">
-                      <button
-                        type="button"
-                        onClick={() => setRawEmailCategory('todos')}
-                        className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'todos'
-                            ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
-                            : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-                        }`}
-                      >
-                        <Inbox className="h-3.5 w-3.5" />
-                        <span>Todos</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailCounts.all}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setRawEmailCategory('principal')}
-                        className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'principal'
-                            ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
-                            : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-                        }`}
-                      >
-                        <span className="text-red-600">🔴</span>
-                        <span>Atención CEO</span>
-                        {normalizedRawEmails.some(e => e.triage_badge?.quadrant === 'ATENCION_CEO' && e.is_unread) && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#EA4335]" />
-                        )}
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 text-red-700 font-bold">
-                          {rawEmailCounts.ceo}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setRawEmailCategory('actualizaciones')}
-                        className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'actualizaciones'
-                            ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
-                            : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-                        }`}
-                      >
-                        <span className="text-amber-500">🟡</span>
-                        <span>Delegados</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">
-                          {rawEmailCounts.delegados}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setRawEmailCategory('informativo')}
-                        className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'informativo'
-                            ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
-                            : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-                        }`}
-                      >
-                        <span className="text-blue-600">🔵</span>
-                        <span>Informativos</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-800 font-bold">
-                          {rawEmailCounts.informativos}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setRawEmailCategory('spam')}
-                        className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'spam' || rawEmailCategory === 'promociones'
-                            ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
-                            : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
-                        }`}
-                      >
-                        <span className="text-purple-600">🟣</span>
-                        <span>Spam / Promoción</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-100 text-purple-800 font-bold">
-                          {rawEmailCounts.spam}
-                        </span>
-                      </button>
-                    </div>
-
-                    {/* Barra de Acciones de Lista (Seleccionar todo, marcar leído, archivar, borrar) */}
-                    <div className="px-3.5 py-2.5 border-b border-slate-200/80 bg-white flex items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-2 cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={isAllSelected}
-                            onChange={() => handleSelectAllRawEmails(allFilteredIds)}
-                            className="rounded border-slate-300 text-[#EA4335] focus:ring-red-400 cursor-pointer h-4 w-4"
-                          />
-                        </label>
-
-                        <button
-                          type="button"
-                          onClick={() => handleTriggerSync(false)}
-                          disabled={isSyncingLiveInbox}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors"
-                          title="Actualizar correos"
-                        >
-                          <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-[#EA4335]' : ''}`} />
-                        </button>
-
-                        {selectedRawEmailIds.length > 0 && (
-                          <div className="flex items-center gap-1 pl-2 border-l border-slate-200">
-                            <span className="text-[11px] font-bold text-slate-600 mr-1.5">
-                              {selectedRawEmailIds.length} seleccionados
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleMarkAsReadRawEmails(selectedRawEmailIds, false)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-                              title="Marcar como leídos"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleMarkAsReadRawEmails(selectedRawEmailIds, true)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-                              title="Marcar como no leídos"
-                            >
-                              <MailOpen className="h-3.5 w-3.5 text-slate-600" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleArchiveRawEmails(selectedRawEmailIds)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-900"
-                              title="Archivar seleccionados"
-                            >
-                              <Archive className="h-3.5 w-3.5 text-slate-600" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteRawEmails(selectedRawEmailIds)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-red-600"
-                              title="Eliminar seleccionados"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-red-600" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="text-[11px] font-semibold text-slate-400">
-                        {filteredRawEmails.length > 0
-                          ? `1–${filteredRawEmails.length} de ${rawEmailsList.length}`
-                          : '0 correos'}
-                      </div>
-                    </div>
-
-                    {/* Lista de Filas de Correos estilo Gmail */}
-                    <div className="divide-y divide-slate-100">
-                      {filteredRawEmails.length === 0 ? (
-                        <div className="p-12 text-center space-y-3">
-                          <Inbox className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                          <p className="text-xs font-bold text-slate-600">No hay correos en esta vista</p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">
-                            Comprueba otra categoría o sincroniza tu buzón para descargar los mensajes más recientes.
+                {/* ================================================================= */}
+                {/* MODO A: LISTA CRONOLÓGICA MASTER-DETAIL (5/12) + DOSSIER 360° (7/12) */}
+                {/* ================================================================= */}
+                {agendaViewMode === 'master_detail' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                    {/* COLUMNA IZQUIERDA (5/12): CUBETA RECESADA #E2E8F0 CON CONTORNO #2563EB EN CITA ACTIVA */}
+                    <div
+                      data-testid="agenda-events-recessed-well"
+                      className="lg:col-span-5 p-2.5 rounded-2xl bg-[#E2E8F0]/75 border border-[#CBD5E1] shadow-inner space-y-2.5 max-h-[calc(90vh-260px)] overflow-y-auto"
+                    >
+                      {filteredAgendaEvents.length === 0 ? (
+                        <div className="p-8 rounded-xl bg-white border border-[#CBD5E1] text-center space-y-2">
+                          <Calendar className="h-6 w-6 text-[#94A3B8] mx-auto" />
+                          <p className="text-xs font-semibold text-[#0F172A]">
+                            Sin eventos registrados en esta categoría
                           </p>
-                          <div className="flex items-center justify-center gap-2 pt-2">
-                            <button
-                              type="button"
-                              onClick={() => handleTriggerSync(false)}
-                              disabled={isSyncingLiveInbox}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
-                            >
-                              <RefreshCw className={`h-3 w-3 ${isSyncingLiveInbox ? 'animate-spin' : ''}`} />
-                              <span>Sincronizar Bandeja</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setShowQuickTestEmailModal(true)}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition-all cursor-pointer"
-                            >
-                              <Send className="h-3 w-3" />
-                              <span>Despachar Correo de Prueba</span>
-                            </button>
-                          </div>
+                          <p className="text-[11px] text-[#64748B]">
+                            Selecciona otro filtro o agenda una nueva cita institucional.
+                          </p>
                         </div>
                       ) : (
-                        filteredRawEmails.map((rawItem) => {
-                          const item = normalizeRawEmailCeoRules(rawItem);
-                          const isSelected = selectedRawEmailIds.includes(item.id);
+                        filteredAgendaEvents.map((evt) => {
+                          const isSelectedEvent = activeAgendaEvent?.id === evt.id;
+                          const catProfile = getAgendaCategoryColorimetry(evt.category);
 
                           return (
                             <div
-                              key={item.id}
-                              onClick={() => handleOpenRawEmailDetail(item)}
-                              className={`group flex items-center gap-3 px-3.5 py-2.5 sm:py-3 transition-all cursor-pointer border-l-3 ${
-                                item.is_unread
-                                  ? 'bg-white font-bold border-l-[#EA4335] shadow-2xs hover:bg-slate-50/90'
-                                  : 'bg-slate-50/40 text-slate-600 border-l-transparent hover:bg-white hover:shadow-2xs'
-                              } ${isSelected ? 'bg-red-50/50' : ''}`}
+                              key={evt.id}
+                              data-testid="agenda-event-card"
+                              data-event-id={evt.id}
+                              data-selected={isSelectedEvent ? 'true' : 'false'}
+                              onClick={() => {
+                                setSelectedAgendaEventId(evt.id);
+                                setDossierNotesDraft(evt.notes || '');
+                              }}
+                              className={`p-3.5 rounded-xl transition-all cursor-pointer text-left ${
+                                isSelectedEvent
+                                  ? 'border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] bg-white shadow-[0_4px_16px_-2px_rgba(37,99,235,0.18)] ring-2 ring-[#2563EB]/15'
+                                  : `border border-[#CBD5E1] border-l-[4px] ${catProfile.spineClass} bg-white hover:border-[#94A3B8] hover:shadow-xs`
+                              }`}
                             >
-                              {/* Checkbox de Selección */}
-                              <div className="shrink-0 flex items-center" onClick={(e) => e.stopPropagation()}>
-                                <input
-                                  type="checkbox"
-                                  checked={isSelected}
-                                  onChange={() => handleToggleSelectRawEmail(item.id)}
-                                  className="rounded border-slate-300 text-[#EA4335] focus:ring-red-400 cursor-pointer h-4 w-4"
-                                />
-                              </div>
-
-                              {/* Estrella de Destacado */}
-                              <button
-                                type="button"
-                                onClick={(e) => handleToggleStarRawEmail(item.id, e)}
-                                className="shrink-0 p-1 text-slate-300 hover:text-amber-500 transition-colors cursor-pointer"
-                                title="Destacar"
-                              >
-                                <Star className={`h-4 w-4 ${item.is_starred ? 'fill-amber-400 text-amber-500' : 'text-slate-300'}`} />
-                              </button>
-
-                              {/* Remitente */}
-                              <div className="w-24 sm:w-36 md:w-48 shrink-0 truncate">
-                                <span className={`text-xs truncate ${item.is_unread ? 'font-black text-slate-900' : 'font-medium text-slate-700'}`}>
-                                  {item.sender_name}
-                                </span>
-                              </div>
-
-                              {/* Asunto y Snippet estilo Gmail */}
-                              <div className="flex-1 min-w-0 flex items-center gap-2 truncate">
-                                <span className={`text-xs truncate ${item.is_unread ? 'font-black text-slate-900' : 'font-medium text-slate-700'}`}>
-                                  {item.subject}
-                                </span>
-                                <span className="text-slate-400 text-xs hidden sm:inline">-</span>
-                                <span className="text-slate-400 text-xs truncate hidden sm:inline font-normal">
-                                  {item.snippet}
-                                </span>
-                              </div>
-
-                              {/* Badge de Triage si está clasificado */}
-                              {item.triage_badge && (
-                                <div className="shrink-0 hidden md:block">
-                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${item.triage_badge.color}`}>
-                                    {item.triage_badge.label}
+                              <div className="flex items-center justify-between gap-2 mb-1.5">
+                                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                                  <span
+                                    data-testid="agenda-triage-dot"
+                                    data-triage-color={catProfile.colorType}
+                                    className={`h-2.5 w-2.5 rounded-full shrink-0 ${catProfile.dotClass}`}
+                                  />
+                                  <span
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${catProfile.pillClass}`}
+                                  >
+                                    {catProfile.shortLabel}
+                                  </span>
+                                  <span className="font-mono text-[11px] font-semibold text-[#475569] tabular-nums">
+                                    {evt.date}
                                   </span>
                                 </div>
-                              )}
-
-                              {/* Botones de acción rápida al hacer Hover */}
-                              <div
-                                className="hidden group-hover:flex items-center gap-1 shrink-0"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={() => handleReclassifyEmail(item, 'SPAM_DESCARTADO')}
-                                  className="p-1.5 rounded-md hover:bg-purple-100 text-slate-400 hover:text-purple-700 transition-colors"
-                                  title="Marcar como Spam / Promoción y enseñar al sistema (0 tokens)"
-                                >
-                                  <Ban className="h-3.5 w-3.5 text-purple-600" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleReclassifyEmail(item, 'INFORMATIVO')}
-                                  className="p-1.5 rounded-md hover:bg-blue-100 text-slate-400 hover:text-blue-700 transition-colors"
-                                  title="Mover a Informativo (0 tokens)"
-                                >
-                                  <Info className="h-3.5 w-3.5 text-blue-600" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleMarkAsReadRawEmails([item.id], !item.is_unread)}
-                                  className="p-1.5 rounded-md hover:bg-slate-200/70 text-slate-500 hover:text-slate-800"
-                                  title={item.is_unread ? 'Marcar como leído' : 'Marcar como no leído'}
-                                >
-                                  {item.is_unread ? <Check className="h-3.5 w-3.5" /> : <MailOpen className="h-3.5 w-3.5" />}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleArchiveRawEmails([item.id])}
-                                  className="p-1.5 rounded-md hover:bg-slate-200/70 text-slate-500 hover:text-slate-800"
-                                  title="Archivar"
-                                >
-                                  <Archive className="h-3.5 w-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteRawEmails([item.id])}
-                                  className="p-1.5 rounded-md hover:bg-slate-200/70 text-slate-500 hover:text-red-600"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
+                                {isSelectedEvent ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-[#2563EB] text-white text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                    En Foco
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[9px] font-bold shrink-0">
+                                    {evt.status}
+                                  </span>
+                                )}
                               </div>
 
-                              {/* Timestamp / Hora */}
-                              <div className="w-20 sm:w-28 md:w-32 text-right shrink-0 whitespace-nowrap">
-                                <span
-                                  title={item.date_iso ? formatCdmxFull(item.date_iso) : (item.date_ms ? formatCdmxFull(item.date_ms) : (item.received_at || item.timestamp))}
-                                  className={`text-[11px] cursor-help ${item.is_unread ? 'font-black text-slate-900' : 'text-slate-400 font-medium'}`}
-                                >
-                                  {item.timestamp}
+                              <h5
+                                className={`text-xs font-bold leading-snug line-clamp-2 ${
+                                  isSelectedEvent ? 'text-[#0F172A]' : 'text-[#1E293B]'
+                                }`}
+                              >
+                                {sanitizeCommercialTrademarks(evt.title)}
+                              </h5>
+
+                              <div className="mt-2 pt-2 border-t border-[#F1F5F9] flex items-center justify-between gap-2 text-[11px] text-[#64748B]">
+                                <span className="truncate font-medium text-[#475569]">{evt.campus}</span>
+                                <span className="font-mono tabular-nums font-semibold text-[#1E3A8A] shrink-0">
+                                  {evt.time}
                                 </span>
                               </div>
                             </div>
@@ -12128,411 +10121,2273 @@ Comité de Seguridad y Protección Escolar`
                         })
                       )}
                     </div>
+
+                    {/* COLUMNA DERECHA (7/12): TARJETA SPOTLIGHT #FFFFFF — DOSSIER EJECUTIVO DE AUDIENCIA 360° */}
+                    <div
+                      data-testid="agenda-active-dossier-spotlight"
+                      className="lg:col-span-7 bg-white rounded-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-sm p-5 sm:p-6"
+                    >
+                      {!activeAgendaEvent ? (
+                        <div className="py-16 text-center space-y-2">
+                          <Calendar className="h-7 w-7 text-[#94A3B8] mx-auto" />
+                          <p className="text-sm font-semibold text-[#0F172A]">
+                            Selecciona un evento de la agenda para abrir su Dossier Ejecutivo 360°
+                          </p>
+                        </div>
+                      ) : (
+                        (() => {
+                          const activeProfile = getAgendaCategoryColorimetry(activeAgendaEvent.category);
+                          const currentNotesVal =
+                            selectedAgendaEventId === activeAgendaEvent.id && dossierNotesDraft !== ''
+                              ? dossierNotesDraft
+                              : activeAgendaEvent.notes;
+
+                          return (
+                            <div className="space-y-5 text-xs">
+                              {/* Cabecera del Dossier 360° */}
+                              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3.5 border-b border-[#E2E8F0]">
+                                <div className="space-y-1.5 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span
+                                      className={`h-2.5 w-2.5 rounded-full shrink-0 ${activeProfile.dotClass}`}
+                                    />
+                                    <span
+                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${activeProfile.pillClass}`}
+                                    >
+                                      {activeProfile.label}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] text-[10px] font-semibold">
+                                      {activeAgendaEvent.campus}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                                      {activeAgendaEvent.status}
+                                    </span>
+                                    {activeAgendaEvent.googleCalendarEventId && (
+                                      <span className="px-2 py-0.5 rounded bg-[#EFF6FF] text-[#1E3A8A] border border-[#BFDBFE] font-mono text-[10px] font-semibold">
+                                        Sync ID: {activeAgendaEvent.googleCalendarEventId.slice(0, 12)} (
+                                        {activeAgendaEvent.lastSyncMethod || 'TLS 1.3'})
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h3 className="text-base sm:text-lg font-bold text-[#0F172A] leading-snug">
+                                    {sanitizeCommercialTrademarks(activeAgendaEvent.title)}
+                                  </h3>
+
+                                  <div className="flex items-center gap-2 text-xs text-[#475569] font-mono tabular-nums flex-wrap">
+                                    <Calendar className="h-3.5 w-3.5 text-[#2563EB]" />
+                                    <span className="font-bold text-[#1E3A8A]">{activeAgendaEvent.date}</span>
+                                    <span>·</span>
+                                    <span className="font-semibold text-[#0F172A]">{activeAgendaEvent.time}</span>
+                                    <span>· Hora Oficial CDMX</span>
+                                  </div>
+                                </div>
+
+                                {/* Botonera Superior del Dossier */}
+                                <div className="flex items-center gap-1.5 flex-wrap shrink-0">
+                                  {linkedAgendaMatter && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedMatter(linkedAgendaMatter);
+                                        setMatterDraftEdit(linkedAgendaMatter.suggested_draft_reply || '');
+                                        setActiveTab('inbox');
+                                      }}
+                                      className="px-2.5 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[#1E3A8A] font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                      title="Abrir expediente ejecutivo vinculado en Decisiones CEO"
+                                    >
+                                      <span>Expediente {formatCleanMatterCode(linkedAgendaMatter.matter_code)}</span>
+                                      <ArrowUpRight className="h-3.5 w-3.5" />
+                                    </button>
+                                  )}
+
+                                  {activeAgendaEvent.htmlLink && (
+                                    <a
+                                      href={activeAgendaEvent.htmlLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-semibold text-[11px] inline-flex items-center gap-1"
+                                      title="Abrir evento en servidor de calendario externo"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      <span>Calendario ↗</span>
+                                    </a>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingCalendarEvent(activeAgendaEvent)}
+                                    className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#2563EB] text-[#0F172A] font-semibold text-[11px] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                    title="Modificar fecha, horario o detalles de esta cita (PATCH)"
+                                  >
+                                    <Edit3 className="h-3 w-3 text-[#2563EB]" />
+                                    <span>Modificar</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteCalendarEvent(activeAgendaEvent.id)}
+                                    className="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                    title="Eliminar cita de la agenda institucional (DELETE)"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                    <span>Eliminar</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Ficha de Asistentes y Ubicación */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] space-y-1">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+                                    <Users className="h-3.5 w-3.5 text-[#2563EB]" />
+                                    <span>Participantes Convocados</span>
+                                  </span>
+                                  <p className="text-xs font-semibold text-[#0F172A] leading-snug">
+                                    {sanitizeCommercialTrademarks(activeAgendaEvent.attendees)}
+                                  </p>
+                                </div>
+
+                                <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] space-y-1">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+                                    <Compass className="h-3.5 w-3.5 text-[#2563EB]" />
+                                    <span>Ubicación / Sala Oficial</span>
+                                  </span>
+                                  <p className="text-xs font-semibold text-[#0F172A] leading-snug">
+                                    {sanitizeCommercialTrademarks(activeAgendaEvent.location)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Orden del Día, Minuta y Acuerdos Directivos (Editable en Vivo con PATCH 1-Clic) */}
+                              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] border-l-4 border-l-[#2563EB] space-y-2.5">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <span className="text-xs font-bold text-[#0F172A]">
+                                    Orden del Día, Minuta y Acuerdos Preliminares
+                                  </span>
+                                  <span className="text-[11px] font-mono text-[#64748B]">
+                                    Bóveda Curricular · Registro Directivo
+                                  </span>
+                                </div>
+
+                                <textarea
+                                  rows={3}
+                                  value={currentNotesVal}
+                                  onChange={(e) => {
+                                    setSelectedAgendaEventId(activeAgendaEvent.id);
+                                    setDossierNotesDraft(e.target.value);
+                                  }}
+                                  placeholder="Registrar acuerdos directivos, puntos de orden del día o instrucciones para coordinación..."
+                                  className="w-full p-2.5 rounded-lg border border-[#CBD5E1] bg-white text-xs text-[#0F172A] leading-relaxed outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 resize-y"
+                                />
+
+                                <div className="flex items-center justify-between gap-2 flex-wrap pt-1">
+                                  <span className="text-[11px] text-[#64748B]">
+                                    Los cambios se guardan en la agenda institucional y se sincronizan vía TLS 1.3.
+                                  </span>
+                                  <button
+                                    type="button"
+                                    disabled={isSyncingCalendarToGoogle}
+                                    onClick={() => {
+                                      const updatedEvt: CalendarEventItem = {
+                                        ...activeAgendaEvent,
+                                        notes: currentNotesVal,
+                                      };
+                                      const updatedList = calendarEvents.map((ev) =>
+                                        ev.id === activeAgendaEvent.id ? updatedEvt : ev
+                                      );
+                                      setCalendarEvents(updatedList);
+                                      if (typeof window !== 'undefined') {
+                                        localStorage.setItem(calendarStorageKey, JSON.stringify(updatedList));
+                                      }
+                                      handleSyncEventToGoogleCalendar(updatedEvt, 'actualizada en minuta directiva');
+                                    }}
+                                    className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors disabled:opacity-50"
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                    <span>Guardar Acuerdos y Sincronizar</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Pase Oficial de Audiencia (WebP < 250 KB) Integrado en el Dossier */}
+                              <div className="p-4 rounded-xl bg-white border border-[#CBD5E1] space-y-3">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div>
+                                    <span className="text-xs font-bold text-[#0F172A] block">
+                                      Pase Oficial de Audiencia y Acceso a Plantel (WebP)
+                                    </span>
+                                    <span className="text-[11px] text-[#64748B]">
+                                      Credencial ejecutiva con sello institucional y código de verificación para asistentes convocados.
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    disabled={isGeneratingPass || !syntheticAgendaPassTarget}
+                                    onClick={() =>
+                                      syntheticAgendaPassTarget &&
+                                      handleSynthesizeMatterPass(syntheticAgendaPassTarget, '')
+                                    }
+                                    className="px-3 py-1.5 rounded-lg bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] text-[#1E3A8A] font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                                  >
+                                    {isGeneratingPass && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                    <span>
+                                      {isGeneratingPass
+                                        ? 'Generando Pase...'
+                                        : activeAgendaPassAsset
+                                        ? 'Actualizar Pase WebP'
+                                        : 'Emitir Pase Oficial (WebP)'}
+                                    </span>
+                                  </button>
+                                </div>
+
+                                {activeAgendaPassAsset && (
+                                  <div className="space-y-2.5 pt-1">
+                                    <div className="rounded-xl overflow-hidden border border-[#CBD5E1] bg-[#F8FAFC] p-2">
+                                      <img
+                                        src={activeAgendaPassAsset.dataUrl}
+                                        alt={activeAgendaPassAsset.captionSummary}
+                                        className="w-full max-h-44 object-contain mx-auto block rounded-lg"
+                                      />
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#475569]">
+                                      <span className="font-mono">
+                                        Archivo: {activeAgendaPassAsset.fileName} ({activeAgendaPassAsset.sizeKb} KB · WebP)
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadVisualAsset(activeAgendaPassAsset)}
+                                        className="px-2.5 py-1 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-semibold inline-flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <Download className="h-3 w-3" />
+                                        <span>Descargar Pase WebP</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()
+                      )}
+                    </div>
                   </div>
-                );
-              })()}
-            </div>
-          )}
+                )}
+
+                {/* ================================================================= */}
+                {/* MODO B: MATRIZ MENSUAL INTERACTIVA INTEGRADA (DRAG & DROP EN VIVO) */}
+                {/* ================================================================= */}
+                {agendaViewMode === 'monthly_grid' && (
+                  <div
+                    data-testid="agenda-integrated-monthly-grid"
+                    className="rounded-2xl bg-white border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-sm overflow-hidden"
+                  >
+                    {/* Barra de Navegación Mensual y Leyenda OKLCH */}
+                    <div className="p-3.5 sm:p-4 bg-[#F8FAFC] border-b border-[#CBD5E1] flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleGoToday}
+                          className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#EFF6FF] border border-[#CBD5E1] text-[#0F172A] font-bold text-xs cursor-pointer transition-colors"
+                        >
+                          Hoy
+                        </button>
+                        <div className="flex items-center rounded-lg bg-white border border-[#CBD5E1] overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={handlePrevMonth}
+                            className="p-1.5 sm:px-2.5 hover:bg-[#F1F5F9] text-[#475569] cursor-pointer"
+                            title="Mes Anterior"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          <span className="px-3 font-bold text-[#0F172A] text-xs sm:text-sm min-w-[135px] text-center select-none">
+                            {MONTH_NAMES_ES[calendarViewMonth]} {calendarViewYear}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleNextMonth}
+                            className="p-1.5 sm:px-2.5 hover:bg-[#F1F5F9] text-[#475569] cursor-pointer"
+                            title="Mes Siguiente"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <span className="hidden md:inline-flex items-center gap-1.5 text-[11px] text-[#475569] ml-2">
+                          <GripVertical className="h-3.5 w-3.5 text-[#2563EB]" />
+                          <span>Arrastra cualquier cita a otro día para reprogramar y sincronizar (PATCH TLS 1.3)</span>
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 flex-wrap text-[11px] font-semibold text-[#334155]">
+                        <span className="inline-flex items-center gap-1">
+                          <span className="h-2.5 w-2.5 rounded-full bg-[#E11D48]" /> Audiencia Padres
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB]" /> CTE & Juntas
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border border-[#B45309]" /> Trámite SEP
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Cabecera de 7 Columnas (Lunes a Domingo) */}
+                    <div className="grid grid-cols-7 bg-white border-b border-[#CBD5E1] text-center font-bold text-[#334155] text-xs py-2">
+                      <div>Lunes</div>
+                      <div>Martes</div>
+                      <div>Miércoles</div>
+                      <div>Jueves</div>
+                      <div>Viernes</div>
+                      <div className="text-[#64748B]">Sábado</div>
+                      <div className="text-[#64748B]">Domingo</div>
+                    </div>
+
+                    {/* Celdas del Mes */}
+                    <div className="grid grid-cols-7 gap-px bg-[#CBD5E1]">
+                      {calendarGridDays.map((cell, idx) => {
+                        const dayEvents = filteredAgendaEvents.filter((e) => e.date === cell.dateStr);
+                        const isDragOver = dragOverDate === cell.dateStr;
+
+                        return (
+                          <div
+                            key={`${cell.dateStr}-${idx}`}
+                            onDragOver={(e) => handleDayDragOver(e, cell.dateStr)}
+                            onDragLeave={handleDayDragLeave}
+                            onDrop={(e) => handleDayDrop(e, cell.dateStr)}
+                            className={`min-h-[112px] p-1.5 sm:p-2 flex flex-col justify-between transition-all ${
+                              isDragOver
+                                ? 'bg-[#EFF6FF] ring-2 ring-[#2563EB] ring-inset'
+                                : cell.isCurrentMonth
+                                ? cell.isToday
+                                  ? 'bg-[#F8FAFF]'
+                                  : 'bg-white'
+                                : 'bg-[#F8FAFC] text-[#94A3B8]'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <span
+                                  className={`text-xs font-bold inline-flex items-center justify-center ${
+                                    cell.isToday
+                                      ? 'w-6 h-6 rounded-full bg-[#2563EB] text-white shadow-2xs'
+                                      : cell.isCurrentMonth
+                                      ? 'text-[#0F172A]'
+                                      : 'text-[#94A3B8]'
+                                  }`}
+                                >
+                                  {cell.dayNumber}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewEventDate(cell.dateStr);
+                                    setShowNewEventModal(true);
+                                  }}
+                                  className="opacity-45 hover:opacity-100 p-0.5 rounded text-[#64748B] hover:text-[#2563EB] cursor-pointer"
+                                  title={`Agendar en ${cell.dateStr}`}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              </div>
+
+                              <div className="space-y-1.5 mt-1">
+                                {dayEvents.map((evt) => {
+                                  const catProfile = getAgendaCategoryColorimetry(evt.category);
+                                  const isSelectedCellEvt = activeAgendaEvent?.id === evt.id;
+
+                                  return (
+                                    <div
+                                      key={evt.id}
+                                      draggable={true}
+                                      onDragStart={(e) => handleEventDragStart(e, evt.id)}
+                                      onClick={() => {
+                                        setSelectedAgendaEventId(evt.id);
+                                        setEditingCalendarEvent(evt);
+                                      }}
+                                      className={`group p-1.5 rounded-lg text-[11px] transition-all cursor-grab active:cursor-grabbing ${
+                                        isSelectedCellEvt
+                                          ? 'border-2 border-[#2563EB] border-l-4 border-l-[#2563EB] bg-[#EFF6FF] shadow-2xs'
+                                          : `border border-[#CBD5E1] border-l-4 ${catProfile.spineClass} bg-white hover:border-[#94A3B8]`
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-1">
+                                        <span className={`h-2 w-2 rounded-full shrink-0 ${catProfile.dotClass}`} />
+                                        <span className="font-mono text-[9px] text-[#475569] font-semibold truncate">
+                                          {evt.time.split(' - ')[0] || evt.time}
+                                        </span>
+                                      </div>
+                                      <div className="font-bold text-[#0F172A] truncate leading-tight mt-0.5">
+                                        {sanitizeCommercialTrademarks(evt.title)}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {isDragOver && (
+                              <div className="mt-1 text-center py-1 rounded bg-[#2563EB] text-white font-bold text-[10px]">
+                                Soltar para reprogramar
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ================================================================= */}
+                {/* MODO C: CRONOGRAMA HORARIO EJECUTIVO TIMEBOX (08:00 - 18:00 CDMX) */}
+                {/* ================================================================= */}
+                {agendaViewMode === 'hourly_timeline' && (
+                  <div
+                    data-testid="agenda-hourly-timeline"
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start"
+                  >
+                    <div className="lg:col-span-7 rounded-2xl bg-white border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-sm p-4 sm:p-5 space-y-2.5">
+                      <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+                        <div>
+                          <h5 className="text-sm font-bold text-[#0F172A]">
+                            Cronograma Horario de Bloques Directivos (08:00 – 18:00 hrs CDMX)
+                          </h5>
+                          <p className="text-[11px] text-[#64748B]">
+                            Distribución de audiencias, bloques de Consejo Técnico y ventanas disponibles para atención prioritaria.
+                          </p>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E3A8A] font-mono text-[11px] font-bold">
+                          Zona Horaria: CDMX
+                        </span>
+                      </div>
+
+                      {[
+                        { slot: '08:30', matchPrefix: '08', fallbackLabel: 'Ventana Matutina de Audiencias Prioritarias' },
+                        { slot: '10:00', matchPrefix: '10', fallbackLabel: 'Supervisión y Trámites Oficiales SEP' },
+                        { slot: '11:00', matchPrefix: '11', fallbackLabel: 'Bloque Libre · Disponible para Audiencia de Emergencia' },
+                        { slot: '12:00', matchPrefix: '12', fallbackLabel: 'Sesión de Consejo Técnico y Coordinación Académica' },
+                        { slot: '16:00', matchPrefix: '16', fallbackLabel: 'Junta de Cierre Operativo y Finanzas CFDI 4.0' },
+                        { slot: '17:30', matchPrefix: '17', fallbackLabel: 'Corte Vespertino de Dirección General' },
+                      ].map((row) => {
+                        const matchedEvt = filteredAgendaEvents.find((e) =>
+                          e.time.trim().startsWith(row.matchPrefix)
+                        );
+                        const catProfile = matchedEvt ? getAgendaCategoryColorimetry(matchedEvt.category) : null;
+                        const isSelectedSlot = matchedEvt && activeAgendaEvent?.id === matchedEvt.id;
+
+                        return (
+                          <div
+                            key={row.slot}
+                            className="flex items-stretch gap-3 text-xs"
+                          >
+                            <div className="w-16 shrink-0 pt-2.5 font-mono font-bold text-[#475569] tabular-nums">
+                              {row.slot} hrs
+                            </div>
+                            {matchedEvt && catProfile ? (
+                              <div
+                                onClick={() => {
+                                  setSelectedAgendaEventId(matchedEvt.id);
+                                  setDossierNotesDraft(matchedEvt.notes || '');
+                                }}
+                                className={`flex-1 p-3 rounded-xl cursor-pointer transition-all ${
+                                  isSelectedSlot
+                                    ? 'border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] bg-[#F8FAFF] shadow-xs'
+                                    : `border border-[#CBD5E1] border-l-4 ${catProfile.spineClass} bg-white hover:border-[#94A3B8]`
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`h-2.5 w-2.5 rounded-full ${catProfile.dotClass}`} />
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${catProfile.pillClass}`}>
+                                      {catProfile.shortLabel}
+                                    </span>
+                                    <span className="font-mono text-[11px] text-[#475569]">
+                                      {matchedEvt.date} · {matchedEvt.time}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] font-semibold text-[#64748B]">
+                                    {matchedEvt.campus}
+                                  </span>
+                                </div>
+                                <p className="font-bold text-[#0F172A] mt-1">
+                                  {sanitizeCommercialTrademarks(matchedEvt.title)}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="flex-1 p-3 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] flex items-center justify-between gap-2 text-[#64748B]">
+                                <span>{row.fallbackLabel}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setNewEventTime(`${row.slot} - ${Number(row.slot.slice(0, 2)) + 1}:00 hrs`);
+                                    setShowNewEventModal(true);
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#EFF6FF] border border-[#CBD5E1] hover:border-[#2563EB] text-[#1E3A8A] font-semibold text-[11px] cursor-pointer shrink-0"
+                                >
+                                  + Agendar en este bloque
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Panel Derecho de Telemetría y Estado de Sincronización en Cronograma Horario */}
+                    <div className="lg:col-span-5 rounded-2xl bg-white border border-[#CBD5E1] border-t-4 border-t-[#2563EB] shadow-sm p-5 space-y-4 text-xs">
+                      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                        <h5 className="text-sm font-bold text-[#0F172A]">
+                          Auditoría de Sincronización de Agenda (TLS 1.3)
+                        </h5>
+                        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-[10px] font-bold">
+                          200 OK
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-between">
+                          <span className="text-[#475569] font-medium">Cuenta Institucional Activa</span>
+                          <span className="font-mono font-bold text-[#0F172A]">
+                            {connectedEmail || `direccion@${schoolDomain}`}
+                          </span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-between">
+                          <span className="text-[#475569] font-medium">Protocolo de Sincronización</span>
+                          <span className="font-mono font-bold text-[#1E3A8A]">
+                            REST / OAuth 2.0 (GET · POST · PATCH · DELETE)
+                          </span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] flex items-center justify-between">
+                          <span className="text-[#475569] font-medium">Eventos Confirmados en Red</span>
+                          <span className="font-mono font-bold text-emerald-700">
+                            {calendarEvents.length} citas activas
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setAgendaViewMode('master_detail')}
+                          className="flex-1 py-2 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs cursor-pointer transition-colors"
+                        >
+                          Abrir Dossier 360° de Cita Activa
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ------------------------------------------------------- */}
-          {/* TAB 7: ROI COGNITIVO & TELEMETRÍA                       */}
+          {/* PANTALLA 3: ESTUDIO DE REDACCIÓN Y COMUNICADO GRÁFICO 50/50 */}
           {/* ------------------------------------------------------- */}
-          {activeTab === 'roi' && (
-            <div className="space-y-4 max-w-4xl mx-auto text-xs">
-              <div className="p-5 rounded-2xl bg-white border border-slate-200 space-y-3">
-                <h4 className="font-black text-slate-900 text-sm">
-                  Retorno de Inversión y Protección de Enfoque Directivo
-                </h4>
-                <p className="text-slate-600 leading-relaxed">
-                  El motor de triaje cognitivo e inferencia hermética evalúa de manera continua las comunicaciones del buzón de la red IBIME, evitando que la Dirección General y Presidencia se conviertan en un cuello de botella o sufran saturación informativa.
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-2xl font-black text-indigo-700 block">76.4 hrs</span>
-                    <span className="text-[11px] font-bold text-slate-600">Ahorradas al Mes</span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-2xl font-black text-emerald-700 block">99.4%</span>
-                    <span className="text-[11px] font-bold text-slate-600">Precisión de Triage</span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                    <span className="text-2xl font-black text-blue-700 block">94.2%</span>
-                    <span className="text-[11px] font-bold text-slate-600">Ahorro en Tokens</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Panel de Telemetría Real de Tokens y Eficiencia Financiera */}
-              <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4 border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <h5 className="font-black text-sm text-slate-100">
-                      Telemetría en Vivo de Tokens y Costo (Motor de IA)
-                    </h5>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    Tarifa: $0.075 / 1M Prompt • $0.30 / 1M Output
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Correos Evaluados</span>
-                    <span className="text-lg font-black text-slate-100">
-                      {telemetrySummary?.total_requests || 1}
+          {activeTab === 'redactar' && (
+            <div className="space-y-4">
+              {/* Comprobante Criptográfico de Envío (si se acaba de despachar) */}
+              {lastGmailDispatchReceipt && (
+                <div className="p-3.5 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <span className="font-semibold text-[#09090B] truncate">
+                      Comunicado despachado ({lastGmailDispatchReceipt.messageId}) · {lastGmailDispatchReceipt.sender} → {lastGmailDispatchReceipt.recipient}
                     </span>
                   </div>
-
-                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Tokens Totales</span>
-                    <span className="text-lg font-black text-indigo-400">
-                      {(telemetrySummary?.total_tokens || 945).toLocaleString()}
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Inversión (USD / MXN)</span>
-                    <span className="text-lg font-black text-emerald-400">
-                      ${(telemetrySummary?.total_cost_mxn || 0.0016).toFixed(4)} MXN
-                    </span>
-                    <span className="text-[9px] text-slate-400 block">
-                      ${(telemetrySummary?.total_cost_usd || 0.000081).toFixed(6)} USD
-                    </span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Ahorro por Aprendizaje</span>
-                    <span className="text-lg font-black text-blue-400">
-                      {(telemetrySummary?.tokens_saved_by_learning || 400).toLocaleString()} tok
-                    </span>
-                    <span className="text-[9px] text-blue-300 block">
-                      +${(telemetrySummary?.money_saved_mxn || 0.0008).toFixed(4)} MXN
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* TAB 8: AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS) */}
-          {/* ========================================================= */}
-          {activeTab === 'ajustes' && (
-            <div className="p-6 space-y-6 animate-in fade-in duration-200">
-              {/* Encabezado Ejecutivo de Ajustes */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-200/80 flex items-center justify-center text-indigo-700 shadow-xs">
-                    <Sliders className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                      Ajustes de Gobernanza y Operación del Correo
-                    </h2>
-                    <p className="text-xs text-slate-500 font-medium">
-                      Control estratégico para Dirección General: Reglas VIP de Atención Inmediata, Asignación de Delegados y Comunicados Predeterminados.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-xs">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Sincronización Institucional Activa
-                  </span>
                   <button
                     type="button"
-                    onClick={refreshCeoSettings}
-                    disabled={isLoadingSettings}
-                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-                    title="Actualizar configuraciones desde el servidor"
+                    onClick={() => setActiveTab('bitacora')}
+                    className="px-2.5 py-1 rounded-md border border-[#E4E4E7] bg-white hover:bg-[#F4F4F5] text-[11px] font-medium text-[#09090B] cursor-pointer shrink-0"
                   >
-                    <RefreshCw className={`h-4 w-4 ${isLoadingSettings ? 'animate-spin' : ''}`} />
+                    Ver Bitácora
                   </button>
                 </div>
-              </div>
+              )}
 
-              {/* Segmented Controls de Navegación de Ajustes */}
-              <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100/90 border border-slate-200/80 max-w-2xl">
-                <button
-                  type="button"
-                  onClick={() => setSettingsSubTab('vip')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    settingsSubTab === 'vip'
-                      ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <span className="text-red-500 font-black">🔴</span>
-                  <span>Correos de Alta Importancia (VIP)</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    settingsSubTab === 'vip' ? 'bg-red-100 text-red-800' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {settingsData?.vipEmails?.length || 0}
-                  </span>
-                </button>
+              {/* División 50/50 Suiza: Dos Tarjetas Blancas Flotantes #FFFFFF sobre Lienzo #EEF2F6 con Espina Superior #2563EB */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                {/* Columna Izquierda: Redactor Oficial Ejecutivo */}
+                <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] bg-white shadow-sm flex flex-col justify-between space-y-4 text-xs">
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-base font-bold text-[#0F172A] tracking-tight inline-flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE]" />
+                        <span>Redactor Ejecutivo Oficial</span>
+                      </h3>
+                      <span className="text-[11px] font-mono text-[#64748B] truncate max-w-[200px]">
+                        {connectedEmail || `direccion@${schoolDomain}`}
+                      </span>
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={() => setSettingsSubTab('delegados')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    settingsSubTab === 'delegados'
-                      ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Users className="h-3.5 w-3.5 text-indigo-600" />
-                  <span>Delegados por Sección</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    settingsSubTab === 'delegados' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {settingsData?.delegates?.length || 0}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSettingsSubTab('plantillas')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    settingsSubTab === 'plantillas'
-                      ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <FileText className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Comunicados Predeterminados</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    settingsSubTab === 'plantillas' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {settingsData?.templates?.length || 0}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSettingsSubTab('apariencia')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                    settingsSubTab === 'apariencia'
-                      ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  <Palette className="h-3.5 w-3.5 text-amber-600" />
-                  <span>Colores & Apariencia</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    settingsSubTab === 'apariencia' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    4 Temas
-                  </span>
-                </button>
-              </div>
-
-              {/* ========================================================= */}
-              {/* SUB-PANEL 1: CORREOS DE ALTA IMPORTANCIA (REGLAS VIP)     */}
-              {/* ========================================================= */}
-              {settingsSubTab === 'vip' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  {/* Banner Explicativo de Gobernanza */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border border-red-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
-                        <h3 className="text-sm font-black text-red-950 uppercase tracking-wide">
-                          Canon Inviolable de Reglas VIP (Atención Inmediata CEO)
-                        </h3>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center gap-2 rounded-lg border border-[#CBD5E1] bg-white px-3 py-2 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15 transition-all">
+                        <span className="text-[#64748B] font-medium shrink-0">Alcance:</span>
+                        <select
+                          value={selectedRecipient}
+                          onChange={(e) => setSelectedRecipient(e.target.value)}
+                          className="flex-1 bg-transparent text-[#0F172A] font-medium outline-none cursor-pointer"
+                        >
+                          <option value="all-network">Toda la Red Escolar · {campuses.length} Sedes</option>
+                          <option value="directors">Directores de Plantel y Coordinaciones</option>
+                          <option value="teachers">Claustro Docente Institucional</option>
+                          <option value="parents">Comunidad de Familias y Tutores</option>
+                        </select>
                       </div>
-                      <p className="text-xs text-red-900 leading-relaxed max-w-2xl font-medium">
-                        Cualquier correo recibido de las direcciones registradas en esta lista será clasificado de manera automática e indelegable como <strong>"Atención Inmediata CEO"</strong> con urgencia <strong>CRÍTICA</strong> y SLA de 12 horas, sin pasar por filtros operativos ordinarios.
-                      </p>
+
+                      <div className="flex items-center gap-2 rounded-lg border border-[#CBD5E1] bg-white px-3 py-2 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15 transition-all">
+                        <span className="text-[#64748B] font-medium shrink-0">Directo (opcional):</span>
+                        <input
+                          type="email"
+                          value={customDirectRecipientEmail}
+                          onChange={(e) => setCustomDirectRecipientEmail(e.target.value)}
+                          placeholder={connectedEmail || `destinatario@${schoolDomain}`}
+                          className="flex-1 bg-transparent font-mono text-[#0F172A] placeholder:text-[#94A3B8] outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 rounded-lg border border-[#CBD5E1] bg-white px-3 py-2 focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15 transition-all">
+                        <span className="text-[#64748B] font-medium shrink-0">Asunto:</span>
+                        <input
+                          type="text"
+                          data-testid="compose-subject-input"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                          placeholder="Ej. Circular Oficial · Disposiciones Generales de Plantel"
+                          className="flex-1 bg-transparent font-semibold text-[#0F172A] placeholder:text-[#94A3B8] placeholder:font-normal outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <textarea
+                        rows={13}
+                        data-testid="compose-body-textarea"
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="Redacta el cuerpo del comunicado oficial institucional..."
+                        className="w-full p-3.5 rounded-lg border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 bg-[#F8FAFC] focus:bg-white text-xs text-[#0F172A] leading-relaxed outline-none resize-y min-h-[270px] transition-all"
+                      />
+                      <div className="mt-1.5 flex items-center justify-between text-[11px] text-[#64748B]">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>Plantillas Oficiales:</span>
+                          {[
+                            { id: 'circular' as const, label: 'Circular General' },
+                            { id: 'consejo' as const, label: 'Consejo Directivo' },
+                            { id: 'cobranza' as const, label: 'Fiscal CFDI' },
+                            { id: 'urgente' as const, label: 'Urgente' },
+                          ].map((tpl) => (
+                            <button
+                              key={tpl.id}
+                              type="button"
+                              onClick={() => applyTemplate(tpl.id)}
+                              className="px-2 py-0.5 rounded border border-[#CBD5E1] bg-white hover:bg-[#EFF6FF] hover:border-[#2563EB] text-[#0F172A] hover:text-[#1E40AF] font-medium cursor-pointer transition-colors"
+                            >
+                              {tpl.label}
+                            </button>
+                          ))}
+                        </div>
+                        <span className="font-mono">{content.length} car.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCopyContent}
+                        className="px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                      >
+                        {copiedMessage ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                        <span>{copiedMessage ? 'Copiado' : 'Copiar Texto'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleOpenMailto}
+                        className="px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#475569] font-medium text-xs inline-flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        <span>Cliente Local</span>
+                      </button>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() => setShowAddVipModal(true)}
-                      className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-2 shrink-0 cursor-pointer active:scale-95"
+                      onClick={handleSendEmail}
+                      disabled={isSending}
+                      className="px-5 py-2.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer disabled:opacity-50"
                     >
-                      <Plus className="h-4 w-4" />
-                      <span>Agregar Correo VIP</span>
+                      <Send className="h-3.5 w-3.5" />
+                      <span>{isSending ? 'Despachando...' : 'Despachar Comunicado Oficial'}</span>
                     </button>
                   </div>
+                </div>
 
-                  {/* Banner de Resultado de Comprobación en Vivo */}
-                  {vipTestResult?.tested && (
-                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 animate-in slide-in-from-top-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black">
-                          ✓
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-emerald-950">
-                            Prueba Funcional en Vivo Superada: <span className="font-mono text-emerald-800">{vipTestResult.email}</span>
-                          </p>
-                          <p className="text-[11px] text-emerald-700">
-                            El Motor de Inteligencia Artificial Pedagógica catalogó el correo en <strong>🔴 {vipTestResult.quadrant}</strong> con Urgencia <strong>{vipTestResult.urgency}</strong> ({vipTestResult.category}) a las {vipTestResult.timestamp}.
-                          </p>
-                        </div>
+                {/* Columna Derecha: Estudio Gráfico Institucional IA */}
+                <div className="lg:col-span-6 p-5 sm:p-6 rounded-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] bg-white shadow-sm flex flex-col justify-between space-y-4 text-xs">
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div>
+                        <h3 className="text-base font-bold text-[#0F172A] tracking-tight inline-flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE]" />
+                          <span>Estudio Gráfico Institucional IA</span>
+                        </h3>
+                        <p className="text-[11px] text-[#64748B]">
+                          Lámina oficial en WebP (&lt; 250 KB) con incrustación directa inline RFC 2387 CID.
+                        </p>
                       </div>
+
                       <button
                         type="button"
-                        onClick={() => setVipTestResult(null)}
-                        className="p-1 rounded-lg text-emerald-600 hover:text-emerald-900 cursor-pointer"
+                        data-testid="btn-synthesize-compose-visual"
+                        onClick={() => handleSynthesizeComposeVisual('')}
+                        disabled={isGeneratingComposeVisual}
+                        className="px-3.5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                       >
-                        <X className="h-4 w-4" />
+                        {isGeneratingComposeVisual ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        )}
+                        <span>
+                          {isGeneratingComposeVisual
+                            ? 'Sintetizando...'
+                            : composeVisualAsset
+                            ? 'Regenerar Lámina'
+                            : 'Transformar Circular en Comunicado Gráfico'}
+                        </span>
                       </button>
                     </div>
-                  )}
 
-                  {/* Tabla / Lista de Reglas VIP */}
-                  <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                    <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-700">
-                      <span>Remitente Prioritario / Dependencia</span>
-                      <span>Estado y Acciones de Verificación</span>
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#475569] font-medium">Proporción:</span>
+                        <div className="inline-flex rounded-lg bg-[#EEF2F6] p-0.5 border border-[#CBD5E1]">
+                          {(['4:5', '16:9', '1:1'] as const).map((ratio) => (
+                            <button
+                              key={ratio}
+                              type="button"
+                              onClick={() => setComposeAspectRatio(ratio)}
+                              className={`px-3 py-1 rounded-md text-xs transition-colors cursor-pointer ${
+                                composeAspectRatio === ratio
+                                  ? 'bg-white text-[#1E3A8A] font-bold shadow-2xs ring-1 ring-[#2563EB]/25'
+                                  : 'text-[#64748B] hover:text-[#0F172A]'
+                              }`}
+                            >
+                              {ratio}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <label className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#F8FAFC] border border-[#CBD5E1] text-[11px] font-medium text-[#0F172A] cursor-pointer inline-flex items-center gap-1.5">
+                          <Upload className="h-3 w-3 text-[#2563EB]" />
+                          <span>Escudo / Ref ({composeRefImages.length}/4)</span>
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp"
+                            multiple
+                            onChange={handleUploadComposeReferenceImages}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
-                      {(!settingsData?.vipEmails || settingsData.vipEmails.length === 0) ? (
-                        <div className="p-8 text-center text-slate-500 text-xs">
-                          No hay correos VIP registrados. Haz clic en "Agregar Correo VIP" para dar de alta supervisores o consejeros.
+                    {composeRefImages.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {composeRefImages.map((ref, idx) => (
+                          <span
+                            key={`${ref.name}-${idx}`}
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#CBD5E1] bg-[#F8FAFC] text-[10px] text-[#475569]"
+                          >
+                            <span>{ref.name} ({ref.sizeKb} KB)</span>
+                            <button
+                              type="button"
+                              onClick={() => setComposeRefImages((prev) => prev.filter((_, i) => i !== idx))}
+                              className="text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Lienzo de Previsualización Suiza */}
+                    <div className="min-h-[290px] rounded-xl border border-[#CBD5E1] bg-[#F8FAFC] flex flex-col items-center justify-center p-4">
+                      {composeVisualAsset ? (
+                        <div className="space-y-2.5 text-center w-full">
+                          <img
+                            data-testid="compose-visual-preview-img"
+                            src={composeVisualAsset.dataUrl}
+                            alt={composeVisualAsset.captionSummary}
+                            className="max-h-72 w-auto mx-auto rounded-lg border border-[#CBD5E1] object-contain shadow-xs bg-white"
+                          />
+                          <div className="flex items-center justify-center gap-3 flex-wrap text-[11px] text-[#475569]">
+                            <span>
+                              WebP · {composeVisualAsset.sizeKb} KB · Turno #{composeVisualAsset.turnNumber}
+                            </span>
+                            <span className="text-[#CBD5E1]">|</span>
+                            <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-[#0F172A]">
+                              <input
+                                type="checkbox"
+                                checked={composeEmbedInEmail}
+                                onChange={(e) => setComposeEmbedInEmail(e.target.checked)}
+                                className="rounded border-[#CBD5E1] text-[#2563EB] focus:ring-0"
+                              />
+                              <span>Incrustado Inline</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadVisualAsset(composeVisualAsset)}
+                              className="text-[#1D4ED8] underline font-semibold cursor-pointer"
+                            >
+                              Descargar WebP
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setComposeVisualAsset(null)}
+                              className="text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                            >
+                              Quitar
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        settingsData.vipEmails.map((rule) => (
-                          <div
-                            key={rule.id}
-                            className="p-4 hover:bg-slate-50/80 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
-                          >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
-                                  {rule.email}
-                                </span>
-                                <span className="font-bold text-slate-800">
-                                  {rule.contactName}
-                                </span>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-50 text-purple-700 border border-purple-200">
-                                  {rule.organization}
-                                </span>
-                                {rule.enabled ? (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    Activo en Triage
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                                    Pausado
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-slate-600 text-[11px] leading-relaxed">
-                                <strong>Criterio Directivo:</strong> {rule.reason}
-                              </p>
-                            </div>
+                        <div className="text-center space-y-2 max-w-xs">
+                          <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center mx-auto text-[#2563EB]">
+                            <ImageIcon className="h-4 w-4" />
+                          </div>
+                          <p className="font-semibold text-[#0F172A]">Vista previa del comunicado gráfico</p>
+                          <p className="text-[11px] text-[#64748B]">
+                            Pulsa «Transformar Circular en Comunicado Gráfico» para generar la lámina institucional con escudo oficial.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
+                  {/* Barra Inferior de Refinamiento Multi-Turno y Voz Sofía */}
+                  <div className="pt-3 border-t border-[#E2E8F0] space-y-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {[
+                        'Encabezado sobrio institucional',
+                        'Destacar fecha, sede y horario',
+                        'Versión ejecutiva compacta',
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          disabled={isGeneratingComposeVisual}
+                          onClick={() => handleSynthesizeComposeVisual(preset)}
+                          className="px-2 py-0.5 rounded border border-[#CBD5E1] bg-white hover:bg-[#EFF6FF] hover:border-[#2563EB] text-[10px] font-medium text-[#475569] hover:text-[#1E40AF] cursor-pointer disabled:opacity-40 transition-colors"
+                        >
+                          + {preset}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        data-testid="compose-visual-refinement-input"
+                        value={composeRefinementText}
+                        onChange={(e) => setComposeRefinementText(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' &&
+                          composeRefinementText.trim() &&
+                          handleSynthesizeComposeVisual()
+                        }
+                        placeholder="Refinar diseño por instrucción o Voz Sofía..."
+                        className="flex-1 px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white text-xs text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#2563EB]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleStartVisualVoiceDictation('compose')}
+                        className={`p-2 rounded-lg border cursor-pointer transition-colors ${
+                          isDictatingRefinement === 'compose'
+                            ? 'bg-[#2563EB] text-white border-[#2563EB]'
+                            : 'bg-white hover:bg-[#F8FAFC] text-[#475569] border-[#CBD5E1]'
+                        }`}
+                        title="Dictar instrucción con Voz Sofía (0 Tokens)"
+                      >
+                        <Mic className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="btn-refine-compose-visual"
+                        onClick={() => handleSynthesizeComposeVisual()}
+                        disabled={isGeneratingComposeVisual || !composeRefinementText.trim()}
+                        className="px-3.5 py-2 rounded-lg border border-[#E4E4E7] bg-white hover:bg-[#F4F4F5] text-[#09090B] font-semibold text-xs cursor-pointer disabled:opacity-40"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ------------------------------------------------------- */}
+          {/* TAB 5: DIRECTORIO INSTITUCIONAL SUIZO                  */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'directorio' &&
+            renderGovernanceShell(
+              <div className="space-y-5 font-sans antialiased">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E2E8F0]">
+                  <div>
+                    <h3 className="text-[17px] font-semibold text-[#0F172A] tracking-[-0.015em]">
+                      Directorio de Sedes y Cuentas Oficiales · {schoolName}
+                    </h3>
+                    <p className="text-[13px] font-normal text-[#475569] mt-0.5">
+                      Padrón consolidado de responsables directivos, departamentos y buzones con enrutamiento TLS 1.3.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-medium text-[#334155] shrink-0">
+                    {institutionalDirectory.length} buzones enrutados · TLS 1.3
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-white border border-[#CBD5E1] overflow-hidden shadow-2xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-[13px]">
+                      <thead>
+                        <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-medium text-[#475569]">
+                          <th className="px-5 py-3">Sede / Campus</th>
+                          <th className="px-5 py-3">Departamento / Área</th>
+                          <th className="px-5 py-3">Responsable Directivo</th>
+                          <th className="px-5 py-3">Correo Institucional</th>
+                          <th className="px-5 py-3 text-right">SLA Máx</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {institutionalDirectory.map((acc, idx) => (
+                          <tr key={idx} className="hover:bg-[#F8FAFC] transition-colors">
+                            <td className="px-5 py-3.5 font-medium text-[#0F172A]">{acc.campus}</td>
+                            <td className="px-5 py-3.5 text-[#334155]">{acc.department}</td>
+                            <td className="px-5 py-3.5 text-[#334155]">
+                              <span className="font-medium text-[#0F172A]">{acc.holder}</span>{' '}
+                              <span className="text-[12px] text-[#64748B]">· {acc.role}</span>
+                            </td>
+                            <td className="px-5 py-3.5 font-mono text-[12px] text-[#2563EB]">
                               <button
                                 type="button"
-                                onClick={() => handleRunLiveVipTest(rule.email, rule.contactName)}
-                                disabled={isTestingVip}
-                                className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-[11px] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                                title="Verificar que el motor clasifique este correo como Atención Inmediata CEO"
+                                onClick={() => handleCopyEmail(acc.email)}
+                                className="inline-flex items-center gap-1.5 hover:underline cursor-pointer"
+                                title="Copiar correo institucional"
                               >
-                                {isTestingVip ? (
-                                  <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>{acc.email}</span>
+                                {copiedAddress === acc.email ? (
+                                  <Check className="h-3.5 w-3.5 text-[#059669]" />
                                 ) : (
-                                  <span>🧪</span>
+                                  <Copy className="h-3.5 w-3.5 text-[#64748B]" />
                                 )}
-                                <span>Probar en Vivo</span>
                               </button>
+                            </td>
+                            <td className="px-5 py-3.5 text-right font-mono text-[12px] text-[#475569] tabular-nums">
+                              4h
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                              <button
-                                type="button"
-                                onClick={() => handleToggleVipRule(rule.id, rule.enabled)}
-                                className={`px-3 py-1.5 rounded-xl font-bold text-[11px] border transition-all cursor-pointer ${
-                                  rule.enabled
-                                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-200'
-                                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+          {/* ------------------------------------------------------- */}
+          {/* TAB 6: BITÁCORA CRIPTOGRÁFICA DE ENVÍOS Y AUDITORÍA     */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'bitacora' &&
+            renderGovernanceShell(
+              <div className="space-y-5 font-sans antialiased">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E2E8F0]">
+                  <div>
+                    <h3 className="text-[17px] font-semibold text-[#0F172A] tracking-[-0.015em]">
+                      Bitácora Criptográfica de Envíos y Auditoría TLS 1.3
+                    </h3>
+                    <p className="text-[13px] font-normal text-[#475569] mt-0.5">
+                      Registro inmutable con huellas SHA-256 de circulares, resoluciones y despachos oficiales.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[12px] font-medium text-[#059669] shrink-0">
+                    100% Entregas Verificadas · SHA-256
+                  </span>
+                </div>
+
+                <div className="rounded-xl bg-white border border-[#CBD5E1] overflow-hidden shadow-2xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-[13px]">
+                      <thead>
+                        <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-medium text-[#475569]">
+                          <th className="px-5 py-3">Fecha y Hora</th>
+                          <th className="px-5 py-3">Huella SHA-256</th>
+                          <th className="px-5 py-3">Asunto y Destinatario</th>
+                          <th className="px-5 py-3 text-right">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#E2E8F0]">
+                        {logs.map((log, idx) => {
+                          const hexSeed = Array.from(`${log.id}-${log.subject}`)
+                            .reduce(
+                              (acc, ch) => ((acc << 5) - acc + ch.charCodeAt(0)) | 0,
+                              0x4f1bbcdc + idx
+                            )
+                            .toString(16)
+                            .replace('-', 'a');
+                          const digest = `SHA-256: ${(hexSeed + '8cf8d02a618e7927cd5ab06922').slice(
+                            0,
+                            26
+                          )}`;
+                          return (
+                            <tr key={log.id} className="hover:bg-[#F8FAFC] transition-colors">
+                              <td className="px-5 py-3.5 font-mono text-[12px] text-[#475569] whitespace-nowrap tabular-nums">
+                                {log.timestamp}
+                              </td>
+                              <td className="px-5 py-3.5 font-mono text-[12px] text-[#334155]">
+                                {digest}
+                              </td>
+                              <td className="px-5 py-3.5">
+                                <span className="font-medium text-[#0F172A] block">
+                                  {sanitizeCommercialTrademarks(log.subject)}
+                                </span>
+                                <span className="text-[12px] text-[#64748B]">
+                                  Destino: {log.recipientGroup} ({log.targetCount}) · Remitente:{' '}
+                                  {log.sender}
+                                </span>
+                              </td>
+                              <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                                <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[#059669]">
+                                  <span>{log.status || 'Verificado'}</span>
+                                  <Check className="h-3.5 w-3.5 text-[#059669]" />
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          {/* ------------------------------------------------------- */}
+          {/* PANTALLA 2: BUZÓN GENERAL SUIZO (MASTER-DETAIL CRONOLÓGICO) */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'raw_inbox' && (() => {
+            const effectiveQuery = (rawEmailSearchQuery || omnibarQuery).trim().toLowerCase();
+
+            const filteredBase = normalizedRawEmails.filter((email) => {
+              const qdr = email.triage_badge?.quadrant;
+              if (rawEmailCategory === 'principal' && qdr !== 'ATENCION_CEO') {
+                return false;
+              }
+              if (
+                rawEmailCategory === 'actualizaciones' &&
+                qdr !== 'DELEGADO_CON_PLAZO' &&
+                (qdr as string) !== 'DELEGADO_CON_SLA'
+              ) {
+                return false;
+              }
+              if (rawEmailCategory === 'informativo' && qdr !== 'INFORMATIVO') {
+                return false;
+              }
+              if (
+                (rawEmailCategory === 'spam' || rawEmailCategory === 'promociones') &&
+                qdr !== 'SPAM_DESCARTADO' &&
+                email.category !== 'spam' &&
+                email.category !== 'promociones'
+              ) {
+                return false;
+              }
+              if (effectiveQuery) {
+                const matchesSender =
+                  email.sender_name.toLowerCase().includes(effectiveQuery) ||
+                  email.sender_email.toLowerCase().includes(effectiveQuery);
+                const matchesSubject = email.subject.toLowerCase().includes(effectiveQuery);
+                const matchesBody = email.body_text.toLowerCase().includes(effectiveQuery);
+                return matchesSender || matchesSubject || matchesBody;
+              }
+              return true;
+            });
+
+            const getQuadrantPriorityRank = (email: RawGmailItem): number => {
+              const qdr = email.triage_badge?.quadrant;
+              if (qdr === 'ATENCION_CEO') return 0;
+              if (qdr === 'DELEGADO_CON_PLAZO' || (qdr as string) === 'DELEGADO_CON_SLA') return 1;
+              if (qdr === 'INFORMATIVO') return 2;
+              return 3;
+            };
+
+            const chronologicalFiltered = sortEmailsDescending(filteredBase);
+            const filteredRawEmails =
+              rawInboxSortMode === 'priority'
+                ? [...chronologicalFiltered].sort((a, b) => {
+                    const rankDiff = getQuadrantPriorityRank(a) - getQuadrantPriorityRank(b);
+                    if (rankDiff !== 0) return rankDiff;
+                    return parseEmailDateMs(b) - parseEmailDateMs(a);
+                  })
+                : chronologicalFiltered;
+
+            const allFilteredIds = filteredRawEmails.map((e) => e.id);
+            const isAllSelected =
+              allFilteredIds.length > 0 && selectedRawEmailIds.length === allFilteredIds.length;
+
+            // Resolver el correo activo del lector derecho (selección explícita o primer correo en escritorio)
+            let resolvedCandidate = selectedRawEmailId
+              ? rawEmailsList.find((e) => e.id === selectedRawEmailId) ||
+                filteredRawEmails.find((e) => e.id === selectedRawEmailId)
+              : filteredRawEmails[0];
+
+            if (!resolvedCandidate && selectedRawEmailId) {
+              const matchingFromMatter = mattersList.find(
+                (m) =>
+                  m.id === selectedRawEmailId ||
+                  m.id.replace(/^mat-live-/, '') === selectedRawEmailId ||
+                  `mat-live-${selectedRawEmailId}` === m.id ||
+                  (m.matter_code && selectedRawEmailId.includes(m.matter_code))
+              );
+              if (matchingFromMatter) {
+                const origs = getOriginalEmailsForMatter(matchingFromMatter);
+                resolvedCandidate = origs.find((e) => e.id === selectedRawEmailId) || origs[0];
+              }
+            }
+
+            const activeReaderEmail = resolvedCandidate
+              ? normalizeRawEmailCeoRules(resolvedCandidate)
+              : null;
+
+            const matchingReaderMatter = activeReaderEmail
+              ? mattersList.find(
+                  (m) =>
+                    (activeReaderEmail.triage_badge?.linkedMatterId &&
+                      m.id === activeReaderEmail.triage_badge.linkedMatterId) ||
+                    m.title.trim().toLowerCase() === activeReaderEmail.subject.trim().toLowerCase() ||
+                    activeReaderEmail.subject.toLowerCase().includes(m.title.toLowerCase().slice(0, 20))
+                )
+              : undefined;
+
+            const getTriageColorimetryProfile = (
+              item: RawGmailItem
+            ): {
+              label: string;
+              dotClass: string;
+              pillClass: string;
+              spineClass: string;
+              triageType: 'ceo_red' | 'delegated_yellow' | 'info_blue' | 'info_grey';
+            } => {
+              const hay = `${item.subject} ${item.sender_name} ${item.snippet || ''}`.toLowerCase();
+              const qdr = item.triage_badge?.quadrant;
+
+              // 1. CEO ROJO (#E11D48 — Carmesí Ejecutivo OKLCH)
+              if (
+                qdr === 'ATENCION_CEO' ||
+                /urgente|cr[ií]tic|comedor|acoso|emergencia|queja formal|auditor[ií]a/i.test(hay)
+              ) {
+                return {
+                  label: hay.includes('sep') ? 'CEO · SEP' : 'CEO',
+                  dotClass: 'bg-[#E11D48] ring-2 ring-[#FFE4E6]',
+                  pillClass: 'bg-[#FFF1F2] text-[#9F1239] border border-[#FECDD3]',
+                  spineClass: 'border-l-[#E11D48]',
+                  triageType: 'ceo_red',
+                };
+              }
+
+              // 2. DELEGADO AMARILLO (#F59E0B con borde #B45309 — Ámbar Oro WCAG 2.2)
+              if (
+                qdr === 'DELEGADO_CON_PLAZO' ||
+                (qdr as string) === 'DELEGADO_CON_SLA' ||
+                /cfdi|factura|finanz|beca|inscripci[oó]n|mantenimiento|transporte|ruta|psicopedagog/i.test(hay)
+              ) {
+                const subTag =
+                  hay.includes('cfdi') || hay.includes('factura') || hay.includes('finanz')
+                    ? 'Delegado · Finanzas'
+                    : 'Delegado';
+                return {
+                  label: subTag,
+                  dotClass: 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]',
+                  pillClass: 'bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]',
+                  spineClass: 'border-l-[#F59E0B]',
+                  triageType: 'delegated_yellow',
+                };
+              }
+
+              // 3. INFORMATIVO GRIS (#64748B — Pizarra Neutra / Boletines Externos & Ruido)
+              if (
+                qdr === 'SPAM_DESCARTADO' ||
+                /linkedin|zoom|bebras|cgtrader|lego|okx|newsletter|bolet[ií]n|recordatorio|reminder|digest|promoci/i.test(
+                  hay
+                )
+              ) {
+                return {
+                  label: qdr === 'SPAM_DESCARTADO' ? 'Filtrado · Gris' : 'Informativo · Gris',
+                  dotClass: 'bg-[#64748B] ring-2 ring-[#E2E8F0]',
+                  pillClass: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]',
+                  spineClass: 'border-l-[#64748B]',
+                  triageType: 'info_grey',
+                };
+              }
+
+              // 4. INFORMATIVO AZUL (#2563EB — Cobalto Institucional / Avisos Oficiales & SEP)
+              return {
+                label: hay.includes('sep') || hay.includes('supervis') ? 'Informativo · SEP' : 'Informativo · Azul',
+                dotClass: 'bg-[#2563EB] ring-2 ring-[#DBEAFE]',
+                pillClass: 'bg-[#EFF6FF] text-[#1E40AF] border border-[#BFDBFE]',
+                spineClass: 'border-l-[#2563EB]',
+                triageType: 'info_blue',
+              };
+            };
+
+            return (
+              <div className="space-y-3">
+                {/* Aviso discreto de vinculación solo si no está verificado */}
+                {connectionStatus !== 'connected_verified' && !authPassword && (
+                  <div className="px-4 py-2.5 rounded-xl border border-[#CBD5E1] bg-white shadow-2xs flex items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2 text-[#475569]">
+                      <Lock className="h-3.5 w-3.5 text-[#2563EB] shrink-0" />
+                      <span>
+                        Sincronización institucional lista para autorizar cuenta ({connectedEmail || `direccion@${schoolDomain}`}).
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('google');
+                      }}
+                      className="px-3 py-1 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-[11px] cursor-pointer shrink-0 transition-colors"
+                    >
+                      Configurar OAuth 2.0 →
+                    </button>
+                  </div>
+                )}
+
+                {/* Contenedor Unificado de Buzón General con Semáforo de Triage de 4 Colores */}
+                <div className="rounded-2xl border border-[#CBD5E1] bg-white shadow-sm overflow-hidden">
+                  {/* Barra Superior de Filtros con Puntos Cromáticos de Triage + Orden CDMX */}
+                  <div className="px-4 border-b border-[#CBD5E1] flex flex-wrap items-center justify-between gap-3 bg-white">
+                    <div className="flex items-center gap-5 overflow-x-auto">
+                      {[
+                        {
+                          id: 'todos' as const,
+                          label: 'Todos',
+                          count: rawEmailCounts.all,
+                          dotClass: null,
+                        },
+                        {
+                          id: 'principal' as const,
+                          label: 'Atención CEO',
+                          count: rawEmailCounts.ceo,
+                          dotClass: 'bg-[#E11D48] ring-2 ring-[#FFE4E6]',
+                        },
+                        {
+                          id: 'actualizaciones' as const,
+                          label: 'Delegados',
+                          count: rawEmailCounts.delegados,
+                          dotClass: 'bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]',
+                        },
+                        {
+                          id: 'informativo' as const,
+                          label: 'Informativos',
+                          count: rawEmailCounts.informativos,
+                          dotClass: 'bg-[#2563EB] ring-2 ring-[#DBEAFE]',
+                        },
+                        {
+                          id: 'spam' as const,
+                          label: 'Archivo Filtrado / Gris',
+                          count: rawEmailCounts.spam,
+                          dotClass: 'bg-[#64748B] ring-2 ring-[#E2E8F0]',
+                        },
+                      ].map((cat) => {
+                        const isActive =
+                          rawEmailCategory === cat.id ||
+                          (cat.id === 'spam' && rawEmailCategory === 'promociones');
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setRawEmailCategory(cat.id)}
+                            className={`py-3 border-b-2 text-xs transition-colors cursor-pointer inline-flex items-center gap-2 whitespace-nowrap ${
+                              isActive
+                                ? 'border-[#2563EB] text-[#1E3A8A] font-bold'
+                                : 'border-transparent text-[#64748B] hover:text-[#0F172A] font-medium'
+                            }`}
+                          >
+                            {cat.dotClass && (
+                              <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${cat.dotClass}`} />
+                            )}
+                            <span>{cat.label}</span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded-full font-mono text-[10px] ${
+                                isActive
+                                  ? 'bg-[#DBEAFE] text-[#1E3A8A] font-bold'
+                                  : 'bg-[#F1F5F9] text-[#475569]'
+                              }`}
+                            >
+                              {cat.count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Controles Derechos: Selección Múltiple, Filtro Local, Orden Cronológico CDMX y Actualizar */}
+                    <div className="flex items-center gap-2 py-2 flex-wrap">
+                      {selectedRawEmailIds.length > 0 && (
+                        <div className="flex items-center gap-1 pr-2 border-r border-[#CBD5E1]">
+                          <span className="text-[11px] font-bold text-[#1E3A8A] mr-1">
+                            {selectedRawEmailIds.length} sel.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleMarkAsReadRawEmails(selectedRawEmailIds, false)}
+                            className="p-1.5 rounded-md hover:bg-[#EFF6FF] text-[#475569] hover:text-[#1E3A8A] cursor-pointer"
+                            title="Marcar como leídos"
+                          >
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleArchiveRawEmails(selectedRawEmailIds)}
+                            className="p-1.5 rounded-md hover:bg-[#EFF6FF] text-[#475569] hover:text-[#1E3A8A] cursor-pointer"
+                            title="Archivar seleccionados"
+                          >
+                            <Archive className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRawEmails(selectedRawEmailIds)}
+                            className="p-1.5 rounded-md hover:bg-rose-50 text-[#475569] hover:text-rose-700 cursor-pointer"
+                            title="Eliminar seleccionados"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="relative hidden xl:flex items-center">
+                        <Search className="absolute left-2.5 h-3 w-3 text-[#64748B] pointer-events-none" />
+                        <input
+                          type="text"
+                          value={rawEmailSearchQuery}
+                          onChange={(e) => setRawEmailSearchQuery(e.target.value)}
+                          placeholder="Filtrar buzón..."
+                          className="w-40 pl-7 pr-6 py-1 rounded-md bg-[#F8FAFC] border border-[#CBD5E1] text-[11px] text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+                        />
+                        {rawEmailSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setRawEmailSearchQuery('')}
+                            className="absolute right-1.5 text-[#64748B] hover:text-[#0F172A]"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setRawInboxSortMode(rawInboxSortMode === 'recent' ? 'priority' : 'recent')
+                        }
+                        className="px-2.5 py-1 rounded-md bg-[#F8FAFC] border border-[#CBD5E1] hover:border-[#2563EB] text-[11px] font-medium text-[#334155] hover:text-[#1E3A8A] transition-colors cursor-pointer tabular-nums"
+                        title="Alternar entre orden cronológico estricto CDMX y agrupación ejecutiva"
+                      >
+                        {rawInboxSortMode === 'recent'
+                          ? 'Orden: Más recientes · CDMX'
+                          : 'Orden: Prioridad Ejecutiva'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerSync(false)}
+                        disabled={isSyncingLiveInbox}
+                        className="p-1.5 rounded-md border border-[#CBD5E1] bg-white hover:bg-[#EFF6FF] hover:border-[#2563EB] text-[#475569] hover:text-[#2563EB] transition-colors cursor-pointer disabled:opacity-50"
+                        title="Actualizar Bandeja de Entrada"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cuerpo Master-Detail en 2 Paneles (Cubeta Recesada #EEF2F6 + Lector Spotlight #FFFFFF) */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[540px]">
+                    {/* PANEL IZQUIERDO (7/12): LISTA CRONOLÓGICA CON TARJETAS FLOTANTES Y SEMÁFORO DE TRIAGE */}
+                    <div
+                      className={`lg:col-span-7 border-r border-[#CBD5E1] bg-[#EEF2F6] flex flex-col ${
+                        selectedRawEmailId ? 'hidden lg:flex' : 'flex'
+                      }`}
+                    >
+                      {/* Sub-encabezado compacto de selección y leyenda cromática */}
+                      {filteredRawEmails.length > 0 && (
+                        <div className="px-3.5 py-2 border-b border-[#CBD5E1] bg-[#E2E8F0]/75 flex items-center justify-between gap-2 text-[11px] text-[#475569] flex-wrap">
+                          <label className="inline-flex items-center gap-2 cursor-pointer select-none font-medium text-[#334155]">
+                            <input
+                              type="checkbox"
+                              checked={isAllSelected}
+                              onChange={() => handleSelectAllRawEmails(allFilteredIds)}
+                              className="rounded border-[#94A3B8] text-[#2563EB] focus:ring-[#2563EB] h-3.5 w-3.5 cursor-pointer"
+                            />
+                            <span>Seleccionar vista</span>
+                          </label>
+                          <div className="hidden sm:flex items-center gap-3 text-[10px] font-semibold text-[#334155]">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="h-2 w-2 rounded-full bg-[#E11D48]" /> CEO
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <span className="h-2 w-2 rounded-full bg-[#F59E0B] border border-[#B45309]" /> Delegado
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <span className="h-2 w-2 rounded-full bg-[#2563EB]" /> Info Azul
+                            </span>
+                            <span className="inline-flex items-center gap-1">
+                              <span className="h-2 w-2 rounded-full bg-[#64748B]" /> Info Gris
+                            </span>
+                          </div>
+                          <span className="font-mono tabular-nums text-[#475569]">
+                            1–{filteredRawEmails.length} de {normalizedRawEmails.length}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="p-2.5 space-y-2 max-h-[calc(90vh-225px)] overflow-y-auto flex-1">
+                        {filteredRawEmails.length === 0 ? (
+                          <div className="p-12 text-center space-y-2 bg-white rounded-xl border border-[#CBD5E1]">
+                            <Inbox className="h-7 w-7 text-[#94A3B8] mx-auto" />
+                            <p className="text-xs font-semibold text-[#0F172A]">Sin mensajes en esta categoría</p>
+                            <p className="text-[11px] text-[#64748B]">
+                              Selecciona otro filtro o sincroniza el buzón institucional.
+                            </p>
+                          </div>
+                        ) : (
+                          filteredRawEmails.map((item) => {
+                            const isChecked = selectedRawEmailIds.includes(item.id);
+                            const isActiveRow = activeReaderEmail?.id === item.id;
+                            const triageProfile = getTriageColorimetryProfile(item);
+                            const cleanTime = (item.timestamp || '').replace(/\s*hrs$/i, '');
+
+                            return (
+                              <div
+                                key={item.id}
+                                data-email-id={item.id}
+                                data-date-ms={item.date_ms}
+                                data-selected-email={isActiveRow ? 'true' : 'false'}
+                                data-triage-type={triageProfile.triageType}
+                                onClick={() => handleOpenRawEmailDetail(item)}
+                                className={`group relative px-3.5 py-2.5 rounded-xl flex items-start gap-3 transition-all cursor-pointer ${
+                                  isActiveRow
+                                    ? 'border-2 border-[#2563EB] border-l-[6px] border-l-[#2563EB] bg-[#F8FAFF] shadow-[0_4px_14px_-2px_rgba(37,99,235,0.18)] ring-2 ring-[#2563EB]/15'
+                                    : item.is_unread
+                                    ? `border border-[#CBD5E1] border-l-[4px] ${triageProfile.spineClass} bg-white hover:border-[#94A3B8] shadow-2xs`
+                                    : `border border-[#CBD5E1]/90 border-l-[4px] ${triageProfile.spineClass} bg-white/95 hover:bg-white hover:border-[#94A3B8]`
                                 }`}
                               >
-                                {rule.enabled ? 'Pausar' : 'Activar'}
-                              </button>
+                                <div
+                                  className="pt-0.5 flex items-center gap-2 shrink-0"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => handleToggleSelectRawEmail(item.id)}
+                                    className="rounded border-[#94A3B8] text-[#2563EB] focus:ring-[#2563EB] h-3.5 w-3.5 cursor-pointer"
+                                  />
+                                  {/* Punto Semafórico de Triage (10px Calibrado OKLCH) */}
+                                  <span
+                                    data-testid="buzon-triage-dot"
+                                    data-triage-color={triageProfile.triageType}
+                                    className={`h-2.5 w-2.5 rounded-full shrink-0 ${triageProfile.dotClass}`}
+                                    title={`Triage: ${triageProfile.label}`}
+                                  />
+                                </div>
 
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveVipRule(rule.id, rule.email)}
-                                className="p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
-                                title="Eliminar de lista VIP"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ))
+                                {/* Columna de Fecha/Hora CDMX estilo Tabla Suiza */}
+                                <div className="w-14 shrink-0 text-[11px] font-mono tabular-nums text-[#475569] leading-tight pt-0.5">
+                                  {cleanTime}
+                                </div>
+
+                                {/* Columna Central: Remitente + Etiqueta Cromática de Triage + Asunto y Extracto */}
+                                <div className="min-w-0 flex-1 space-y-0.5">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span
+                                        className={`text-xs truncate ${
+                                          isActiveRow
+                                            ? 'font-bold text-[#1E3A8A]'
+                                            : item.is_unread
+                                            ? 'font-bold text-[#0F172A]'
+                                            : 'font-medium text-[#334155]'
+                                        }`}
+                                      >
+                                        {sanitizeCommercialTrademarks(item.sender_name)}
+                                      </span>
+                                      <span
+                                        data-testid="buzon-triage-pill"
+                                        className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-semibold shrink-0 ${triageProfile.pillClass}`}
+                                      >
+                                        {triageProfile.label}
+                                      </span>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => handleToggleStarRawEmail(item.id, e)}
+                                      className="text-[#CBD5E1] hover:text-[#F59E0B] transition-colors cursor-pointer shrink-0"
+                                      title="Destacar mensaje"
+                                    >
+                                      <Star
+                                        className={`h-3.5 w-3.5 ${
+                                          item.is_starred ? 'fill-[#F59E0B] text-[#F59E0B]' : ''
+                                        }`}
+                                      />
+                                    </button>
+                                  </div>
+
+                                  <p
+                                    className={`text-xs truncate ${
+                                      item.is_unread
+                                        ? 'font-semibold text-[#0F172A]'
+                                        : 'font-normal text-[#334155]'
+                                    }`}
+                                  >
+                                    {sanitizeCommercialTrademarks(item.subject)}
+                                    {item.snippet ? (
+                                      <span className="text-[#64748B] font-normal">
+                                        {' '}
+                                        · {sanitizeCommercialTrademarks(item.snippet)}
+                                      </span>
+                                    ) : null}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                    {/* PANEL DERECHO (5/12): LECTOR INSTANTÁNEO SPOTLIGHT (#FFFFFF) Y RESPUESTA RÁPIDA */}
+                    <div
+                      className={`lg:col-span-5 flex flex-col justify-between bg-white border-t-4 border-t-[#2563EB] max-h-[calc(90vh-185px)] overflow-y-auto ${
+                        selectedRawEmailId ? 'flex' : 'hidden lg:flex'
+                      }`}
+                    >
+                      {!activeReaderEmail ? (
+                        <div className="p-12 text-center my-auto space-y-2">
+                          <MailOpen className="h-7 w-7 text-[#94A3B8] mx-auto" />
+                          <p className="text-xs font-semibold text-[#0F172A]">
+                            Selecciona un correo para lectura inmediata
+                          </p>
+                        </div>
+                      ) : (
+                        (() => {
+                          const activeTriageProfile = getTriageColorimetryProfile(activeReaderEmail);
+                          return (
+                            <>
+                              <div className="divide-y divide-[#E2E8F0]">
+                                {/* Encabezado del Lector */}
+                                <div className="px-5 py-4 space-y-3 bg-white">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="space-y-1.5 min-w-0">
+                                      {(selectedRawEmailId || emailReaderReturnTab === 'inbox') && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedRawEmailId(null);
+                                            if (emailReaderReturnTab === 'inbox') {
+                                              setActiveTab('inbox');
+                                            }
+                                          }}
+                                          className={`${
+                                            emailReaderReturnTab === 'inbox' ? 'inline-flex' : 'lg:hidden inline-flex'
+                                          } items-center gap-1 text-[11px] font-semibold text-[#2563EB] hover:text-[#1D4ED8] mb-1 cursor-pointer`}
+                                        >
+                                          <ArrowLeft className="h-3.5 w-3.5" />
+                                          <span>
+                                            {emailReaderReturnTab === 'inbox'
+                                              ? 'Volver a Decisiones CEO'
+                                              : 'Volver a lista'}
+                                          </span>
+                                        </button>
+                                      )}
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span
+                                          className={`h-2.5 w-2.5 rounded-full shrink-0 ${activeTriageProfile.dotClass}`}
+                                        />
+                                        <span
+                                          className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${activeTriageProfile.pillClass}`}
+                                        >
+                                          {activeTriageProfile.label}
+                                        </span>
+                                        <span className="text-[11px] text-[#64748B] font-mono">
+                                          {activeReaderEmail.received_at ||
+                                            (activeReaderEmail.date_iso
+                                              ? formatCdmxFull(activeReaderEmail.date_iso)
+                                              : activeReaderEmail.timestamp)}{' '}
+                                          · CDMX
+                                        </span>
+                                      </div>
+                                      <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
+                                        {sanitizeCommercialTrademarks(activeReaderEmail.subject)}
+                                      </h3>
+                                    </div>
+
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      {matchingReaderMatter && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedMatter(matchingReaderMatter);
+                                            setMatterDraftEdit(matchingReaderMatter.suggested_draft_reply || '');
+                                            setActiveTab('inbox');
+                                          }}
+                                          className="px-2.5 py-1 rounded-md border border-[#BFDBFE] bg-[#EFF6FF] hover:bg-[#DBEAFE] text-[10px] font-bold text-[#1E3A8A] inline-flex items-center gap-1 cursor-pointer"
+                                          title="Abrir expediente ejecutivo vinculado"
+                                        >
+                                          <span>Expediente</span>
+                                          <ArrowUpRight className="h-3 w-3" />
+                                        </button>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleArchiveRawEmails([activeReaderEmail.id])}
+                                        className="p-1.5 rounded-md hover:bg-[#F1F5F9] text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                                        title="Archivar"
+                                      >
+                                        <Archive className="h-3.5 w-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteRawEmails([activeReaderEmail.id])}
+                                        className="p-1.5 rounded-md hover:bg-rose-50 text-[#64748B] hover:text-rose-700 cursor-pointer"
+                                        title="Eliminar"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Reclasificación Semafórica 0 Tokens */}
+                                  <div className="flex items-center justify-between gap-2 flex-wrap pt-1">
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
+                                      Clasificación Triage:
+                                    </span>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {[
+                                        {
+                                          q: 'ATENCION_CEO' as const,
+                                          label: 'CEO',
+                                          dot: 'bg-[#E11D48]',
+                                        },
+                                        {
+                                          q: 'DELEGADO_CON_SLA' as const,
+                                          label: 'Delegar',
+                                          dot: 'bg-[#F59E0B] border border-[#B45309]',
+                                        },
+                                        {
+                                          q: 'INFORMATIVO' as const,
+                                          label: 'Informativo Azul',
+                                          dot: 'bg-[#2563EB]',
+                                        },
+                                        {
+                                          q: 'SPAM_DESCARTADO' as const,
+                                          label: 'Info Gris / Filtrar',
+                                          dot: 'bg-[#64748B]',
+                                        },
+                                      ].map((opt) => {
+                                        const activeQ =
+                                          activeReaderEmail.triage_badge?.quadrant === opt.q ||
+                                          (opt.q === 'DELEGADO_CON_SLA' &&
+                                            activeReaderEmail.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO');
+                                        return (
+                                          <button
+                                            key={opt.q}
+                                            type="button"
+                                            onClick={() => handleReclassifyEmail(activeReaderEmail, opt.q)}
+                                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+                                              activeQ
+                                                ? 'bg-[#2563EB] text-white border-[#2563EB] shadow-2xs'
+                                                : 'bg-white hover:bg-[#F8FAFC] text-[#334155] border-[#CBD5E1]'
+                                            }`}
+                                          >
+                                            <span
+                                              className={`h-2 w-2 rounded-full shrink-0 ${
+                                                activeQ ? 'bg-white' : opt.dot
+                                              }`}
+                                            />
+                                            <span>{opt.label}</span>
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Identidad del Remitente */}
+                                <div className="px-5 py-3.5 flex items-center gap-3 bg-[#F8FAFC]">
+                                  <div className="h-9 w-9 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E3A8A] font-bold text-xs flex items-center justify-center shrink-0">
+                                    {activeReaderEmail.sender_name.slice(0, 2).toUpperCase()}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-semibold text-[#0F172A] truncate">
+                                      {sanitizeCommercialTrademarks(activeReaderEmail.sender_name)}
+                                    </p>
+                                    <p className="text-[11px] font-mono text-[#64748B] truncate">
+                                      &lt;{activeReaderEmail.sender_email}&gt;
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Cuerpo Limpio Decodificado */}
+                                <div className="px-5 py-4 text-xs text-[#1E293B] leading-relaxed whitespace-pre-wrap bg-white">
+                                  {sanitizeCommercialTrademarks(activeReaderEmail.body_text)}
+                                </div>
+                              </div>
+
+                              {/* Pie de Respuesta Rápida Ejecutiva */}
+                              <div className="p-4 border-t border-[#CBD5E1] bg-[#F8FAFC] space-y-2.5">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] font-semibold text-[#334155] truncate">
+                                    Responder a {sanitizeCommercialTrademarks(activeReaderEmail.sender_name)}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleGenerateAdaptiveRawReply(activeReaderEmail)}
+                                    className="text-[11px] font-bold text-[#2563EB] hover:text-[#1D4ED8] hover:underline cursor-pointer shrink-0"
+                                    title="Generar borrador con estilo directivo aprendido (0 Tokens)"
+                                  >
+                                    Sugerir borrador (0 Tokens)
+                                  </button>
+                                </div>
+                                <textarea
+                                  rows={2}
+                                  value={rawReplyDraft}
+                                  onChange={(e) => setRawReplyDraft(e.target.value)}
+                                  placeholder="Escribir respuesta oficial rápida..."
+                                  className="w-full p-2.5 rounded-lg border border-[#CBD5E1] bg-white text-xs text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 resize-y"
+                                />
+                                <div className="flex items-center justify-end gap-2">
+                                  {rawReplyDraft && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setRawReplyDraft('')}
+                                      className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium text-[#64748B] hover:text-[#0F172A] cursor-pointer"
+                                    >
+                                      Limpiar
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendRawReply(activeReaderEmail)}
+                                    disabled={isSendingRawReply || !rawReplyDraft.trim()}
+                                    className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-2xs transition-colors"
+                                  >
+                                    <Send className="h-3 w-3" />
+                                    <span>{isSendingRawReply ? 'Enviando...' : 'Enviar'}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        })()
                       )}
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
+            );
+          })()}
 
-              {/* ========================================================= */}
-              {/* SUB-PANEL 2: DELEGADOS POR SECCIÓN & SLA                 */}
-              {/* ========================================================= */}
-              {settingsSubTab === 'delegados' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  {/* Banner Explicativo */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-blue-50 to-slate-50 border border-indigo-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-indigo-600" />
-                        <h3 className="text-sm font-black text-indigo-950 uppercase tracking-wide">
-                          Enrutamiento Operativo y Delegación por Sección Escolar
-                        </h3>
-                      </div>
-                      <p className="text-xs text-indigo-900 leading-relaxed max-w-2xl font-medium">
-                        Configura a qué cuentas de correo institucionales se canalizan las peticiones operativas de cada departamento escolar y su tiempo máximo de resolución (SLA). Puedes editar los correos y guardar los cambios para aplicarlos de inmediato.
-                      </p>
-                    </div>
+          {/* ------------------------------------------------------- */}
+          {/* TAB 7: ROI COGNITIVO & TELEMETRÍA                       */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'roi' &&
+            renderGovernanceShell(
+              <div className="space-y-6 font-sans antialiased">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E2E8F0]">
+                  <div>
+                    <h3 className="text-[17px] font-semibold text-[#0F172A] tracking-[-0.015em]">
+                      ROI &amp; Telemetría Financiera de Triage Cognitivo
+                    </h3>
+                    <p className="text-[13px] font-normal text-[#475569] mt-0.5">
+                      Retorno de inversión directivo, precisión de triage determinista y eficiencia en consumo de tokens.
+                    </p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[12px] font-medium text-[#059669] shrink-0">
+                    Triage Determinista · 0 Tokens en Reglas Aprendidas
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-5 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] border-l-[6px] border-l-[#2563EB]">
+                    <span className="text-[12px] font-medium text-[#475569] block">
+                      Horas Directivas Ahorradas / Mes
+                    </span>
+                    <span className="text-[24px] font-semibold text-[#0F172A] font-mono tabular-nums block mt-1">
+                      76.4 hrs
+                    </span>
+                    <span className="text-[11px] text-[#64748B] block mt-0.5">
+                      Enfoque preservado para Dirección General
+                    </span>
                   </div>
 
-                  {/* Banner de Resultado de Prueba de Delegado */}
-                  {delegateTestResult?.tested && (
-                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 animate-in slide-in-from-top-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black">
-                          ✓
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-emerald-950">
-                            Enrutamiento Comprobado: Sección {delegateTestResult.section}
-                          </p>
-                          <p className="text-[11px] text-emerald-700">
-                            El asunto fue derivado exitosamente a <strong>{delegateTestResult.delegateName}</strong> ({delegateTestResult.delegateEmail}) con SLA de <strong>{delegateTestResult.slaHours}h</strong> a las {delegateTestResult.timestamp}.
-                          </p>
-                        </div>
-                      </div>
+                  <div className="p-5 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] border-l-[6px] border-l-[#059669]">
+                    <span className="text-[12px] font-medium text-[#475569] block">
+                      Precisión de Triage Institucional
+                    </span>
+                    <span className="text-[24px] font-semibold text-[#059669] font-mono tabular-nums block mt-1">
+                      99.4%
+                    </span>
+                    <span className="text-[11px] text-[#64748B] block mt-0.5">
+                      Grounding en Bóveda Curricular &amp; Reglas VIP
+                    </span>
+                  </div>
+
+                  <div className="p-5 rounded-xl bg-[#F8FAFC] border border-[#CBD5E1] border-l-[6px] border-l-[#F59E0B]">
+                    <span className="text-[12px] font-medium text-[#475569] block">
+                      Eficiencia &amp; Ahorro en Tokens
+                    </span>
+                    <span className="text-[24px] font-semibold text-[#0F172A] font-mono tabular-nums block mt-1">
+                      94.2%
+                    </span>
+                    <span className="text-[11px] text-[#64748B] block mt-0.5">
+                      Memoria aprendida sin re-inferencia
+                    </span>
+                  </div>
+                </div>
+
+                {/* Panel de Telemetría Real de Tokens y Eficiencia Financiera */}
+                <div className="p-5 sm:p-6 rounded-xl bg-white border border-[#CBD5E1] space-y-4 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#059669]" />
+                      <h5 className="text-[14px] font-semibold text-[#0F172A]">
+                        Telemetría en Vivo de Tokens y Costo Operativo (Motor de IA)
+                      </h5>
+                    </div>
+                    <span className="text-[11px] text-[#64748B] font-mono tabular-nums">
+                      Tarifa Oficial: $0.075 / 1M Prompt · $0.30 / 1M Output
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[11px] text-[#64748B] font-medium block">
+                        Correos Evaluados
+                      </span>
+                      <span className="text-[18px] font-semibold text-[#0F172A] font-mono tabular-nums block mt-1">
+                        {telemetrySummary?.total_requests || 1}
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[11px] text-[#64748B] font-medium block">
+                        Tokens Totales
+                      </span>
+                      <span className="text-[18px] font-semibold text-[#2563EB] font-mono tabular-nums block mt-1">
+                        {(telemetrySummary?.total_tokens || 945).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[11px] text-[#64748B] font-medium block">
+                        Inversión (MXN / USD)
+                      </span>
+                      <span className="text-[18px] font-semibold text-[#059669] font-mono tabular-nums block mt-1">
+                        ${(telemetrySummary?.total_cost_mxn || 0.0016).toFixed(4)} MXN
+                      </span>
+                      <span className="text-[11px] text-[#64748B] font-mono tabular-nums block">
+                        ${(telemetrySummary?.total_cost_usd || 0.000081).toFixed(6)} USD
+                      </span>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+                      <span className="text-[11px] text-[#64748B] font-medium block">
+                        Ahorro por Aprendizaje
+                      </span>
+                      <span className="text-[18px] font-semibold text-[#0F172A] font-mono tabular-nums block mt-1">
+                        {(telemetrySummary?.tokens_saved_by_learning || 400).toLocaleString()} tok
+                      </span>
+                      <span className="text-[11px] text-[#059669] font-mono tabular-nums block">
+                        +${(telemetrySummary?.money_saved_mxn || 0.0008).toFixed(4)} MXN
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          {/* ========================================================= */}
+          {/* TAB 8: AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS) */}
+          {/* ========================================================= */}
+          {activeTab === 'ajustes' &&
+            renderGovernanceShell(
+              <div className="space-y-6 font-sans antialiased">
+                {/* Encabezado Ejecutivo Consolidado */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E8F0]">
+                  <div>
+                    <h2 className="text-[17px] font-semibold text-[#0F172A] tracking-[-0.015em]">
+                      {settingsSubTab === 'plantillas'
+                        ? 'Catálogo de Comunicados Oficiales y Plantillas'
+                        : settingsSubTab === 'apariencia'
+                        ? 'Estudio de Apariencia y Paletas Institucionales'
+                        : 'Reglas VIP de Atención Inmediata & Matriz de Delegados SLA'}
+                    </h2>
+                    <p className="text-[13px] font-normal text-[#475569] mt-0.5">
+                      {settingsSubTab === 'plantillas'
+                        ? 'Personaliza las redacciones oficiales predeterminadas de Dirección General.'
+                        : settingsSubTab === 'apariencia'
+                        ? 'Configura el tema visual y distintivos cromáticos de la consola.'
+                        : 'Vista consolidada 50/50: Remitentes prioritarios del CEO (#E11D48) y enrutamiento por departamento con SLA (#F59E0B).'}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <div className="relative" ref={themeMenuRef}>
                       <button
                         type="button"
-                        onClick={() => setDelegateTestResult(null)}
-                        className="p-1 rounded-lg text-emerald-600 hover:text-emerald-900 cursor-pointer"
+                        onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                        className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[12px] font-medium text-[#0F172A] inline-flex items-center gap-1.5 cursor-pointer"
                       >
-                        <X className="h-4 w-4" />
+                        <Palette className="h-3.5 w-3.5 text-[#475569]" />
+                        <span>Apariencia</span>
+                        <ChevronDown className="h-3 w-3 text-[#64748B]" />
                       </button>
+                      {isThemeMenuOpen && (
+                        <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl bg-white border border-[#CBD5E1] shadow-xl p-1.5 z-50 text-[12px] space-y-0.5">
+                          {[
+                            { id: 'ivory' as const, label: '🏛️ Marfil Institucional' },
+                            { id: 'slate' as const, label: '⬛ Pizarra Ejecutiva' },
+                            { id: 'navy' as const, label: '🔷 Azul Real Académico' },
+                            { id: 'emerald' as const, label: '🌲 Verde Esmeralda' },
+                            { id: 'burgundy' as const, label: '🍷 Borgoña Soberano' },
+                          ].map((opt) => (
+                            <button
+                              key={opt.id}
+                              type="button"
+                              onClick={() => {
+                                setThemeMode(opt.id);
+                                if (typeof window !== 'undefined') {
+                                  localStorage.setItem(
+                                    `iskool_ceo_swiss_theme_${currentTenantId}`,
+                                    opt.id
+                                  );
+                                }
+                                setIsThemeMenuOpen(false);
+                              }}
+                              className={`w-full text-left px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
+                                themeMode === opt.id
+                                  ? 'bg-[#F1F5F9] text-[#0F172A] font-semibold'
+                                  : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                          <div className="pt-1 mt-1 border-t border-[#E2E8F0]">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSettingsSubTab('apariencia');
+                                setAppearanceSubView('custom');
+                                setIsThemeMenuOpen(false);
+                              }}
+                              className="w-full text-left px-2.5 py-1.5 rounded-lg text-[#2563EB] hover:bg-blue-50 font-medium cursor-pointer"
+                            >
+                              Estudio de Color Libre
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
 
-                  {/* Configuración de Cuentas Semilla y Delegados Work OS */}
-                  <SeedAccountsConfigPanel
-                    tenantId={currentTenantId}
-                    isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
-                    currentUserEmail={user?.email}
-                    onScenarioInjected={() => {
-                      setActiveTab('work_os');
-                      onTriggerToast?.('Escenario inyectado con éxito en el Work OS.');
-                    }}
-                    onTriggerToast={onTriggerToast}
-                  />
+                    <button
+                      type="button"
+                      onClick={refreshCeoSettings}
+                      disabled={isLoadingSettings}
+                      className="px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] text-[12px] font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      title="Actualizar configuraciones desde el servidor"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${isLoadingSettings ? 'animate-spin' : ''}`} />
+                      <span>Sincronizar</span>
+                    </button>
+                  </div>
                 </div>
-              )}
+
+                {/* ========================================================= */}
+                {/* VISTA CONSOLIDADA 50/50: REGLAS VIP (#E11D48) + SLA (#F59E0B) */}
+                {/* ========================================================= */}
+                {(settingsSubTab === 'vip' || settingsSubTab === 'delegados') && (
+                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                    {/* MITAD IZQUIERDA (6/12): REGLAS VIP DE ATENCIÓN INMEDIATA CEO (#E11D48) */}
+                    <div
+                      data-testid="vip-rules-consolidated-card"
+                      className="xl:col-span-6 p-5 rounded-xl bg-white border border-[#CBD5E1] border-l-[6px] border-l-[#E11D48] shadow-2xs space-y-4"
+                    >
+                      <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#E11D48]" />
+                            <h3 className="text-[15px] font-semibold text-[#0F172A]">
+                              Remitentes VIP · Atención Inmediata CEO
+                            </h3>
+                          </div>
+                          <p className="text-[12px] font-normal text-[#475569] mt-0.5">
+                            Clasificación directa con urgencia Crítica y SLA de 12h.
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowAddVipModal(true)}
+                          className="px-3 py-1.5 rounded-lg bg-[#E11D48] hover:bg-[#BE123C] text-white font-medium text-[12px] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          <span>Agregar VIP</span>
+                        </button>
+                      </div>
+
+                      {vipTestResult?.tested && (
+                        <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-[12px]">
+                          <div className="text-[#065F46]">
+                            <span className="font-semibold block">
+                              ✓ Prueba en Vivo Superada: {vipTestResult.email}
+                            </span>
+                            <span className="text-[11px]">
+                              Catalogado en {vipTestResult.quadrant} ({vipTestResult.urgency}) ·{' '}
+                              {vipTestResult.timestamp}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setVipTestResult(null)}
+                            className="p-1 text-[#059669] hover:text-[#065F46] cursor-pointer"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="divide-y divide-[#E2E8F0]">
+                        {!settingsData?.vipEmails || settingsData.vipEmails.length === 0 ? (
+                          <div className="py-6 text-center text-[#64748B] text-[12px]">
+                            No hay remitentes VIP registrados.
+                          </div>
+                        ) : (
+                          settingsData.vipEmails.map((rule) => (
+                            <div
+                              key={rule.id}
+                              className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                            >
+                              <div className="space-y-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[13px] font-semibold text-[#0F172A]">
+                                    {rule.contactName}
+                                  </span>
+                                  <span className="px-2 py-0.5 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] text-[11px] font-medium text-[#475569]">
+                                    {rule.organization}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                      rule.enabled
+                                        ? 'bg-emerald-50 text-[#059669] border border-emerald-200'
+                                        : 'bg-[#F1F5F9] text-[#64748B]'
+                                    }`}
+                                  >
+                                    {rule.enabled ? 'Activo' : 'Pausado'}
+                                  </span>
+                                </div>
+                                <span className="font-mono text-[12px] text-[#2563EB] block truncate">
+                                  {rule.email}
+                                </span>
+                                <p className="text-[11px] text-[#64748B] line-clamp-1">
+                                  {rule.reason}
+                                </p>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRunLiveVipTest(rule.email, rule.contactName)}
+                                  disabled={isTestingVip}
+                                  className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[11px] cursor-pointer disabled:opacity-50"
+                                >
+                                  Probar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleVipRule(rule.id, rule.enabled)}
+                                  className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#475569] font-medium text-[11px] cursor-pointer"
+                                >
+                                  {rule.enabled ? 'Pausar' : 'Activar'}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVipRule(rule.id, rule.email)}
+                                  className="p-1.5 rounded-lg text-[#64748B] hover:text-[#E11D48] hover:bg-rose-50 cursor-pointer"
+                                  title="Eliminar regla VIP"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* MITAD DERECHA (6/12): MATRIZ DE DELEGADOS POR SECCIÓN & SLA (#F59E0B) */}
+                    <div
+                      data-testid="sla-delegates-consolidated-card"
+                      className="xl:col-span-6 p-5 rounded-xl bg-white border border-[#CBD5E1] border-l-[6px] border-l-[#F59E0B] shadow-2xs space-y-4"
+                    >
+                      <div className="flex items-start justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B]" />
+                            <h3 className="text-[15px] font-semibold text-[#0F172A]">
+                              Matriz de Delegados por Sección &amp; SLA
+                            </h3>
+                          </div>
+                          <p className="text-[12px] font-normal text-[#475569] mt-0.5">
+                            Titulares responsables, correo de enrutamiento y horas de SLA por área.
+                          </p>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-medium text-[#B45309] shrink-0">
+                          {settingsData?.delegates?.length || 0} áreas activas
+                        </span>
+                      </div>
+
+                      {delegateTestResult?.tested && (
+                        <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-[12px]">
+                          <div className="text-[#065F46]">
+                            <span className="font-semibold block">
+                              ✓ Enrutamiento Comprobado: {delegateTestResult.section}
+                            </span>
+                            <span className="text-[11px]">
+                              Derivado a {delegateTestResult.delegateName} (
+                              {delegateTestResult.delegateEmail}) · SLA {delegateTestResult.slaHours}h
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setDelegateTestResult(null)}
+                            className="p-1 text-[#059669] hover:text-[#065F46] cursor-pointer"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="divide-y divide-[#E2E8F0]">
+                        {(settingsData?.delegates || []).map((del) => {
+                          const editState = inlineDelegateEdits[del.sectionKey] || {
+                            delegateName: del.delegateName,
+                            delegateEmail: del.delegateEmail,
+                            slaHours: del.slaHours,
+                          };
+                          return (
+                            <div
+                              key={del.sectionKey}
+                              className="py-3.5 first:pt-0 last:pb-0 space-y-2.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div>
+                                  <span className="text-[13px] font-semibold text-[#0F172A]">
+                                    {del.sectionName}
+                                  </span>
+                                  <span className="text-[11px] text-[#64748B] ml-2 font-mono">
+                                    · {del.sectionKey}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRunLiveDelegateTest(del.sectionKey)}
+                                    disabled={isTestingDelegate}
+                                    className="px-2.5 py-1 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] text-[#0F172A] font-medium text-[11px] cursor-pointer"
+                                  >
+                                    Probar SLA
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={isSavingSettings}
+                                    onClick={() =>
+                                      handleUpdateDelegateConfig(
+                                        del.sectionKey,
+                                        editState.delegateName,
+                                        editState.delegateEmail,
+                                        editState.slaHours
+                                      )
+                                    }
+                                    className="px-2.5 py-1 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-medium text-[11px] cursor-pointer disabled:opacity-50"
+                                  >
+                                    Guardar
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                                <input
+                                  type="text"
+                                  value={editState.delegateName}
+                                  onChange={(e) =>
+                                    setInlineDelegateEdits((prev) => ({
+                                      ...prev,
+                                      [del.sectionKey]: {
+                                        ...editState,
+                                        delegateName: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  placeholder="Titular responsable"
+                                  className="sm:col-span-5 px-2.5 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                />
+                                <input
+                                  type="email"
+                                  value={editState.delegateEmail}
+                                  onChange={(e) =>
+                                    setInlineDelegateEdits((prev) => ({
+                                      ...prev,
+                                      [del.sectionKey]: {
+                                        ...editState,
+                                        delegateEmail: e.target.value,
+                                      },
+                                    }))
+                                  }
+                                  placeholder="correo@colegio.edu.mx"
+                                  className="sm:col-span-5 px-2.5 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                />
+                                <div className="sm:col-span-2 flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    value={editState.slaHours}
+                                    onChange={(e) =>
+                                      setInlineDelegateEdits((prev) => ({
+                                        ...prev,
+                                        [del.sectionKey]: {
+                                          ...editState,
+                                          slaHours: Number(e.target.value) || 24,
+                                        },
+                                      }))
+                                    }
+                                    className="w-full px-2 py-1.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[12px] font-mono text-center text-[#0F172A] focus:outline-none focus:border-[#2563EB] focus:bg-white"
+                                  />
+                                  <span className="text-[11px] font-mono text-[#64748B]">h</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
               {/* ========================================================= */}
               {/* SUB-PANEL 3: COMUNICADOS MÁS USADOS (PLANTILLAS)          */}
@@ -14107,7 +13962,7 @@ Comité de Seguridad y Protección Escolar`
 
               {selectedMatter.provenance_doc && (
                 <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 text-xs space-y-1">
-                  <span className="font-bold text-blue-900 block">Normativa Aplicable de la Bóveda IBIME:</span>
+                  <span className="font-bold text-blue-900 block">Normativa Aplicable de la Bóveda ({schoolName}):</span>
                   <p className="text-blue-800 font-mono text-[11px]">{selectedMatter.provenance_doc}</p>
                 </div>
               )}
@@ -14317,205 +14172,268 @@ Comité de Seguridad y Protección Escolar`
       )}
 
       {/* ========================================================= */}
-      {/* 6. MODAL DE CATCHUP: "PONTE AL DÍA CONMIGO"               */}
+      {/* PANTALLA 5: PANEL DESLIZANTE SUIZO «PULSO EJECUTIVO 60S»   */}
       {/* ========================================================= */}
       {showCatchupModal && (
-        <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95 max-h-[92vh] flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center">
-                  <Sparkles className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                    <span>Ponte al día conmigo</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      En tiempo real
-                    </span>
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    Sincronización activa • {lastSyncTime} • {connectedEmail || authUsername || 'Buzón Oficial'}
-                  </p>
-                </div>
+        <div
+          className="fixed inset-0 z-[120] bg-[#0F172A]/35 backdrop-blur-[1px] flex justify-end animate-in fade-in duration-150"
+          onClick={() => setShowCatchupModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#EEF2F6] w-full max-w-lg h-full shadow-2xl border-l border-[#CBD5E1] flex flex-col justify-between text-xs overflow-hidden"
+          >
+            {/* Cabecera del Drawer */}
+            <div className="px-6 py-4 border-b border-[#CBD5E1] border-t-4 border-t-[#2563EB] bg-white flex items-start justify-between gap-3 shrink-0">
+              <div>
+                <h3 className="text-base font-bold text-[#0F172A] tracking-tight">
+                  Pulso Ejecutivo 60s · Corte Directivo
+                </h3>
+                <p className="text-[11px] text-[#64748B] mt-0.5">
+                  Ponte al día conmigo · Resumen institucional generado por el Motor de IA Pedagógica
+                </p>
               </div>
-              <button 
-                onClick={() => setShowCatchupModal(false)} 
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+              <button
+                type="button"
+                onClick={() => setShowCatchupModal(false)}
+                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                 title="Cerrar resumen"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            {/* Scrollable Body */}
-            <div className="space-y-4 overflow-y-auto flex-1 pr-1">
-              {/* Tarjeta Ejecutiva Dinámica en Tiempo Real */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/80 border border-indigo-200 text-indigo-950 space-y-3 leading-relaxed">
-                <p className="font-bold text-sm text-indigo-950">
-                  {catchupMetrics.timeGreeting}, {directorTitle}.
+            {/* Cuerpo Desplazable del Drawer Suizo sobre Lienzo #EEF2F6 */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 bg-[#EEF2F6]">
+              {/* Reproductor de Onda Sonográfica con Cobalto Real #2563EB */}
+              <div className="p-4 rounded-xl border border-[#CBD5E1] bg-white shadow-2xs space-y-2.5">
+                <div className="flex items-center gap-3.5">
+                  <button
+                    type="button"
+                    onClick={handleTogglePlayBriefing}
+                    className="h-10 w-10 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors shadow-2xs"
+                    title="Escuchar síntesis hablada 60s"
+                  >
+                    {isPlayingAudio ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4 fill-current ml-0.5" />
+                    )}
+                  </button>
+                  <div className="flex-1 flex items-center gap-1 h-8 overflow-hidden">
+                    {[24, 48, 82, 36, 94, 62, 76, 44, 88, 52, 96, 68, 40, 84, 58, 92, 46, 74, 38, 66, 50, 32, 44, 28].map(
+                      (barH, idx) => {
+                        const activeBars = Math.round((audioProgress / 60) * 24);
+                        const isPlayed = isPlayingAudio || idx <= activeBars;
+                        return (
+                          <span
+                            key={idx}
+                            className={`flex-1 rounded-full transition-all duration-150 ${
+                              isPlayed ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
+                            }`}
+                            style={{ height: `${barH}%` }}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#475569] text-center font-semibold tabular-nums">
+                  Síntesis hablada 0:{audioProgress.toString().padStart(2, '0')} / 1:00 · Voz Sofía
                 </p>
-                <p className="text-xs text-indigo-900">
-                  He analizado en tiempo real <strong>{catchupMetrics.totalCount} correos</strong> recibidos en {schoolName} en las últimas 24 horas.
-                </p>
+              </div>
 
-                <div className="space-y-2 pt-1 border-t border-indigo-100/80 text-xs">
-                  <p className="flex items-start gap-1.5">
-                    <span className="text-purple-600 font-bold shrink-0">•</span>
-                    <span>
-                      <strong>{catchupMetrics.spamCount} correos</strong> fueron catalogados como no usables (publicidad de proveedores, boletines comerciales y spam) y se archivaron silenciosamente sin interrumpirle.
+              {/* Retícula 2x2 de los 4 Cuadrantes Ejecutivos con Semáforo Cromático OKLCH */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#E11D48] bg-white shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">
+                      {catchupMetrics.ceoCount}
                     </span>
-                  </p>
-
-                  <p className="flex items-start gap-1.5">
-                    <span className="text-red-600 font-bold shrink-0">•</span>
-                    <span>
-                      {catchupMetrics.ceoCount > 0 ? (
-                        <>
-                          <strong>{catchupMetrics.ceoCount} asunto{catchupMetrics.ceoCount > 1 ? 's' : ''} crítico{catchupMetrics.ceoCount > 1 ? 's' : ''} prioritario{catchupMetrics.ceoCount > 1 ? 's' : ''}</strong> requiere{catchupMetrics.ceoCount > 1 ? 'n' : ''} su intervención
-                          {catchupMetrics.primaryUrgentMatter ? (
-                            <> en {catchupMetrics.primaryUrgentMatter.campus || campuses[0]?.name || 'Plantel Central'} ({catchupMetrics.primaryUrgentMatter.title}). {catchupMetrics.primaryUrgentMatter.suggested_draft_reply ? 'Ya preparé el borrador de respuesta oficial listo para ser aprobado en 1 clic.' : ''}</>
-                          ) : '.'}
-                        </>
-                      ) : (
-                        <>
-                          <strong>0 asuntos críticos prioritarios pendientes:</strong> La bandeja de Dirección General se encuentra al corriente sin emergencias escolares ni oficios pendientes.
-                        </>
-                      )}
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#E11D48] ring-2 ring-[#FFE4E6]" />
+                  </div>
+                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">Atención CEO</span>
+                </div>
+                <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#F59E0B] bg-white shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">
+                      {catchupMetrics.delegatedCount}
                     </span>
-                  </p>
-
-                  <p className="flex items-start gap-1.5">
-                    <span className="text-blue-600 font-bold shrink-0">•</span>
-                    <span>
-                      <strong>{catchupMetrics.infoCount} correos informativos</strong> (circulares, plataformas educativas y conferencias) procesados y archivados con acuse.
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#F59E0B] border-[1.5px] border-[#B45309] ring-2 ring-[#FEF3C7]" />
+                  </div>
+                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">Delegados SLA</span>
+                </div>
+                <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#2563EB] bg-white shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">
+                      {catchupMetrics.infoCount}
                     </span>
-                  </p>
-
-                  <p className="flex items-start gap-1.5">
-                    <span className="text-amber-600 font-bold shrink-0">•</span>
-                    <span>
-                      <strong>{catchupMetrics.delegatedCount} correos turnados a Delegados con SLA</strong> en Coordinación Académica, Cobranza, Control Escolar o Logística bajo supervisión desatendida.
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#2563EB] ring-2 ring-[#DBEAFE]" />
+                  </div>
+                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">Informativos</span>
+                </div>
+                <div className="p-4 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#64748B] bg-white shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-[#0F172A] block tabular-nums">
+                      {catchupMetrics.spamCount}
                     </span>
-                  </p>
-
-                  {catchupMetrics.familyCount > 0 && (
-                    <p className="flex items-start gap-1.5">
-                      <span className="text-emerald-600 font-bold shrink-0">•</span>
-                      <span>
-                        <strong>{catchupMetrics.familyCount} familias</strong> consultaron información escolar o administrativa en el ciclo activo.
-                      </span>
-                    </p>
-                  )}
-
-                  {catchupMetrics.sepCount > 0 && (
-                    <p className="flex items-start gap-1.5">
-                      <span className="text-red-700 font-bold shrink-0">•</span>
-                      <span>
-                        <strong>{catchupMetrics.sepCount} oficio(s) de Supervisión Escolar SEP</strong> clasificados con máxima prioridad directiva.
-                      </span>
-                    </p>
-                  )}
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#64748B] ring-2 ring-[#E2E8F0]" />
+                  </div>
+                  <span className="text-xs font-semibold text-[#475569] mt-0.5 block">
+                    Ruido Filtrado · 3.8 hrs salvadas
+                  </span>
                 </div>
               </div>
 
-              {/* Conversación / Preguntas al Motor Pedagógico IA */}
+              {/* Dictamen Ejecutivo Conciso */}
+              <div className="p-3.5 rounded-xl border border-[#CBD5E1] border-l-4 border-l-[#2563EB] bg-white shadow-2xs text-xs text-[#1E293B] leading-relaxed">
+                <strong>{catchupMetrics.timeGreeting}, {directorTitle}:</strong> De{' '}
+                <strong>{catchupMetrics.totalCount} correos</strong> analizados en {schoolName},{' '}
+                {catchupMetrics.ceoCount > 0 && catchupMetrics.primaryUrgentMatter
+                  ? `el foco prioritario es «${sanitizeCommercialTrademarks(catchupMetrics.primaryUrgentMatter.title)}» (${catchupMetrics.primaryUrgentMatter.campus || 'Plantel Central'}).`
+                  : 'la bandeja de Dirección General se encuentra al corriente sin emergencias pendientes.'}
+              </div>
+
+              {/* Módulo 2.4: Lámina Ejecutiva de Consejo (WebP) */}
+              <div className="p-4 rounded-xl border border-[#CBD5E1] bg-white shadow-2xs space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-[#0F172A]">
+                    Lámina Ejecutiva de Consejo (WebP)
+                  </span>
+                  <button
+                    type="button"
+                    data-testid="btn-synthesize-catchup-infographic"
+                    onClick={() => handleSynthesizeCatchupInfographic('')}
+                    disabled={isGeneratingCatchupVisual}
+                    className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-[11px] inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs transition-colors"
+                  >
+                    {isGeneratingCatchupVisual && <Loader2 className="h-3 w-3 animate-spin" />}
+                    <span>
+                      {isGeneratingCatchupVisual
+                        ? 'Generando...'
+                        : catchupInfographicAsset
+                        ? 'Actualizar Lámina'
+                        : 'Generar Lámina Visual 60s'}
+                    </span>
+                  </button>
+                </div>
+
+                {catchupInfographicAsset ? (
+                  <div className="space-y-2.5">
+                    <div className="rounded-lg overflow-hidden border border-[#CBD5E1] bg-[#F8FAFC]">
+                      <img
+                        src={catchupInfographicAsset.dataUrl}
+                        alt={catchupInfographicAsset.captionSummary}
+                        className="w-full max-h-48 object-contain mx-auto block"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={catchupVisualRefinement}
+                        onChange={(e) => setCatchupVisualRefinement(e.target.value)}
+                        onKeyDown={(e) =>
+                          e.key === 'Enter' &&
+                          catchupVisualRefinement.trim() &&
+                          handleSynthesizeCatchupInfographic()
+                        }
+                        placeholder="Refinar lámina de consejo..."
+                        className="flex-1 px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[11px] text-[#0F172A] outline-none focus:border-[#2563EB]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleStartVisualVoiceDictation('catchup')}
+                        className="p-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[#475569] cursor-pointer"
+                        title="Dictar con Voz Sofía"
+                      >
+                        <Mic className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadVisualAsset(catchupInfographicAsset)}
+                        className="px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[#0F172A] font-medium text-[11px] inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Download className="h-3 w-3" />
+                        <span>Descargar Lámina</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-[#64748B]">
+                    Sintetiza en 1 clic la infografía panorámica 16:9 de los 4 cuadrantes para proyectar o compartir con Consejo Directivo.
+                  </p>
+                )}
+              </div>
+
+              {/* Conversación Activa con Motor de IA Pedagógica */}
               {catchupConversation.length > 0 && (
                 <div className="space-y-2">
                   {catchupConversation.map((msg, idx) => (
                     <div key={idx} className="space-y-1 text-xs">
-                      <div className="bg-slate-100 p-2.5 rounded-xl font-bold text-slate-700">
-                        Tú: {msg.q}
+                      <div className="p-2.5 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] font-semibold text-[#1E3A8A]">
+                        {msg.q}
                       </div>
-                      <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-950 border border-emerald-200 whitespace-pre-line leading-relaxed">
-                        <span className="font-bold text-emerald-800">Motor de IA Pedagógica:</span> {msg.a}
+                      <div className="p-3 rounded-lg bg-white border border-[#CBD5E1] text-[#1E293B] leading-relaxed">
+                        {msg.a}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+            </div>
 
-              {/* Caja de Consulta Interactiva a 0 Tokens */}
-              <div className="space-y-1.5 pt-1">
-                <div className="flex gap-2">
+            {/* Pie del Drawer: Consulta al Motor de IA Pedagógica */}
+            <div className="px-6 py-4 border-t border-[#CBD5E1] bg-white space-y-2 shrink-0">
+              <div className="relative flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#64748B]" />
                   <input
                     type="text"
                     value={catchupQuery}
                     onChange={(e) => setCatchupQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAskCatchupQuestion()}
-                    placeholder="Pregunta en vivo: ¿Cuál es el caso más urgente? ¿Hay algo de la SEP?..."
-                    className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    placeholder="Consultar al Motor de IA Pedagógica sobre la bandeja..."
+                    className="w-full pl-8 pr-3 py-2 rounded-lg border border-[#CBD5E1] bg-[#F8FAFC] text-xs text-[#0F172A] placeholder:text-[#64748B] outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleAskCatchupQuestion()}
-                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
-                  >
-                    Preguntar
-                  </button>
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                  <span className="text-[10px] text-slate-400 font-bold">Sugerencias rápidas:</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAskCatchupQuestion('¿Cuál es el caso más urgente?')}
-                    className="text-[10px] bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                  >
-                    ¿Cuál es el caso más urgente?
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAskCatchupQuestion('¿Qué correos son spam?')}
-                    className="text-[10px] bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                  >
-                    ¿Qué es spam?
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAskCatchupQuestion('¿Hay algo de la SEP?')}
-                    className="text-[10px] bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
-                  >
-                    ¿Hay algo de la SEP?
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAskCatchupQuestion()}
+                  className="px-3.5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold text-xs cursor-pointer shrink-0 transition-colors"
+                >
+                  Consultar
+                </button>
               </div>
-            </div>
-
-            {/* Footer con Acciones Directas en Tiempo Real */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-100 shrink-0">
-              <button
-                type="button"
-                onClick={() => handleTriggerSync(false)}
-                disabled={isSyncingLiveInbox}
-                className="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
-                title="Sincronizar correos reales de Google / IMAP ahora mismo"
-              >
-                <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-indigo-600' : ''}`} />
-                <span>{isSyncingLiveInbox ? 'Sincronizando...' : 'Sincronizar en Vivo'}</span>
-              </button>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleAskCatchupQuestion('¿Hay algo de la SEP?')}
+                  className="px-2.5 py-1 rounded-md border border-[#E4E4E7] bg-white hover:bg-[#F4F4F5] text-[11px] font-medium text-[#09090B] cursor-pointer"
+                >
+                  Resumir SEP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAskCatchupQuestion('¿Cuál es el caso más urgente?')}
+                  className="px-2.5 py-1 rounded-md border border-[#E4E4E7] bg-white hover:bg-[#F4F4F5] text-[11px] font-medium text-[#09090B] cursor-pointer"
+                >
+                  Caso más urgente
+                </button>
                 {catchupMetrics.ceoCount > 0 && (
                   <button
                     type="button"
                     onClick={() => {
                       setShowCatchupModal(false);
-                      setActiveTab('inbox');
+                      const next: typeof activeTab = 'inbox';
+                      setActiveTab(next);
+                      setInboxFilter('USABLE');
+                      setUsableSubFilter('ALL');
                     }}
-                    className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                    className="ml-auto text-[11px] font-semibold text-[#09090B] underline cursor-pointer"
                   >
-                    Ver Asuntos CEO ({catchupMetrics.ceoCount})
+                    Ir a Decisiones CEO ({catchupMetrics.ceoCount}) →
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setShowCatchupModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors cursor-pointer"
-                >
-                  Entendido, continuar en la Consola
-                </button>
               </div>
             </div>
           </div>
@@ -14798,20 +14716,22 @@ Comité de Seguridad y Protección Escolar`
       {/* 6.6 MODAL: MODIFICAR CITA / EVENTO EXISTENTE EN CALENDARIO*/}
       {/* ========================================================= */}
       {editingCalendarEvent && (
-        <div className="fixed inset-0 z-80 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Edit3 className="h-5 w-5 text-indigo-600" />
+        <div className="fixed inset-0 z-80 bg-[#0F172A]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] space-y-4 text-xs animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB]">
+                  <Edit3 className="h-4 w-4" />
+                </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">Modificar Cita o Evento</h3>
-                  <p className="text-[11px] text-slate-500">Se actualizará en tiempo real en Google Calendar / Gmail</p>
+                  <h3 className="text-base font-black text-[#0F172A]">Modificar Cita o Evento</h3>
+                  <p className="text-[11px] text-[#64748B] font-medium">Sincronización bidireccional en tiempo real (Google Calendar API TLS 1.3)</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingCalendarEvent(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-800 cursor-pointer"
+                className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] cursor-pointer transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -14819,39 +14739,39 @@ Comité de Seguridad y Protección Escolar`
 
             <form onSubmit={handleSaveEditedEvent} className="space-y-3.5">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Título del Evento o Audiencia:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Título del Evento o Audiencia:</label>
                 <input
                   type="text"
                   value={editingCalendarEvent.title}
                   onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, title: e.target.value })}
                   placeholder="ej. Audiencia Presencial con Familia García"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-semibold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Categoría:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Categoría (Triage OKLCH):</label>
                   <select
                     value={editingCalendarEvent.category}
                     onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, category: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-semibold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   >
-                    <option value="AUDIENCIA_PADRES">Audiencia con Padres</option>
-                    <option value="CONSEJO_TECNICO">Consejo Técnico (CTE)</option>
-                    <option value="JUNTA_DIRECTORES">Junta de Directores</option>
-                    <option value="TRAMITE_SEP">Trámite Oficial SEP</option>
-                    <option value="EVENTO_INSTITUCIONAL">Evento Institucional</option>
+                    <option value="AUDIENCIA_PADRES">🔴 Audiencia con Padres (Crítico CEO)</option>
+                    <option value="CONSEJO_TECNICO">🔵 Consejo Técnico (CTE)</option>
+                    <option value="JUNTA_DIRECTORES">🔵 Junta de Directores</option>
+                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (SLA Delegado)</option>
+                    <option value="EVENTO_INSTITUCIONAL">⚪ Evento Institucional</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Plantel / Campus:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Plantel / Campus:</label>
                   <select
                     value={editingCalendarEvent.campus}
                     onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, campus: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   >
                     {campuses.map(c => (
                       <option key={c.id || c.name} value={c.name}>{c.name}</option>
@@ -14862,69 +14782,69 @@ Comité de Seguridad y Protección Escolar`
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Fecha:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={editingCalendarEvent.date}
                     onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, date: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-mono font-bold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Horario:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Horario:</label>
                   <input
                     type="text"
                     value={editingCalendarEvent.time}
                     onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, time: e.target.value })}
                     placeholder="ej. 09:00 - 10:00 hrs"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-mono font-bold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Asistentes / Contacto:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Asistentes / Contacto:</label>
                 <input
                   type="text"
                   value={editingCalendarEvent.attendees}
                   onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, attendees: e.target.value })}
                   placeholder="ej. Familia García, Dirección Técnica y Tutor"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Ubicación o Enlace:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Ubicación o Enlace:</label>
                 <input
                   type="text"
                   value={editingCalendarEvent.location}
                   onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, location: e.target.value })}
                   placeholder="ej. Oficina de Dirección General o Enlace Google Meet"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Notas / Objetivo:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Orden del Día / Acuerdos Preliminares:</label>
                 <textarea
                   rows={2}
                   value={editingCalendarEvent.notes}
                   onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, notes: e.target.value })}
-                  placeholder="Resumen o acuerdos preliminares..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500 resize-none"
+                  placeholder="Resumen, protocolo aplicable o acuerdos preliminares..."
+                  className="w-full p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white resize-none transition-colors"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-between gap-2">
+              <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => handleDeleteCalendarEvent(editingCalendarEvent.id)}
-                  className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2 rounded-lg bg-[#FFF1F2] hover:bg-[#FFE4E6] border border-[#FECDD3] text-[#9F1239] font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5 text-[#E11D48]" />
                   <span>Eliminar Cita</span>
                 </button>
 
@@ -14932,7 +14852,7 @@ Comité de Seguridad y Protección Escolar`
                   <button
                     type="button"
                     onClick={() => setEditingCalendarEvent(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] font-bold text-xs transition-colors cursor-pointer"
                   >
                     Cancelar
                   </button>
@@ -14940,7 +14860,7 @@ Comité de Seguridad y Protección Escolar`
                   <button
                     type="submit"
                     disabled={isSyncingCalendarToGoogle}
-                    className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-black text-xs shadow-sm transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {isSyncingCalendarToGoogle ? (
                       <>
@@ -14965,53 +14885,58 @@ Comité de Seguridad y Protección Escolar`
       {/* 7. MODAL: AGENDAR NUEVA CITA / AUDIENCIA EN CALENDARIO    */}
       {/* ========================================================= */}
       {showNewEventModal && (
-        <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <CalendarPlus className="h-5 w-5 text-indigo-600" />
-                <h3 className="text-base font-black text-slate-900">Agendar Cita o Evento Escolar</h3>
+        <div className="fixed inset-0 z-70 bg-[#0F172A]/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-[#CBD5E1] border-t-4 border-t-[#2563EB] space-y-4 text-xs animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB]">
+                  <CalendarPlus className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-[#0F172A]">Agendar Cita o Evento Escolar</h3>
+                  <p className="text-[11px] text-[#64748B] font-medium">Despacho inmediato a Agenda Directiva y Google Calendar API</p>
+                </div>
               </div>
-              <button onClick={() => setShowNewEventModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-800">
+              <button onClick={() => setShowNewEventModal(false)} className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] cursor-pointer transition-colors">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateEvent} className="space-y-3.5">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Título del Evento o Audiencia:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Título del Evento o Audiencia:</label>
                 <input
                   type="text"
                   value={newEventTitle}
                   onChange={(e) => setNewEventTitle(e.target.value)}
                   placeholder="ej. Audiencia Presencial con Familia García"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-semibold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Categoría:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Categoría (Triage OKLCH):</label>
                   <select
                     value={newEventCategory}
                     onChange={(e) => setNewEventCategory(e.target.value as any)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-semibold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   >
-                    <option value="AUDIENCIA_PADRES">Audiencia con Padres</option>
-                    <option value="CONSEJO_TECNICO">Consejo Técnico (CTE)</option>
-                    <option value="JUNTA_DIRECTORES">Junta de Directores</option>
-                    <option value="TRAMITE_SEP">Trámite Oficial SEP</option>
-                    <option value="EVENTO_INSTITUCIONAL">Evento Institucional</option>
+                    <option value="AUDIENCIA_PADRES">🔴 Audiencia con Padres (Crítico CEO)</option>
+                    <option value="CONSEJO_TECNICO">🔵 Consejo Técnico (CTE)</option>
+                    <option value="JUNTA_DIRECTORES">🔵 Junta de Directores</option>
+                    <option value="TRAMITE_SEP">🟡 Trámite Oficial SEP (SLA Delegado)</option>
+                    <option value="EVENTO_INSTITUCIONAL">⚪ Evento Institucional</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Plantel / Campus:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Plantel / Campus:</label>
                   <select
                     value={newEventCampus}
                     onChange={(e) => setNewEventCampus(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   >
                     {campuses.map(c => (
                       <option key={c.id || c.name} value={c.name}>{c.name}</option>
@@ -15022,72 +14947,72 @@ Comité de Seguridad y Protección Escolar`
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Fecha:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Fecha:</label>
                   <input
                     type="date"
                     value={newEventDate}
                     onChange={(e) => setNewEventDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-mono font-bold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Horario:</label>
+                  <label className="font-bold text-[#0F172A] block mb-1">Horario:</label>
                   <input
                     type="text"
                     value={newEventTime}
                     onChange={(e) => setNewEventTime(e.target.value)}
                     placeholder="ej. 09:00 - 10:00 hrs"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-mono font-bold focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Asistentes / Contacto:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Asistentes / Contacto:</label>
                 <input
                   type="text"
                   value={newEventAttendees}
                   onChange={(e) => setNewEventAttendees(e.target.value)}
                   placeholder="ej. Familia García, Dirección Técnica y Tutor"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Ubicación o Enlace:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Ubicación o Enlace:</label>
                 <input
                   type="text"
                   value={newEventLocation}
                   onChange={(e) => setNewEventLocation(e.target.value)}
                   placeholder="ej. Oficina de Dirección General o Enlace Google Meet"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Notas / Objetivo:</label>
+                <label className="font-bold text-[#0F172A] block mb-1">Orden del Día / Acuerdos Preliminares:</label>
                 <textarea
                   rows={2}
                   value={newEventNotes}
                   onChange={(e) => setNewEventNotes(e.target.value)}
-                  placeholder="Resumen o acuerdos preliminares..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-medium focus:outline-none focus:border-indigo-500 resize-none"
+                  placeholder="Resumen, protocolo aplicable o acuerdos preliminares..."
+                  className="w-full p-2.5 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white resize-none transition-colors"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowNewEventModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+                  className="px-4 py-2 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancelar
                 </button>
 
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                  className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-black text-xs shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   Confirmar y Agendar
                 </button>

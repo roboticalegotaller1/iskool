@@ -117,6 +117,9 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
   }
 }
 
+// Pre-iniciar el demonio de síntesis neural al cargar el módulo para 0ms de arranque en frío
+getOrStartNeuralDaemon();
+
 function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
     const child = getOrStartNeuralDaemon();

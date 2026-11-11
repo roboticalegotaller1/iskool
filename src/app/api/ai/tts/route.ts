@@ -531,19 +531,32 @@ export async function POST(req: NextRequest) {
         role: role || ''
       });
     } catch (neuralErr) {
-      console.warn('[TTS] Motor neuronal primario reportó incidencia, intentando canal secundario:', neuralErr);
-      const tts = new MsEdgeTTS();
-      await tts.setMetadata(targetVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-      const { audioStream } = tts.rawToStream(targetSSML);
-      const chunks: Buffer[] = [];
-      await new Promise<void>((resolve, reject) => {
-        audioStream.on('data', (chunk: Buffer | string) => {
-          chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-        });
-        audioStream.on('end', () => resolve());
-        audioStream.on('error', (err: Error) => reject(err));
+      console.warn('[TTS] Motor neuronal primario reportó incidencia, intentando canal secundario con timeout seguro:', neuralErr);
+      audioBuffer = await new Promise<Buffer>(async (resolve, reject) => {
+        const safetyTimer = setTimeout(() => {
+          reject(new Error('Timeout en canal secundario TTS'));
+        }, 4500);
+        try {
+          const tts = new MsEdgeTTS();
+          await tts.setMetadata(targetVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+          const { audioStream } = tts.rawToStream(targetSSML);
+          const chunks: Buffer[] = [];
+          audioStream.on('data', (chunk: Buffer | string) => {
+            chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+          });
+          audioStream.on('end', () => {
+            clearTimeout(safetyTimer);
+            resolve(Buffer.concat(chunks));
+          });
+          audioStream.on('error', (err: Error) => {
+            clearTimeout(safetyTimer);
+            reject(err);
+          });
+        } catch (err) {
+          clearTimeout(safetyTimer);
+          reject(err);
+        }
       });
-      audioBuffer = Buffer.concat(chunks);
     }
 
     if (!audioBuffer || audioBuffer.length === 0) {

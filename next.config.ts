@@ -49,8 +49,8 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
   },
-  // pixi.js is a browser-only WebGL/canvas library — skip server-side bundling
-  serverExternalPackages: ["pixi.js"],
+  // pixi.js is a browser-only WebGL/canvas library; sharp uses native C++ binaries on Node
+  serverExternalPackages: ["pixi.js", "sharp"],
   typescript: {
     // Type safety is strictly verified across the entire repository (0 errors).
     ignoreBuildErrors: false,

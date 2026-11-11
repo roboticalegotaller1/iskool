@@ -8,6 +8,13 @@ import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
 export const runtime = 'nodejs';
 
+interface InlineVisualAttachmentPayload {
+  cid: string;
+  fileName: string;
+  mimeType: string;
+  base64Data: string;
+}
+
 interface SendMailRequest {
   senderEmail?: string;
   recipientEmail: string;
@@ -15,6 +22,7 @@ interface SendMailRequest {
   subject: string;
   bodyText: string;
   bodyHtml?: string;
+  inlineVisualAttachment?: InlineVisualAttachmentPayload;
   threadId?: string;
   inReplyToMessageId?: string;
   tenantId?: string;
@@ -26,6 +34,8 @@ interface SendMailRequest {
     password?: string;
   };
 }
+
+const MAX_INLINE_VISUAL_B64_CHARS = 650_000; // Estricto < ~480 KB Base64 (~360 KB binarios, Regla No Negociable 3)
 
 /**
  * Envío soberano directo por protocolo SMTP sobre TLS (Puerto 465 / 587)
@@ -40,6 +50,8 @@ function sendViaNativeTlsSmtp(options: {
   to: string;
   subject: string;
   body: string;
+  bodyHtml?: string;
+  inlineVisualAttachment?: InlineVisualAttachmentPayload;
   inReplyTo?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   return new Promise((resolve) => {
@@ -116,21 +128,20 @@ function sendViaNativeTlsSmtp(options: {
         stage = 8;
         const msgId = `<${Date.now()}.${Math.random().toString(36).slice(2, 9)}@iskool.mx>`;
         const dateStr = new Date().toUTCString();
-        const headers = [
-          `From: ${options.from}`,
-          `To: ${options.to}`,
-          `Subject: ${utf8Subject}`,
-          `Date: ${dateStr}`,
-          `Message-ID: ${msgId}`,
-          `MIME-Version: 1.0`,
-          `Content-Type: text/plain; charset=utf-8`,
-          `Content-Transfer-Encoding: 8bit`
-        ];
-        if (options.inReplyTo) {
-          headers.push(`In-Reply-To: <${options.inReplyTo}>`);
-          headers.push(`References: <${options.inReplyTo}>`);
-        }
-        const fullMessage = `${headers.join('\r\n')}\r\n\r\n${options.body}\r\n.\r\n`;
+        const rfc822 = GoogleOAuthService.buildRfc822MimePayload({
+          from: options.from,
+          to: options.to,
+          utf8Subject,
+          dateHeader: dateStr,
+          uniqueMsgId: msgId,
+          inReplyToMessageId: options.inReplyTo,
+          bodyText: options.body,
+          bodyHtml: options.bodyHtml,
+          inlineVisualAttachment: options.inlineVisualAttachment,
+        });
+        // Dot-stuffing conforme a RFC 5321 §4.5.2
+        const dotStuffed = rfc822.replace(/\r\n\./g, '\r\n..');
+        const fullMessage = `${dotStuffed}\r\n.\r\n`;
         socket.write(fullMessage);
       } else if (stage === 8 && code === 250) {
         clearTimeout(timer);
@@ -178,6 +189,8 @@ export async function POST(req: NextRequest) {
       recipientName,
       subject,
       bodyText,
+      bodyHtml,
+      inlineVisualAttachment,
       threadId,
       inReplyToMessageId,
       tenantId = 'ibime',
@@ -190,6 +203,22 @@ export async function POST(req: NextRequest) {
 
     if (!bodyText || !bodyText.trim()) {
       return NextResponse.json({ success: false, error: 'El contenido del correo no puede estar vacío' }, { status: 400 });
+    }
+
+    let validatedInlineVisual: InlineVisualAttachmentPayload | undefined;
+    if (inlineVisualAttachment && inlineVisualAttachment.base64Data && inlineVisualAttachment.cid) {
+      if (inlineVisualAttachment.base64Data.length > MAX_INLINE_VISUAL_B64_CHARS) {
+        return NextResponse.json(
+          { success: false, error: 'El activo gráfico adjunto excede el límite institucional de compresión WebP (< 400 KB).' },
+          { status: 413 }
+        );
+      }
+      validatedInlineVisual = {
+        cid: String(inlineVisualAttachment.cid).slice(0, 120),
+        fileName: String(inlineVisualAttachment.fileName || 'comunicado-institucional.webp').slice(0, 120),
+        mimeType: String(inlineVisualAttachment.mimeType || 'image/webp').slice(0, 48),
+        base64Data: inlineVisualAttachment.base64Data,
+      };
     }
 
     // Si el usuario es un docente o rol no directivo, forzar que el remitente sea su propio correo verificado
@@ -209,6 +238,8 @@ export async function POST(req: NextRequest) {
       recipientName,
       subject,
       bodyText,
+      bodyHtml,
+      inlineVisualAttachment: validatedInlineVisual,
       threadId,
       inReplyToMessageId
     });
@@ -229,6 +260,8 @@ export async function POST(req: NextRequest) {
         to: recipientEmail,
         subject,
         body: bodyText,
+        bodyHtml,
+        inlineVisualAttachment: validatedInlineVisual,
         inReplyTo: inReplyToMessageId
       });
 
