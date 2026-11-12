@@ -1207,7 +1207,8 @@ function getNodeFs() {
     try {
       const nodeFs = eval('require')('fs');
       const nodePath = eval('require')('path');
-      return { fs: nodeFs, path: nodePath };
+      const nodeOs = eval('require')('os');
+      return { fs: nodeFs, path: nodePath, os: nodeOs };
     } catch {
       return null;
     }
@@ -1223,25 +1224,46 @@ const serverOrgMemory: Map<string, SchoolOrganizationGraph> =
   (globalThis as any).__iskoolOrganizationGraphStore ||
   ((globalThis as any).__iskoolOrganizationGraphStore = new Map());
 
+function resolveOrgDiskPaths(node: { fs: any; path: any; os: any }): string[] {
+  const candidates = [
+    node.path.join(process.cwd(), '.data', 'organization_graphs.json'),
+  ];
+  try {
+    const tmpDir = node.os?.tmpdir?.();
+    if (tmpDir) {
+      candidates.push(node.path.join(tmpDir, 'iskool-data', 'organization_graphs.json'));
+    }
+  } catch {
+    // Ignore os.tmpdir resolution errors
+  }
+  return candidates;
+}
+
 function loadServerGraphsFromDisk(): Map<string, SchoolOrganizationGraph> {
   const map = new Map<string, SchoolOrganizationGraph>();
   if (isTestEnv()) return map;
   const node = getNodeFs();
   if (!node) return map;
-  try {
-    const file = node.path.join(process.cwd(), '.data', 'organization_graphs.json');
-    if (node.fs.existsSync(file)) {
-      const parsed = JSON.parse(node.fs.readFileSync(file, 'utf8'));
-      if (parsed && typeof parsed === 'object') {
-        for (const [schoolId, g] of Object.entries(parsed)) {
-          if (g && typeof g === 'object') {
-            map.set(schoolId, g as SchoolOrganizationGraph);
+  for (const file of resolveOrgDiskPaths(node)) {
+    try {
+      if (node.fs.existsSync(file)) {
+        const parsed = JSON.parse(node.fs.readFileSync(file, 'utf8'));
+        if (parsed && typeof parsed === 'object') {
+          for (const [schoolId, g] of Object.entries(parsed)) {
+            if (g && typeof g === 'object') {
+              const existing = map.get(schoolId);
+              const existingTs = existing?.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+              const nextTs = (g as any)?.updatedAt ? new Date((g as any).updatedAt).getTime() : 0;
+              if (!existing || nextTs >= existingTs) {
+                map.set(schoolId, g as SchoolOrganizationGraph);
+              }
+            }
           }
         }
       }
+    } catch {
+      // Fallback limpio en entornos serverless de solo lectura
     }
-  } catch {
-    // Fallback limpio en entornos serverless de solo lectura
   }
   return map;
 }
@@ -1250,22 +1272,22 @@ function saveServerGraphsToDisk(map: Map<string, SchoolOrganizationGraph>) {
   if (isTestEnv()) return;
   const node = getNodeFs();
   if (!node) return;
-  try {
-    const dir = node.path.join(process.cwd(), '.data');
-    if (!node.fs.existsSync(dir)) {
-      node.fs.mkdirSync(dir, { recursive: true });
+  const obj: Record<string, SchoolOrganizationGraph> = {};
+  for (const [k, v] of map.entries()) {
+    obj[k] = v;
+  }
+  const serialized = JSON.stringify(obj, null, 2);
+  for (const file of resolveOrgDiskPaths(node)) {
+    try {
+      const dir = node.path.dirname(file);
+      if (!node.fs.existsSync(dir)) {
+        node.fs.mkdirSync(dir, { recursive: true });
+      }
+      node.fs.writeFileSync(file, serialized, 'utf8');
+      break;
+    } catch {
+      // Intenta siguiente ruta escribible (ej. /tmp/iskool-data en serverless)
     }
-    const obj: Record<string, SchoolOrganizationGraph> = {};
-    for (const [k, v] of map.entries()) {
-      obj[k] = v;
-    }
-    node.fs.writeFileSync(
-      node.path.join(dir, 'organization_graphs.json'),
-      JSON.stringify(obj, null, 2),
-      'utf8'
-    );
-  } catch {
-    // Fallback en memoria si el filesystem es efímero
   }
 }
 

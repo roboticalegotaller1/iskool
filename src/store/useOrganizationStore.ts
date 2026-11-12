@@ -233,7 +233,7 @@ function syncGraphToServerAndAdminStore(
 
   // 2. Sincronizar hacia API del Servidor (/api/admin/organization) en cliente navegador
   if (!options?.skipServerPost && typeof window !== 'undefined' && typeof fetch !== 'undefined') {
-    fetch('/api/admin/organization', {
+    fetch(`/api/admin/organization?schoolId=${encodeURIComponent(schoolId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ schoolId, graph }),

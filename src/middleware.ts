@@ -224,6 +224,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/parent') ||
     pathname.startsWith('/planeaciones') ||
     pathname.startsWith('/portal-ceo') ||
+    pathname.startsWith('/api/admin/organization') ||
     pathname.startsWith('/api/mail') ||
     pathname.startsWith('/studio') ||
     pathname.startsWith('/api/studio') ||

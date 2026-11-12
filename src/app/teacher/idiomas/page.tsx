@@ -199,6 +199,7 @@ export default function TeacherIdiomasPage() {
   const [isPocketRemoteOpen, setIsPocketRemoteOpen] = useState<boolean>(false);
   const [isCoordinatorViewOpen, setIsCoordinatorViewOpen] = useState<boolean>(false);
   const [activeAvatarGesture, setActiveAvatarGesture] = useState<AvatarGestureMode>('auto');
+  const [avatarGestureImpulse, setAvatarGestureImpulse] = useState<number>(0);
   const [isEditingScript, setIsEditingScript] = useState<boolean>(false);
   const [showFull40WeekExplorer, setShowFull40WeekExplorer] = useState<boolean>(false);
 
@@ -275,10 +276,12 @@ export default function TeacherIdiomasPage() {
     return byLang.length > 0 ? byLang : cleanLessons;
   }, [cleanLessons, activeLesson.language]);
 
-  // Reiniciar índice de frase de karaoke cuando cambia la lección activa
+  // Reiniciar índice de frase de karaoke y sincronizar rig histórico cuando cambia la lección activa
   useEffect(() => {
     setSelectedKaraokeIndex(0);
-  }, [activeLesson.id]);
+    setUseHistoricalFigure(Boolean(activeLesson.historicalFigureId));
+    setSelectedHistoricalId(activeLesson.historicalFigureId || '');
+  }, [activeLesson.id, activeLesson.historicalFigureId]);
 
   // Cambiar de Nivel CEFR (A1, A2, B1, B2) dentro del idioma activo en 1 clic
   const handleSelectCefrLevel = (targetLevel: 'A1' | 'A2' | 'B1' | 'B2') => {
@@ -1745,6 +1748,7 @@ export default function TeacherIdiomasPage() {
                           isLightMode={isLightMode}
                           activeGesture={activeAvatarGesture}
                           onActiveGestureChange={setActiveAvatarGesture}
+                          gestureImpulse={avatarGestureImpulse}
                           className="w-full h-full"
                         />
                       </div>
@@ -1817,28 +1821,62 @@ export default function TeacherIdiomasPage() {
                       </div>
                     </div>
 
-                    {/* 4 Botones Gestuales Rápidos Compactos */}
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[
-                        { id: 'welcome' as AvatarGestureMode, icon: '👋', label: 'Bienvenida' },
-                        { id: 'explain' as AvatarGestureMode, icon: '☝️', label: 'Explicar' },
-                        { id: 'exclaim' as AvatarGestureMode, icon: '🎉', label: '¡Exclamar!' },
-                        { id: 'inquire' as AvatarGestureMode, icon: '🤔', label: 'Pregunta' },
-                      ].map((g) => (
+                    {/* Compendio Ampliado de 12 Movimientos 3D + Ciclo Automático */}
+                    <div className="space-y-1.5" data-testid="teacher-avatar-movements-pad">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                          Compendio de 12 Movimientos 3D
+                        </span>
                         <button
-                          key={g.id}
                           type="button"
-                          onClick={() => setActiveAvatarGesture(g.id)}
-                          className={`py-1.5 px-2 rounded-xl text-[11px] font-bold border flex items-center justify-center gap-1 cursor-pointer transition-all ${
-                            activeAvatarGesture === g.id
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                              : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200'
+                          onClick={() => setActiveAvatarGesture('auto')}
+                          className={`py-0.5 px-2.5 rounded-lg text-[10px] font-black border cursor-pointer transition-all flex items-center gap-1 ${
+                            activeAvatarGesture === 'auto'
+                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                              : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          <span>{g.icon}</span>
-                          <span className="truncate">{g.label}</span>
+                          <span>✨</span>
+                          <span>Ciclo Auto (12)</span>
                         </button>
-                      ))}
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-1">
+                        {[
+                          { id: 'welcome' as AvatarGestureMode, icon: '👋', label: 'Bienvenida' },
+                          { id: 'wave' as AvatarGestureMode, icon: '🙋', label: 'Saludo' },
+                          { id: 'explain' as AvatarGestureMode, icon: '☝️', label: 'Explicar' },
+                          { id: 'point' as AvatarGestureMode, icon: '👉', label: 'Pizarrón' },
+                          { id: 'pronounce' as AvatarGestureMode, icon: '🗣️', label: 'Fonética' },
+                          { id: 'inquire' as AvatarGestureMode, icon: '🤔', label: 'Pregunta' },
+                          { id: 'think' as AvatarGestureMode, icon: '💡', label: '¡Idea!' },
+                          { id: 'exclaim' as AvatarGestureMode, icon: '🎉', label: '¡Exclamar!' },
+                          { id: 'celebrate' as AvatarGestureMode, icon: '👏', label: 'Aplauso' },
+                          { id: 'encourage' as AvatarGestureMode, icon: '👍', label: 'Ánimo' },
+                          { id: 'calm' as AvatarGestureMode, icon: '🤲', label: 'Calma' },
+                          { id: 'listen' as AvatarGestureMode, icon: '👁️', label: 'Parpadeo' },
+                        ].map((g) => (
+                          <button
+                            key={g.id}
+                            type="button"
+                            data-movement-btn={g.id}
+                            onClick={() => {
+                              setActiveAvatarGesture(g.id);
+                              setAvatarGestureImpulse((prev) => prev + 1);
+                            }}
+                            className={`py-1 px-1.5 rounded-xl text-[10.5px] font-bold border flex items-center justify-center gap-1 cursor-pointer transition-all ${
+                              activeAvatarGesture === g.id
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                                : isLightMode
+                                  ? 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200'
+                                  : 'bg-slate-800/80 hover:bg-slate-700 text-slate-200 border-slate-700'
+                            }`}
+                          >
+                            <span>{g.icon}</span>
+                            <span className="truncate">{g.label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

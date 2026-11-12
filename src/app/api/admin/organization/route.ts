@@ -20,6 +20,12 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+    if (auth.user?.role === 'student' || auth.user?.role === 'parent') {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para modificar el organigrama.' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(req.url);
     const schoolId = normalizeOrgSchoolId(searchParams.get('schoolId') || 'sch-test-case');
@@ -48,6 +54,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Autenticación institucional requerida.' },
         { status: 401 }
+      );
+    }
+    if (auth.user?.role === 'student' || auth.user?.role === 'parent') {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para modificar el organigrama.' },
+        { status: 403 }
       );
     }
 

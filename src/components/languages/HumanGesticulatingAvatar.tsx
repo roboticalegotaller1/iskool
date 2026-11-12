@@ -43,6 +43,7 @@ interface Props {
   variant?: 'card' | 'stage';
   activeGesture?: AvatarGestureMode;
   onActiveGestureChange?: (gesture: AvatarGestureMode) => void;
+  gestureImpulse?: number;
 }
 
 interface Character3DRig {
@@ -54,20 +55,69 @@ interface Character3DRig {
   poseCompendium: Partial<Record<Exclude<AvatarGestureMode, 'auto'> | 'blink' | 'turn', string>>;
 }
 
+function buildHistorical3DRig(id: string, hasDistinctWelcomePose = false): Character3DRig {
+  const welcomePose = hasDistinctWelcomePose
+    ? `/images/languages/3d/${id}_3d_pose_welcome.webp`
+    : `/images/languages/3d/${id}_3d.webp`;
+
+  const poseCompendium: Character3DRig['poseCompendium'] = {
+    welcome: welcomePose,
+    wave: `/images/languages/3d/${id}_3d_pose_wave.webp`,
+    explain: `/images/languages/3d/${id}_3d_pose_explain.webp`,
+    point: `/images/languages/3d/${id}_3d_pose_point.webp`,
+    pronounce: `/images/languages/3d/${id}_3d_pose_pronounce.webp`,
+    inquire: `/images/languages/3d/${id}_3d_pose_inquire.webp`,
+    think: `/images/languages/3d/${id}_3d_pose_think.webp`,
+    exclaim: `/images/languages/3d/${id}_3d_pose_exclaim.webp`,
+    celebrate: `/images/languages/3d/${id}_3d_pose_celebrate.webp`,
+    encourage: `/images/languages/3d/${id}_3d_pose_encourage.webp`,
+    calm: `/images/languages/3d/${id}_3d_pose_calm.webp`,
+    listen: `/images/languages/3d/${id}_3d_pose_listen.webp`,
+    blink: `/images/languages/3d/${id}_3d_idle_blink.webp`,
+  };
+
+  return {
+    id,
+    idle: `/images/languages/3d/${id}_3d.webp`,
+    talkMovie: `/images/languages/3d/movies/${id}_3d_talk.mp4`,
+    gestureMovies: {
+      welcome: `/images/languages/3d/movies/${id}_3d_welcome.mp4`,
+      wave: `/images/languages/3d/movies/${id}_3d_wave.mp4`,
+      explain: `/images/languages/3d/movies/${id}_3d_explain.mp4`,
+      point: `/images/languages/3d/movies/${id}_3d_point.mp4`,
+      pronounce: `/images/languages/3d/movies/${id}_3d_pronounce.mp4`,
+      inquire: `/images/languages/3d/movies/${id}_3d_inquire.mp4`,
+      think: `/images/languages/3d/movies/${id}_3d_think.mp4`,
+      exclaim: `/images/languages/3d/movies/${id}_3d_exclaim.mp4`,
+      celebrate: `/images/languages/3d/movies/${id}_3d_celebrate.mp4`,
+      encourage: `/images/languages/3d/movies/${id}_3d_encourage.mp4`,
+      calm: `/images/languages/3d/movies/${id}_3d_calm.mp4`,
+    },
+    talkFrames: Object.values(poseCompendium).filter(Boolean) as string[],
+    poseCompendium,
+  };
+}
+
 // =========================================================================
-// COMPENDIO DE VIDEOS NEURONALES 3D (.MP4) Y POSES NANO BANANA 2.1 A 60 FPS
+// COMPENDIO DE VIDEOS NEURONALES 3D (.MP4) Y POSES DEL MOTOR GRÁFICO 3D A 60 FPS
 // =========================================================================
-const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
+export const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   claire: {
     id: 'claire',
     idle: '/images/languages/3d/mentor_female_3d.webp',
     talkMovie: '/images/languages/3d/movies/mentor_female_3d_talk.mp4',
     gestureMovies: {
       welcome: '/images/languages/3d/movies/mentor_female_3d_welcome.mp4',
+      wave: '/images/languages/3d/movies/mentor_female_3d_wave.mp4',
       explain: '/images/languages/3d/movies/mentor_female_3d_explain.mp4',
-      exclaim: '/images/languages/3d/movies/mentor_female_3d_exclaim.mp4',
+      point: '/images/languages/3d/movies/mentor_female_3d_point.mp4',
+      pronounce: '/images/languages/3d/movies/mentor_female_3d_pronounce.mp4',
       inquire: '/images/languages/3d/movies/mentor_female_3d_inquire.mp4',
-      encourage: '/images/languages/3d/movies/mentor_female_3d_exclaim.mp4',
+      think: '/images/languages/3d/movies/mentor_female_3d_think.mp4',
+      exclaim: '/images/languages/3d/movies/mentor_female_3d_exclaim.mp4',
+      celebrate: '/images/languages/3d/movies/mentor_female_3d_celebrate.mp4',
+      encourage: '/images/languages/3d/movies/mentor_female_3d_encourage.mp4',
+      calm: '/images/languages/3d/movies/mentor_female_3d_calm.mp4',
     },
     talkFrames: [
       '/images/languages/3d/mentor_female_3d_pose_turn.webp',
@@ -75,8 +125,14 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
       '/images/languages/3d/mentor_female_3d_pose_exclaim.webp',
       '/images/languages/3d/mentor_female_3d_pose_inquire.webp',
       '/images/languages/3d/mentor_female_3d_pose_encourage.webp',
+      '/images/languages/3d/mentor_female_3d_pose_celebrate.webp',
+      '/images/languages/3d/mentor_female_3d_pose_point.webp',
+      '/images/languages/3d/mentor_female_3d_pose_pronounce.webp',
+      '/images/languages/3d/mentor_female_3d_pose_wave.webp',
+      '/images/languages/3d/mentor_female_3d_pose_think.webp',
+      '/images/languages/3d/mentor_female_3d_pose_calm.webp',
       '/images/languages/3d/mentor_female_3d_pose_listen.webp',
-      '/images/languages/3d/mentor_female_3d_idle_blink.webp',
+      '/images/languages/3d/mentor_female_3d_welcome_blink.webp',
     ],
     poseCompendium: {
       welcome: '/images/languages/3d/mentor_female_3d.webp',
@@ -84,182 +140,93 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
       exclaim: '/images/languages/3d/mentor_female_3d_pose_exclaim.webp',
       inquire: '/images/languages/3d/mentor_female_3d_pose_inquire.webp',
       encourage: '/images/languages/3d/mentor_female_3d_pose_encourage.webp',
+      celebrate: '/images/languages/3d/mentor_female_3d_pose_celebrate.webp',
+      point: '/images/languages/3d/mentor_female_3d_pose_point.webp',
+      pronounce: '/images/languages/3d/mentor_female_3d_pose_pronounce.webp',
+      wave: '/images/languages/3d/mentor_female_3d_pose_wave.webp',
+      think: '/images/languages/3d/mentor_female_3d_pose_think.webp',
+      calm: '/images/languages/3d/mentor_female_3d_pose_calm.webp',
       listen: '/images/languages/3d/mentor_female_3d_pose_listen.webp',
-      blink: '/images/languages/3d/mentor_female_3d_idle_blink.webp',
+      blink: '/images/languages/3d/mentor_female_3d_welcome_blink.webp',
       turn: '/images/languages/3d/mentor_female_3d_pose_turn.webp',
     },
   },
   arthur: {
     id: 'arthur',
     idle: '/images/languages/3d/mentor_male_3d_v2.webp',
-    talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+    talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_welcome.mp4',
     gestureMovies: {
-      welcome: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
-      explain: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
-      exclaim: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
+      welcome: '/images/languages/3d/movies/mentor_male_3d_v2_welcome.mp4',
+      wave: '/images/languages/3d/movies/mentor_male_3d_v2_wave.mp4',
+      explain: '/images/languages/3d/movies/mentor_male_3d_v2_explain.mp4',
+      point: '/images/languages/3d/movies/mentor_male_3d_v2_point.mp4',
+      pronounce: '/images/languages/3d/movies/mentor_male_3d_v2_pronounce.mp4',
+      inquire: '/images/languages/3d/movies/mentor_male_3d_v2_inquire.mp4',
+      think: '/images/languages/3d/movies/mentor_male_3d_v2_think.mp4',
+      exclaim: '/images/languages/3d/movies/mentor_male_3d_v2_exclaim.mp4',
+      celebrate: '/images/languages/3d/movies/mentor_male_3d_v2_celebrate.mp4',
+      encourage: '/images/languages/3d/movies/mentor_male_3d_v2_encourage.mp4',
+      calm: '/images/languages/3d/movies/mentor_male_3d_v2_calm.mp4',
     },
     talkFrames: [
-      '/images/languages/3d/mentor_male_3d_pose_turn.webp',
-      '/images/languages/3d/mentor_male_3d_pose_turn_left.webp',
-      '/images/languages/3d/mentor_male_3d_pose_explain.webp',
-      '/images/languages/3d/mentor_male_3d_pose_exclaim.webp',
-      '/images/languages/3d/mentor_male_3d_pose_inquire.webp',
-      '/images/languages/3d/mentor_male_3d_pose_encourage.webp',
-      '/images/languages/3d/mentor_male_3d_talk_a.webp',
-      '/images/languages/3d/mentor_male_3d_talk_c.webp',
+      '/images/languages/3d/mentor_male_3d_v2.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_explain.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_exclaim.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_inquire.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_encourage.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_celebrate.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_point.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_pronounce.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_wave.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_think.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_calm.webp',
+      '/images/languages/3d/mentor_male_3d_v2_pose_listen.webp',
       '/images/languages/3d/mentor_male_3d_v2_idle_blink.webp',
     ],
     poseCompendium: {
       welcome: '/images/languages/3d/mentor_male_3d_v2.webp',
-      explain: '/images/languages/3d/mentor_male_3d_pose_explain.webp',
-      exclaim: '/images/languages/3d/mentor_male_3d_pose_exclaim.webp',
-      inquire: '/images/languages/3d/mentor_male_3d_pose_inquire.webp',
-      encourage: '/images/languages/3d/mentor_male_3d_pose_encourage.webp',
-      listen: '/images/languages/3d/mentor_male_3d_talk_a.webp',
+      explain: '/images/languages/3d/mentor_male_3d_v2_pose_explain.webp',
+      exclaim: '/images/languages/3d/mentor_male_3d_v2_pose_exclaim.webp',
+      inquire: '/images/languages/3d/mentor_male_3d_v2_pose_inquire.webp',
+      encourage: '/images/languages/3d/mentor_male_3d_v2_pose_encourage.webp',
+      celebrate: '/images/languages/3d/mentor_male_3d_v2_pose_celebrate.webp',
+      point: '/images/languages/3d/mentor_male_3d_v2_pose_point.webp',
+      pronounce: '/images/languages/3d/mentor_male_3d_v2_pose_pronounce.webp',
+      wave: '/images/languages/3d/mentor_male_3d_v2_pose_wave.webp',
+      think: '/images/languages/3d/mentor_male_3d_v2_pose_think.webp',
+      calm: '/images/languages/3d/mentor_male_3d_v2_pose_calm.webp',
+      listen: '/images/languages/3d/mentor_male_3d_v2_pose_listen.webp',
       blink: '/images/languages/3d/mentor_male_3d_v2_idle_blink.webp',
-      turn: '/images/languages/3d/mentor_male_3d_pose_turn.webp',
     },
   },
-  shakespeare: {
-    id: 'shakespeare',
-    idle: '/images/languages/3d/shakespeare_3d.webp',
-    talkMovie: '/images/languages/3d/movies/shakespeare_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
-      '/images/languages/3d/shakespeare_3d_pose_inquire.webp',
-      '/images/languages/3d/shakespeare_3d_talk_a.webp',
-      '/images/languages/3d/shakespeare_3d_talk_b.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/shakespeare_3d.webp',
-      explain: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
-      exclaim: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
-      inquire: '/images/languages/3d/shakespeare_3d_pose_inquire.webp',
-      encourage: '/images/languages/3d/shakespeare_3d_pose_exclaim.webp',
-      listen: '/images/languages/3d/shakespeare_3d.webp',
-    },
-  },
-  ada_lovelace: {
-    id: 'ada_lovelace',
-    idle: '/images/languages/3d/ada_lovelace_3d.webp',
-    talkMovie: '/images/languages/3d/movies/ada_lovelace_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/ada_lovelace_3d_pose_exclaim.webp',
-      '/images/languages/3d/ada_lovelace_3d_talk_a.webp',
-      '/images/languages/3d/ada_lovelace_3d_talk_b.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/ada_lovelace_3d.webp',
-      explain: '/images/languages/3d/ada_lovelace_3d_pose_exclaim.webp',
-      exclaim: '/images/languages/3d/ada_lovelace_3d_pose_exclaim.webp',
-      inquire: '/images/languages/3d/ada_lovelace_3d.webp',
-      encourage: '/images/languages/3d/ada_lovelace_3d_pose_exclaim.webp',
-      listen: '/images/languages/3d/ada_lovelace_3d.webp',
-    },
-  },
-  abraham_lincoln: {
-    id: 'abraham_lincoln',
-    idle: '/images/languages/3d/abraham_lincoln_3d.webp',
-    talkMovie: '/images/languages/3d/movies/abraham_lincoln_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/abraham_lincoln_3d_pose_oratory.webp',
-      '/images/languages/3d/abraham_lincoln_3d_talk_a.webp',
-      '/images/languages/3d/abraham_lincoln_3d_talk_b.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/abraham_lincoln_3d.webp',
-      explain: '/images/languages/3d/abraham_lincoln_3d_pose_oratory.webp',
-      exclaim: '/images/languages/3d/abraham_lincoln_3d_pose_oratory.webp',
-      inquire: '/images/languages/3d/abraham_lincoln_3d.webp',
-      encourage: '/images/languages/3d/abraham_lincoln_3d_pose_oratory.webp',
-      listen: '/images/languages/3d/abraham_lincoln_3d.webp',
-    },
-  },
-  napoleon: {
-    id: 'napoleon',
-    idle: '/images/languages/3d/napoleon_3d.webp',
-    talkMovie: '/images/languages/3d/movies/napoleon_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/napoleon_3d_pose_command.webp',
-      '/images/languages/3d/napoleon_3d_talk_a.webp',
-      '/images/languages/3d/napoleon_3d_talk_b.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/napoleon_3d.webp',
-      explain: '/images/languages/3d/napoleon_3d_pose_command.webp',
-      exclaim: '/images/languages/3d/napoleon_3d_pose_command.webp',
-      inquire: '/images/languages/3d/napoleon_3d.webp',
-      encourage: '/images/languages/3d/napoleon_3d_pose_command.webp',
-      listen: '/images/languages/3d/napoleon_3d.webp',
-    },
-  },
-  marie_curie: {
-    id: 'marie_curie',
-    idle: '/images/languages/3d/marie_curie_3d.webp',
-    talkMovie: '/images/languages/3d/movies/marie_curie_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/marie_curie_3d_pose_explain.webp',
-      '/images/languages/3d/marie_curie_3d_talk_a.webp',
-      '/images/languages/3d/marie_curie_3d_talk_b.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/marie_curie_3d.webp',
-      explain: '/images/languages/3d/marie_curie_3d_pose_explain.webp',
-      exclaim: '/images/languages/3d/marie_curie_3d_pose_explain.webp',
-      inquire: '/images/languages/3d/marie_curie_3d.webp',
-      encourage: '/images/languages/3d/marie_curie_3d_pose_explain.webp',
-      listen: '/images/languages/3d/marie_curie_3d.webp',
-    },
-  },
-  victor_hugo: {
-    id: 'victor_hugo',
-    idle: '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-    talkMovie: '/images/languages/3d/movies/victor_hugo_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-      '/images/languages/3d/victor_hugo_3d.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-      explain: '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-      exclaim: '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-      inquire: '/images/languages/3d/victor_hugo_3d.webp',
-      encourage: '/images/languages/3d/victor_hugo_3d_pose_gesture.webp',
-      listen: '/images/languages/3d/victor_hugo_3d.webp',
-    },
-  },
-  jeanne_darc: {
-    id: 'jeanne_darc',
-    idle: '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-    talkMovie: '/images/languages/3d/movies/jeanne_darc_3d_talk.mp4',
-    talkFrames: [
-      '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-      '/images/languages/3d/jeanne_darc_3d.webp',
-    ],
-    poseCompendium: {
-      welcome: '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-      explain: '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-      exclaim: '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-      inquire: '/images/languages/3d/jeanne_darc_3d.webp',
-      encourage: '/images/languages/3d/jeanne_darc_3d_pose_gesture.webp',
-      listen: '/images/languages/3d/jeanne_darc_3d.webp',
-    },
-  },
+  shakespeare: buildHistorical3DRig('shakespeare', false),
+  ada_lovelace: buildHistorical3DRig('ada_lovelace', false),
+  abraham_lincoln: buildHistorical3DRig('abraham_lincoln', false),
+  napoleon: buildHistorical3DRig('napoleon', false),
+  marie_curie: buildHistorical3DRig('marie_curie', false),
+  victor_hugo: buildHistorical3DRig('victor_hugo', true),
+  jeanne_darc: buildHistorical3DRig('jeanne_darc', true),
 };
 
-const GESTURE_OPTIONS: Array<{
+export const GESTURE_OPTIONS: Array<{
   id: AvatarGestureMode;
   label: string;
   shortLabel: string;
   emoji: string;
 }> = [
-  { id: 'auto', label: 'Ciclo Dinámico Automático', shortLabel: 'Auto', emoji: '✨' },
+  { id: 'auto', label: 'Ciclo Dinámico Automático (12 Movimientos)', shortLabel: 'Auto', emoji: '✨' },
   { id: 'welcome', label: 'Gesto de Bienvenida (Palmas Abiertas)', shortLabel: 'Bienvenida', emoji: '👋' },
+  { id: 'wave', label: 'Saludo y Despedida Cordial', shortLabel: 'Saludo', emoji: '🙋' },
   { id: 'explain', label: 'Gesto Explicativo Didáctico', shortLabel: 'Explicar', emoji: '☝️' },
-  { id: 'exclaim', label: 'Gesto de ¡Exclamación y Entusiasmo!', shortLabel: '¡Exclamar!', emoji: '🎉' },
+  { id: 'point', label: 'Señalar Ejemplo en Pizarrón', shortLabel: 'Pizarrón', emoji: '👉' },
+  { id: 'pronounce', label: 'Guía de Fonética y Pronunciación', shortLabel: 'Fonética', emoji: '🗣️' },
   { id: 'inquire', label: 'Gesto de Pregunta / Curiosidad', shortLabel: 'Pregunta', emoji: '🤔' },
-  { id: 'encourage', label: 'Gesto de Ánimo y Felicitación', shortLabel: 'Ánimo', emoji: '👏' },
-  { id: 'listen', label: 'Escucha Activa y Parpadeo Involuntario', shortLabel: 'Parpadeo', emoji: '👁️' },
+  { id: 'think', label: 'Momento ¡Idea Clave! / Descubrimiento', shortLabel: '¡Idea!', emoji: '💡' },
+  { id: 'exclaim', label: 'Gesto de ¡Exclamación y Entusiasmo!', shortLabel: '¡Exclamar!', emoji: '🎉' },
+  { id: 'celebrate', label: 'Aplauso y Celebración de Logro', shortLabel: 'Aplauso', emoji: '👏' },
+  { id: 'encourage', label: 'Gesto de Ánimo y Confianza', shortLabel: 'Ánimo', emoji: '👍' },
+  { id: 'calm', label: 'Ritmo Pausado / Paso a Paso', shortLabel: 'Calma', emoji: '🤲' },
+  { id: 'listen', label: 'Escucha Activa y Parpadeo Anatómico', shortLabel: 'Parpadeo', emoji: '👁️' },
 ];
 
 function resolveCharacter3DRig(
@@ -314,12 +281,19 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   variant = 'card',
   activeGesture: externalGesture,
   onActiveGestureChange,
+  gestureImpulse = 0,
 }) => {
   const [internalPlaying, setInternalPlaying] = useState<boolean>(false);
   const [internalSpeechRate, setInternalSpeechRate] = useState<number>(externalSpeechRate);
   const [internalGesture, setInternalGesture] = useState<AvatarGestureMode>('auto');
   const [resolvedLiveGesture, setResolvedLiveGesture] = useState<Exclude<AvatarGestureMode, 'auto'>>('welcome');
   const [impulseTrigger, setImpulseTrigger] = useState<number>(0);
+
+  useEffect(() => {
+    if (externalGesture !== undefined) {
+      setImpulseTrigger(prev => prev + 1);
+    }
+  }, [externalGesture]);
 
   const isPlaying = externalIsPlaying || internalPlaying;
   const speechRate = externalSpeechRate ?? internalSpeechRate;
@@ -492,7 +466,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   // Resolver el gesto efectivo según el estado de ánimo externo si está en 'auto'
   const effectiveGestureProp: AvatarGestureMode = useMemo(() => {
     if (activeGestureMode !== 'auto') return activeGestureMode;
-    if (avatarMood === 'celebrating') return 'exclaim';
+    if (avatarMood === 'celebrating') return 'celebrate';
     if (avatarMood === 'encouraging') return 'encourage';
     if (avatarMood === 'listening' || isListening) return 'listen';
     return 'auto';
@@ -515,7 +489,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           poseCompendium={characterRig.poseCompendium}
           activeGesture={effectiveGestureProp}
           onResolvedGestureChange={setResolvedLiveGesture}
-          impulseTrigger={impulseTrigger}
+          impulseTrigger={impulseTrigger + gestureImpulse}
           fallbackImageSrc="/images/languages/3d/mentor_female_3d.webp"
           enableSmartBustCrop={false}
           className="w-full h-full object-contain object-bottom drop-shadow-2xl"
@@ -524,13 +498,14 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     );
   };
 
-  // Barra Compacta del Compendio de Gestos y Movimientos en Vivo (60 FPS)
+  // Barra Compacta del Compendio de 12 Movimientos 3D + Auto en Vivo (60 FPS)
   const renderGestureCompendiumBar = (compact = false) => (
     <div
-      className={`flex items-center justify-center gap-1 flex-wrap pointer-events-auto z-30 ${
+      data-testid="avatar-gesture-compendium-bar"
+      className={`flex items-center gap-1 pointer-events-auto z-30 ${
         compact
-          ? 'px-2 py-1 rounded-xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-700/80 shadow-sm'
-          : 'mt-2.5 w-full max-w-sm px-2.5 py-1.5 rounded-2xl border shadow-xs ' +
+          ? 'w-full max-w-full overflow-x-auto flex-nowrap px-2 py-1 rounded-xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-700/80 shadow-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'mt-2.5 w-full max-w-md justify-center flex-wrap px-2.5 py-1.5 rounded-2xl border shadow-xs ' +
             (isLightMode ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900/90 border-slate-700/60 text-slate-200')
       }`}
     >
@@ -541,9 +516,10 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           <button
             key={opt.id}
             type="button"
+            data-gesture-option={opt.id}
             onClick={() => handleSelectGesture(opt.id)}
             title={opt.label}
-            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
               isSelected
                 ? 'bg-indigo-600 text-white shadow-xs scale-105'
                 : isAutoResolved
