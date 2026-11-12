@@ -304,9 +304,24 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
                       className="rounded-xl border border-slate-200 bg-white p-3 shadow-xs flex flex-col justify-between gap-2.5"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs flex items-center justify-center shrink-0">
-                          {stu.name.slice(0, 2).toUpperCase()}
-                        </div>
+                        {stu.avatarUrl ? (
+                          <div className="relative h-11 w-11 shrink-0">
+                            <img
+                              src={stu.avatarUrl}
+                              alt={stu.name}
+                              className="h-11 w-11 rounded-full object-cover border-2 border-indigo-500/40 shadow-xs bg-slate-100"
+                            />
+                            <span
+                              className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${
+                                isPresent ? 'bg-emerald-500' : 'bg-slate-400'
+                              }`}
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-xs flex items-center justify-center shrink-0">
+                            {stu.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div className="min-w-0">
                           <div className="truncate text-xs font-black text-slate-900">{stu.name}</div>
                           <div className="text-[10px] font-semibold text-slate-500">

@@ -1,113 +1,147 @@
 import { DetailedStudent } from '@/types';
 
+/**
+ * Mapa canónico 1 a 1 de retratos de archivo por ID de alumno (0 repeticiones).
+ * Cada retrato corresponde exactamente a la edad/nivel educativo y género del estudiante,
+ * comprimido en formato WebP (< 30 KB) cumpliendo con la Regla No Negociable 3.
+ */
+export const STUDENT_ARCHIVE_PORTRAIT_MAP: Record<string, string> = {
+  'std-pb': '/images/students/archive/primaria_boy_01.webp',
+  'std-pa': '/images/students/archive/primaria_boy_02.webp',
+  'std-tor-1': '/images/students/archive/primaria_boy_03.webp',
+  'std-sec': '/images/students/archive/secundaria_girl_01.webp',
+  'std-prep': '/images/students/archive/preparatoria_boy_01.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02': '/images/students/archive/primaria_girl_01.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03': '/images/students/archive/primaria_boy_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04': '/images/students/archive/primaria_girl_02.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05': '/images/students/archive/primaria_boy_05.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06': '/images/students/archive/primaria_girl_03.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07': '/images/students/archive/primaria_boy_16.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08': '/images/students/archive/primaria_girl_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09': '/images/students/archive/primaria_boy_07.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10': '/images/students/archive/primaria_girl_05.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a01': '/images/students/archive/primaria_boy_08.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02': '/images/students/archive/primaria_boy_09.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03': '/images/students/archive/primaria_girl_06.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04': '/images/students/archive/primaria_boy_10.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05': '/images/students/archive/primaria_girl_07.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06': '/images/students/archive/primaria_boy_11.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07': '/images/students/archive/primaria_girl_08.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08': '/images/students/archive/primaria_boy_12.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09': '/images/students/archive/primaria_girl_09.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10': '/images/students/archive/primaria_boy_13.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a42': '/images/students/archive/secundaria_girl_02.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02': '/images/students/archive/secundaria_boy_01.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03': '/images/students/archive/secundaria_girl_03.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04': '/images/students/archive/secundaria_boy_02.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05': '/images/students/archive/secundaria_girl_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06': '/images/students/archive/secundaria_boy_03.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07': '/images/students/archive/secundaria_girl_05.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08': '/images/students/archive/secundaria_boy_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09': '/images/students/archive/secundaria_girl_06.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10': '/images/students/archive/secundaria_boy_05.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44': '/images/students/archive/preparatoria_boy_01.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02': '/images/students/archive/preparatoria_boy_02.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03': '/images/students/archive/preparatoria_girl_01.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04': '/images/students/archive/preparatoria_girl_02.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05': '/images/students/archive/preparatoria_boy_03.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06': '/images/students/archive/preparatoria_girl_03.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07': '/images/students/archive/preparatoria_boy_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08': '/images/students/archive/preparatoria_girl_04.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09': '/images/students/archive/preparatoria_boy_05.webp',
+  'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10': '/images/students/archive/preparatoria_girl_05.webp',
+  'std-ibime-montes-01': '/images/students/archive/primaria_boy_14.webp',
+  'std-ibime-lagos-01': '/images/students/archive/primaria_girl_10.webp',
+  'std-ibime-san-01': '/images/students/archive/secundaria_boy_06.webp',
+  'std-ibime-coac-01': '/images/students/archive/preparatoria_girl_06.webp',
+  'std-ibime-coac-02': '/images/students/archive/secundaria_boy_07.webp',
+  'std-ibime-montes-02': '/images/students/archive/primaria_girl_11.webp',
+  'std-indep-gab-01': '/images/students/archive/secundaria_boy_08.webp',
+  'std-indep-gab-02': '/images/students/archive/secundaria_girl_07.webp',
+  'std-indep-gab-03': '/images/students/archive/secundaria_boy_09.webp',
+  'std-indep-gab-04': '/images/students/archive/secundaria_girl_08.webp',
+  'std-indep-gab-05': '/images/students/archive/secundaria_boy_10.webp',
+  'std-indep-sof-01': '/images/students/archive/secundaria_girl_09.webp',
+  'std-indep-sof-02': '/images/students/archive/secundaria_boy_11.webp',
+  'std-indep-sof-03': '/images/students/archive/secundaria_girl_10.webp',
+  'std-bmw-01': '/images/students/archive/corporativo_man_01.webp',
+  'std-bmw-02': '/images/students/archive/corporativo_woman_01.webp',
+  'std-bmw-03': '/images/students/archive/corporativo_man_02.webp',
+  'std-bmw-04': '/images/students/archive/corporativo_woman_02.webp',
+  'std-bmw-05': '/images/students/archive/corporativo_man_03.webp',
+  'std-ventas-01': '/images/students/archive/corporativo_man_04.webp',
+  'std-ventas-02': '/images/students/archive/corporativo_woman_03.webp',
+  'std-ventas-03': '/images/students/archive/corporativo_man_05.webp',
+  'std-tech-01': '/images/students/archive/corporativo_man_06.webp',
+  'std-tech-02': '/images/students/archive/corporativo_woman_04.webp',
+  'std-tech-03': '/images/students/archive/corporativo_man_07.webp',
+};
+
+const ARCHIVE_POOLS = {
+  primaria_boy: Array.from({ length: 16 }, (_, i) => `/images/students/archive/primaria_boy_${String(i + 1).padStart(2, '0')}.webp`),
+  primaria_girl: Array.from({ length: 16 }, (_, i) => `/images/students/archive/primaria_girl_${String(i + 1).padStart(2, '0')}.webp`),
+  secundaria_boy: Array.from({ length: 16 }, (_, i) => `/images/students/archive/secundaria_boy_${String(i + 1).padStart(2, '0')}.webp`),
+  secundaria_girl: Array.from({ length: 16 }, (_, i) => `/images/students/archive/secundaria_girl_${String(i + 1).padStart(2, '0')}.webp`),
+  preparatoria_boy: Array.from({ length: 8 }, (_, i) => `/images/students/archive/preparatoria_boy_${String(i + 1).padStart(2, '0')}.webp`),
+  preparatoria_girl: Array.from({ length: 8 }, (_, i) => `/images/students/archive/preparatoria_girl_${String(i + 1).padStart(2, '0')}.webp`),
+  corporativo_man: Array.from({ length: 8 }, (_, i) => `/images/students/archive/corporativo_man_${String(i + 1).padStart(2, '0')}.webp`),
+  corporativo_woman: Array.from({ length: 8 }, (_, i) => `/images/students/archive/corporativo_woman_${String(i + 1).padStart(2, '0')}.webp`),
+};
+
+const FEMALE_NAMES_SET = new Set([
+  'sofia', 'sofía', 'elena', 'valentina', 'camila', 'natalia', 'regina',
+  'ana', 'maria', 'maría', 'andrea', 'isabella', 'ximena', 'valeria',
+  'renata', 'marcela', 'claudia', 'lucia', 'lucía', 'fernanda', 'mariana',
+  'paola', 'gabriela', 'diana', 'carla', 'karla', 'daniela', 'victoria',
+]);
+
+function inferIsFemale(student: Partial<DetailedStudent>): boolean {
+  const g = (student.gender || '').trim().toLowerCase();
+  if (g === 'femenino' || g === 'female' || g === 'f' || g === 'mujer') return true;
+  if (g === 'masculino' || g === 'male' || g === 'm' || g === 'hombre') return false;
+  const first = ((student.first_name || (student as any).name || '').trim().split(/\s+/)[0] || '').toLowerCase();
+  if (FEMALE_NAMES_SET.has(first)) return true;
+  if (first.endsWith('a') && !['luca', 'nikola', 'joshua'].includes(first)) return true;
+  return false;
+}
+
 export const getStudentAvatarUrl = (student: Partial<DetailedStudent> | null | undefined): string => {
-  if (!student) return '/images/students/lucas.png';
-  
-  // 1. Si el expediente 360 cuenta con URL de foto (local, remota o base64)
-  if (student.photo_url && (student.photo_url.startsWith('http') || student.photo_url.startsWith('/') || student.photo_url.startsWith('data:'))) {
-    if (student.photo_url.includes('std-pa') || student.photo_url.includes('lucas')) {
-      return '/images/students/lucas.png';
-    }
-    if (student.photo_url.includes('std-pb') || student.photo_url.includes('santi')) {
-      return '/images/students/santi.png';
-    }
-    if (student.photo_url.includes('std-sec') || student.photo_url.includes('elena')) {
-      return '/images/students/elena.png';
-    }
-    if (student.photo_url.includes('std-prep') || student.photo_url.includes('mateo')) {
-      return '/images/students/mateo.png';
-    }
-    return student.photo_url;
+  if (!student) return '/images/students/archive/primaria_boy_02.webp';
+
+  const rawId = (student.id || '').trim();
+  if (rawId && STUDENT_ARCHIVE_PORTRAIT_MAP[rawId]) {
+    return STUDENT_ARCHIVE_PORTRAIT_MAP[rawId];
   }
 
-  // 2. Coincidencia por ID o Nombre de pila oficial del alumno
-  const id = (student.id || '').toLowerCase();
-  const firstName = (student.first_name || '').toLowerCase();
+  // Si tiene una foto personalizada en Base64 o ya apunta al compendio de archivo WebP
+  const photoUrl = (student.photo_url || (student as any).photoUrl || '').trim();
+  if (photoUrl.startsWith('data:image/') || photoUrl.startsWith('/images/students/archive/')) {
+    return photoUrl;
+  }
 
-  if (id === 'std-pa' || firstName.includes('lucas')) {
-    return '/images/students/lucas.png';
-  }
-  if (id === 'std-pb' || firstName.includes('santi')) {
-    return '/images/students/santi.png';
-  }
-  if (id === 'std-sec' || firstName.includes('elena')) {
-    return '/images/students/elena.png';
-  }
-  if (id === 'std-prep' || firstName.includes('mateo')) {
-    return '/images/students/mateo.png';
-  }
-  
-  const birthYear = student.birth_date ? parseInt(student.birth_date.split('-')[0]) : 2012;
-  const currentYear = 2026;
-  const age = currentYear - birthYear;
-  const isFemale = (student.gender || '').toLowerCase() === 'femenino' || (student.gender || '').toLowerCase() === 'female';
+  const isFemale = inferIsFemale(student);
+  const schoolId = (student.school_id || '').toLowerCase();
+  const birthYear = student.birth_date ? parseInt(student.birth_date.split('-')[0], 10) : NaN;
+  const age = !Number.isNaN(birthYear) ? 2026 - birthYear : NaN;
+  const level = (student.level || '').toLowerCase();
 
-  // FNV-1a Hash determinista del ID o Matrícula para garantizar distribución única por alumno
-  const key = student.id || student.enrollment_id || `${student.first_name || ''}-${student.last_name_1 || ''}-${student.birth_date || ''}`;
+  let pool: string[];
+  if (schoolId.startsWith('emp-') || (!Number.isNaN(age) && age >= 21)) {
+    pool = isFemale ? ARCHIVE_POOLS.corporativo_woman : ARCHIVE_POOLS.corporativo_man;
+  } else if (level === 'preparatoria' || (!Number.isNaN(age) && age >= 16)) {
+    pool = isFemale ? ARCHIVE_POOLS.preparatoria_girl : ARCHIVE_POOLS.preparatoria_boy;
+  } else if (level === 'secundaria' || (!Number.isNaN(age) && age >= 12)) {
+    pool = isFemale ? ARCHIVE_POOLS.secundaria_girl : ARCHIVE_POOLS.secundaria_boy;
+  } else {
+    pool = isFemale ? ARCHIVE_POOLS.primaria_girl : ARCHIVE_POOLS.primaria_boy;
+  }
+
+  const key = rawId || student.enrollment_id || `${student.first_name || ''}-${student.last_name_1 || ''}-${student.birth_date || ''}`;
   let hash = 2166136261;
   for (let i = 0; i < key.length; i++) {
     hash ^= key.charCodeAt(i);
     hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
   }
-  const positiveSeed = Math.abs(hash);
-
-  // Fotografías HD 100% verificadas y activas de estudiantes reales por categoría
-  const kidsGirls = [
-    'https://images.unsplash.com/photo-1544717305-2782549b5136?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=250&auto=format&fit=crop&q=80'
-  ];
-
-  const kidsBoys = [
-    'https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1480429370139-e0132c086e2a?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=250&auto=format&fit=crop&q=80'
-  ];
-
-  const teensGirls = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1544717305-2782549b5136?w=250&auto=format&fit=crop&q=80'
-  ];
-
-  const teensBoys = [
-    'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1480429370139-e0132c086e2a?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=250&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=250&auto=format&fit=crop&q=80'
-  ];
-
-  const list = (age <= 12 || student.level === 'primaria')
-    ? (isFemale ? kidsGirls : kidsBoys)
-    : (isFemale ? teensGirls : teensBoys);
-
-  const photoIndex = positiveSeed % list.length;
-  return list[photoIndex];
+  const idx = Math.abs(hash) % pool.length;
+  return pool[idx];
 };

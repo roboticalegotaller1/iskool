@@ -2421,7 +2421,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
       reconcileSeedsWithStore: () => {
         set((state) => {
-          const current = state.detailedStudents || [];
+          const seedMap = new Map(DETAILED_STUDENTS_SEED.map(s => [s.id, s]));
+          const current = (state.detailedStudents || []).map(s => {
+            const seed = seedMap.get(s.id);
+            if (seed && (!s.photo_url || !s.photo_url.startsWith('data:image/'))) {
+              return { ...s, photo_url: seed.photo_url };
+            }
+            return s;
+          });
           const existingIds = new Set(current.map(s => s.id));
           const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
           const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));

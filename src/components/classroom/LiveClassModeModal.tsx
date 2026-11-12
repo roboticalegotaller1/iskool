@@ -6,6 +6,7 @@ import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { useStudentStore } from '@/store/useStudentStore';
 import { DETAILED_STUDENTS_SEED } from '@/store/seeds';
+import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { 
   X, 
   Sparkles, 
@@ -141,7 +142,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
         groupId: gId,
         grade: (s as any).grade || '4º',
         level: (s as any).level || 'primaria',
-        photoUrl: (s as any).photo_url || (s as any).photoUrl,
+        photoUrl: getStudentAvatarUrl(s as any),
         bloodType: (s as any).blood_type,
         status: (s as any).status || 'activo'
       };

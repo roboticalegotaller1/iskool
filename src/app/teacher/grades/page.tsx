@@ -19,7 +19,7 @@ import { useStudentStore, normalizeStudentId } from '@/store/useStudentStore';
 import { supabase } from '@/lib/supabaseClient';
 
 // Custom Avatar Preview component for RPG styling
-const PlayerAvatarPreview = ({ avatar, name }: { avatar: any; name: string }) => {
+const PlayerAvatarPreview = ({ avatar, name, photoUrl }: { avatar: any; name: string; photoUrl?: string }) => {
   const getBgGradient = (bg: string) => {
     if (bg === 'forest') return 'from-emerald-950 via-teal-900 to-zinc-950';
     if (bg === 'space') return 'from-indigo-950 via-blue-900 to-purple-950';
@@ -32,24 +32,26 @@ const PlayerAvatarPreview = ({ avatar, name }: { avatar: any; name: string }) =>
   const outfitColor = avatar?.outfit_color || '#3B82F6';
 
   return (
-    <div className={`h-12 w-12 rounded-full bg-gradient-to-br ${getBgGradient(avatar?.background_style)} border-2 border-amber-500/40 flex items-center justify-center relative overflow-hidden shadow-lg shadow-black/60 group`}>
-      {/* Decorative JRPG background highlights */}
-      <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
-      
-      {/* SVG Character Representation using student customizer choices */}
-      <svg className="absolute inset-0 w-full h-full p-2.5 opacity-40 select-none pointer-events-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Head */}
-        <circle cx="50" cy="50" r="30" fill="#FDBA74" />
-        {/* Hair */}
-        <path d="M20 50C20 30 80 30 80 50C80 20 20 20 20 50Z" fill={hairColor} />
-        {/* Outfit */}
-        <path d="M25 80C35 70 65 70 75 80L50 95L25 80Z" fill={outfitColor} />
-      </svg>
-
-      {/* Initials with glowing font */}
-      <span className="text-xs font-black font-serif text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.85)] group-hover:scale-110 transition-transform duration-300 relative z-10">
-        {initials}
-      </span>
+    <div className={`h-12 w-12 rounded-full bg-gradient-to-br ${getBgGradient(avatar?.background_style)} border-2 border-amber-500/40 flex items-center justify-center relative overflow-hidden shadow-lg shadow-black/60 group shrink-0`}>
+      {photoUrl ? (
+        <img
+          src={photoUrl}
+          alt={name}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-radial-gradient from-white/10 to-transparent pointer-events-none" />
+          <svg className="absolute inset-0 w-full h-full p-2.5 opacity-40 select-none pointer-events-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="30" fill="#FDBA74" />
+            <path d="M20 50C20 30 80 30 80 50C80 20 20 20 20 50Z" fill={hairColor} />
+            <path d="M25 80C35 70 65 70 75 80L50 95L25 80Z" fill={outfitColor} />
+          </svg>
+          <span className="text-xs font-black font-serif text-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.85)] group-hover:scale-110 transition-transform duration-300 relative z-10">
+            {initials}
+          </span>
+        </>
+      )}
       
       {/* Mini badge for RPG class */}
       <div className="absolute bottom-0 inset-x-0 bg-black/70 py-0.5 text-[6px] font-black text-center text-zinc-400 uppercase tracking-widest leading-none border-t border-zinc-800">
@@ -373,7 +375,7 @@ export default function TeacherGrades() {
                 <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   {/* Player Info (Avatar / Name / Class) */}
                   <div className="flex items-center gap-4 text-left">
-                    <PlayerAvatarPreview avatar={avatar} name={student.first_name} />
+                    <PlayerAvatarPreview avatar={avatar} name={student.first_name} photoUrl={getStudentAvatarUrl(student)} />
 
                     <div>
                       <div className="flex items-center gap-2">

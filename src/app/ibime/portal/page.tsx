@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 import { 
   IbimeCatalogService,
@@ -766,9 +767,11 @@ function IbimePortalContent() {
                         <tr key={std.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                           <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-[#0A1A2E] text-[#E41B14] dark:text-red-400 flex items-center justify-center font-bold text-xs shrink-0">
-                                {std.first_name[0]}
-                              </div>
+                              <img
+                                src={getStudentAvatarUrl(std as any)}
+                                alt={fullName}
+                                className="w-9 h-9 rounded-full object-cover border border-[#E41B14]/40 shrink-0"
+                              />
                               <div>
                                 <p className="font-bold text-xs text-slate-900 dark:text-white">{fullName}</p>
                                 <p className="text-[10px] text-slate-400 font-normal">{std.email}</p>
@@ -1106,9 +1109,11 @@ function IbimePortalContent() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-[#E41B14] text-white flex items-center justify-center font-bold text-base">
-                  {selectedStudentDetail.first_name[0]}
-                </div>
+                <img
+                  src={getStudentAvatarUrl(selectedStudentDetail as any)}
+                  alt={selectedStudentDetail.first_name}
+                  className="w-11 h-11 rounded-full object-cover border-2 border-[#E41B14]"
+                />
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                     {selectedStudentDetail.first_name} {selectedStudentDetail.last_name_1}

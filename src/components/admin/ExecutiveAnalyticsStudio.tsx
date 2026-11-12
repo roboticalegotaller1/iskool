@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
+import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { 
   ArrowLeft, 
   Send, 
@@ -2612,13 +2613,11 @@ export default function ExecutiveAnalyticsStudio({
             {/* Header del Drawer */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg ${
-                  isCorporate
-                    ? 'bg-slate-900 border border-slate-700 text-amber-400'
-                    : 'bg-indigo-100 border border-indigo-200 text-indigo-700'
-                }`}>
-                  {selectedStudentForDrawer.student.first_name[0]}{selectedStudentForDrawer.student.last_name_1[0]}
-                </div>
+                <img
+                  src={getStudentAvatarUrl(selectedStudentForDrawer.student)}
+                  alt={selectedStudentForDrawer.student.first_name}
+                  className="h-12 w-12 rounded-full object-cover border-2 border-indigo-500/40 shrink-0"
+                />
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
                     {selectedStudentForDrawer.student.first_name} {selectedStudentForDrawer.student.last_name_1}

@@ -1113,10 +1113,38 @@ function TeacherDashboardContent() {
           <TeacherThreeStepAutopilotBar
             groupName={ceoMirrorTelemetry.groupLabel}
             subjectName={ceoMirrorTelemetry.subjectLabel}
-            students={availableTeacherStudents.slice(0, 8).map(st => ({
-              id: st.id,
-              name: `${st.first_name} ${st.last_name_1 || ''}`.trim()
-            }))}
+            students={(() => {
+              const seenNames = new Set<string>();
+              const uniqueStudents: typeof availableTeacherStudents = [];
+              for (const st of availableTeacherStudents) {
+                const fullName = `${st.first_name} ${st.last_name_1 || ''}`.trim();
+                if (!seenNames.has(fullName.toLowerCase())) {
+                  seenNames.add(fullName.toLowerCase());
+                  uniqueStudents.push(st);
+                }
+                if (uniqueStudents.length >= 8) break;
+              }
+              return uniqueStudents.map((st) => {
+                const birthYear = st.birth_date ? parseInt(st.birth_date.split('-')[0], 10) : NaN;
+                const age = !Number.isNaN(birthYear) ? 2026 - birthYear : null;
+                const levelText =
+                  st.school_id?.startsWith('emp-')
+                    ? st.grade || 'Corporativo'
+                    : `${st.grade || '1º'} ${
+                        st.level === 'primaria'
+                          ? 'Primaria'
+                          : st.level === 'secundaria'
+                            ? 'Secundaria'
+                            : 'Preparatoria'
+                      }`;
+                return {
+                  id: st.id,
+                  name: `${st.first_name} ${st.last_name_1 || ''}`.trim(),
+                  avatarUrl: getStudentAvatarUrl(st),
+                  gradeLabel: age ? `${levelText} • ${age} años` : levelText,
+                };
+              });
+            })()}
             onOpenPlanningTab={() => setCurrentMenuTab('planning')}
             onOpenLiveClassModal={() => setIsLiveClassModalOpen(true)}
           />
@@ -1804,9 +1832,14 @@ function TeacherDashboardContent() {
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-extrabold text-[10px]">
-                          {item.student_profile?.first_name[0]}{item.student_profile?.last_name[0]}
-                        </div>
+                        <img
+                          src={getStudentAvatarUrl(
+                            detailedStudents.find(s => s.id === item.student_id) ||
+                              (item.student_profile as any)
+                          )}
+                          alt={item.student_profile?.first_name || 'Alumno'}
+                          className="h-8 w-8 rounded-full object-cover border border-zinc-200 dark:border-zinc-700 shrink-0"
+                        />
                         <div>
                           <p className="text-xs font-bold text-zinc-900 dark:text-white leading-tight">
                             <span 
@@ -2568,9 +2601,11 @@ function TeacherDashboardContent() {
                         <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/30 transition-colors">
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center font-black text-xs shadow-inner">
-                                {student.first_name[0]}{student.last_name_1?.[0] || ''}
-                              </div>
+                              <img
+                                src={getStudentAvatarUrl(student)}
+                                alt={student.first_name}
+                                className="h-10 w-10 rounded-full object-cover border-2 border-sky-500/30 shadow-xs shrink-0"
+                              />
                               <div>
                                 <span
                                   onClick={() => setSelectedStudent(student)}
@@ -2793,9 +2828,11 @@ function TeacherDashboardContent() {
                         <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/30 transition-colors">
                           <td className="py-4 px-6 align-top">
                             <div className="flex items-center gap-3">
-                              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center font-black text-xs shadow-inner">
-                                {student.first_name[0]}{student.last_name_1?.[0] || ''}
-                              </div>
+                              <img
+                                src={getStudentAvatarUrl(student)}
+                                alt={student.first_name}
+                                className="h-10 w-10 rounded-full object-cover border-2 border-indigo-500/30 shadow-xs shrink-0"
+                              />
                               <div>
                                 <span
                                   onClick={() => setSelectedStudent(student)}

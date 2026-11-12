@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, Group, ClassSchedule, Subject, Attendance, AttendanceStatus } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 
 interface AttendanceCompendiumModalProps {
   isOpen: boolean;
@@ -960,9 +961,11 @@ export function AttendanceCompendiumModal({
                             {/* Datos del Alumno */}
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200/50 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300 flex items-center justify-center font-extrabold text-[10px] shrink-0">
-                                  {item.student.first_name[0]}{item.student.last_name_1?.[0] || ''}
-                                </div>
+                                <img
+                                  src={getStudentAvatarUrl(item.student)}
+                                  alt={item.fullName}
+                                  className="h-9 w-9 rounded-full object-cover border border-indigo-200 dark:border-indigo-800 shrink-0"
+                                />
                                 <div>
                                   <span className="font-bold text-zinc-900 dark:text-zinc-100 block">
                                     {item.fullName}
