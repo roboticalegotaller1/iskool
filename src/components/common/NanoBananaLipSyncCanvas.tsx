@@ -63,6 +63,10 @@ export interface NanoBananaLipSyncCanvasProps {
   fallbackImageSrc?: string;
   /** Whether to apply bust framing automatically for full/half-body portraits */
   enableSmartBustCrop?: boolean;
+  /** True only when the companion .mp4 video stream already bakes native 3D lip-sync and blinks (e.g. Claire) */
+  videoHasNativeLipSync?: boolean;
+  /** True for non-human geographic sites / monuments so facial overlays stay disabled */
+  isGeographicSite?: boolean;
   /** Optional callback when image finishes loading */
   onLoad?: () => void;
 }
@@ -222,10 +226,10 @@ export function buildContextualMovementSequence(text: string): ConcreteAvatarGes
     /\b(slow|step by step|calm|relax|breathe|lentement|doucement|despacio|calma|paso a paso)\b/i.test(clean);
 
   if (hasPhonetic) {
-    return ['pronounce', 'explain', 'calm', 'point', 'encourage', 'listen', 'think', 'celebrate'];
+    return ['pronounce', 'explain', 'calm', 'point', 'encourage', 'think', 'celebrate', 'welcome'];
   }
   if (hasCalm) {
-    return ['calm', 'welcome', 'explain', 'pronounce', 'encourage', 'listen'];
+    return ['calm', 'welcome', 'explain', 'pronounce', 'encourage', 'wave'];
   }
   if (hasGreeting && hasQuestion) {
     return ['welcome', 'wave', 'inquire', 'explain', 'point', 'encourage', 'celebrate', 'think'];
@@ -234,7 +238,7 @@ export function buildContextualMovementSequence(text: string): ConcreteAvatarGes
     return ['exclaim', 'celebrate', 'encourage', 'wave', 'explain', 'think', 'welcome', 'point'];
   }
   if (hasQuestion) {
-    return ['inquire', 'think', 'point', 'explain', 'pronounce', 'encourage', 'welcome', 'listen'];
+    return ['inquire', 'think', 'point', 'explain', 'pronounce', 'encourage', 'welcome', 'wave'];
   }
   return [
     'welcome',
@@ -248,7 +252,6 @@ export function buildContextualMovementSequence(text: string): ConcreteAvatarGes
     'celebrate',
     'encourage',
     'calm',
-    'listen',
   ];
 }
 
@@ -377,6 +380,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   className = '',
   fallbackImageSrc = '/images/history/personaje_generico_avatar.png',
   enableSmartBustCrop = true,
+  videoHasNativeLipSync = false,
+  isGeographicSite = false,
   onLoad,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -384,6 +389,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const videoFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const poseCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const poseEyeOffsetRef = useRef<Map<HTMLCanvasElement, PoseEyeOffset>>(new Map());
+  const pendingVideoEyeSeedRef = useRef<PoseEyeOffset | null>(null);
   const refPupilsRef = useRef<{ lx: number; ly: number; rx: number; ry: number } | null>(null);
   const eyelidSkinRef = useRef<EyelidSkinPalette>({
     base: 'rgb(226, 178, 156)',
@@ -407,6 +413,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const poseCompendiumRef = useRef(poseCompendium);
   const gestureVideoMapRef = useRef(gestureVideoMap);
   const videoSrcRef = useRef(videoSrc);
+  const videoHasNativeLipSyncRef = useRef(videoHasNativeLipSync);
+  const isGeographicSiteRef = useRef(isGeographicSite);
   const onResolvedGestureChangeRef = useRef(onResolvedGestureChange);
 
   const prevPoseCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -455,6 +463,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   useEffect(() => {
     videoSrcRef.current = videoSrc;
   }, [videoSrc]);
+
+  useEffect(() => {
+    videoHasNativeLipSyncRef.current = videoHasNativeLipSync;
+  }, [videoHasNativeLipSync]);
+
+  useEffect(() => {
+    isGeographicSiteRef.current = isGeographicSite;
+  }, [isGeographicSite]);
 
   useEffect(() => {
     onResolvedGestureChangeRef.current = onResolvedGestureChange;
@@ -545,10 +561,49 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     [fallbackImageSrc, registerPoseEyeAlignment]
   );
 
-  // Helper to obtain or pre-warm a cached <video> element for instant zero-flash 3D gesture switching
+  // Helper to obtain an LRU-bounded cached <video> element (max 3 active decoders per tab)
   const getOrCreatePooledVideo = React.useCallback((url: string): HTMLVideoElement => {
-    const existing = videoPoolRef.current.get(url);
-    if (existing) return existing;
+    const pool = videoPoolRef.current;
+    const existing = pool.get(url);
+    if (existing) {
+      pool.delete(url);
+      pool.set(url, existing);
+      if (!existing.getAttribute('src') || existing.networkState === 3) {
+        existing.src = url;
+        existing.load();
+      }
+      return existing;
+    }
+
+    while (pool.size >= 3) {
+      let victimKey: string | undefined;
+      for (const k of pool.keys()) {
+        if (k !== activeVideoUrlRef.current && k !== url) {
+          victimKey = k;
+          break;
+        }
+      }
+      if (!victimKey) {
+        for (const k of pool.keys()) {
+          if (k !== url) {
+            victimKey = k;
+            break;
+          }
+        }
+      }
+      if (!victimKey) break;
+      const victim = pool.get(victimKey);
+      if (victim) {
+        victim.onloadeddata = null;
+        victim.oncanplay = null;
+        victim.onerror = null;
+        victim.pause();
+        victim.removeAttribute('src');
+        victim.load();
+      }
+      pool.delete(victimKey);
+    }
+
     const vid = document.createElement('video');
     vid.muted = true;
     vid.loop = true;
@@ -557,7 +612,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     vid.preload = 'auto';
     vid.src = url;
     vid.load();
-    videoPoolRef.current.set(url, vid);
+    pool.set(url, vid);
     return vid;
   }, []);
 
@@ -573,7 +628,12 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         activeVideoUrlRef.current = '';
         return;
       }
-      if (activeVideoUrlRef.current === targetVideoUrl && videoElementRef.current) {
+      if (
+        activeVideoUrlRef.current === targetVideoUrl &&
+        videoElementRef.current &&
+        videoElementRef.current.getAttribute('src') === targetVideoUrl &&
+        videoElementRef.current.networkState !== 3
+      ) {
         videoReadyRef.current = videoElementRef.current.readyState >= 2;
         if (videoElementRef.current.paused) {
           videoElementRef.current.play().catch(() => {});
@@ -595,15 +655,23 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const vid = getOrCreatePooledVideo(targetVideoUrl);
       videoElementRef.current = vid;
       activeVideoUrlRef.current = targetVideoUrl;
-      vid.currentTime = 0;
       vid.playbackRate = isSpeakingRef.current ? 1.12 : 0.98;
 
       if (vid.readyState >= 2) {
+        vid.onloadeddata = null;
+        vid.oncanplay = null;
         videoReadyRef.current = true;
+        if (vid.currentTime > 0.12) {
+          try {
+            vid.currentTime = 0;
+          } catch {}
+        }
         vid.play().catch(() => {});
       } else {
         videoReadyRef.current = false;
         const markReady = () => {
+          vid.onloadeddata = null;
+          vid.oncanplay = null;
           if (activeVideoUrlRef.current === targetVideoUrl) {
             videoReadyRef.current = true;
             vid.play().catch(() => {});
@@ -612,6 +680,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         vid.onloadeddata = markReady;
         vid.oncanplay = markReady;
         vid.onerror = () => {
+          vid.onloadeddata = null;
+          vid.oncanplay = null;
           if (activeVideoUrlRef.current === targetVideoUrl) {
             videoReadyRef.current = false;
           }
@@ -654,40 +724,22 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       });
     }
 
-    if (typeof window !== 'undefined' && gestureVideoMap) {
-      Object.values(gestureVideoMap).forEach((vUrl) => {
-        if (vUrl) getOrCreatePooledVideo(vUrl);
-      });
-    }
-
-    const desiredVideo =
-      activeGesture !== 'auto'
-        ? gestureVideoMap?.[activeGesture]
-        : gestureVideoMap?.welcome || videoSrc;
-    loadActiveVideoStream(desiredVideo);
-
     return () => {
       cancelled = true;
     };
-  }, [
-    imageSrc,
-    poseCompendium,
-    videoSrc,
-    gestureVideoMap,
-    activeGesture,
-    loadPoseToCanvas,
-    loadActiveVideoStream,
-    getOrCreatePooledVideo,
-    onLoad,
-  ]);
+  }, [imageSrc, poseCompendium, loadPoseToCanvas, onLoad]);
 
   // Cleanup pooled video elements on unmount
   useEffect(() => {
     const pool = videoPoolRef.current;
     return () => {
       pool.forEach((v) => {
+        v.onloadeddata = null;
+        v.oncanplay = null;
+        v.onerror = null;
         v.pause();
-        v.src = '';
+        v.removeAttribute('src');
+        v.load();
       });
       pool.clear();
       videoElementRef.current = null;
@@ -720,6 +772,12 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       if (targetCanvas) {
         currPoseCanvasRef.current = targetCanvas;
         transitionStartRef.current = now;
+        pendingVideoEyeSeedRef.current = poseEyeOffsetRef.current.get(targetCanvas) || {
+          dxL: 0,
+          dyL: 0,
+          dxR: 0,
+          dyR: 0,
+        };
       }
 
       // Resolve dedicated 3D motion clip if one exists for this specific movement;
@@ -728,6 +786,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const masterVid = videoSrcRef.current;
       if (gesture === 'listen') {
         loadActiveVideoStream(undefined);
+      } else if (isSpeakingRef.current && activeGestureRef.current === 'auto' && masterVid) {
+        loadActiveVideoStream(masterVid);
       } else if (gMap && gMap[gesture]) {
         loadActiveVideoStream(gMap[gesture]);
       } else if (!gMap && masterVid && (gesture === 'welcome' || gesture === 'explain' || gesture === 'exclaim')) {
@@ -743,9 +803,25 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   useEffect(() => {
     const now = performance.now();
 
+    if (isGeographicSiteRef.current) {
+      switchToGesturePose('welcome', now);
+      return;
+    }
+
     if (activeGesture !== 'auto') {
       switchToGesturePose(activeGesture, now);
       return;
+    }
+
+    if (!isSpeaking) {
+      if (videoHasNativeLipSyncRef.current && gestureVideoMapRef.current?.calm) {
+        switchToGesturePose('calm', now);
+        return;
+      }
+      if (!videoHasNativeLipSyncRef.current && !poseCompendiumRef.current && gestureVideoMapRef.current?.calm) {
+        switchToGesturePose('calm', now);
+        return;
+      }
     }
 
     const rawSequence = buildContextualMovementSequence(spokenText || '');
@@ -766,10 +842,10 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       if (activeGestureRef.current !== 'auto') return;
       step = (step + 1) % cycleSequence.length;
       switchToGesturePose(cycleSequence[step], performance.now());
-    }, 3100);
+    }, 3400);
 
     return () => clearInterval(timer);
-  }, [activeGesture, isSpeaking, spokenText, switchToGesturePose]);
+  }, [activeGesture, isSpeaking, spokenText, switchToGesturePose, videoSrc, gestureVideoMap, isGeographicSite, videoHasNativeLipSync]);
 
   // 60 FPS RequestAnimationFrame 3D Neural Video + Multi-Movement Skeletal & Periorbital Eyelid Loop
   useEffect(() => {
@@ -789,6 +865,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     let nextSaccadeAt = lastTime + 1100;
     let targetSaccadeX = 0;
     let targetSaccadeY = 0;
+
+    const liveVideoEyeOffset = { dxL: 0, dyL: 0, dxR: 0, dyR: 0 };
+    let videoTrackTick = 0;
 
     const spring: SpringState = {
       open: resolvedConfig.baseOpen ?? 0,
@@ -827,7 +906,51 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         if (vCtx) {
           vCtx.drawImage(vid, 0, 0, 1024, 1024);
           hasLiveVideoFrame = true;
+
+          if (pendingVideoEyeSeedRef.current) {
+            liveVideoEyeOffset.dxL = pendingVideoEyeSeedRef.current.dxL;
+            liveVideoEyeOffset.dyL = pendingVideoEyeSeedRef.current.dyL;
+            liveVideoEyeOffset.dxR = pendingVideoEyeSeedRef.current.dxR;
+            liveVideoEyeOffset.dyR = pendingVideoEyeSeedRef.current.dyR;
+            pendingVideoEyeSeedRef.current = null;
+          }
+
+          // Lightweight pupil center tracking over non-native .mp4 motion loops (every 2 frames when eyes open)
+          if (
+            !videoHasNativeLipSyncRef.current &&
+            !isGeographicSiteRef.current &&
+            spring.blink < 0.15 &&
+            resolvedConfig.leftEyeX &&
+            resolvedConfig.rightEyeX &&
+            refPupilsRef.current &&
+            videoTrackTick++ % 2 === 0
+          ) {
+            const lx = resolvedConfig.leftEyeX;
+            const ly = resolvedConfig.leftEyeY ?? resolvedConfig.eyeY ?? 260;
+            const rx = resolvedConfig.rightEyeX;
+            const ry = resolvedConfig.rightEyeY ?? resolvedConfig.eyeY ?? 260;
+            const eRx = resolvedConfig.eyeRx ?? resolvedConfig.eyeRadius ?? 28;
+            const eRy = resolvedConfig.eyeRy ?? resolvedConfig.eyeRadius ?? 24;
+            const pL = measureDarkPupilCenter(vCtx, lx, ly, eRx, eRy);
+            const pR = measureDarkPupilCenter(vCtx, rx, ry, eRx, eRy);
+            if (pL && pR) {
+              const ref = refPupilsRef.current;
+              const clampVideoShift = (val: number) => Math.max(-26, Math.min(26, val));
+              const alpha = 0.35;
+              liveVideoEyeOffset.dxL = liveVideoEyeOffset.dxL * (1 - alpha) + clampVideoShift(pL.x - ref.lx) * alpha;
+              liveVideoEyeOffset.dyL = liveVideoEyeOffset.dyL * (1 - alpha) + clampVideoShift(pL.y - ref.ly) * alpha;
+              liveVideoEyeOffset.dxR = liveVideoEyeOffset.dxR * (1 - alpha) + clampVideoShift(pR.x - ref.rx) * alpha;
+              liveVideoEyeOffset.dyR = liveVideoEyeOffset.dyR * (1 - alpha) + clampVideoShift(pR.y - ref.ry) * alpha;
+            }
+          }
         }
+      }
+
+      if (!hasLiveVideoFrame) {
+        liveVideoEyeOffset.dxL *= 0.85;
+        liveVideoEyeOffset.dyL *= 0.85;
+        liveVideoEyeOffset.dxR *= 0.85;
+        liveVideoEyeOffset.dyR *= 0.85;
       }
 
       const staticPoseOff = currPoseCanvasRef.current || offscreenRef.current;
@@ -1058,15 +1181,20 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const headShiftX = 0;
       const headShiftY = 0;
 
-      // Compute active 3D-tracked facial landmarks (strictly applied when rendering 3D Pose Rig;
-      // live 3D video already contains native 3D lip motion and symmetrical 3D blinks!)
-      if (!hasLiveVideoFrame) {
-        const poseOffsets = poseEyeOffsetRef.current.get(activeFrameCanvas) || {
-          dxL: 0,
-          dyL: 0,
-          dxR: 0,
-          dyR: 0,
-        };
+      // Compute active 3D-tracked facial landmarks for all rigs EXCEPT native-lip-sync 3D videos (Claire) and geographic sites
+      const shouldRenderFacialRig =
+        !isGeographicSiteRef.current &&
+        !(hasLiveVideoFrame && videoHasNativeLipSyncRef.current);
+
+      if (shouldRenderFacialRig) {
+        const poseOffsets = hasLiveVideoFrame
+          ? liveVideoEyeOffset
+          : poseEyeOffsetRef.current.get(activeFrameCanvas) || {
+              dxL: 0,
+              dyL: 0,
+              dxR: 0,
+              dyR: 0,
+            };
         const avgPoseDx = (poseOffsets.dxL + poseOffsets.dxR) * 0.5;
         const avgPoseDy = (poseOffsets.dyL + poseOffsets.dyR) * 0.5;
 
@@ -1168,14 +1296,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
         if (speaking && effectiveOpen > 0.04) {
           const activeHalfW = halfW * (0.92 + spring.spread * 0.20);
-          const upperLiftPx = effectiveOpen * maxJawDrop * (cfg.mustacheCover ? 0.06 : 0.24);
+          const upperLiftPx = cfg.mustacheCover ? 0 : effectiveOpen * maxJawDrop * 0.24;
           const lowerDropPx = effectiveOpen * maxJawDrop * 0.78;
           const cornerY = (cfg.y1 + cfg.y2) * 0.5 + activeHeadOffsetY + lowerDropPx * 0.12;
           const stomionCenterY = activeMouthCy;
 
           const leftX = activeMouthCx - activeHalfW;
           const rightX = activeMouthCx + activeHalfW;
-          const topCtrlY = stomionCenterY - upperLiftPx * 1.38;
+          const topCtrlY = cfg.mustacheCover ? stomionCenterY + 1.0 : stomionCenterY - upperLiftPx * 1.38;
           const botCtrlY = stomionCenterY + lowerDropPx * 1.48;
 
           ctx.save();
@@ -1209,9 +1337,11 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
           const apertureH = lowerDropPx + upperLiftPx;
           if (apertureH > 3.0) {
-            const tongueW = activeHalfW * 0.64;
-            const tongueH = apertureH * (0.42 + spring.tongue * 0.24);
-            const tongueCenterY = stomionCenterY + lowerDropPx * (0.72 - spring.tongue * 0.24);
+            const tongueW = activeHalfW * (cfg.mustacheCover ? 0.56 : 0.64);
+            const tongueH = cfg.mustacheCover
+              ? apertureH * (0.32 + spring.tongue * 0.14)
+              : apertureH * (0.42 + spring.tongue * 0.24);
+            const tongueCenterY = stomionCenterY + lowerDropPx * (cfg.mustacheCover ? 0.68 : 0.72 - spring.tongue * 0.24);
 
             const tGrad = ctx.createRadialGradient(
               activeMouthCx,
@@ -1221,8 +1351,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               tongueCenterY,
               tongueW
             );
-            tGrad.addColorStop(0, '#c85a64');
-            tGrad.addColorStop(0.65, '#943540');
+            tGrad.addColorStop(0, cfg.mustacheCover ? '#7e2d36' : '#c85a64');
+            tGrad.addColorStop(0.65, cfg.mustacheCover ? '#4a151b' : '#943540');
             tGrad.addColorStop(1, cfg.cavityMidColor);
 
             ctx.beginPath();
@@ -1251,8 +1381,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           }
 
           buildStomionPath();
-          ctx.globalAlpha = 0.85;
-          ctx.lineWidth = cfg.mustacheCover ? 3.2 : 2.4;
+          ctx.globalAlpha = cfg.mustacheCover ? 0.62 : 0.85;
+          ctx.lineWidth = cfg.mustacheCover ? 1.6 : 2.4;
           ctx.strokeStyle = cfg.cavityRimColor;
           ctx.stroke();
 
@@ -1265,7 +1395,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           ctx.strokeStyle = cfg.lowerLipRimColor;
           ctx.lineWidth = 2.2;
           ctx.lineCap = 'round';
-          ctx.globalAlpha = 0.74 * Math.min(1, effectiveOpen * 2.5);
+          ctx.globalAlpha = (cfg.mustacheCover ? 0.38 : 0.74) * Math.min(1, effectiveOpen * 2.5);
           ctx.stroke();
           ctx.restore();
 
@@ -1274,9 +1404,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             ctx.beginPath();
             ctx.ellipse(
               activeMouthCx,
-              stomionCenterY - upperLiftPx * 0.55,
-              activeHalfW * 0.96,
-              Math.max(3, upperLiftPx * 1.15),
+              stomionCenterY - 6,
+              activeHalfW * 1.12,
+              8.5,
               0,
               0,
               Math.PI * 2

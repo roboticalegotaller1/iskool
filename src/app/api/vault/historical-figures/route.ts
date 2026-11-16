@@ -8,6 +8,8 @@ import {
 } from '@/lib/historicalVaultEngine';
 import { HistoricalFigureBlockData } from '@/types/studioBlocks';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 export const dynamic = 'force-dynamic';
 
@@ -104,6 +106,30 @@ export async function POST(req: NextRequest) {
           error: 'Slug de nodo no seguro o no permitido.'
         }, { status: 400 });
       }
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: auth.user.school_id || body?.schoolId,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    ) {
+      const eph = recordEphemeralVaultItem('historical_qa', {
+        actorEmail: auth.user.email,
+        title: figure.characterName,
+        payload: { slug: figure.vaultNodeSlug || figure.characterName },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        ephemeralId: eph.id,
+        localPath: `sandbox-ephemeral/historical/${eph.id}.md`,
+        desktopPath: null,
+        message: 'Modo Cuentas Demo: Personaje histórico activo en sesión temporal sin escritura en Bóveda Curricular.',
+      });
     }
 
     const result = saveHistoricalFigureToVault(figure);

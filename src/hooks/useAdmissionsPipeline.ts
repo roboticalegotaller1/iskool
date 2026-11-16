@@ -28,13 +28,15 @@ export interface UseAdmissionsPipelineOptions {
   campusId?: string;
   pipeline?: PipelineType;
   academicYear?: string;
+  schoolId?: string;
 }
 
 export function useAdmissionsPipeline(options: UseAdmissionsPipelineOptions = {}) {
   const {
     campusId: initialCampusId = 'all',
     pipeline: initialPipeline = 'new_enrollment',
-    academicYear = '2026-2027'
+    academicYear = '2026-2027',
+    schoolId
   } = options;
 
   // 1. Conexión reactiva con el Store del CRM
@@ -54,6 +56,7 @@ export function useAdmissionsPipeline(options: UseAdmissionsPipelineOptions = {}
 
   // 2. Normalización de sede
   const activeCampusKey = normalizeCampusKey(initialCampusId);
+  const isDemoSchool = schoolId === 'sch-demo-0001' || activeCampusKey.startsWith('demo-');
 
   // 3. Cálculo de métricas del pipeline en vivo (Reactividad instantánea)
   const metrics: PipelineAggregateReport = useMemo(() => {
@@ -61,21 +64,27 @@ export function useAdmissionsPipeline(options: UseAdmissionsPipelineOptions = {}
       leads,
       candidates,
       activeCampusKey,
-      academicYear
+      academicYear,
+      schoolId
     );
-  }, [leads, candidates, activeCampusKey, academicYear]);
+  }, [leads, candidates, activeCampusKey, academicYear, schoolId]);
 
-  // 4. Desglose comparativo de todas las sedes (Consolidado + 4 planteles)
+  // 4. Desglose comparativo de todas las sedes (Consolidado + planteles de la institución)
   const campusesBreakdown = useMemo(() => {
-    const campusKeys = ['all', 'montes', 'lagos', 'sancristobal', 'coacalco'];
-    return campusKeys.map(k => computeAdmissionsPipelineMetrics(leads, candidates, k, academicYear));
-  }, [leads, candidates, academicYear]);
+    const campusKeys = isDemoSchool
+      ? ['all', 'demo-pri', 'demo-sec', 'demo-prep']
+      : ['all', 'montes', 'lagos', 'sancristobal', 'coacalco'];
+    return campusKeys.map(k => computeAdmissionsPipelineMetrics(leads, candidates, k, academicYear, schoolId));
+  }, [leads, candidates, academicYear, isDemoSchool, schoolId]);
 
-  // 5. Leads filtrados por la sede activa
+  // 5. Leads filtrados por institución y sede activa
   const filteredLeads = useMemo(() => {
-    if (activeCampusKey === 'all') return leads;
-    return leads.filter(l => normalizeCampusKey(l.campus_id) === activeCampusKey);
-  }, [leads, activeCampusKey]);
+    const schoolScoped = leads.filter(l =>
+      isDemoSchool ? l.school_id === 'sch-demo-0001' : l.school_id !== 'sch-demo-0001'
+    );
+    if (activeCampusKey === 'all') return schoolScoped;
+    return schoolScoped.filter(l => normalizeCampusKey(l.campus_id) === activeCampusKey);
+  }, [leads, activeCampusKey, isDemoSchool]);
 
   // 6. Mutaciones optimistas y atómicas
   const advanceStage = useCallback((leadId: string) => {
@@ -130,7 +139,11 @@ export function useAdmissionsPipeline(options: UseAdmissionsPipelineOptions = {}
     activeCampusKey,
 
     // Capacidad y Metas
-    capacityTarget: IBIME_CAMPUS_CAPACITY_TARGETS[activeCampusKey] || IBIME_CAMPUS_CAPACITY_TARGETS['all'],
+    capacityTarget:
+      activeCampusKey === 'all' && isDemoSchool
+        ? IBIME_CAMPUS_CAPACITY_TARGETS['demo-all']
+        : IBIME_CAMPUS_CAPACITY_TARGETS[activeCampusKey] ||
+          (isDemoSchool ? IBIME_CAMPUS_CAPACITY_TARGETS['demo-all'] : IBIME_CAMPUS_CAPACITY_TARGETS['all']),
 
     // Operaciones
     advanceStage,

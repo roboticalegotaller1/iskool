@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 import {
   CheckCircle2,
   BookOpen,
@@ -58,6 +59,10 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
   });
   const [toastBanner, setToastBanner] = useState<string | null>(null);
   const [isSendingReport, setIsSendingReport] = useState<boolean>(false);
+  const lastParentSignedAt = useDemoInteractionStore((s) => s.lastParentSignedAt);
+  const parentSignedBy = useDemoInteractionStore((s) => s.parentSignedBy);
+  const recordTeacherAttendancePulse = useDemoInteractionStore((s) => s.recordTeacherAttendancePulse);
+  const recordTeacherReportAndXp = useDemoInteractionStore((s) => s.recordTeacherReportAndXp);
 
   const showToast = (msg: string) => {
     setToastBanner(msg);
@@ -73,6 +78,10 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
     });
     setPresentIds(nextPresent);
     setStampedIds(nextStamped);
+    recordTeacherAttendancePulse({
+      groupName: groupName || 'Grupo Activo',
+      count: students.length,
+    });
     if (onMarkAllPresentAndNotify) {
       onMarkAllPresentAndNotify();
     }
@@ -82,7 +91,15 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
   const handleSendBulkParentReport = async () => {
     setIsSendingReport(true);
     try {
-      const sampleStudent = students[0] || { id: 's1', name: 'Sofía Hernández' };
+      const sampleStudent = students[0] || { id: 'std-demo-01', name: 'Valentina Mendoza Gómez' };
+      recordTeacherReportAndXp({
+        studentId: sampleStudent.id,
+        studentName: sampleStudent.name,
+        xp: 50,
+        coins: 15,
+        groupName: groupName || 'Grupo Activo',
+        subjectName: subjectName || 'Saberes y Pensamiento Científico',
+      });
       await fetch('/api/parent/magic-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +116,7 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
           subjectName: subjectName || 'Saberes y Pensamiento Científico',
         }),
       }).catch(() => null);
-      showToast('🚀 Reporte del día y Sellos de Libreta enviados al Portal Familiar de Padres en 1 toque.');
+      showToast('🚀 Reporte del día (+50 XP) y Sellos enviados al Portal Familiar en 1 toque.');
     } finally {
       setIsSendingReport(false);
     }
@@ -171,6 +188,18 @@ export const TeacherThreeStepAutopilotBar: React.FC<TeacherThreeStepAutopilotBar
           <button type="button" onClick={() => setToastBanner(null)} className="text-white/80 hover:text-white">
             ✕
           </button>
+        </div>
+      )}
+
+      {lastParentSignedAt && (
+        <div
+          data-testid="teacher-live-parent-signed-badge"
+          className="bg-indigo-600 px-5 py-1.5 text-xs font-extrabold text-white flex items-center justify-between"
+        >
+          <span>✓ Enterado firmado en vivo por {parentSignedBy || 'Familia Mendoza Gómez'}</span>
+          <span className="text-[10px] font-black uppercase tracking-wider text-indigo-100">
+            Sincronización Bidireccional Activa
+          </span>
         </div>
       )}
 

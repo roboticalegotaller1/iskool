@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { z } from 'zod';
-import { validateApiAuth } from '@/lib/authValidator';
+import { validateApiAuth, AuthValidationResult } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 import {
   InstitutionalMemoryService,
   PedagogicalPiiGuard,
@@ -75,7 +77,9 @@ const MemoryIngestionRequestSchema = z.object({
  * Valida la autenticación para la ingestión segura.
  * Admite tanto el secreto de servidor a servidor (Rails Webhook Secret) como sesión autenticada de docente/admin.
  */
-async function validateIngestionSecurity(request: NextRequest): Promise<{ authorized: boolean; reason?: string }> {
+async function validateIngestionSecurity(
+  request: NextRequest
+): Promise<{ authorized: boolean; reason?: string; user?: AuthValidationResult['user'] }> {
   const authHeader = request.headers.get('authorization') || '';
   const ingestionKeyHeader = request.headers.get('x-ingestion-key') || '';
 
@@ -95,7 +99,7 @@ async function validateIngestionSecurity(request: NextRequest): Promise<{ author
   // 2. Verificación por Sesión de Usuario (Docente o Coordinador autenticado en iSkool)
   const authResult = await validateApiAuth(request);
   if (authResult.authenticated) {
-    return { authorized: true };
+    return { authorized: true, user: authResult.user };
   }
 
   // Si no hay secreto configurado en desarrollo local, permitir con advertencia en consola
@@ -155,8 +159,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Persistencia mediante el servicio de Memoria Institucional (desacoplada para respuesta en < 300ms)
+    // 5. Interceptar cuentas demo antes de tocar la Bóveda Curricular
     const memoryInput: CreateInstitutionalMemoryInput = parsed.data;
+    if (
+      isDemoSandboxContext({
+        email: security.user?.email,
+        schoolId: security.user?.school_id || memoryInput.provenance?.school_id || memoryInput.institution_id,
+        userId: security.user?.id,
+        tenantId: security.user?.tenant_id,
+      })
+    ) {
+      const eph = recordEphemeralVaultItem('memory', {
+        actorEmail: security.user?.email,
+        title: memoryInput.topic,
+        payload: { subject: memoryInput.subject, grade: memoryInput.grade },
+      });
+      return NextResponse.json(
+        {
+          success: true,
+          demoSandbox: true,
+          persistedInVault: false,
+          message: 'Modo Cuentas Demo: Memoria institucional simulada en sesión sin escribir en Bóveda Curricular.',
+          documentId: eph.id,
+          filePath: `sandbox-ephemeral/${eph.id}.md`,
+          remoteGitSynced: false,
+          storageSynced: false,
+        },
+        { status: 201 }
+      );
+    }
+
     const saveResult = await InstitutionalMemoryService.saveMemory(memoryInput, { deferGitSync: true });
 
     // Sincronización GitOps desacoplada mediante after de Next.js 16

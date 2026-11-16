@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 import { 
   findHistoricalFigureInVault, 
   saveHistoricalFigureToVault, 
@@ -122,6 +124,13 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { action, characterName, slug, question, isGeographicSite, spineStyle } = body;
+    const isDemoRequest =
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id || body?.schoolId,
+        userId: auth.user?.id,
+        tenantId: auth.user?.tenant_id,
+      }) || req.headers.get('x-iskool-demo-sandbox') === '1';
 
     // =========================================================================
     // 1. ACCIÓN: GENERAR O RECUPERAR PERSONAJE/SITIO HISTÓRICO
@@ -139,6 +148,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
           success: true,
           fromVault: true,
+          demoSandbox: isDemoRequest,
+          persistedInVault: false,
           tokenCost: 0,
           figure: existingInVault,
           message: 'Recuperado de la Bóveda Curricular con 0 consumo de tokens.'
@@ -149,15 +160,27 @@ export async function POST(req: NextRequest) {
       const generated = await generateFigureWithAiFallback(characterName, isGeographicSite, spineStyle);
       generated.vaultNodeSlug = nodeSlug;
 
-      // PASO 3: Persistir inmediatamente en la Bóveda Curricular y repositorios
-      saveHistoricalFigureToVault(generated);
+      // PASO 3: Persistir en la Bóveda Curricular solo si NO es cuenta Demo Sandbox
+      if (!isDemoRequest) {
+        saveHistoricalFigureToVault(generated);
+      } else {
+        recordEphemeralVaultItem('historical_qa', {
+          actorEmail: auth.user?.email,
+          title: generated.characterName,
+          payload: { nodeSlug },
+        });
+      }
 
       return NextResponse.json({
         success: true,
         fromVault: false,
+        demoSandbox: isDemoRequest,
+        persistedInVault: !isDemoRequest,
         tokenCost: 450,
         figure: generated,
-        message: 'Personaje generado pedagógicamente y guardado en la Bóveda Curricular para futuros usos con 0 tokens.'
+        message: isDemoRequest
+          ? 'Modo Cuentas Demo: Personaje generado en 1ª persona en sesión efímera (0 escrituras en Bóveda Curricular).'
+          : 'Personaje generado pedagógicamente y guardado en la Bóveda Curricular para futuros usos con 0 tokens.'
       });
     }
 
@@ -206,11 +229,15 @@ ${momentsToInclude.map(m => `- ${m.title} (${m.yearOrPeriod}): ${m.description}`
       // SALVAGUARDA CANÓNICA INVIOLABLE ANTE ANACRONISMOS, TECNOLOGÍAS MODERNAS Y CONCEPTOS FUERA DE ÉPOCA
       if (questionAnalysis.isAnachronismOrOutOfTime || questionAnalysis.specificIntent === 'ANACHRONISM_OUT_OF_TIME') {
         const politeDecline = generateCanonicalAnachronismResponse(characterName, figureNode);
-        appendQaToVaultNode(nodeSlug, question, politeDecline);
+        if (!isDemoRequest) {
+          appendQaToVaultNode(nodeSlug, question, politeDecline);
+        }
         return NextResponse.json({
           success: true,
           answer: politeDecline,
           cached: false,
+          demoSandbox: isDemoRequest,
+          persistedInVault: false,
           tokenCost: 0,
           message: 'Declinación cortés en primera persona por anacronismo o tecnología fuera de época'
         });
@@ -353,17 +380,29 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
         answer = await generateFallbackPersonaAnswer(characterName, question);
       }
 
-      // PASO 3: Guardar en el nodo Markdown de la Bóveda Curricular para futuros alumnos (0 tokens en el futuro)
-      appendQaToVaultNode(nodeSlug, question, answer);
+      // PASO 3: Guardar en el nodo Markdown de la Bóveda Curricular solo si NO es Demo Sandbox
+      if (!isDemoRequest) {
+        appendQaToVaultNode(nodeSlug, question, answer);
+      } else {
+        recordEphemeralVaultItem('historical_qa', {
+          actorEmail: auth.user?.email,
+          title: characterName,
+          payload: { nodeSlug, question, answer },
+        });
+      }
 
       return NextResponse.json({
         success: true,
         answer,
         cached: false,
+        demoSandbox: isDemoRequest,
+        persistedInVault: !isDemoRequest,
         tokenCost: liveTokensUsed || 120,
         fromLiveTokens: usedExternalAi,
         source: usedExternalAi ? 'Motor de IA Pedagógica (Tokens Reales)' : 'Motor Pedagógico Integrado',
-        message: 'Respuesta generada en primera persona y persistida en la Bóveda Curricular.'
+        message: isDemoRequest
+          ? 'Modo Cuentas Demo: Respuesta generada en primera persona en sesión efímera (0 escrituras en Bóveda Curricular).'
+          : 'Respuesta generada en primera persona y persistida en la Bóveda Curricular.'
       });
     }
 
@@ -876,6 +915,7 @@ async function generateFigureWithAiFallback(
 
   // 4. GENERADOR GENÉRICO PEDAGÓGICO PARA CUALQUIER PERSONAJE O SITIO (X)
   const isSite = isGeographicSite || norm.includes('queretaro') || norm.includes('tenochtitlan') || norm.includes('ruina') || norm.includes('chichen') || norm.includes('ciudad') || norm.includes('estado');
+  const isLeonaAvatar = !isSite && (norm.includes('leona') || norm.includes('vicario'));
 
   return {
     characterName: name,
@@ -888,7 +928,11 @@ async function generateFigureWithAiFallback(
     detailedContext: isSite
       ? `A través de sus coordenadas cartográficas, arquitectura monumental y vestigios documentales, ${name} atestigua momentos decisivos donde confluyeron culturas, batallas libertarias y acuerdos fundacionales para la nación.`
       : `En su tiempo histórico, ${name} enfrentó desafíos éticos, políticos y sociales de gran magnitud, contribuyendo con valentía, pensamiento reflexivo y vocación de servicio al ideario republicano y democrático.`,
-    avatarImageUrl: isSite ? '/images/history/sitio_historico_default.jpg' : '/images/history/personaje_generico_avatar.png',
+    avatarImageUrl: isSite
+      ? '/images/history/sitio_historico_default.jpg'
+      : isLeonaAvatar
+        ? '/images/history/leona_vicario_avatar.webp'
+        : '/images/history/personaje_generico_avatar.png',
     bookSpineStyle: spineStyle || (isSite ? 'codice_antiguo' : 'cuaderno_cronista'),
     voiceId: isSite ? 'es-MX-DaliaNeural' : undefined,
     voiceCohort: isSite ? 'adult_female' : undefined,

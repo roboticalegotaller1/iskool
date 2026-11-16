@@ -84,7 +84,7 @@ export const getSchoolCampuses = (campusesList: Campus[], schoolId: string | nul
   }
 
   if (schoolId === 'sch-test-case') {
-    const list = allCampuses.filter(c => c.school_id === 'sch-test-case' || c.name.toLowerCase().includes('laboratorio') || c.name.toLowerCase().includes('demo'));
+    const list = allCampuses.filter(c => c.school_id !== 'sch-demo-0001' && (c.school_id === 'sch-test-case' || c.name.toLowerCase().includes('laboratorio') || c.name.toLowerCase().includes('demo')));
     if (list.length > 0) return list;
     return CAMPUSES_SEED.filter(c => c.school_id === 'sch-test-case');
   }
@@ -167,6 +167,7 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
     return allStudents.filter(s => 
       s.school_id !== 'sch-montessori' &&
       s.school_id !== 'sch-ibime' &&
+      s.school_id !== 'sch-demo-0001' &&
       s.school_id !== 'sch-profesores-independientes' &&
       !s.id.startsWith('std-indep-')
     ).map(s => {
@@ -232,6 +233,7 @@ export const getSchoolTeachers = (teachersList: UserProfile[], schoolId: string 
     return allTeachers.filter(t => 
       t.school_id !== 'sch-montessori' &&
       t.school_id !== 'sch-ibime' &&
+      t.school_id !== 'sch-demo-0001' &&
       t.school_id !== 'sch-profesores-independientes' &&
       !t.id.startsWith('usr-indep-')
     );
@@ -262,6 +264,7 @@ export const getSchoolGroups = (groupsList: Group[], schoolId: string | null, sc
 
   if (schoolId === 'sch-test-case') {
     return allGroups.filter(g => 
+      g.school_id !== 'sch-demo-0001' &&
       (g.school_id === 'sch-test-case' || g.id.includes('test') || (g.campus_name || '').toLowerCase().includes('demo') || (g.campus_name || '').toLowerCase().includes('laboratorio')) &&
       g.school_id !== 'sch-profesores-independientes' &&
       !g.id.startsWith('grp-indep-')
@@ -772,13 +775,22 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
         'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
         'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS,
-        'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS
+        'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS,
+        'sch-demo-0001': DEFAULT_GOVERNANCE_SETTINGS
       },
       directorLimits: {
         'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
         'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
         'sch-montessori': DEFAULT_DIRECTOR_LIMITS,
-        'sch-ibime': DEFAULT_DIRECTOR_LIMITS
+        'sch-ibime': DEFAULT_DIRECTOR_LIMITS,
+        'sch-demo-0001': {
+          ...DEFAULT_DIRECTOR_LIMITS,
+          canManageCampuses: true,
+          canModifyTuitionFees: true,
+          canRegisterCoordinators: true,
+          canPurgeCurricularVault: false,
+          maxScholarshipDiscountPercent: 50
+        }
       },
       syncError: null,
 
@@ -2407,13 +2419,22 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
             'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
             'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS,
-            'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS
+            'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS,
+            'sch-demo-0001': DEFAULT_GOVERNANCE_SETTINGS
           },
           directorLimits: {
             'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
             'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
             'sch-montessori': DEFAULT_DIRECTOR_LIMITS,
-            'sch-ibime': DEFAULT_DIRECTOR_LIMITS
+            'sch-ibime': DEFAULT_DIRECTOR_LIMITS,
+            'sch-demo-0001': {
+              ...DEFAULT_DIRECTOR_LIMITS,
+              canManageCampuses: true,
+              canModifyTuitionFees: true,
+              canRegisterCoordinators: true,
+              canPurgeCurricularVault: false,
+              maxScholarshipDiscountPercent: 50
+            }
           },
           syncError: null
         });
@@ -2421,27 +2442,96 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
       reconcileSeedsWithStore: () => {
         set((state) => {
+          const demoId = 'sch-demo-0001';
+          const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
+          const deletedDemoCount = (state.studentDeletionAuditLogs || []).filter(l => l.school_id === demoId).length;
+          const demoStudentsSeed = DETAILED_STUDENTS_SEED.filter(s => s.school_id === demoId);
+
           const seedMap = new Map(DETAILED_STUDENTS_SEED.map(s => [s.id, s]));
-          const current = (state.detailedStudents || []).map(s => {
+          let baseStudents = (state.detailedStudents || []).map(s => {
             const seed = seedMap.get(s.id);
             if (seed && (!s.photo_url || !s.photo_url.startsWith('data:image/'))) {
               return { ...s, photo_url: seed.photo_url };
             }
             return s;
           });
-          const existingIds = new Set(current.map(s => s.id));
-          const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
+
+          const currentDemoStudentsCount = baseStudents.filter(s => s.school_id === demoId).length;
+          if (currentDemoStudentsCount + deletedDemoCount < demoStudentsSeed.length) {
+            baseStudents = [
+              ...baseStudents.filter(s => s.school_id !== demoId),
+              ...demoStudentsSeed.filter(s => !deletedIds.has(s.id))
+            ];
+          }
+
+          const existingIds = new Set(baseStudents.map(s => s.id));
           const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
-          
-          // Reconciliar también instituciones (garantizar sch-ibime y planteles con logos oficiales)
-          const currentInsts: Institution[] = (state.institutionsList || []).map(inst => {
-            return inst;
-          });
+
+          // Reconciliar también instituciones (garantizar sch-ibime, sch-demo-0001 y deduplicar CCT 0001 legado)
+          const isLegacyDemoInstitution = (inst: Institution | any): boolean => {
+            if (!inst || inst.id === demoId) return false;
+            const cct = String(inst.cct || '').trim();
+            const name = String(inst.name || '').trim().toLowerCase();
+            return cct === '0001' || name === 'cuentas demo';
+          };
+
+          const rawInsts: Institution[] = state.institutionsList || [];
+          const legacyDemoIds = new Set(
+            rawInsts.filter(isLegacyDemoInstitution).map(i => i.id)
+          );
+          const demoSeed = INSTITUTIONS_SEED.find(i => i.id === demoId);
+
+          const currentInsts: Institution[] = rawInsts
+            .filter(inst => !legacyDemoIds.has(inst.id))
+            .map(inst => {
+              if (inst.id === demoId && demoSeed) {
+                return {
+                  ...demoSeed,
+                  ...inst,
+                  id: demoId,
+                  name: demoSeed.name,
+                  cct: demoSeed.cct,
+                  logoUrl: demoSeed.logoUrl,
+                  isTestCase: false,
+                  campusesCount: Math.max(inst.campusesCount || 0, demoSeed.campusesCount || 3),
+                  studentsCount: Math.max(inst.studentsCount || 0, demoSeed.studentsCount || 650),
+                  teachersCount: Math.max(inst.teachersCount || 0, demoSeed.teachersCount || 45),
+                  aiTokensConsumed: Math.max(inst.aiTokensConsumed || 0, demoSeed.aiTokensConsumed || 184500),
+                  licensing: demoSeed.licensing
+                    ? {
+                        ...demoSeed.licensing,
+                        ...(inst.licensing || {}),
+                        planName: demoSeed.licensing.planName,
+                        contractedSeats: Math.max(inst.licensing?.contractedSeats || 0, demoSeed.licensing.contractedSeats || 700),
+                        assignedSeats: Math.max(inst.licensing?.assignedSeats || 0, demoSeed.licensing.assignedSeats || 650),
+                      }
+                    : inst.licensing,
+                  settings: demoSeed.settings
+                    ? {
+                        ...demoSeed.settings,
+                        ...(inst.settings || {}),
+                        logoUrl: demoSeed.logoUrl,
+                      }
+                    : inst.settings,
+                };
+              }
+              return inst;
+            });
           const existingInstIds = new Set(currentInsts.map(i => i.id));
           const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
 
-          // Reconciliar planteles
-          const currentCampuses = state.campusesList || [];
+          // Reconciliar planteles (garantizar los 3 planteles demo completos)
+          const demoCampusesSeed = CAMPUSES_SEED.filter(c => c.school_id === demoId);
+          let currentCampuses = (state.campusesList || []).filter(
+            c => !legacyDemoIds.has(c.school_id || '')
+          );
+          const demoCampIds = new Set(currentCampuses.filter(c => c.school_id === demoId).map(c => c.id));
+          if (!demoCampIds.has('cmp-demo-pri') || !demoCampIds.has('cmp-demo-sec') || !demoCampIds.has('cmp-demo-prep')) {
+            currentCampuses = [
+              ...currentCampuses.filter(c => c.school_id !== demoId),
+              ...demoCampusesSeed
+            ];
+          }
           const existingCampIds = new Set(currentCampuses.map(c => c.id));
           const missingCampuses = CAMPUSES_SEED.filter(c => !existingCampIds.has(c.id));
 
@@ -2450,38 +2540,156 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const existingPricingIds = new Set(currentPricings.map(p => p.id));
           const missingPricings = TUITION_PRICINGS_SEED.filter(p => !existingPricingIds.has(p.id));
 
-          // Reconciliar grupos
-          const currentGroups = state.groupsList || [];
+          // Reconciliar grupos (27 grupos demo en 3 planteles)
+          const demoGroupsSeed = GROUPS_SEED.filter(g => g.school_id === demoId);
+          let currentGroups = (state.groupsList || []).filter(
+            g => !legacyDemoIds.has(g.school_id || '')
+          );
+          if (currentGroups.filter(g => g.school_id === demoId).length < demoGroupsSeed.length) {
+            currentGroups = [
+              ...currentGroups.filter(g => g.school_id !== demoId),
+              ...demoGroupsSeed
+            ];
+          }
           const existingGroupIds = new Set(currentGroups.map(g => g.id));
           const missingGroups = GROUPS_SEED.filter(g => !existingGroupIds.has(g.id));
 
-          // Reconciliar materias
-          const currentSubjects = state.subjectsList || [];
+          // Reconciliar materias (18 asignaturas demo)
+          const demoSubjectsSeed = SUBJECTS_SEED.filter(s => s.school_id === demoId);
+          let currentSubjects = state.subjectsList || [];
+          if (currentSubjects.filter(s => s.school_id === demoId).length < demoSubjectsSeed.length) {
+            currentSubjects = [
+              ...currentSubjects.filter(s => s.school_id !== demoId),
+              ...demoSubjectsSeed
+            ];
+          }
           const existingSubjectIds = new Set(currentSubjects.map(s => s.id));
           const missingSubjects = SUBJECTS_SEED.filter(s => !existingSubjectIds.has(s.id));
 
-          // Reconciliar docentes
-          const currentTeachers = state.teachersList || [];
+          // Reconciliar docentes (45 docentes demo en 3 planteles)
+          const demoTeachersSeed = TEACHERS_LIST_SEED.filter(t => t.school_id === demoId);
+          const demoTeacherEmails = new Set(
+            demoTeachersSeed.map(t => (t.email || '').trim().toLowerCase()).filter(Boolean)
+          );
+          let currentTeachers = (state.teachersList || []).filter(
+            t =>
+              !legacyDemoIds.has(t.school_id || '') &&
+              !(
+                t.school_id === demoId &&
+                String(t.id || '').startsWith('usr-org-') &&
+                demoTeacherEmails.has((t.email || '').trim().toLowerCase())
+              )
+          );
+          if (currentTeachers.filter(t => t.school_id === demoId).length < demoTeachersSeed.length) {
+            currentTeachers = [
+              ...currentTeachers.filter(t => t.school_id !== demoId),
+              ...demoTeachersSeed
+            ];
+          }
           const existingTeacherIds = new Set(currentTeachers.map(t => t.id));
           const missingTeachers = TEACHERS_LIST_SEED.filter(t => !existingTeacherIds.has(t.id));
 
-          // Reconciliar personal administrativo
-          const currentStaff = state.staffUsers || [];
+          // Reconciliar personal administrativo (5 cuentas incl. usr-demo-ceo)
+          const demoStaffSeed = STAFF_USERS_SEED.filter(s => s.school_id === demoId);
+          const demoStaffEmails = new Set(
+            demoStaffSeed.map(s => (s.email || '').trim().toLowerCase()).filter(Boolean)
+          );
+          let currentStaff = (state.staffUsers || []).filter(
+            s =>
+              !legacyDemoIds.has(s.school_id || '') &&
+              !(
+                s.school_id === demoId &&
+                String(s.id || '').startsWith('usr-org-') &&
+                demoStaffEmails.has((s.email || '').trim().toLowerCase())
+              )
+          );
+          const demoStaffIds = new Set(currentStaff.filter(s => s.school_id === demoId).map(s => s.id));
+          if (!demoStaffIds.has('usr-demo-ceo') || demoStaffIds.size < demoStaffSeed.length) {
+            currentStaff = [
+              ...currentStaff.filter(s => s.school_id !== demoId),
+              ...demoStaffSeed
+            ];
+          }
           const existingStaffIds = new Set(currentStaff.map(s => s.id));
           const missingStaff = STAFF_USERS_SEED.filter(s => !existingStaffIds.has(s.id));
 
-          // Reconciliar nómina
-          const currentPayroll = state.staffPayroll || [];
+          // Reconciliar nómina (10 registros pay-cdemo-*)
+          const demoPayrollSeed = STAFF_PAYROLL_SEED.filter(p => p.school_id === demoId);
+          let currentPayroll = state.staffPayroll || [];
+          const demoPayrollIds = new Set(currentPayroll.filter(p => p.school_id === demoId).map(p => p.id));
+          if (!demoPayrollIds.has('pay-cdemo-010') || demoPayrollIds.size < demoPayrollSeed.length) {
+            currentPayroll = [
+              ...currentPayroll.filter(p => p.school_id !== demoId),
+              ...demoPayrollSeed
+            ];
+          }
           const existingPayrollIds = new Set(currentPayroll.map(p => p.id));
           const missingPayroll = STAFF_PAYROLL_SEED.filter(p => !existingPayrollIds.has(p.id));
 
-          // Reconciliar registros de cobro
-          const currentBilling = state.billingRecords || [];
+          // Reconciliar registros de cobro (36 folios inv-demo-001..036)
+          const demoBillingSeed = BILLING_RECORDS_SEED.filter(b => b.school_id === demoId);
+          let currentBilling = (state.billingRecords || []).filter(
+            b => !legacyDemoIds.has(b.school_id || '')
+          );
+          const demoBillingIds = new Set(currentBilling.filter(b => b.school_id === demoId).map(b => b.id));
+          if (!demoBillingIds.has('inv-demo-036') || demoBillingIds.size < demoBillingSeed.length) {
+            currentBilling = [
+              ...currentBilling.filter(b => b.school_id !== demoId),
+              ...demoBillingSeed
+            ];
+          }
           const existingBillingIds = new Set(currentBilling.map(b => b.id));
           const missingBilling = BILLING_RECORDS_SEED.filter(b => !existingBillingIds.has(b.id));
 
+          // Reconciliar horarios y asistencias demo
+          const demoSchedulesSeed = SCHEDULES_SEED.filter(s => s.school_id === demoId);
+          let currentSchedules = state.schedulesList || [];
+          if (currentSchedules.filter(s => s.school_id === demoId).length < demoSchedulesSeed.length) {
+            currentSchedules = [
+              ...currentSchedules.filter(s => s.school_id !== demoId),
+              ...demoSchedulesSeed
+            ];
+          }
+          const existingScheduleIds = new Set(currentSchedules.map(s => s.id));
+          const missingSchedules = SCHEDULES_SEED.filter(s => !existingScheduleIds.has(s.id));
+
+          const demoAttendanceSeed = ATTENDANCE_SEED.filter(a => a.school_id === demoId);
+          let currentAttendance = state.attendanceList || [];
+          if (currentAttendance.filter(a => a.school_id === demoId).length < demoAttendanceSeed.length) {
+            currentAttendance = [
+              ...currentAttendance.filter(a => a.school_id !== demoId),
+              ...demoAttendanceSeed
+            ];
+          }
+          const existingAttendanceIds = new Set(currentAttendance.map(a => a.id));
+          const missingAttendance = ATTENDANCE_SEED.filter(a => !existingAttendanceIds.has(a.id));
+
+          const nextGovernance = {
+            ...(state.schoolGovernance || {}),
+            ...(state.schoolGovernance?.[demoId] ? {} : { [demoId]: DEFAULT_GOVERNANCE_SETTINGS })
+          };
+          const nextLimits = {
+            ...(state.directorLimits || {}),
+            ...(state.directorLimits?.[demoId]
+              ? {}
+              : {
+                  [demoId]: {
+                    ...DEFAULT_DIRECTOR_LIMITS,
+                    canManageCampuses: true,
+                    canModifyTuitionFees: true,
+                    canRegisterCoordinators: true,
+                    canPurgeCurricularVault: false,
+                    maxScholarshipDiscountPercent: 50
+                  }
+                })
+          };
+
           return {
-            detailedStudents: missing.length > 0 ? [...current, ...missing] : current,
+            activeSchoolId:
+              state.activeSchoolId && legacyDemoIds.has(state.activeSchoolId)
+                ? demoId
+                : state.activeSchoolId,
+            detailedStudents: missing.length > 0 ? [...baseStudents, ...missing] : baseStudents,
             institutionsList: missingInsts.length > 0 ? [...currentInsts, ...missingInsts] : currentInsts,
             campusesList: missingCampuses.length > 0 ? [...currentCampuses, ...missingCampuses] : currentCampuses,
             tuitionPricings: missingPricings.length > 0 ? [...currentPricings, ...missingPricings] : currentPricings,
@@ -2490,50 +2698,194 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             teachersList: missingTeachers.length > 0 ? [...currentTeachers, ...missingTeachers] : currentTeachers,
             staffUsers: missingStaff.length > 0 ? [...currentStaff, ...missingStaff] : currentStaff,
             staffPayroll: missingPayroll.length > 0 ? [...currentPayroll, ...missingPayroll] : currentPayroll,
-            billingRecords: missingBilling.length > 0 ? [...currentBilling, ...missingBilling] : currentBilling
+            billingRecords: missingBilling.length > 0 ? [...currentBilling, ...missingBilling] : currentBilling,
+            schedulesList: missingSchedules.length > 0 ? [...currentSchedules, ...missingSchedules] : currentSchedules,
+            attendanceList: missingAttendance.length > 0 ? [...currentAttendance, ...missingAttendance] : currentAttendance,
+            schoolGovernance: nextGovernance,
+            directorLimits: nextLimits
           };
         });
       }
     }),
     {
       name: 'iskool_school_admin_store',
-      version: 4,
+      version: 6,
       migrate: (persistedState: any, version: number) => {
         if (persistedState) {
-          if (Array.isArray(persistedState.detailedStudents)) {
-            const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
-            const deletedIds = new Set((persistedState.studentDeletionAuditLogs || []).map((l: any) => l.student_id));
-            const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
-            persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
-          }
+          const demoId = 'sch-demo-0001';
+          const forceUpgradeDemoV6 = version < 6;
+
+          const legacyIds = new Set<string>();
           if (Array.isArray(persistedState.institutionsList)) {
+            for (const inst of persistedState.institutionsList) {
+              if (!inst || inst.id === demoId) continue;
+              const cct = String(inst.cct || '').trim();
+              const name = String(inst.name || '').trim().toLowerCase();
+              if (cct === '0001' || name === 'cuentas demo') {
+                legacyIds.add(inst.id);
+              }
+            }
+            const demoSeed = INSTITUTIONS_SEED.find(i => i.id === demoId);
+            persistedState.institutionsList = persistedState.institutionsList
+              .filter((i: any) => !legacyIds.has(i.id))
+              .map((i: any) =>
+                i?.id === demoId && demoSeed
+                  ? {
+                      ...demoSeed,
+                      ...i,
+                      id: demoId,
+                      cct: '0001',
+                      logoUrl: demoSeed.logoUrl,
+                      isTestCase: false,
+                      campusesCount: Math.max(i.campusesCount || 0, 3),
+                      studentsCount: Math.max(i.studentsCount || 0, 650),
+                      teachersCount: Math.max(i.teachersCount || 0, 45),
+                      aiTokensConsumed: Math.max(i.aiTokensConsumed || 0, 184500),
+                      licensing: demoSeed.licensing
+                        ? {
+                            ...demoSeed.licensing,
+                            ...(i.licensing || {}),
+                            planName: demoSeed.licensing.planName,
+                            contractedSeats: Math.max(i.licensing?.contractedSeats || 0, demoSeed.licensing.contractedSeats || 700),
+                            assignedSeats: Math.max(i.licensing?.assignedSeats || 0, demoSeed.licensing.assignedSeats || 650),
+                          }
+                        : i.licensing,
+                    }
+                  : i
+              );
             const existingInstIds = new Set(persistedState.institutionsList.map((i: any) => i.id));
             const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
             if (missingInsts.length > 0) {
               persistedState.institutionsList = [...persistedState.institutionsList, ...missingInsts];
             }
           }
+          if (legacyIds.size > 0 && legacyIds.has(persistedState.activeSchoolId)) {
+            persistedState.activeSchoolId = demoId;
+          }
+
+          if (Array.isArray(persistedState.detailedStudents)) {
+            const deletedIds = new Set((persistedState.studentDeletionAuditLogs || []).map((l: any) => l.student_id));
+            if (forceUpgradeDemoV6) {
+              persistedState.detailedStudents = persistedState.detailedStudents.filter(
+                (s: any) => s?.school_id !== demoId && !legacyIds.has(s?.school_id)
+              );
+            }
+            const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
+            const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
+            persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
+          }
+
           if (Array.isArray(persistedState.campusesList)) {
+            persistedState.campusesList = persistedState.campusesList.filter(
+              (c: any) => !legacyIds.has(c?.school_id) && (!forceUpgradeDemoV6 || c?.school_id !== demoId)
+            );
             const existingCampIds = new Set(persistedState.campusesList.map((c: any) => c.id));
             const missingCampuses = CAMPUSES_SEED.filter(c => !existingCampIds.has(c.id));
             if (missingCampuses.length > 0) {
               persistedState.campusesList = [...persistedState.campusesList, ...missingCampuses];
             }
           }
+
+          if (Array.isArray(persistedState.subjectsList)) {
+            if (forceUpgradeDemoV6) {
+              persistedState.subjectsList = persistedState.subjectsList.filter((s: any) => s?.school_id !== demoId);
+            }
+            const existingSubjectIds = new Set(persistedState.subjectsList.map((s: any) => s.id));
+            const missingSubjects = SUBJECTS_SEED.filter(s => !existingSubjectIds.has(s.id));
+            if (missingSubjects.length > 0) {
+              persistedState.subjectsList = [...persistedState.subjectsList, ...missingSubjects];
+            }
+          }
+
           if (Array.isArray(persistedState.groupsList)) {
+            persistedState.groupsList = persistedState.groupsList.filter(
+              (g: any) => !legacyIds.has(g?.school_id) && (!forceUpgradeDemoV6 || g?.school_id !== demoId)
+            );
             const existingGroupIds = new Set(persistedState.groupsList.map((g: any) => g.id));
             const missingGroups = GROUPS_SEED.filter(g => !existingGroupIds.has(g.id));
             if (missingGroups.length > 0) {
               persistedState.groupsList = [...persistedState.groupsList, ...missingGroups];
             }
           }
+
           if (Array.isArray(persistedState.teachersList)) {
+            persistedState.teachersList = persistedState.teachersList.filter(
+              (t: any) => !legacyIds.has(t?.school_id) && (!forceUpgradeDemoV6 || t?.school_id !== demoId)
+            );
             const existingTeacherIds = new Set(persistedState.teachersList.map((t: any) => t.id));
             const missingTeachers = TEACHERS_LIST_SEED.filter(t => !existingTeacherIds.has(t.id));
             if (missingTeachers.length > 0) {
               persistedState.teachersList = [...persistedState.teachersList, ...missingTeachers];
             }
           }
+
+          if (Array.isArray(persistedState.schedulesList)) {
+            if (forceUpgradeDemoV6) {
+              persistedState.schedulesList = persistedState.schedulesList.filter((s: any) => s?.school_id !== demoId);
+            }
+            const existingScheduleIds = new Set(persistedState.schedulesList.map((s: any) => s.id));
+            const missingSchedules = SCHEDULES_SEED.filter(s => !existingScheduleIds.has(s.id));
+            if (missingSchedules.length > 0) {
+              persistedState.schedulesList = [...persistedState.schedulesList, ...missingSchedules];
+            }
+          }
+
+          if (Array.isArray(persistedState.billingRecords)) {
+            if (forceUpgradeDemoV6) {
+              persistedState.billingRecords = persistedState.billingRecords.filter(
+                (b: any) => b?.school_id !== demoId && !legacyIds.has(b?.school_id)
+              );
+            }
+            const existingBillingIds = new Set(persistedState.billingRecords.map((b: any) => b.id));
+            const missingBilling = BILLING_RECORDS_SEED.filter(b => !existingBillingIds.has(b.id));
+            if (missingBilling.length > 0) {
+              persistedState.billingRecords = [...persistedState.billingRecords, ...missingBilling];
+            }
+          }
+
+          if (Array.isArray(persistedState.staffUsers)) {
+            if (forceUpgradeDemoV6) {
+              persistedState.staffUsers = persistedState.staffUsers.filter(
+                (u: any) => u?.school_id !== demoId && !legacyIds.has(u?.school_id)
+              );
+            }
+            const existingStaffIds = new Set(persistedState.staffUsers.map((u: any) => u.id));
+            const missingStaff = STAFF_USERS_SEED.filter(u => !existingStaffIds.has(u.id));
+            if (missingStaff.length > 0) {
+              persistedState.staffUsers = [...persistedState.staffUsers, ...missingStaff];
+            }
+          }
+
+          if (Array.isArray(persistedState.staffPayroll)) {
+            if (forceUpgradeDemoV6) {
+              persistedState.staffPayroll = persistedState.staffPayroll.filter((p: any) => p?.school_id !== demoId);
+            }
+            const existingPayrollIds = new Set(persistedState.staffPayroll.map((p: any) => p.id));
+            const missingPayroll = STAFF_PAYROLL_SEED.filter(p => !existingPayrollIds.has(p.id));
+            if (missingPayroll.length > 0) {
+              persistedState.staffPayroll = [...persistedState.staffPayroll, ...missingPayroll];
+            }
+          }
+
+          persistedState.schoolGovernance = {
+            ...(persistedState.schoolGovernance || {}),
+            ...(persistedState.schoolGovernance?.[demoId] ? {} : { [demoId]: DEFAULT_GOVERNANCE_SETTINGS })
+          };
+          persistedState.directorLimits = {
+            ...(persistedState.directorLimits || {}),
+            ...(persistedState.directorLimits?.[demoId]
+              ? {}
+              : {
+                  [demoId]: {
+                    ...DEFAULT_DIRECTOR_LIMITS,
+                    canManageCampuses: true,
+                    canModifyTuitionFees: true,
+                    canRegisterCoordinators: true,
+                    canPurgeCurricularVault: false,
+                    maxScholarshipDiscountPercent: 50
+                  }
+                })
+          };
         }
         return persistedState;
       },

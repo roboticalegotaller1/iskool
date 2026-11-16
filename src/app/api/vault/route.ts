@@ -17,6 +17,8 @@ import {
 } from '@/lib/curriculumEngine';
 import { renderSanitizedMarkdown, invalidateVaultCache } from '@/lib/vaultMarkdownEngine';
 import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 /**
  * Obtiene el directorio raíz canónico de las planeaciones pedagógicas.
@@ -501,6 +503,37 @@ export async function POST(request: NextRequest) {
     }
 
     const planning = parsedPlanning.data;
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id || (body as Record<string, any>)?.schoolId,
+        userId: auth.user?.id,
+        tenantId: auth.user?.tenant_id,
+      })
+    ) {
+      const eph = recordEphemeralVaultItem('planning', {
+        actorEmail: auth.user?.email,
+        title: planning.title,
+        payload: {
+          levelName: planning.levelName || planning.nivel,
+          gradeName: planning.gradeName || planning.grado,
+          subjectName: planning.subjectName || planning.asignatura,
+        },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        ephemeralId: eph.id,
+        filename: `DemoPreview_${Date.now()}.md`,
+        relativePath: 'sandbox-ephemeral/demo-preview.md',
+        vaultPath: 'sandbox-ephemeral/demo-preview.md',
+        gitSyncStatus: 'demo_ephemeral_memory',
+        gitMessage: 'Modo Cuentas Demo: Planeación procesada en sesión temporal (0 escrituras en Bóveda Curricular).',
+      });
+    }
+
     const planningsDir = getVaultPlanningsDir();
 
     if (!fs.existsSync(planningsDir)) {

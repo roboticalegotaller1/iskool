@@ -1,5 +1,6 @@
 import { UserProfile, UserRole } from '@/types';
 import { SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
+import { DEMO_STAFF_USERS, DEMO_TEACHERS } from '@/lib/demo/demoSchoolSeeds';
 
 export type DemoCategory = 'docentes' | 'estudiantes' | 'gestion';
 
@@ -181,6 +182,117 @@ export const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = IBIME_DEMO_ACCOUNTS;
  */
 export function resolveCanonicalDemoUser(identifier: string): UserProfile | null {
   if (!identifier) return null;
+  const demoClean = identifier.trim().toLowerCase();
+  if (demoClean === 'demo.ceo@iskool.mx' || demoClean === 'usr-demo-ceo' || demoClean === 'demo-ceo-01') {
+    return {
+      id: 'usr-demo-ceo',
+      first_name: 'Dr. Alejandro',
+      last_name: 'Villarreal Montes',
+      role: 'ceo',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Presidencia & Dirección Ejecutiva (3 Planteles)',
+      email: 'demo.ceo@iskool.mx',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.director@iskool.mx' || demoClean === 'usr-demo-director' || demoClean === 'usr-demo-dir-01') {
+    return {
+      id: 'usr-demo-director',
+      first_name: 'Dra. Beatriz Elena',
+      last_name: 'Santillán Torres',
+      role: 'director',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      email: 'demo.director@iskool.mx',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.docente@iskool.mx' || demoClean === 'usr-demo-teacher-1' || demoClean === 'usr-demo-teacher-01') {
+    return {
+      id: 'usr-demo-teacher-1',
+      first_name: 'Prof. Alejandro',
+      last_name: 'Ruiz',
+      role: 'teacher',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      email: 'demo.docente@iskool.mx',
+      assigned_subjects: ['Lenguajes (Español)', 'Saberes y Pensamiento Científico (Matemáticas)'],
+      assigned_groups: ['5ºA'],
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.idiomas@iskool.mx' || demoClean === 'usr-demo-teacher-2' || demoClean === 'usr-demo-idiomas-01') {
+    return {
+      id: 'usr-demo-teacher-2',
+      first_name: 'Profa. Claire',
+      last_name: 'Dubois (Idiomas 3D)',
+      role: 'teacher',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-sec',
+      campus_name: 'Campus Norte Secundaria',
+      email: 'demo.idiomas@iskool.mx',
+      assigned_subjects: ['Lengua Extranjera (Inglés)', 'Francés Multilingüe'],
+      assigned_groups: ['5ºA', '1ºA'],
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.familia@iskool.mx' || demoClean === 'usr-demo-parent-01') {
+    return {
+      id: 'usr-demo-parent-01',
+      first_name: 'Laura Gómez',
+      last_name: 'de Mendoza (Familia Demo)',
+      role: 'parent',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      email: 'demo.familia@iskool.mx',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.alumno@iskool.mx' || demoClean === 'demo.alumna@iskool.mx' || demoClean === 'std-demo-01') {
+    return {
+      id: 'std-demo-01',
+      first_name: 'Valentina',
+      last_name: 'Mendoza Gómez',
+      role: 'student',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      email: 'demo.alumno@iskool.mx',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  if (demoClean === 'demo.control@iskool.mx' || demoClean === 'demo.staff@iskool.mx' || demoClean === 'usr-demo-staff-1' || demoClean === 'usr-demo-billing-01') {
+    return {
+      id: 'usr-demo-staff-1',
+      first_name: 'Lic. Sofía',
+      last_name: 'Reyes Aguilar',
+      role: 'billing',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      email: 'demo.control@iskool.mx',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z',
+    };
+  }
+  const matchedDemoStaff = DEMO_STAFF_USERS.find(
+    (s) => s.email?.toLowerCase() === demoClean || s.id.toLowerCase() === demoClean
+  );
+  if (matchedDemoStaff) return matchedDemoStaff;
+  const matchedDemoTeacher = DEMO_TEACHERS.find(
+    (t) => t.email?.toLowerCase() === demoClean || t.id.toLowerCase() === demoClean
+  );
+  if (matchedDemoTeacher) return { ...matchedDemoTeacher, role: 'teacher' };
   let emailLower = identifier.toLowerCase().trim();
 
   if (

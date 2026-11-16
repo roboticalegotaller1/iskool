@@ -213,9 +213,9 @@ VOICE_MAPPING = {
     'es-mx-candelaneural': 'es-US-PalomaNeural',
     'es-mx-carlotaneural': 'es-MX-DaliaNeural',
     'es-mx-renataneural': 'es-CO-SalomeNeural',
-    'es-mx-nurianeural': 'es-PE-CamilaNeural',
-    'es-mx-marinaneural': 'es-PE-CamilaNeural',
-    'es-mx-larissaneural': 'es-PE-CamilaNeural',
+    'es-mx-nurianeural': 'es-CR-MariaNeural',
+    'es-mx-marinaneural': 'es-CO-SalomeNeural',
+    'es-mx-larissaneural': 'es-CO-SalomeNeural',
     'es-mx-pelayoneural': 'es-PE-AlexNeural',
     'es-mx-gerardoneural': 'es-MX-JorgeNeural',
     'es-mx-libertoneural': 'es-CO-GonzaloNeural',
@@ -228,7 +228,7 @@ VOICE_MAPPING = {
     'es-co-gonzaloneural': 'es-CO-GonzaloNeural',
     # Perú
     'es-pe-alexneural': 'es-PE-AlexNeural',
-    'es-pe-camilaneural': 'es-PE-CamilaNeural',
+    'es-pe-camilaneural': 'es-CR-MariaNeural',
     # EE.UU. Latino
     'es-us-palomaneural': 'es-US-PalomaNeural',
     'es-us-alonsoneural': 'es-US-AlonsoNeural',
@@ -273,7 +273,7 @@ VOICE_MAPPING = {
     'salome': 'es-CO-SalomeNeural',
     'gonzalo': 'es-CO-GonzaloNeural',
     'alex': 'es-PE-AlexNeural',
-    'camila': 'es-PE-CamilaNeural',
+    'camila': 'es-CR-MariaNeural',
     'paloma': 'es-US-PalomaNeural',
     'alonso': 'es-US-AlonsoNeural',
     'elena': 'es-AR-ElenaNeural',
@@ -293,7 +293,7 @@ VOICE_MAPPING = {
     'es-419-podcaster-2': 'es-MX-DaliaNeural',
     'es-419-commercial-6': 'es-CO-SalomeNeural',
     'es-419-tutor-3': 'es-CR-MariaNeural',
-    'es-419-assistant-1': 'es-PE-CamilaNeural',
+    'es-419-assistant-1': 'es-CR-MariaNeural',
     'es-419-concierge-2': 'es-MX-JorgeNeural',
     'es-419-concierge-7': 'es-CO-GonzaloNeural',
     'es-419-concierge-8': 'es-US-AlonsoNeural',
@@ -947,7 +947,7 @@ ES_419_TO_NEURAL_LATAM_CALIBRATION = {
         "harmonic_drive": 0.14,
     },
     "es-419-assistant-1": {
-        "neural_voice": "es-PE-CamilaNeural",
+        "neural_voice": "es-CR-MariaNeural",
         "rate_offset_pct": 1,
         "pitch_offset_hz": 1,
         "warmth_freq": 146.0,
@@ -1228,189 +1228,18 @@ def master_audio_bytes_with_ffmpeg(
     acoustic_profile: dict | None = None,
 ) -> bytes:
     """
-    Aplica masterización acústica y formántica calibrada al estándar 3.8-flash-lite-tts:
-    - Etapa 1: Eliminación de offset DC y filtro paso-alto subsónico suave (68 Hz) +
-      suavizado de ataque inicial (12ms) para eliminar transitorios digitales.
-    - Etapa 1.5: Excitador Armónico de Tubo/Cinta de 2º orden (100-2800 Hz) que aporta
-      la densidad de pecho y calidez orgánica de los modelos 3.8-flash-lite-tts (es-419-*).
-    - Etapa 1.8: De-Esser Dinámico de Banda Dividida (5400-7600 Hz) para suavizar la
-      sibilancia digital del MP3 sin apagar el brillo natural de las vocales.
-    - Etapa 2: Ecualización Formántica de 6 Bandas específica por arquetipo + Nivelación
-      Óptica Suave (1.45:1).
-    - Etapa 3 y 4: Normalización broadcast ITU-R BS.1770-4 a -14.0 LUFS y Limitador
-      True-Peak a -1.0 dBTP (MP3 CBR 192 kbps a 24kHz).
+    Entrega flujo neural cristalino sin distorsión cuadrática ni cancelación de fase en sibilantes:
+    - Cuando el audio entra como MP3 neuronal nativo (24kHz), se entrega puro sin recodificación con pérdidas.
+    - Sólo si entra WAV crudo PCM aplica filtro subsónico lineal suave (65 Hz) + limitación transparente a -1 dBTP y codifica a MP3.
     """
-    if not FFMPEG_BINARY or not raw_audio:
+    if not raw_audio or len(raw_audio) <= 256:
         return raw_audio
 
-    is_male = is_male_override if is_male_override is not None else _is_male_voice_or_character(voice_name, character_name, role)
-    if acoustic_profile is None:
-        acoustic_profile = _resolve_calibrated_neural_latam_profile(
-            voice_name,
-            voice_name,
-            character_name=character_name,
-            role=role,
-            lang=detect_language_from_voice(voice_name),
-            is_male=is_male,
-        )
+    if input_fmt != "wav":
+        return raw_audio
 
-    warmth_freq = float(acoustic_profile.get("warmth_freq", 120.0 if is_male else 138.0))
-    warmth_gain = float(acoustic_profile.get("warmth_gain", 1.65 if is_male else 1.40))
-    box_cut_freq = float(acoustic_profile.get("box_cut_freq", 330.0 if is_male else 340.0))
-    box_cut_gain = float(acoustic_profile.get("box_cut_gain", -1.20 if is_male else -1.10))
-    presence_freq = float(acoustic_profile.get("presence_freq", 3420.0 if is_male else 3560.0))
-    presence_gain = float(acoustic_profile.get("presence_gain", 1.35))
-    sibilance_freq = float(acoustic_profile.get("sibilance_freq", 6500.0 if is_male else 6650.0))
-    sibilance_cut = float(acoustic_profile.get("sibilance_cut", -1.75))
-    air_gain = float(acoustic_profile.get("air_gain", 1.25 if is_male else 1.35))
-    harmonic_drive = float(acoustic_profile.get("harmonic_drive", 0.13))
-
-    intermediate_wav = None
-    if HAS_STUDIO_DSP:
-        try:
-            if input_fmt == "wav":
-                pcm_bytes = raw_audio
-            else:
-                dec = subprocess.run(
-                    [FFMPEG_BINARY, "-hide_banner", "-loglevel", "error", "-f", input_fmt, "-i", "pipe:0", "-f", "wav", "-ar", "24000", "-ac", "1", "pipe:1"],
-                    input=raw_audio,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.DEVNULL,
-                    timeout=8,
-                    check=True,
-                )
-                pcm_bytes = dec.stdout
-
-            data, sr = sf.read(io.BytesIO(pcm_bytes), dtype="float64")
-            if data.ndim > 1:
-                data = np.mean(data, axis=1)
-
-            if len(data) > int(sr * 0.12):
-                # Etapa 1: Eliminación de offset DC, filtro paso-alto subsónico (68 Hz) y rampa suave de ataque (12ms)
-                data = data - np.mean(data)
-                sos_hp = signal.butter(2, 68.0 / (sr / 2.0), btype="highpass", output="sos")
-                data = signal.sosfiltfilt(sos_hp, data)
-
-                fade_in_samples = min(int(sr * 0.012), len(data) // 8)
-                if fade_in_samples > 8:
-                    data[:fade_in_samples] *= np.linspace(0.0, 1.0, fade_in_samples)
-
-                # Etapa 1.5: Excitador Armónico de Tubo/Cinta (2º orden asimétrico en banda vocal 95-2800 Hz)
-                # Sólo se aplica con intensidad completa a fuentes MP3 neurales para igualar el cuerpo PCM de 3.8-flash-lite-tts
-                effective_drive = harmonic_drive if input_fmt != "wav" else (harmonic_drive * 0.45)
-                if effective_drive > 0.02:
-                    sos_body = signal.butter(2, [95.0 / (sr / 2.0), 2800.0 / (sr / 2.0)], btype="bandpass", output="sos")
-                    vocal_body = signal.sosfiltfilt(sos_body, data)
-                    # Saturación asimétrica suave (genera armónicos pares cálidos tipo válvula U87)
-                    drive_scale = 1.0 + effective_drive * 4.5
-                    harmonics = np.tanh(vocal_body * drive_scale) + 0.06 * (vocal_body ** 2)
-                    harmonics = harmonics - np.mean(harmonics)
-                    data = data + (effective_drive * 0.85) * harmonics
-
-                # Etapa 1.8: De-Esser Dinámico de Banda Dividida (5400-7800 Hz)
-                nyq = sr / 2.0
-                if nyq > 8200.0:
-                    sos_sib = signal.butter(2, [5400.0 / nyq, 7800.0 / nyq], btype="bandpass", output="sos")
-                    sib_band = signal.sosfiltfilt(sos_sib, data)
-                    # Envolvente RMS rápida de 8ms para detectar ráfagas de sibilancia
-                    win_len = max(16, int(sr * 0.008))
-                    sib_env = np.sqrt(np.convolve(sib_band ** 2, np.ones(win_len) / win_len, mode="same") + 1e-12)
-                    sib_thresh = np.percentile(sib_env, 82)
-                    if sib_thresh > 1e-5:
-                        excess = np.maximum(0.0, sib_env - sib_thresh) / (sib_thresh + 1e-6)
-                        reduction = np.clip(excess * 0.38, 0.0, 0.48)
-                        data = data - sib_band * reduction
-
-                # Etapa 2: Cadena C++ Pedalboard con perfil formántico calibrado por arquetipo es-419-*
-                if HAS_PEDALBOARD:
-                    try:
-                        board = Pedalboard([
-                            HighpassFilter(cutoff_frequency_hz=68.0),
-                            PeakFilter(cutoff_frequency_hz=warmth_freq, gain_db=warmth_gain, q=0.95),
-                            PeakFilter(cutoff_frequency_hz=box_cut_freq, gain_db=box_cut_gain, q=1.55),
-                            PeakFilter(cutoff_frequency_hz=presence_freq, gain_db=presence_gain, q=1.05),
-                            PeakFilter(cutoff_frequency_hz=sibilance_freq, gain_db=sibilance_cut, q=2.1),
-                            HighShelfFilter(cutoff_frequency_hz=10800.0, gain_db=air_gain, q=0.707),
-                            Compressor(threshold_db=-18.5, ratio=1.48, attack_ms=26.0, release_ms=170.0),
-                            Limiter(threshold_db=-1.0, release_ms=55.0),
-                        ])
-                        data = board(data.astype(np.float32), sr).astype(np.float64)
-                    except Exception:
-                        pass
-
-                # Etapa 3: Normalización broadcast EBU R128 / ITU-R BS.1770-4 (-14.0 LUFS)
-                try:
-                    meter = pyln.Meter(sr)
-                    loudness = meter.integrated_loudness(data)
-                    if not np.isinf(loudness) and not np.isnan(loudness):
-                        data = pyln.normalize.loudness(data, loudness, -14.0)
-                except Exception:
-                    pass
-
-                # Etapa 4: Limitador suave True-Peak a -1.0 dBTP (0.891)
-                ceiling = 0.891
-                abs_data = np.abs(data)
-                over = abs_data > (ceiling * 0.92)
-                if np.any(over):
-                    t_base = ceiling * 0.92
-                    span = ceiling - t_base
-                    data = np.where(
-                        over,
-                        np.sign(data) * (t_base + span * np.tanh((abs_data - t_base) / span)),
-                        data,
-                    )
-
-                wav_buf = io.BytesIO()
-                sf.write(wav_buf, data.astype(np.float32), sr, format="WAV", subtype="PCM_16")
-                intermediate_wav = wav_buf.getvalue()
-        except Exception:
-            intermediate_wav = None
-
-    if intermediate_wav:
-        try:
-            proc = subprocess.run(
-                [
-                    FFMPEG_BINARY,
-                    "-hide_banner",
-                    "-loglevel",
-                    "error",
-                    "-f",
-                    "wav",
-                    "-i",
-                    "pipe:0",
-                    "-c:a",
-                    "libmp3lame",
-                    "-b:a",
-                    "192k",
-                    "-q:a",
-                    "0",
-                    "-ar",
-                    "24000",
-                    "-f",
-                    "mp3",
-                    "pipe:1",
-                ],
-                input=intermediate_wav,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                timeout=8,
-                check=True,
-            )
-            if proc.stdout and len(proc.stdout) > 256:
-                return proc.stdout
-        except Exception:
-            pass
-
-    af_chain = (
-        f"highpass=f=68,"
-        f"equalizer=f={warmth_freq}:t=q:w=0.95:g={warmth_gain},"
-        f"equalizer=f={box_cut_freq}:t=q:w=1.55:g={box_cut_gain},"
-        f"equalizer=f={presence_freq}:t=q:w=1.05:g={presence_gain},"
-        f"equalizer=f={sibilance_freq}:t=q:w=2.1:g={sibilance_cut},"
-        f"treble=g={air_gain}:f=10800,"
-        f"acompressor=threshold=-18.5dB:ratio=1.48:attack=26:release=170:makeup=1.12,"
-        f"alimiter=limit=0.89:attack=5:release=50"
-    )
+    if not FFMPEG_BINARY:
+        return raw_audio
 
     try:
         proc = subprocess.run(
@@ -1420,15 +1249,15 @@ def master_audio_bytes_with_ffmpeg(
                 "-loglevel",
                 "error",
                 "-f",
-                input_fmt,
+                "wav",
                 "-i",
                 "pipe:0",
                 "-af",
-                af_chain,
+                "highpass=f=65,alimiter=limit=0.91:attack=5:release=60",
                 "-c:a",
                 "libmp3lame",
                 "-b:a",
-                "192k",
+                "128k",
                 "-ar",
                 "24000",
                 "-f",
@@ -1438,7 +1267,7 @@ def master_audio_bytes_with_ffmpeg(
             input=raw_audio,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            timeout=8,
+            timeout=6,
             check=True,
         )
         if proc.stdout and len(proc.stdout) > 256:

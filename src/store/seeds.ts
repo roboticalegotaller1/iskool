@@ -26,6 +26,21 @@ import {
   Campus,
   StaffPayrollRecord
 } from '../types';
+import {
+  DEMO_CAMPUSES,
+  DEMO_SUBJECTS,
+  DEMO_ACTIVE_STUDENTS,
+  DEMO_GROUPS,
+  DEMO_DETAILED_STUDENTS,
+  DEMO_SCHEDULES,
+  DEMO_TEACHERS,
+  DEMO_STATS_MAP,
+  DEMO_AVATAR_MAP,
+  DEMO_ATTENDANCE,
+  DEMO_BILLING_RECORDS,
+  DEMO_STAFF_USERS,
+  DEMO_STAFF_PAYROLL,
+} from '../lib/demo/demoSchoolSeeds';
 
 export const CAMPUSES_SEED: Campus[] = [
   {
@@ -230,7 +245,9 @@ export const CAMPUSES_SEED: Campus[] = [
     address: 'Campos Elíseos 400, Polanco, Miguel Hidalgo, CDMX',
     phone: '55-5280-TECH',
     created_at: new Date().toISOString()
-  }
+  },
+  // Cuentas demo (Entorno Oficial de Recorrido Guiado Sandbox: 3 Planteles)
+  ...DEMO_CAMPUSES
 ];
 
 export const DEFAULT_ARTIFACTS_SEED: ShopArtifact[] = [
@@ -812,7 +829,10 @@ export const SUBJECTS_SEED: Subject[] = [
   // Innovasoft Dynamics Cloud & AI
   { id: 'sub-tech-arch', school_id: 'emp-tech', level_grade_id: 'preparatoria', name: 'Arquitectura Serverless, Microservicios y Resiliencia', sep_code: 'TEC-ARC-01', category: 'curricular', is_elective: false, description: 'Diseño de sistemas distribuidos tolerantes a fallos, patrones de mensajería asíncrona y escalabilidad horizontal elástica.', instructor_name: 'Dr. Martin Orozco Peña', created_at: new Date().toISOString() },
   { id: 'sub-tech-devsecops', school_id: 'emp-tech', level_grade_id: 'preparatoria', name: 'DevSecOps, Infraestructura como Código y CI/CD', sep_code: 'TEC-OPS-02', category: 'curricular', is_elective: false, description: 'Automatización de despliegues seguros con Terraform, contenedores Kubernetes y escaneo de vulnerabilidades estáticas.', instructor_name: 'Dr. Martin Orozco Peña', created_at: new Date().toISOString() },
-  { id: 'sub-tech-mlops', school_id: 'emp-tech', level_grade_id: 'preparatoria', name: 'MLOps, Inferencia Distribuida y Model Serving', sep_code: 'TEC-ML-03', category: 'curricular', is_elective: false, description: 'Ciclo de vida de modelos predictivos y generativos, optimización de latencia, vector search y observabilidad de IA.', instructor_name: 'Ing. Brenda Solís', created_at: new Date().toISOString() }
+  { id: 'sub-tech-mlops', school_id: 'emp-tech', level_grade_id: 'preparatoria', name: 'MLOps, Inferencia Distribuida y Model Serving', sep_code: 'TEC-ML-03', category: 'curricular', is_elective: false, description: 'Ciclo de vida de modelos predictivos y generativos, optimización de latencia, vector search y observabilidad de IA.', instructor_name: 'Ing. Brenda Solís', created_at: new Date().toISOString() },
+
+  // Cuentas demo (Primaria, Secundaria & Preparatoria Sandbox CCT 0001)
+  ...DEMO_SUBJECTS
 ];
 
 export const BADGES_SEED: Badge[] = [
@@ -1456,7 +1476,10 @@ export const STUDENTS_LIST_SEED: UserProfile[] = [
   // Innovasoft Dynamics Cloud & AI
   { id: 'std-tech-01', first_name: 'David', last_name: 'Navarro Cruz', role: 'student', email: 'david.navarro@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
   { id: 'std-tech-02', first_name: 'Andrea', last_name: 'Velasco Soto', role: 'student', email: 'andrea.velasco@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
-  { id: 'std-tech-03', first_name: 'Jorge', last_name: 'Ramos Beltrán', role: 'student', email: 'jorge.ramos@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' }
+  { id: 'std-tech-03', first_name: 'Jorge', last_name: 'Ramos Beltrán', role: 'student', email: 'jorge.ramos@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
+
+  // Cuentas demo (sch-demo-0001 — 650 Alumnos distribuidos en Primaria, Secundaria y Preparatoria)
+  ...DEMO_ACTIVE_STUDENTS
 ];
 
 export const GROUPS_SEED: Group[] = [
@@ -1537,7 +1560,10 @@ export const GROUPS_SEED: Group[] = [
 
   // Innovasoft Dynamics Cloud & AI
   { id: 'grp-tech-cloud', school_id: 'emp-tech', campus_id: 'cmp-tech-gdl', campus_name: 'Tech Hub Guadalajara (Silicon Valley MX)', level_grade_id: 'preparatoria', level: 'preparatoria', grade: 'Senior Architect', academic_year_id: 'ay-25-26', name: 'Squad Cloud Architecture & DevSecOps', student_ids: ['std-tech-01', 'std-tech-03'], created_at: new Date().toISOString() },
-  { id: 'grp-tech-ai', school_id: 'emp-tech', campus_id: 'cmp-tech-cdmx', campus_name: 'Innovation Center CDMX Polanco', level_grade_id: 'preparatoria', level: 'preparatoria', grade: 'AI Research Lab', academic_year_id: 'ay-25-26', name: 'Squad Machine Learning & GenAI', student_ids: ['std-tech-02'], created_at: new Date().toISOString() }
+  { id: 'grp-tech-ai', school_id: 'emp-tech', campus_id: 'cmp-tech-cdmx', campus_name: 'Innovation Center CDMX Polanco', level_grade_id: 'preparatoria', level: 'preparatoria', grade: 'AI Research Lab', academic_year_id: 'ay-25-26', name: 'Squad Machine Learning & GenAI', student_ids: ['std-tech-02'], created_at: new Date().toISOString() },
+
+  // Cuentas demo (sch-demo-0001 — 27 Grupos Oficiales, 650 Alumnos)
+  ...DEMO_GROUPS
 ];
 
 export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
@@ -3805,7 +3831,9 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     pending_payments: [],
     behavior_reports: [],
     teacher_notes: []
-  }
+  },
+  // Cuentas demo (sch-demo-0001 — 650 Alumnos con Expediente 360 completo en 3 Planteles)
+  ...DEMO_DETAILED_STUDENTS
 ];
 
 export const SCHEDULES_SEED: ClassSchedule[] = [
@@ -3818,7 +3846,8 @@ export const SCHEDULES_SEED: ClassSchedule[] = [
   { id: 'sch-2', groupId: 'grp-pa-a', subjectId: 'sub-span', teacherId: 'usr-teacher-1', dayOfWeek: 'Martes', timeSlot: '09:30 - 11:00' },
   { id: 'sch-3', groupId: 'grp-pa-a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Miércoles', timeSlot: '08:00 - 09:30' },
   { id: 'sch-4', groupId: 'grp-sec-a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Jueves', timeSlot: '11:30 - 13:00' },
-  { id: 'sch-5', groupId: 'grp-prep-a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Viernes', timeSlot: '10:00 - 11:30' }
+  { id: 'sch-5', groupId: 'grp-prep-a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Viernes', timeSlot: '10:00 - 11:30' },
+  ...DEMO_SCHEDULES
 ];
 
 export const TEACHERS_LIST_SEED: UserProfile[] = [
@@ -4306,7 +4335,10 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     assigned_groups: ['Squad Machine Learning & GenAI'],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
-  }
+  },
+
+  // Cuentas demo (sch-demo-0001 — 45 Docentes en 3 Planteles)
+  ...DEMO_TEACHERS
 ];
 
 export const TEACHER_SEED: UserProfile = TEACHERS_LIST_SEED[0];
@@ -4497,7 +4529,9 @@ export const STATS_MAP_SEED: Record<string, StudentStats> = {
   },
   'std-ibime-montes-02': {
     student_id: 'std-ibime-montes-02', xp: 450, level: 2, coins: 95, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z'
-  }
+  },
+  // Cuentas demo (sch-demo-0001 — 650 alumnos)
+  ...DEMO_STATS_MAP
 };
 
 export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
@@ -4844,7 +4878,9 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
       'acc_none'
     ],
     updated_at: '2026-01-10T08:00:00.000Z'
-  }
+  },
+  // Cuentas demo (sch-demo-0001 — Avatares 360)
+  ...DEMO_AVATAR_MAP
 };
 
 export const PORTFOLIO_SEED: PortfolioItem[] = [
@@ -5115,7 +5151,8 @@ export const ATTENDANCE_SEED: Attendance[] = [
 
   // Secundaria
   { id: 'att-sec-1', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-08-25', status: 'retardo', comments: 'Llegó 10 minutos tarde', registered_by: 'usr-teacher-1', created_at: '2026-08-25T09:00:00.000Z' },
-  { id: 'att-sec-2', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-08-26', status: 'presente', comments: 'Excelente desempeño en laboratorio', registered_by: 'usr-teacher-1', created_at: '2026-08-26T09:00:00.000Z' }
+  { id: 'att-sec-2', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-08-26', status: 'presente', comments: 'Excelente desempeño en laboratorio', registered_by: 'usr-teacher-1', created_at: '2026-08-26T09:00:00.000Z' },
+  ...DEMO_ATTENDANCE
 ];
 
 export const PARENT_MESSAGES_SEED: ParentMessage[] = [
@@ -5242,6 +5279,34 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_name: 'Tesorería & Facturación',
     message: 'Estado de Cuenta Escolar: Su factura CFDI 4.0 correspondiente al ciclo escolar se encuentra disponible en su portal tutor con sello digital verificado.',
     sent_at: '2026-06-01T08:00:00.000Z',
+    is_read: true
+  },
+  {
+    id: 'msg-demo-01',
+    school_id: 'sch-demo-0001',
+    parent_id: 'usr-demo-parent-01',
+    student_id: 'std-demo-01',
+    student_name: 'Valentina Mendoza Gómez',
+    teacher_id: 'usr-demo-teacher-1',
+    teacher_name: 'Prof. Alejandro Ruiz',
+    subject_id: 'sub-demo-mat-pri',
+    subject_name: 'Saberes y Pensamiento Científico',
+    message: 'Bienvenida Familia Mendoza Gómez al entorno Cuentas demo: Valentina lidera el grupo 5ºA en matemáticas y comprensión lectora.',
+    sent_at: '2026-03-10T09:00:00.000Z',
+    is_read: false
+  },
+  {
+    id: 'msg-demo-02',
+    school_id: 'sch-demo-0001',
+    parent_id: 'usr-demo-parent-01',
+    student_id: 'std-demo-01',
+    student_name: 'Valentina Mendoza Gómez',
+    teacher_id: 'usr-demo-teacher-2',
+    teacher_name: 'Profa. Claire Dubois',
+    subject_id: 'sub-demo-eng-pri',
+    subject_name: 'Lengua Extranjera (Inglés 3D)',
+    message: 'Sesión bilingüe completada con fonética sobresaliente junto al Tutor 3D en el estudio inmersivo.',
+    sent_at: '2026-03-10T10:30:00.000Z',
     is_read: true
   }
 ];
@@ -5579,7 +5644,9 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     dueDate: '15 Agosto 2026',
     status: 'overdue',
     autoInvoice: true
-  }
+  },
+  // Cuentas demo (sch-demo-0001 — Control Escolar & Becas CFDI 4.0 · 36 Folios Multi-Plantel)
+  ...DEMO_BILLING_RECORDS
 ];
 
 export const INSTITUTIONS_SEED: import('../types').Institution[] = [
@@ -5965,6 +6032,59 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
         accent: '270 91% 65%'    // Violet Neon (#A855F7)
       }
     }
+  },
+  {
+    id: 'sch-demo-0001',
+    name: 'Cuentas demo',
+    tagline: 'Ecosistema Interactivo Multi-Rol con Guía en Vivo y Cero Escritura en Bóveda',
+    cct: '0001',
+    logoUrl: '/brand/cuentas_demo_logo.webp',
+    isTestCase: false,
+    status: 'active',
+    createdAt: '2026-03-10T08:00:00.000Z',
+    address: 'Ciudad de México',
+    phone: '55-0001-0001',
+    website: 'https://iskool.mx',
+    coordinatorName: 'Mtro. Alejandro Villarreal · Dirección Ejecutiva Multi-Plantel',
+    campusesCount: 3,
+    studentsCount: 650,
+    teachersCount: 45,
+    aiTokensConsumed: 184500,
+    currency: 'MXN',
+    licensing: {
+      tier: 'Enterprise School Network',
+      planName: 'Cuentas demo Multi-Plantel 360° (7 Roles)',
+      isSoftwareOwner: false,
+      licenseKey: 'ISK-DEMO-2026-0001',
+      licensee: 'Ecosistema de Evaluación Cuentas demo',
+      licensor: 'ISkool Technologies',
+      contractedSeats: 700,
+      assignedSeats: 650,
+      validUntil: '2027-12-31',
+      billingCycle: 'Mensual',
+      status: 'active',
+      ipNotice: 'Modo Sandbox con lectura real de Bóveda Curricular y bloqueo total de escritura en disco.'
+    },
+    settings: {
+      isConfigured: true,
+      name: 'Cuentas demo',
+      website: 'https://iskool.mx',
+      logoUrl: '/brand/cuentas_demo_logo.webp',
+      cct: '0001',
+      address: 'Ciudad de México',
+      phone: '55-0001-0001',
+      coordinators: [
+        'Mtro. Alejandro Villarreal Castañeda (Visión CEO)',
+        'Dra. Beatriz Elena Santillán Torres (Dirección General)',
+        'Lic. Sofía Reyes Aguilar (Control Escolar)',
+      ],
+      teachers: ['Prof. Alejandro Ruiz', 'Profa. Claire Dubois', 'Prof. Carlos Eduardo Méndez Vega', 'Profa. Ximena Paola Vargas Silva'],
+      themeColors: {
+        primary: '245 78% 58%',
+        secondary: '172 66% 40%',
+        accent: '262 83% 58%'
+      }
+    }
   }
 ];
 
@@ -6239,7 +6359,9 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     temporary_password: 'CLD2026',
     created_at: '2026-02-15T08:00:00.000Z',
     updated_at: '2026-02-15T08:00:00.000Z'
-  }
+  },
+  // Cuentas demo (sch-demo-0001 — Visión CEO, Dirección, Coordinaciones & Control Escolar)
+  ...DEMO_STAFF_USERS
 ];
 
 export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
@@ -6862,7 +6984,8 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     curp: 'VAMS860921MDFRRN03',
     receipt_folio: 'REC-CORP-TECH-2026-003',
     notes: 'Estímulo de innovación por pipeline de MLOps y certificación de modelos.'
-  }
+  },
+  ...DEMO_STAFF_PAYROLL
 ];
 
 export * from './seeds/crmSeeds';

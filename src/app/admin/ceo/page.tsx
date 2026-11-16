@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import CEOExecutiveDashboard, { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
@@ -23,8 +23,14 @@ function CEOExecutiveDashboardContent() {
   } = useSchoolAdminStore();
 
   const isSuperUser = isPlatformSuperUser(user);
-  const effectiveId = querySchoolId || activeSchoolId;
+  const effectiveId = (!isSuperUser && user?.school_id) ? user.school_id : (querySchoolId || activeSchoolId);
   const popBackUrl = useNavigationStore(state => state.popBackUrl);
+
+  useEffect(() => {
+    if (effectiveId === 'sch-demo-0001' && activeSchoolId !== 'sch-demo-0001') {
+      selectSchool('sch-demo-0001');
+    }
+  }, [effectiveId, activeSchoolId, selectSchool]);
 
   // Determinar la institución actual: por parámetro de URL, activeSchoolId, o usuario
   const currentInstitution = useMemo(() => {
@@ -51,6 +57,10 @@ function CEOExecutiveDashboardContent() {
       schoolId={currentInstitution?.id || effectiveId || user?.school_id}
       isSuperUser={isSuperUser}
       onSwitchToOperational={() => {
+        if (!isSuperUser && user?.school_id === 'sch-demo-0001') {
+          router.push('/director');
+          return;
+        }
         const target = popBackUrl('/admin/ceo', user?.role, '/admin');
         router.push(target);
       }}

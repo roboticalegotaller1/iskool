@@ -93,9 +93,9 @@ export const HISTORICAL_VOICE_MATRIX: Record<HistoricalAgeCohort, [VoiceMatrixOp
     { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Cadencia clara, curiosa y bien vocalizada' }
   ],
   child_female: [
-    { id: 'es-PE-CamilaNeural', label: 'Camila (Joven) · Opción A', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Voz juvenil dulce, cristalina y natural' },
-    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven) · Opción B', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Timbre dulce, reflexivo y de dicción impecable' },
-    { id: 'es-MX-DaliaNeural', label: 'Dalia (Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Calidez mexicana juvenil, entusiasta y clara' }
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (México · Joven) · Opción A', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Voz juvenil mexicana dulce, cristalina y natural' },
+    { id: 'es-CR-MariaNeural', label: 'María (Latinoamérica · Joven) · Opción B', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Timbre juvenil suave, cercano y articulación clara' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+2Hz', description: 'Timbre dulce, reflexivo y de dicción impecable' }
   ],
   teen_male: [
     { id: 'es-PE-AlexNeural', label: 'Alex (Cadete Heroico) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven cadete / prócer heroico, enérgico, leal y de dicción limpia' },
@@ -103,9 +103,9 @@ export const HISTORICAL_VOICE_MATRIX: Record<HistoricalAgeCohort, [VoiceMatrixOp
     { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Académico Joven) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven elocuente, articulación culta y precisa' }
   ],
   teen_female: [
-    { id: 'es-PE-CamilaNeural', label: 'Camila (Joven Heroína) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven heroína dulce, firme y elocuente' },
-    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven Ilustrada) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven culta, dicción poética y cristalina' },
-    { id: 'es-MX-DaliaNeural', label: 'Dalia (Joven Mexicana) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven expresiva, cálida y decidida' }
+    { id: 'es-US-PalomaNeural', label: 'Paloma (Joven Heroína) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven heroína dulce, firme y elocuente con dicción nítida' },
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (Joven Mexicana) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven expresiva, cálida y decidida' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Joven Ilustrada) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven culta, dicción poética y cristalina' }
   ],
   young_adult_male: [
     { id: 'es-PE-AlexNeural', label: 'Alex (Caudillo Joven) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Firme y nítido, ideal para tlatoanis y caudillos jóvenes' },
@@ -113,9 +113,9 @@ export const HISTORICAL_VOICE_MATRIX: Record<HistoricalAgeCohort, [VoiceMatrixOp
     { id: 'es-MX-JorgeNeural', label: 'Jorge (Caudillo Mexicano) · Opción C', prosodyRate: '+1%', prosodyPitch: '-1Hz', description: 'Timbre mexicano firme, fluido y de convicción patriótica' }
   ],
   young_adult_female: [
-    { id: 'es-CO-SalomeNeural', label: 'Salomé (Poetisa / Heroína) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, clara, culta y fluida' },
-    { id: 'es-PE-CamilaNeural', label: 'Camila (Insurgente) · Opción B', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Heroica, decidida, dicción pulcra y valiente' },
-    { id: 'es-MX-DaliaNeural', label: 'Dalia (Líder Mexicana) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Apasionada, líder patriótica, timbre cálido y firme' }
+    { id: 'es-MX-DaliaNeural', label: 'Dalia (México · Heroína) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Apasionada, líder patriótica mexicana, timbre cálido y dicción natural' },
+    { id: 'es-US-PalomaNeural', label: 'Paloma (Poetisa / Ilustrada) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, culta y fluida' },
+    { id: 'es-CO-SalomeNeural', label: 'Salomé (Insurgente Ilustrada) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Heroica, decidida, dicción pulcra y serena' }
   ],
   adult_male: [
     { id: 'es-MX-JorgeNeural', label: 'Jorge (México · Estadista) · Opción A', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Barítono mexicano fluido, oratoria de estadista o general con dicción nítida' },
@@ -311,18 +311,18 @@ const CHARACTER_BESPOKE_VOICES: Array<{
     // Sor Juana Inés de la Cruz: Décima Musa, dicción poética y cristalina
     match: ['sor juana', 'juana ines', 'asbaje', 'decima musa'],
     options: [
-      { id: 'es-CO-SalomeNeural', label: 'Sor Juana Inés (Poética) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, culta, cristalina y fluida' },
+      { id: 'es-US-PalomaNeural', label: 'Sor Juana Inés (Poética) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Dicción literaria impecable, culta, cristalina y fluida' },
       { id: 'es-MX-DaliaNeural', label: 'Sor Juana Inés (México) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Calidez reflexiva y filosófica' },
-      { id: 'es-PE-CamilaNeural', label: 'Sor Juana Inés (Lírica) · Opción C', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Suavidad lírica y claridad silábica' }
+      { id: 'es-CO-SalomeNeural', label: 'Sor Juana Inés (Lírica) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Suavidad lírica y claridad silábica' }
     ]
   },
   {
     // Benito Juárez García: Benemérito de las Américas, sobrio y jurídico
     match: ['juarez', 'benito juarez', 'benemerito', 'guelatao'],
     options: [
-      { id: 'es-MX-JorgeNeural', label: 'Presidente Benito Juárez · Opción A', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Estadista republicano sobrio, fluido y de dicción jurídica impecable' },
-      { id: 'es-CO-GonzaloNeural', label: 'Benito Juárez (Jurista) · Opción B', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Oratoria constitucional cristalina' },
-      { id: 'es-US-AlonsoNeural', label: 'Benito Juárez (Sereno) · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Firmeza republicana templada' }
+      { id: 'es-US-AlonsoNeural', label: 'Presidente Benito Juárez · Opción A', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Estadista republicano sobrio, sereno y de dicción jurídica impecable' },
+      { id: 'es-MX-JorgeNeural', label: 'Benito Juárez (México) · Opción B', prosodyRate: '+0%', prosodyPitch: '-2Hz', description: 'Oratoria constitucional firme y cálida' },
+      { id: 'es-CO-GonzaloNeural', label: 'Benito Juárez (Jurista) · Opción C', prosodyRate: '+0%', prosodyPitch: '-1Hz', description: 'Firmeza republicana templada' }
     ]
   },
   {
@@ -362,12 +362,12 @@ const CHARACTER_BESPOKE_VOICES: Array<{
     ]
   },
   {
-    // Carmen Serdán Alatriste y Leona Vicario: Heroínas jóvenes de dicción clara y valiente
+    // Carmen Serdán Alatriste y Leona Vicario: Heroínas de dicción mexicana clara y valiente
     match: ['carmen serdan', 'leona vicario', 'gertrudis bocanegra', 'malintzin', 'malinche'],
     options: [
-      { id: 'es-PE-CamilaNeural', label: 'Heroína Patria (Joven) · Opción A', prosodyRate: '+2%', prosodyPitch: '+1Hz', description: 'Joven revolucionaria e insurgente, dulce, fluida y nítida' },
-      { id: 'es-MX-DaliaNeural', label: 'Heroína Patria (México) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Calidez mexicana y convicción patriótica' },
-      { id: 'es-CO-SalomeNeural', label: 'Heroína Patria (Ilustrada) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Articulación limpia y elocuente' }
+      { id: 'es-MX-DaliaNeural', label: 'Heroína Patria (México) · Opción A', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Heroína mexicana de voz cálida, firme, humana y articulación cristalina' },
+      { id: 'es-US-PalomaNeural', label: 'Heroína Patria (Elocuente) · Opción B', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Elocuencia patriótica nítida y natural' },
+      { id: 'es-CO-SalomeNeural', label: 'Heroína Patria (Ilustrada) · Opción C', prosodyRate: '+1%', prosodyPitch: '+0Hz', description: 'Articulación limpia y serena' }
     ]
   },
   {
@@ -1511,7 +1511,7 @@ export interface CharacterAnatomicalMouth {
 }
 
 export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalMouth {
-  const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[_-]+/g, ' ');
   const is2DPortrait = norm.includes('2d') || norm.includes('.jpg');
 
   // 1. NAPOLÉON BONAPARTE (3D: /images/languages/3d/napoleon_3d.webp | 2D: /images/languages/historical/napoleon.jpg)
@@ -1525,8 +1525,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 478, y1: 273, cx: 506, cy: 275, x2: 536, y2: 273,
-      chinY: 316, eyeY: 217, leftEyeX: 474, leftEyeY: 217, rightEyeX: 534, rightEyeY: 216,
+      x1: 478, y1: 278, cx: 506, cy: 279, x2: 536, y2: 278,
+      chinY: 322, eyeY: 218, leftEyeX: 476, leftEyeY: 218, rightEyeX: 536, rightEyeY: 218,
       eyeRadius: 18, eyeRx: 20, eyeRy: 14, baseOpen: 0.18,
       maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
       lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
@@ -1544,8 +1544,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 466, y1: 306, cx: 502, cy: 310, x2: 538, y2: 306,
-      chinY: 384, eyeY: 224, leftEyeX: 458, leftEyeY: 224, rightEyeX: 540, rightEyeY: 224,
+      x1: 472, y1: 316, cx: 508, cy: 319, x2: 544, y2: 316,
+      chinY: 384, eyeY: 227, leftEyeX: 471, leftEyeY: 227, rightEyeX: 550, rightEyeY: 228,
       eyeRadius: 24, eyeRx: 28, eyeRy: 22, baseOpen: 0.32,
       maxOpening: 15, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
       lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
@@ -1563,8 +1563,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 474, y1: 257, cx: 506, cy: 258, x2: 538, y2: 257,
-      chinY: 326, eyeY: 190, leftEyeX: 472, leftEyeY: 190, rightEyeX: 542, rightEyeY: 190,
+      x1: 480, y1: 266, cx: 512, cy: 266, x2: 544, y2: 266,
+      chinY: 320, eyeY: 188, leftEyeX: 482, leftEyeY: 189, rightEyeX: 549, rightEyeY: 186,
       eyeRadius: 19, eyeRx: 22, eyeRy: 15, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
       lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
@@ -1582,8 +1582,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 468, y1: 374, cx: 510, cy: 378, x2: 552, y2: 374,
-      chinY: 434, eyeY: 293, leftEyeX: 456, leftEyeY: 292, rightEyeX: 564, rightEyeY: 294,
+      x1: 474, y1: 389, cx: 516, cy: 392, x2: 558, y2: 389,
+      chinY: 442, eyeY: 293, leftEyeX: 461, leftEyeY: 292, rightEyeX: 573, rightEyeY: 294,
       eyeRadius: 33, eyeRx: 38, eyeRy: 28, baseOpen: 0.35,
       maxOpening: 16, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
       lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
@@ -1601,8 +1601,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 480, y1: 244, cx: 502, cy: 245, x2: 526, y2: 243,
-      chinY: 278, eyeY: 201, leftEyeX: 474, leftEyeY: 202, rightEyeX: 528, rightEyeY: 200,
+      x1: 486, y1: 246, cx: 511, cy: 246, x2: 536, y2: 246,
+      chinY: 282, eyeY: 203, leftEyeX: 485, leftEyeY: 204, rightEyeX: 535, rightEyeY: 202,
       eyeRadius: 18, eyeRx: 20, eyeRy: 15, baseOpen: 0.28,
       maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
       lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
@@ -1620,8 +1620,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 466, y1: 446, cx: 502, cy: 446, x2: 540, y2: 446,
-      chinY: 568, eyeY: 307, leftEyeX: 442, leftEyeY: 307, rightEyeX: 562, rightEyeY: 307,
+      x1: 471, y1: 458, cx: 508, cy: 459, x2: 545, y2: 458,
+      chinY: 568, eyeY: 314, leftEyeX: 450, leftEyeY: 313, rightEyeX: 566, rightEyeY: 314,
       eyeRadius: 25, eyeRx: 30, eyeRy: 18, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
       lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
@@ -1639,8 +1639,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 458, y1: 425, cx: 501, cy: 426, x2: 544, y2: 425,
-      chinY: 488, eyeY: 314, leftEyeX: 436, leftEyeY: 314, rightEyeX: 566, rightEyeY: 314,
+      x1: 463, y1: 440, cx: 506, cy: 441, x2: 549, y2: 440,
+      chinY: 496, eyeY: 315, leftEyeX: 438, leftEyeY: 314, rightEyeX: 570, rightEyeY: 315,
       eyeRadius: 33, eyeRx: 40, eyeRy: 27, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
@@ -1648,7 +1648,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
-  if (norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
+  if (norm.includes('mentor female') || norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
     return {
       x1: 462, y1: 374, cx: 514, cy: 376, x2: 564, y2: 365,
       chinY: 434, eyeY: 271, leftEyeX: 442, leftEyeY: 278, rightEyeX: 576, rightEyeY: 263,
@@ -1659,10 +1659,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 9. MENTOR MASCULINO 3D (/images/languages/3d/mentor_male_3d_v2.webp)
-  if (norm.includes('mentor_male') || norm.includes('arthur') || norm.includes('henri')) {
+  if (norm.includes('mentor male') || norm.includes('mentor_male') || norm.includes('arthur') || norm.includes('henri')) {
     return {
-      x1: 404, y1: 291, cx: 450, cy: 294, x2: 496, y2: 291,
-      chinY: 365, eyeY: 208, leftEyeX: 412, leftEyeY: 207, rightEyeX: 496, rightEyeY: 208,
+      x1: 404, y1: 296, cx: 450, cy: 298, x2: 496, y2: 296,
+      chinY: 365, eyeY: 206, leftEyeX: 419, leftEyeY: 204, rightEyeX: 490, rightEyeY: 208,
       eyeRadius: 28, eyeRx: 34, eyeRy: 27, baseOpen: 0.28,
       maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#300a0e', cavityRimColor: '#521319',
       lowerLipRimColor: 'rgba(178, 82, 75, 0.90)', teethColor: '#eee4d6', mustacheCover: true
@@ -1676,8 +1676,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 10. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png) — PRIORIDAD ALTA ANTES DE APELLIDO DOMÍNGUEZ
   if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
     return {
-      x1: 454, y1: 368, cx: 490, cy: 368, x2: 528, y2: 368,
-      chinY: 426, eyeY: 264, leftEyeX: 450, rightEyeX: 536, eyeRadius: 18, baseOpen: 0,
+      x1: 460, y1: 368, cx: 492, cy: 368, x2: 524, y2: 368,
+      chinY: 424, eyeY: 264, leftEyeX: 450, rightEyeX: 536, eyeRadius: 18, baseOpen: 0,
       bustCrop: { focusX: 492, focusY: 340, zoom: 1.35 },
       maxOpening: 16.5, cavityDarkColor: '#120204', cavityMidColor: '#2e070c', cavityRimColor: '#521119',
       lowerLipRimColor: 'rgba(172, 68, 72, 0.94)', teethColor: '#f6f0e6'
@@ -1687,8 +1687,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 10.B EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
   if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
     return {
-      x1: 516, y1: 562, cx: 566, cy: 560, x2: 616, y2: 562,
-      chinY: 648, eyeY: 422, leftEyeX: 500, rightEyeX: 626, eyeRadius: 22, baseOpen: 0,
+      x1: 518, y1: 567, cx: 568, cy: 567, x2: 618, y2: 567,
+      chinY: 648, eyeY: 431, leftEyeX: 514, leftEyeY: 429, rightEyeX: 629, rightEyeY: 433, eyeRadius: 22, baseOpen: 0,
       maxOpening: 16, cavityDarkColor: '#0e0204', cavityMidColor: '#26050a', cavityRimColor: '#440d14',
       lowerLipRimColor: 'rgba(152, 62, 54, 0.92)', teethColor: '#ede4d6', mustacheCover: true
     };
@@ -1697,7 +1697,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.png)
   if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
     return {
-      x1: 468, y1: 330, cx: 506, cy: 330, x2: 546, y2: 330,
+      x1: 468, y1: 328, cx: 506, cy: 328, x2: 546, y2: 328,
       chinY: 382, eyeY: 236, leftEyeX: 460, rightEyeX: 554, eyeRadius: 18, baseOpen: 0,
       bustCrop: { focusX: 506, focusY: 310, zoom: 1.24 },
       maxOpening: 15.5, cavityDarkColor: '#160406', cavityMidColor: '#320a10', cavityRimColor: '#52131a',
@@ -1708,9 +1708,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
-      x1: 472, y1: 374, cx: 494, cy: 374, x2: 520, y2: 374,
-      chinY: 410, eyeY: 304, leftEyeX: 466, rightEyeX: 528, eyeRadius: 15, baseOpen: 0,
-      bustCrop: { focusX: 498, focusY: 345, zoom: 1.35 },
+      x1: 475, y1: 367, cx: 497, cy: 367, x2: 519, y2: 367,
+      chinY: 406, eyeY: 301, leftEyeX: 465, leftEyeY: 304, rightEyeX: 528, rightEyeY: 298, eyeRadius: 14, eyeRx: 15, eyeRy: 11, baseOpen: 0,
+      bustCrop: { focusX: 497, focusY: 342, zoom: 1.38 },
       maxOpening: 14.5, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
       lowerLipRimColor: 'rgba(202, 88, 98, 0.94)', teethColor: '#fff5ec'
     };
@@ -1719,8 +1719,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
-      x1: 486, y1: 286, cx: 514, cy: 286, x2: 544, y2: 286,
-      chinY: 338, eyeY: 208, leftEyeX: 474, rightEyeX: 554, eyeRadius: 16, baseOpen: 0,
+      x1: 484, y1: 282, cx: 513, cy: 282, x2: 542, y2: 282,
+      chinY: 334, eyeY: 205, leftEyeX: 472, leftEyeY: 205, rightEyeX: 552, rightEyeY: 205, eyeRadius: 16, baseOpen: 0,
       bustCrop: { focusX: 514, focusY: 270, zoom: 1.30 },
       maxOpening: 15, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
       lowerLipRimColor: 'rgba(160, 70, 65, 0.90)', teethColor: '#ede4d6'
@@ -1730,8 +1730,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 14. CUAUHTÉMOC (/images/history/cuauhtemoc_avatar.png)
   if (norm.includes('cuauhtemoc') || norm.includes('cuauhtemotzin') || norm.includes('tlatoani') || norm.includes('joven abuelo')) {
     return {
-      x1: 474, y1: 446, cx: 510, cy: 446, x2: 546, y2: 446,
-      chinY: 506, eyeY: 336, leftEyeX: 460, rightEyeX: 560, eyeRadius: 18, baseOpen: 0,
+      x1: 478, y1: 450, cx: 512, cy: 450, x2: 546, y2: 450,
+      chinY: 508, eyeY: 341, leftEyeX: 472, leftEyeY: 342, rightEyeX: 556, rightEyeY: 340, eyeRadius: 18, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140305', cavityMidColor: '#30080e', cavityRimColor: '#501117',
       lowerLipRimColor: 'rgba(172, 78, 68, 0.92)', teethColor: '#f2eae0'
     };
@@ -1740,8 +1740,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 15. IGNACIO ALLENDE (/images/history/ignacio_allende_avatar.png)
   if (norm.includes('allende') || norm.includes('ignacio allende') || norm.includes('san miguel')) {
     return {
-      x1: 480, y1: 330, cx: 508, cy: 330, x2: 536, y2: 330,
-      chinY: 386, eyeY: 244, leftEyeX: 466, rightEyeX: 552, eyeRadius: 16, baseOpen: 0,
+      x1: 476, y1: 324, cx: 504, cy: 324, x2: 532, y2: 324,
+      chinY: 382, eyeY: 239, leftEyeX: 464, leftEyeY: 237, rightEyeX: 540, rightEyeY: 240, eyeRadius: 16, baseOpen: 0,
       maxOpening: 13, cavityDarkColor: '#140407', cavityMidColor: '#2e0910', cavityRimColor: '#4c1219',
       lowerLipRimColor: 'rgba(175, 78, 75, 0.90)', teethColor: '#f0e6da', mustacheCover: true
     };
@@ -1750,9 +1750,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 16. CARMEN SERDÁN ALATRISTE (/images/history/carmen_serdan_avatar.png)
   if (norm.includes('carmen serdan') || (norm.includes('serdan') && (norm.includes('carmen') || norm.includes('alatriste')))) {
     return {
-      x1: 506, y1: 226, cx: 524, cy: 226, x2: 542, y2: 226,
-      chinY: 256, eyeY: 172, leftEyeX: 498, rightEyeX: 548, eyeRadius: 12, baseOpen: 0,
-      bustCrop: { focusX: 524, focusY: 220, zoom: 1.55 },
+      x1: 501, y1: 241, cx: 519, cy: 241, x2: 537, y2: 241,
+      chinY: 268, eyeY: 175, leftEyeX: 495, leftEyeY: 174, rightEyeX: 544, rightEyeY: 175, eyeRadius: 12, baseOpen: 0,
+      bustCrop: { focusX: 522, focusY: 220, zoom: 1.55 },
       maxOpening: 11, cavityDarkColor: '#1a0408', cavityMidColor: '#380a14', cavityRimColor: '#5e1420',
       lowerLipRimColor: 'rgba(195, 84, 92, 0.92)', teethColor: '#fdf3ea'
     };
@@ -1762,7 +1762,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('aquiles serdan') || norm.includes('aquiles')) {
     return {
       x1: 488, y1: 240, cx: 511, cy: 240, x2: 534, y2: 240,
-      chinY: 282, eyeY: 176, leftEyeX: 478, rightEyeX: 544, eyeRadius: 14, baseOpen: 0,
+      chinY: 282, eyeY: 176, leftEyeX: 478, rightEyeX: 542, eyeRadius: 14, baseOpen: 0,
       bustCrop: { focusX: 511, focusY: 235, zoom: 1.35 },
       maxOpening: 12, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
       lowerLipRimColor: 'rgba(165, 72, 68, 0.90)', teethColor: '#ede4d8', mustacheCover: true
@@ -1773,7 +1773,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('madero') || norm.includes('francisco i madero') || norm.includes('apostol')) {
     return {
       x1: 477, y1: 332, cx: 511, cy: 332, x2: 545, y2: 332,
-      chinY: 425, eyeY: 238, leftEyeX: 466, rightEyeX: 558, eyeRadius: 18, baseOpen: 0,
+      chinY: 425, eyeY: 244, leftEyeX: 463, leftEyeY: 244, rightEyeX: 556, rightEyeY: 244, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d8', mustacheCover: true
     };
@@ -1782,8 +1782,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 19. LÁZARO CÁRDENAS DEL RÍO (/images/history/lazaro_cardenas_avatar.png)
   if (norm.includes('cardenas') || norm.includes('lazaro') || norm.includes('expropiacion')) {
     return {
-      x1: 480, y1: 360, cx: 518, cy: 360, x2: 556, y2: 360,
-      chinY: 452, eyeY: 258, leftEyeX: 460, rightEyeX: 570, eyeRadius: 18, baseOpen: 0,
+      x1: 484, y1: 360, cx: 518, cy: 360, x2: 552, y2: 360,
+      chinY: 452, eyeY: 258, leftEyeX: 466, rightEyeX: 562, eyeRadius: 18, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
       lowerLipRimColor: 'rgba(170, 76, 72, 0.90)', teethColor: '#eee5d8'
     };
@@ -1803,19 +1803,19 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 21. RICARDO FLORES MAGÓN (/images/history/ricardo_flores_magon_avatar.png)
   if (norm.includes('magon') || norm.includes('flores magon') || norm.includes('regeneracion')) {
     return {
-      x1: 506, y1: 374, cx: 536, cy: 374, x2: 566, y2: 374,
-      chinY: 432, eyeY: 274, leftEyeX: 490, rightEyeX: 580, eyeRadius: 18, baseOpen: 0,
+      x1: 506, y1: 366, cx: 536, cy: 366, x2: 566, y2: 366,
+      chinY: 428, eyeY: 273, leftEyeX: 494, leftEyeY: 274, rightEyeX: 576, rightEyeY: 272, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2a090e', cavityRimColor: '#481218',
       lowerLipRimColor: 'rgba(162, 72, 68, 0.90)', teethColor: '#eee4d6'
     };
   }
 
   // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.png)
-  if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !norm.includes('victor'))) {
+  if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !/\bvictor\b/.test(norm))) {
     return {
-      x1: 484, y1: 298, cx: 507, cy: 298, x2: 530, y2: 298,
-      chinY: 346, eyeY: 222, leftEyeX: 474, rightEyeX: 542, eyeRadius: 15, baseOpen: 0,
-      bustCrop: { focusX: 507, focusY: 280, zoom: 1.25 },
+      x1: 490, y1: 267, cx: 513, cy: 267, x2: 536, y2: 267,
+      chinY: 304, eyeY: 210, leftEyeX: 472, leftEyeY: 211, rightEyeX: 552, rightEyeY: 208, eyeRadius: 15, eyeRx: 17, eyeRy: 12, baseOpen: 0,
+      bustCrop: { focusX: 512, focusY: 260, zoom: 1.25 },
       maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d6'
     };
@@ -1824,8 +1824,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 23. ANDRÉS QUINTANA ROO (/images/history/andres_quintana_roo_avatar.png)
   if (norm.includes('quintana roo') || norm.includes('andres quintana')) {
     return {
-      x1: 532, y1: 362, cx: 560, cy: 362, x2: 588, y2: 362,
-      chinY: 420, eyeY: 268, leftEyeX: 514, rightEyeX: 596, eyeRadius: 17, baseOpen: 0,
+      x1: 528, y1: 367, cx: 556, cy: 367, x2: 584, y2: 367,
+      chinY: 422, eyeY: 269, leftEyeX: 504, leftEyeY: 268, rightEyeX: 586, rightEyeY: 270, eyeRadius: 17, eyeRx: 19, eyeRy: 14, baseOpen: 0,
+      bustCrop: { focusX: 556, focusY: 330, zoom: 1.28 },
       maxOpening: 14, cavityDarkColor: '#140407', cavityMidColor: '#2c090f', cavityRimColor: '#4a1218',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede5d8'
     };
@@ -1834,8 +1835,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.png)
   if (norm.includes('belisario')) {
     return {
-      x1: 484, y1: 295, cx: 511, cy: 295, x2: 538, y2: 295,
-      chinY: 348, eyeY: 216, leftEyeX: 474, rightEyeX: 548, eyeRadius: 15, baseOpen: 0,
+      x1: 484, y1: 292, cx: 511, cy: 292, x2: 538, y2: 292,
+      chinY: 348, eyeY: 217, leftEyeX: 482, leftEyeY: 218, rightEyeX: 546, rightEyeY: 215, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 511, focusY: 280, zoom: 1.22 },
       maxOpening: 13, cavityDarkColor: '#100305', cavityMidColor: '#26070b', cavityRimColor: '#420e14',
       lowerLipRimColor: 'rgba(156, 68, 62, 0.90)', teethColor: '#eae1d2', mustacheCover: true
@@ -1845,8 +1846,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 25. GENERAL FELIPE ÁNGELES (/images/history/felipe_angeles_avatar.png)
   if (norm.includes('angeles') || norm.includes('felipe angeles')) {
     return {
-      x1: 470, y1: 306, cx: 496, cy: 306, x2: 522, y2: 306,
-      chinY: 356, eyeY: 232, leftEyeX: 462, rightEyeX: 534, eyeRadius: 15, baseOpen: 0,
+      x1: 470, y1: 301, cx: 496, cy: 301, x2: 522, y2: 301,
+      chinY: 356, eyeY: 231, leftEyeX: 469, leftEyeY: 234, rightEyeX: 527, rightEyeY: 228, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 496, focusY: 290, zoom: 1.22 },
       maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8', mustacheCover: true
@@ -1856,8 +1857,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 26. GUSTAVO DÍAZ ORDAZ (/images/history/gustavo_diaz_ordaz_avatar.png)
   if (norm.includes('diaz ordaz') || norm.includes('ordaz')) {
     return {
-      x1: 470, y1: 456, cx: 513, cy: 456, x2: 556, y2: 456,
-      chinY: 538, eyeY: 334, leftEyeX: 458, rightEyeX: 568, eyeRadius: 20, baseOpen: 0,
+      x1: 474, y1: 473, cx: 514, cy: 473, x2: 554, y2: 473,
+      chinY: 544, eyeY: 360, leftEyeX: 468, leftEyeY: 360, rightEyeX: 560, rightEyeY: 360, eyeRadius: 19, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
       lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8'
     };
@@ -1866,8 +1867,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 27. JOSÉ GUADALUPE POSADA (/images/history/jose_guadalupe_posada_avatar.png)
   if (norm.includes('posada') || norm.includes('guadalupe posada')) {
     return {
-      x1: 552, y1: 332, cx: 584, cy: 332, x2: 616, y2: 332,
-      chinY: 392, eyeY: 238, leftEyeX: 538, rightEyeX: 624, eyeRadius: 18, baseOpen: 0,
+      x1: 552, y1: 315, cx: 584, cy: 315, x2: 616, y2: 315,
+      chinY: 386, eyeY: 242, leftEyeX: 550, leftEyeY: 250, rightEyeX: 622, rightEyeY: 235, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#0e0204', cavityMidColor: '#240509', cavityRimColor: '#400c12',
       lowerLipRimColor: 'rgba(152, 64, 58, 0.90)', teethColor: '#ede4d6', mustacheCover: true
     };
@@ -1876,8 +1877,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 28. FRANCISCO VILLA (/images/history/francisco_villa_avatar.png)
   if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
     return {
-      x1: 490, y1: 340, cx: 516, cy: 340, x2: 542, y2: 340,
-      chinY: 388, eyeY: 274, leftEyeX: 482, rightEyeX: 550, eyeRadius: 15, baseOpen: 0,
+      x1: 490, y1: 337, cx: 517, cy: 337, x2: 544, y2: 337,
+      chinY: 388, eyeY: 270, leftEyeX: 482, leftEyeY: 270, rightEyeX: 549, rightEyeY: 270, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 516, focusY: 320, zoom: 1.32 },
       maxOpening: 15, cavityDarkColor: '#080102', cavityMidColor: '#1f0306', cavityRimColor: '#3d0b11',
       lowerLipRimColor: 'rgba(145, 60, 50, 0.92)', teethColor: '#ede5d8', mustacheCover: true
@@ -1887,28 +1888,29 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 29. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
   if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
     return {
-      x1: 486, y1: 352, cx: 526, cy: 352, x2: 564, y2: 352,
-      chinY: 414, eyeY: 236, leftEyeX: 474, rightEyeX: 566, eyeRadius: 18, baseOpen: 0,
+      x1: 488, y1: 350, cx: 521, cy: 350, x2: 556, y2: 350,
+      chinY: 414, eyeY: 236, leftEyeX: 472, rightEyeX: 564, eyeRadius: 18, baseOpen: 0,
       bustCrop: { focusX: 520, focusY: 320, zoom: 1.24 },
       maxOpening: 15.5, cavityDarkColor: '#090203', cavityMidColor: '#210508', cavityRimColor: '#3c0f14',
       lowerLipRimColor: 'rgba(165, 80, 75, 0.88)', teethColor: '#eee6da'
     };
   }
 
-  // 31. LEONA VICARIO / PERSONAJE GENÉRICO (/images/history/personaje_generico_avatar.png)
+  // 31. LEONA VICARIO (/images/history/leona_vicario_avatar.webp)
   if (norm.includes('leona') || norm.includes('vicario')) {
     return {
-      x1: 486, y1: 331, cx: 511, cy: 332, x2: 536, y2: 331,
-      chinY: 382, eyeY: 256, leftEyeX: 472, rightEyeX: 548, eyeRadius: 16, baseOpen: 0,
-      maxOpening: 12, cavityDarkColor: '#160408', cavityMidColor: '#340810', cavityRimColor: '#54101a',
+      x1: 458, y1: 571, cx: 511, cy: 572, x2: 564, y2: 571,
+      chinY: 642, eyeY: 398, leftEyeX: 427, leftEyeY: 399, rightEyeX: 593, rightEyeY: 398, eyeRadius: 21, eyeRx: 24, eyeRy: 16, baseOpen: 0,
+      bustCrop: { focusX: 511, focusY: 485, zoom: 1.30 },
+      maxOpening: 15, cavityDarkColor: '#160408', cavityMidColor: '#340810', cavityRimColor: '#54101a',
       lowerLipRimColor: 'rgba(195, 84, 92, 0.92)', teethColor: '#fcf3eb'
     };
   }
 
-  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (520, 336)
+  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (520, 343)
   return {
-    x1: 490, y1: 336, cx: 520, cy: 336, x2: 550, y2: 336,
-    chinY: 418, eyeY: 242, leftEyeX: 474, rightEyeX: 566, eyeRadius: 18, baseOpen: 0,
+    x1: 492, y1: 343, cx: 520, cy: 343, x2: 548, y2: 343,
+    chinY: 418, eyeY: 260, leftEyeX: 478, leftEyeY: 260, rightEyeX: 556, rightEyeY: 261, eyeRadius: 18, baseOpen: 0,
     maxOpening: 13, cavityDarkColor: '#140306', cavityMidColor: '#2d0910', cavityRimColor: '#50121a',
     lowerLipRimColor: 'rgba(180, 76, 78, 0.90)', teethColor: '#f2eae0', mustacheCover: true
   };
@@ -1976,7 +1978,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Abraham Lincoln',
     language: 'en',
     gender: 'male',
-    voiceId: 'en-US-AndrewMultilingualNeural',
+    voiceId: 'en-US-GuyNeural',
     speechRate: 0.96,
     speechPitch: 0.98,
     era: 'American Civil War (1809 - 1865)',
@@ -1995,7 +1997,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Napoléon Bonaparte',
     language: 'fr',
     gender: 'male',
-    voiceId: 'fr-FR-RemyMultilingualNeural',
+    voiceId: 'fr-FR-HenriNeural',
     speechRate: 0.98,
     speechPitch: 0.99,
     era: 'Premier Empire Français (1769 - 1821)',
@@ -2052,7 +2054,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     name: 'Jeanne d\'Arc',
     language: 'fr',
     gender: 'female',
-    voiceId: 'fr-FR-VivienneMultilingualNeural',
+    voiceId: 'fr-FR-DeniseNeural',
     speechRate: 0.99,
     speechPitch: 1.01,
     era: 'Guerre de Cent Ans (1412 - 1431)',

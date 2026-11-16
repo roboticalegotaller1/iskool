@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
-import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import crypto from 'crypto';
 import { synthesizeNeuralAudio } from '@/lib/serverNeuralTts';
 import { 
@@ -29,8 +28,8 @@ export const NEURAL_VOICES = [
   { id: 'es-MX-JorgeNeural', label: 'Jorge (México) · Masculina', description: 'Profesor Mentor · Tono Maduro, Sereno & Explicativo', gender: 'male', lang: 'es' },
   { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia) · Femenina', description: 'Educación & Guiado · Acento Neutro Suave', gender: 'female', lang: 'es' },
   { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Colombia) · Masculina', description: 'Cronista Histórico · Dicción Elegante & Serena', gender: 'male', lang: 'es' },
-  { id: 'es-PE-AlexNeural', label: 'Alex (Perú) · Masculina', description: 'Joven Prócer / Cadete · Timbre Claro & Enérgico', gender: 'male', lang: 'es' },
-  { id: 'es-PE-CamilaNeural', label: 'Camila (Perú) · Femenina', description: 'Joven Heroína · Timbre Dulce & Reflexivo', gender: 'female', lang: 'es' },
+  { id: 'es-PE-AlexNeural', label: 'Alex (Latinoamérica) · Masculina', description: 'Joven Prócer / Cadete · Timbre Claro & Enérgico', gender: 'male', lang: 'es' },
+  { id: 'es-CR-MariaNeural', label: 'María (Latinoamérica) · Femenina', description: 'Joven Heroína · Timbre Dulce, Cálido & Fonética Impecable', gender: 'female', lang: 'es' },
   { id: 'es-US-PalomaNeural', label: 'Paloma (Latina) · Femenina', description: 'Narradora Expresiva & Dinámica · Enfoque Moderno', gender: 'female', lang: 'es' },
   { id: 'es-US-AlonsoNeural', label: 'Alonso (Latino) · Masculina', description: 'Joven Aventurero · Timbre Brillante & Ágil', gender: 'male', lang: 'es' },
   { id: 'es-AR-ElenaNeural', label: 'Elena (Argentina) · Femenina', description: 'Literatura & Humanidades · Entonación Rioplatense', gender: 'female', lang: 'es' },
@@ -55,7 +54,7 @@ export const NEURAL_VOICES = [
 ];
 
 /**
- * Catálogos de Voces Activas Verificadas en Edge TTS por Región
+ * Catálogos de Voces Activas Verificadas del Motor Neural Directo por Región
  */
 export const EDGE_TTS_ACTIVE_FRENCH_VOICES = new Set([
   'fr-FR-VivienneMultilingualNeural',
@@ -93,7 +92,6 @@ export const EDGE_TTS_ACTIVE_LATIN_VOICES = new Set([
   'es-CO-GonzaloNeural',
   'es-CO-SalomeNeural',
   'es-PE-AlexNeural',
-  'es-PE-CamilaNeural',
   'es-US-AlonsoNeural',
   'es-US-PalomaNeural',
   'es-AR-ElenaNeural',
@@ -140,7 +138,7 @@ export function resolveCertifiedPlatformVoice(
       return { voice: defaultCA, lang: 'fr', locale: 'fr-CA' };
     }
     // Fallback francés nativo por género
-    const defaultFrench = fallbackGender === 'male' ? 'fr-FR-HenriNeural' : 'fr-FR-VivienneMultilingualNeural';
+    const defaultFrench = fallbackGender === 'male' ? 'fr-FR-HenriNeural' : 'fr-FR-DeniseNeural';
     return { voice: defaultFrench, lang: 'fr', locale: 'fr-FR' };
   }
 
@@ -167,17 +165,21 @@ export function resolveCertifiedPlatformVoice(
     return { voice: safeLatin, lang: 'es', locale: 'es-MX' };
   }
 
+  if (lower === 'es-pe-camilaneural') {
+    return { voice: 'es-CR-MariaNeural', lang: 'es', locale: 'es-MX' };
+  }
+
   if (voiceId && EDGE_TTS_ACTIVE_LATIN_VOICES.has(voiceId)) {
     return { voice: voiceId, lang: 'es', locale: 'es-MX' };
   }
 
-  // Mapeo Azure & Arquetipos 3.8-flash-lite-tts (es-419-* / voice_*) -> Edge 24 Voces Latinas
-  const AZURE_TO_EDGE_LATIN_MAP: Record<string, string> = {
+  // Mapeo de voces heredadas y arquetipos internos (es-419-* / voice_*) -> 24 Voces Neurales Latinas
+  const LEGACY_TO_NEURAL_LATIN_MAP: Record<string, string> = {
     'es-MX-PelayoNeural': 'es-CO-GonzaloNeural',
     'es-MX-MarinaNeural': 'es-CO-SalomeNeural',
     'es-MX-LarissaNeural': 'es-CO-SalomeNeural',
     'es-MX-CecilioNeural': 'es-PE-AlexNeural',
-    'es-MX-NuriaNeural': 'es-PE-CamilaNeural',
+    'es-MX-NuriaNeural': 'es-CR-MariaNeural',
     'es-MX-LibertoNeural': 'es-MX-JorgeNeural',
     'es-MX-YagoNeural': 'es-CO-GonzaloNeural',
     'es-MX-BeatrizNeural': 'es-MX-DaliaNeural',
@@ -192,7 +194,7 @@ export function resolveCertifiedPlatformVoice(
     'es-419-podcaster-2': 'es-MX-DaliaNeural',
     'es-419-commercial-6': 'es-CO-SalomeNeural',
     'es-419-tutor-3': 'es-CR-MariaNeural',
-    'es-419-assistant-1': 'es-PE-CamilaNeural',
+    'es-419-assistant-1': 'es-CR-MariaNeural',
     'es-419-concierge-2': 'es-MX-JorgeNeural',
     'es-419-concierge-7': 'es-CO-GonzaloNeural',
     'es-419-concierge-8': 'es-US-AlonsoNeural',
@@ -209,8 +211,8 @@ export function resolveCertifiedPlatformVoice(
     'voice_ffnov7sw7hon': 'es-PE-AlexNeural'
   };
 
-  if (voiceId && (AZURE_TO_EDGE_LATIN_MAP[voiceId] || AZURE_TO_EDGE_LATIN_MAP[lower])) {
-    return { voice: AZURE_TO_EDGE_LATIN_MAP[voiceId] || AZURE_TO_EDGE_LATIN_MAP[lower], lang: 'es', locale: 'es-MX' };
+  if (voiceId && (LEGACY_TO_NEURAL_LATIN_MAP[voiceId] || LEGACY_TO_NEURAL_LATIN_MAP[lower])) {
+    return { voice: LEGACY_TO_NEURAL_LATIN_MAP[voiceId] || LEGACY_TO_NEURAL_LATIN_MAP[lower], lang: 'es', locale: 'es-MX' };
   }
 
   // Fallback por defecto en español
@@ -493,7 +495,7 @@ export async function POST(req: NextRequest) {
 
     const cacheKey = crypto
       .createHash('sha256')
-      .update(`v8_neural_latam_38flash_calibrated::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
+      .update(`v9_institutional_human_96k_r1::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
       .digest('hex');
 
     const cachedBuffer = getAudioFromCache(cacheKey);
@@ -505,59 +507,34 @@ export async function POST(req: NextRequest) {
           'Content-Length': cachedBuffer.length.toString(),
           'X-Cache': 'HIT',
           'X-Voice-Resolved': targetVoice,
-          'X-TTS-Engine': 'Neural-Continuo-24-Voces-LatAm-Ilimitado',
+          'X-TTS-Engine': 'Motor-Neuronal-Institucional-96k-0Tokens',
           'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
         },
       });
     }
 
-    // 3. Síntesis neuronal de audio de alta fidelidad con masterización de estudio
-    let audioBuffer: Buffer;
-    try {
-      const fallbackRatePercent = Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
-      const fallbackRate = fallbackRatePercent >= 0 ? `+${fallbackRatePercent}%` : `${fallbackRatePercent}%`;
-      const fallbackPitchHz = Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
-      const fallbackPitch = fallbackPitchHz >= 0 ? `+${fallbackPitchHz}Hz` : `${fallbackPitchHz}Hz`;
+    // 3. Síntesis neuronal directa de alta fidelidad (24 kHz / 96 kbps, 0 Tokens)
+    const fallbackRatePercent = Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
+    const fallbackRate = fallbackRatePercent >= 0 ? `+${fallbackRatePercent}%` : `${fallbackRatePercent}%`;
+    const fallbackPitchHz = Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
+    const fallbackPitch = fallbackPitchHz >= 0 ? `+${fallbackPitchHz}Hz` : `${fallbackPitchHz}Hz`;
 
-      const finalRate = resolvedProsodyRate !== '+0%' ? resolvedProsodyRate : fallbackRate;
-      const finalPitch = resolvedProsodyPitch !== '+0Hz' ? resolvedProsodyPitch : fallbackPitch;
+    const finalRate = resolvedProsodyRate !== '+0%' ? resolvedProsodyRate : fallbackRate;
+    const finalPitch = resolvedProsodyPitch !== '+0Hz' ? resolvedProsodyPitch : fallbackPitch;
 
-      audioBuffer = await synthesizeNeuralAudio({
-        text: rawNormalizedText || cleanText || text || targetSSML.replace(/<[^>]+>/g, ' '),
-        voice: targetVoice,
-        rate: finalRate,
-        pitch: finalPitch,
-        characterName: characterName || '',
-        role: role || ''
-      });
-    } catch (neuralErr) {
-      console.warn('[TTS] Motor neuronal primario reportó incidencia, intentando canal secundario con timeout seguro:', neuralErr);
-      audioBuffer = await new Promise<Buffer>(async (resolve, reject) => {
-        const safetyTimer = setTimeout(() => {
-          reject(new Error('Timeout en canal secundario TTS'));
-        }, 4500);
-        try {
-          const tts = new MsEdgeTTS();
-          await tts.setMetadata(targetVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-          const { audioStream } = tts.rawToStream(targetSSML);
-          const chunks: Buffer[] = [];
-          audioStream.on('data', (chunk: Buffer | string) => {
-            chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-          });
-          audioStream.on('end', () => {
-            clearTimeout(safetyTimer);
-            resolve(Buffer.concat(chunks));
-          });
-          audioStream.on('error', (err: Error) => {
-            clearTimeout(safetyTimer);
-            reject(err);
-          });
-        } catch (err) {
-          clearTimeout(safetyTimer);
-          reject(err);
-        }
-      });
-    }
+    const extractedFromSSML = targetSSML
+      ? targetSSML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+      : '';
+    const synthText = rawNormalizedText || extractedFromSSML || cleanText || text;
+
+    const audioBuffer = await synthesizeNeuralAudio({
+      text: synthText,
+      voice: targetVoice,
+      rate: finalRate,
+      pitch: finalPitch,
+      characterName: characterName || '',
+      role: role || ''
+    });
 
     if (!audioBuffer || audioBuffer.length === 0) {
       throw new Error('El sintetizador no generó datos de audio');
@@ -573,7 +550,7 @@ export async function POST(req: NextRequest) {
         'Content-Length': audioBuffer.length.toString(),
         'X-Cache': 'MISS',
         'X-Voice-Resolved': targetVoice,
-        'X-TTS-Engine': 'Neural-Continuo-24-Voces-LatAm-Ilimitado',
+        'X-TTS-Engine': 'Motor-Neuronal-Institucional-96k-0Tokens',
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
       },
     });

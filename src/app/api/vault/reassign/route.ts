@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 import { z } from 'zod';
 
 const ReassignSchema = z.object({
@@ -77,6 +79,33 @@ export async function POST(req: NextRequest) {
         success: false, 
         error: 'Acceso denegado: No puedes reasignar contenidos de otro colegio.' 
       }, { status: 403 });
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: schoolId || auth.user.school_id,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    ) {
+      recordEphemeralVaultItem('reassign', {
+        actorEmail: auth.user.email,
+        title: `Reasignación demo a ${masterTeacherName}`,
+        payload: { schoolId, masterTeacherId, masterTeacherName },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        message: `Modo Cuentas Demo: Reasignación simulada en memoria para ${masterTeacherName} (0 escrituras en Bóveda Curricular).`,
+        filesProcessed: 0,
+        filesReassigned: 0,
+        masterTeacher: {
+          id: masterTeacherId,
+          name: masterTeacherName,
+        },
+      });
     }
 
     const vaultDir = getVaultPlanningsDir();

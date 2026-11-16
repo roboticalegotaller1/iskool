@@ -4,6 +4,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
+import { DEMO_DEFAULT_PASSWORD, DEMO_SCHOOL_ID } from '@/lib/demo/demoSandboxConfig';
 import { 
   Building2, 
   Users, 
@@ -99,7 +101,7 @@ const SuperUserCommandCenter = dynamic(() => import('@/components/admin/SuperUse
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium' | 'command_center';
 
 export default function SuperUserAdminPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, login, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const {
@@ -2120,6 +2122,36 @@ export default function SuperUserAdminPage() {
                             </div>
                           )}
                         </div>
+
+                        {inst.id === DEMO_SCHOOL_ID && (
+                          <div className="mt-2 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-indigo-50 px-3 py-2.5 flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="text-[10px] font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1">
+                                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                <span className="leading-snug">Cero Escritura en Bóveda · 7 Roles · Visión CEO</span>
+                              </div>
+                              <div className="text-[10px] font-medium text-slate-600 truncate">
+                                Demo interactiva conectada entre roles
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              data-testid="btn-start-demo-guided-tour"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                useDemoInteractionStore.getState().setTourMode('expanded');
+                                useDemoInteractionStore.getState().setStepIndex(0);
+                                selectSchool(DEMO_SCHOOL_ID);
+                                await login('demo.director@iskool.mx', DEMO_DEFAULT_PASSWORD);
+                                router.push('/director');
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1"
+                            >
+                              <Sparkles className="h-3.5 w-3.5" />
+                              <span>Recorrido Guiado</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Botones de Acción de la Tarjeta */}

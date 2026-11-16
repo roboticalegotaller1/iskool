@@ -322,7 +322,10 @@ export function generateDefaultMattersForSchool(
 ): MatterItem[] {
   const isTestTenant =
     tenantId === 'sch-test-case' ||
+    tenantId === 'sch-demo-0001' ||
+    tenantId === 'demo-0001' ||
     tenantId.toLowerCase().includes('test') ||
+    schoolName.toLowerCase() === 'cuentas demo' ||
     schoolName.toLowerCase().includes('laboratorio') ||
     schoolName.toLowerCase().includes('test case');
 
@@ -1349,7 +1352,10 @@ export function CEOEmailCommunicationsModal({
   const isIbime = schoolId === 'sch-ibime' || schoolName.toLowerCase().includes('ibime');
   const isTestCaseSchool = Boolean(
     schoolId === 'sch-test-case' ||
+    schoolId === 'sch-demo-0001' ||
     holding?.slug === 'test-case' ||
+    holding?.slug === 'demo-0001' ||
+    schoolName.toLowerCase() === 'cuentas demo' ||
     schoolName.toLowerCase().includes('laboratorio') ||
     schoolName.toLowerCase().includes('test case')
   );

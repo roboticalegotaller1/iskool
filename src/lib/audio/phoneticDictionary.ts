@@ -116,9 +116,75 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
   },
   anahuac: {
     term: 'Anáhuac',
-    alias: 'anahuac',
+    alias: 'anáhuac',
     ipa: 'aˈnawak',
     description: 'Tierra rodeada de agua, cuenca de México'
+  },
+  mexica: {
+    term: 'Mexica',
+    alias: 'meshika',
+    ipa: 'meˈʃika',
+    description: 'Gentilicio del pueblo fundador de México-Tenochtitlán'
+  },
+  mexicas: {
+    term: 'Mexicas',
+    alias: 'meshikas',
+    ipa: 'meˈʃikas',
+    description: 'Pueblos mexicas del Valle de Anáhuac'
+  },
+  tlaltizapan: {
+    term: 'Tlaltizapán',
+    alias: 'tlaltisapán',
+    ipa: 'tlaltisaˈpan',
+    description: 'Cuartel general de Emiliano Zapata en Morelos'
+  },
+  texcoco: {
+    term: 'Texcoco',
+    alias: 'tescoco',
+    ipa: 'tesˈkoko',
+    description: 'Señorío lacustre acolhua'
+  },
+  coyoacan: {
+    term: 'Coyoacán',
+    alias: 'coyoacán',
+    ipa: 'koʝoaˈkan',
+    description: 'Alcaldía y enclave histórico en la Ciudad de México'
+  },
+  ecatepec: {
+    term: 'Ecatepec',
+    alias: 'ecatepec',
+    ipa: 'ekateˈpek',
+    description: 'San Cristóbal Ecatepec, sitio del fusilamiento de Morelos'
+  },
+  guelatao: {
+    term: 'Guelatao',
+    alias: 'guelatao',
+    ipa: 'gelaˈtao',
+    description: 'San Pablo Guelatao, cuna de Benito Juárez en Oaxaca'
+  },
+  nepantla: {
+    term: 'Nepantla',
+    alias: 'nepantla',
+    ipa: 'neˈpantla',
+    description: 'San Miguel Nepantla, cuna de Sor Juana Inés de la Cruz'
+  },
+  anenecuilco: {
+    term: 'Anenecuilco',
+    alias: 'anenecuilco',
+    ipa: 'aneneˈkwilko',
+    description: 'Tierra natal de Emiliano Zapata en Morelos'
+  },
+  chinameca: {
+    term: 'Chinameca',
+    alias: 'chinameca',
+    ipa: 'tʃinaˈmeka',
+    description: 'Hacienda de Chinameca en Ayala, Morelos'
+  },
+  sultepec: {
+    term: 'Sultepec',
+    alias: 'sultepec',
+    ipa: 'sulteˈpek',
+    description: 'Real de Sultepec y El Ilustrador Nacional'
   },
   acolhuacan: {
     term: 'Acolhuacán',
@@ -344,6 +410,17 @@ export function applyPhoneticSubstitutions(
     { regex: /\bChich[eé]n\s+Itz[aá]\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.chichen_itza },
     { regex: /\bApatzing[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.apatzingan },
     { regex: /\bAn[aá]huac\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.anahuac },
+    { regex: /\bMexicas\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.mexicas },
+    { regex: /\bMexica\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.mexica },
+    { regex: /\bTlaltizap[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.tlaltizapan },
+    { regex: /\bTexcoco\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.texcoco },
+    { regex: /\bCoyoac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.coyoacan },
+    { regex: /\bEcatepec\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.ecatepec },
+    { regex: /\bGuelatao\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.guelatao },
+    { regex: /\bNepantla\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.nepantla },
+    { regex: /\bAnenecuilco\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.anenecuilco },
+    { regex: /\bChinameca\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.chinameca },
+    { regex: /\bSultepec\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.sultepec },
     { regex: /\bAcolhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.acolhuacan },
     { regex: /\bCulhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.culhuacan },
     { regex: /\bChimalhuac[aá]n\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.chimalhuacan },

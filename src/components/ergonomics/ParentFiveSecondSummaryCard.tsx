@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { playUniversalIskoolVoice } from '@/lib/historicalVoiceEngine';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 import {
   CheckCircle2,
   Volume2,
@@ -30,28 +32,44 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
   const [isSigned, setIsSigned] = useState<boolean>(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [selectedLangHighlight, setSelectedLangHighlight] = useState<'fr' | 'en'>('fr');
+  const lastStampAndXpAt = useDemoInteractionStore((s) => s.lastStampAndXpAt);
+  const valentinaBonusXp = useDemoInteractionStore((s) => s.valentinaBonusXp);
+  const recordParentSignature = useDemoInteractionStore((s) => s.recordParentSignature);
 
   const handlePlayChildHighlight = () => {
     setIsPlayingAudio(true);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const text =
-        selectedLangHighlight === 'fr'
-          ? 'Bonjour maman et papa ! Notre séance au laboratoire de sciences commence exactement à huit heures du matin.'
-          : 'Good morning! Science lab starts at eight in the morning, and I completed my experiment today.';
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = selectedLangHighlight === 'fr' ? 'fr-FR' : 'en-GB';
-      utter.rate = 0.92;
-      utter.onend = () => setIsPlayingAudio(false);
-      utter.onerror = () => setIsPlayingAudio(false);
-      window.speechSynthesis.speak(utter);
-    } else {
-      setTimeout(() => setIsPlayingAudio(false), 3500);
-    }
+    const text =
+      selectedLangHighlight === 'fr'
+        ? 'Bonjour maman et papa ! Notre séance au laboratoire de sciences commence exactement à huit heures du matin.'
+        : 'Good morning! Science lab starts at eight in the morning, and I completed my experiment today.';
+
+    void playUniversalIskoolVoice({
+      text,
+      voiceId: selectedLangHighlight === 'fr' ? 'fr-FR-VivienneMultilingualNeural' : 'en-GB-SoniaNeural',
+      language: selectedLangHighlight === 'fr' ? 'fr-FR' : 'en-GB',
+      gender: 'female',
+      role: 'language_tutor',
+      rate: 0.94,
+      onEnd: () => setIsPlayingAudio(false),
+      onError: () => {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = selectedLangHighlight === 'fr' ? 'fr-FR' : 'en-GB';
+          utter.rate = 0.92;
+          utter.onend = () => setIsPlayingAudio(false);
+          utter.onerror = () => setIsPlayingAudio(false);
+          window.speechSynthesis.speak(utter);
+        } else {
+          setIsPlayingAudio(false);
+        }
+      },
+    });
   };
 
   const handleSignAcknowledgement = async () => {
     setIsSigned(true);
+    recordParentSignature({ studentId, studentName, familyName });
     try {
       await fetch('/api/parent/magic-link', {
         method: 'PATCH',
@@ -93,6 +111,14 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
               <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-300 border border-emerald-400/30">
                 Actualizado en Vivo
               </span>
+              {lastStampAndXpAt && (
+                <span
+                  data-testid="parent-live-xp-sync-badge"
+                  className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-black text-amber-200 border border-amber-400/40"
+                >
+                  +{Math.max(50, valentinaBonusXp)} XP acreditados por Docente ✓
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-300">
               {familyName} • {gradeLabel} • Todo lo importante del día en una sola vista.

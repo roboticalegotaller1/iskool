@@ -5,6 +5,8 @@ import {
   CorreoDelegatedMatter
 } from '@/lib/services/correoVaultService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,6 +36,28 @@ export async function POST(req: NextRequest) {
 
     if (!matter || !matter.id) {
       return NextResponse.json({ success: false, error: 'Faltan datos del asunto a delegar' }, { status: 400 });
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id,
+        userId: auth.user?.id,
+        tenantId: auth.user?.tenant_id || tenantId,
+      })
+    ) {
+      recordEphemeralVaultItem('mail', {
+        actorEmail: auth.user?.email,
+        title: matter.title || matter.id,
+        payload: { tenantId, matterId: matter.id },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        matter,
+        message: 'Modo Cuentas Demo: Asunto delegado en memoria temporal sin escribir en Bóveda Curricular.',
+      });
     }
 
     const result = saveDelegatedMatterToCorreoVault(tenantId, matter);

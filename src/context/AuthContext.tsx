@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { UserProfile, isPlatformSuperUser, resolveEffectiveSchoolId } from '@/types';
 import { useRouter } from 'next/navigation';
 import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
+import { DEMO_STAFF_USERS, DEMO_TEACHERS } from '@/lib/demo/demoSchoolSeeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
@@ -617,6 +618,131 @@ export const getDemoUser = (email: string): UserProfile => {
     return SUPER_USERS_ISKOOL_SEED[2]; // Dirección Pedagógica ISkool
   }
 
+  // ==========================================
+  // ENTORNOS DE DEMOSTRACIÓN GUIADA (Cuentas demo · CCT 0001)
+  // ==========================================
+  if (emailLower === 'demo.ceo@iskool.mx' || emailLower === 'usr-demo-ceo' || emailLower === 'demo-ceo-01') {
+    return {
+      id: 'usr-demo-ceo',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Presidencia & Dirección Ejecutiva (3 Planteles)',
+      first_name: 'Dr. Alejandro',
+      last_name: 'Villarreal Montes',
+      role: 'ceo',
+      email: 'demo.ceo@iskool.mx',
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.director@iskool.mx' || emailLower === 'usr-demo-director' || emailLower === 'usr-demo-dir-01') {
+    return {
+      id: 'usr-demo-director',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      first_name: 'Dra. Beatriz Elena',
+      last_name: 'Santillán Torres',
+      role: 'director',
+      email: 'demo.director@iskool.mx',
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.docente@iskool.mx' || emailLower === 'usr-demo-teacher-1' || emailLower === 'usr-demo-teacher-01') {
+    return {
+      id: 'usr-demo-teacher-1',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      first_name: 'Prof. Alejandro',
+      last_name: 'Ruiz',
+      role: 'teacher',
+      email: 'demo.docente@iskool.mx',
+      assigned_subjects: ['Lenguajes (Español)', 'Saberes y Pensamiento Científico (Matemáticas)'],
+      assigned_groups: ['5ºA'],
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.idiomas@iskool.mx' || emailLower === 'usr-demo-teacher-2' || emailLower === 'usr-demo-idiomas-01') {
+    return {
+      id: 'usr-demo-teacher-2',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-sec',
+      campus_name: 'Campus Norte Secundaria',
+      first_name: 'Profa. Claire',
+      last_name: 'Dubois (Idiomas 3D)',
+      role: 'teacher',
+      email: 'demo.idiomas@iskool.mx',
+      assigned_subjects: ['Lengua Extranjera (Inglés)', 'Francés Multilingüe'],
+      assigned_groups: ['5ºA', '1ºA'],
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.familia@iskool.mx' || emailLower === 'usr-demo-parent-01') {
+    return {
+      id: 'usr-demo-parent-01',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      first_name: 'Laura Gómez',
+      last_name: 'de Mendoza (Familia Demo)',
+      role: 'parent',
+      email: 'demo.familia@iskool.mx',
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.alumno@iskool.mx' || emailLower === 'demo.alumna@iskool.mx' || emailLower === 'std-demo-01') {
+    return {
+      id: 'std-demo-01',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      first_name: 'Valentina',
+      last_name: 'Mendoza Gómez',
+      role: 'student',
+      email: 'demo.alumno@iskool.mx',
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  if (emailLower === 'demo.control@iskool.mx' || emailLower === 'demo.staff@iskool.mx' || emailLower === 'usr-demo-staff-1' || emailLower === 'usr-demo-billing-01') {
+    return {
+      id: 'usr-demo-staff-1',
+      school_id: 'sch-demo-0001',
+      campus_id: 'cmp-demo-pri',
+      campus_name: 'Campus Central Primaria',
+      first_name: 'Lic. Sofía',
+      last_name: 'Reyes Aguilar',
+      role: 'billing',
+      email: 'demo.control@iskool.mx',
+      temporary_password: 'DemoISkool2026!',
+      created_at: '2026-03-10T08:00:00.000Z',
+      updated_at: '2026-03-10T08:00:00.000Z'
+    };
+  }
+  const matchedDemoStaff = DEMO_STAFF_USERS.find(
+    (s) => s.email?.toLowerCase() === emailLower || s.id.toLowerCase() === emailLower
+  );
+  if (matchedDemoStaff) {
+    return matchedDemoStaff;
+  }
+  const matchedDemoTeacher = DEMO_TEACHERS.find(
+    (t) => t.email?.toLowerCase() === emailLower || t.id.toLowerCase() === emailLower
+  );
+  if (matchedDemoTeacher) {
+    return { ...matchedDemoTeacher, role: 'teacher' };
+  }
+
   // Fallback seguro: exclusivamente asignado al tenant IBIME
   const nameParts = emailLower.split('@')[0].split('.');
   const firstName = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Usuario';
@@ -742,7 +868,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const detailed = (useSchoolAdminStore.getState().detailedStudents || []).find(s => s.id === restoredUser.id || (restoredUser.email && s.email?.toLowerCase() === restoredUser.email.toLowerCase()));
             restoredUser = {
               ...restoredUser,
-              school_id: detailed?.school_id || 'sch-test-case'
+              school_id: detailed?.school_id || restoredUser.school_id || 'sch-test-case'
             };
           }
 
@@ -832,7 +958,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Claves directivas y de holdings
-    if (p === 'DIR2026' || p === 'CRD2026' || p === 'COB2026' || p === 'DUE2026' || p === 'IBI2026' || p === 'CEO2026' || p === 'NEX2026' || p === 'BMW2026' || p === 'BMW2026!' || p === 'RETAIL2026') {
+    if (p === 'DIR2026' || p === 'CRD2026' || p === 'COB2026' || p === 'DUE2026' || p === 'IBI2026' || p === 'CEO2026' || p === 'NEX2026' || p === 'BMW2026' || p === 'BMW2026!' || p === 'RETAIL2026' || p === 'DemoISkool2026!') {
       return true;
     }
 
@@ -857,10 +983,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setLoading(true);
 
+    const isCanonicalDemoPersonaEmail = [
+      'demo.ceo@iskool.mx',
+      'demo.director@iskool.mx',
+      'demo.docente@iskool.mx',
+      'demo.idiomas@iskool.mx',
+      'demo.familia@iskool.mx',
+      'demo.alumno@iskool.mx',
+      'demo.alumna@iskool.mx',
+      'demo.control@iskool.mx',
+      'demo.staff@iskool.mx',
+    ].includes(cleanEmail);
+
     // 1A. Verificación prioritaria para cuentas generadas en 5. Organización (con rotación de clave obligatoria)
-    const orgCheck = useOrganizationStore
-      .getState()
-      .authenticateOrgAccount(cleanEmail, userPassword || '');
+    const orgCheck = isCanonicalDemoPersonaEmail
+      ? { matched: false, validPassword: false, mustChangePassword: false, node: undefined }
+      : useOrganizationStore
+          .getState()
+          .authenticateOrgAccount(cleanEmail, userPassword || '');
     if (orgCheck.matched) {
       if (!orgCheck.validPassword) {
         setLoading(false);
@@ -880,8 +1020,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const orgNode = orgCheck.node!;
+      const isDemoCeoNode =
+        orgNode.nodeId === 'demo-ceo-01' ||
+        (orgNode.username || '').trim().toLowerCase() === 'demo.ceo@iskool.mx';
       const mappedRole: UserProfile['role'] =
-        orgNode.category === 'profesor'
+        isDemoCeoNode
+          ? 'ceo'
+          : orgNode.category === 'profesor'
           ? 'teacher'
           : orgNode.subRole === 'director_general'
           ? 'director'

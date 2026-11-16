@@ -17,8 +17,10 @@ import {
   buildDynamicSlaDelegatesFromGraph,
   calculateConsolidatedPayrollSummary,
   createEmptyOrganizationGraph,
+  createDemoSchoolOrganizationGraph,
   createInitialSeatNode,
   getFullNameOfNode,
+  isStaleDemoOrgGraph,
   isSuperiorInOrgChart,
   normalizeOrgSchoolId,
   regenerateNodePassword,
@@ -43,6 +45,9 @@ function broadcastOrgUpdate(payload: any) {
 }
 
 function mapNodeToUserRole(node: OrgSeatNode): UserRole {
+  if (node.nodeId === 'demo-ceo-01' || (node.username || '').trim().toLowerCase() === 'demo.ceo@iskool.mx') {
+    return 'ceo';
+  }
   if (node.category === 'profesor') return 'teacher';
   if (node.subRole === 'director_general') return 'director';
   if (node.subRole === 'finanzas') return 'billing';
@@ -65,23 +70,44 @@ function syncGraphToServerAndAdminStore(
       allOrgNodes.map((n) => `usr-org-${n.nodeId}`)
     );
 
-    // Conservar intactos todos los usuarios de otros colegios y limpiar solo los usr-org-* dados de baja de ESTE schoolId
-    const existingStaff = (adminState.staffUsers || []).filter(
-      (u) =>
-        !(
-          normalizeOrgSchoolId(u.school_id) === schoolId &&
-          String(u.id || '').startsWith('usr-org-') &&
-          !activeOrgUserIds.has(u.id)
+    const nonOrgStaffEmails = new Set(
+      (adminState.staffUsers || [])
+        .filter(
+          (u) =>
+            normalizeOrgSchoolId(u.school_id) === schoolId &&
+            !String(u.id || '').startsWith('usr-org-') &&
+            Boolean(u.email)
         )
+        .map((u) => String(u.email || '').trim().toLowerCase())
     );
-    const existingTeachers = (adminState.teachersList || []).filter(
-      (t) =>
-        !(
-          normalizeOrgSchoolId(t.school_id) === schoolId &&
-          String(t.id || '').startsWith('usr-org-') &&
-          !activeOrgUserIds.has(t.id)
+    const nonOrgTeacherEmails = new Set(
+      (adminState.teachersList || [])
+        .filter(
+          (t) =>
+            normalizeOrgSchoolId(t.school_id) === schoolId &&
+            !String(t.id || '').startsWith('usr-org-') &&
+            Boolean(t.email)
         )
+        .map((t) => String(t.email || '').trim().toLowerCase())
     );
+
+    // Conservar intactos todos los usuarios de otros colegios y limpiar usr-org-* dados de baja o duplicados de semilla canónica de ESTE schoolId
+    const existingStaff = (adminState.staffUsers || []).filter((u) => {
+      if (normalizeOrgSchoolId(u.school_id) !== schoolId) return true;
+      if (!String(u.id || '').startsWith('usr-org-')) return true;
+      if (!activeOrgUserIds.has(u.id)) return false;
+      const emailLower = String(u.email || '').trim().toLowerCase();
+      if (emailLower && nonOrgStaffEmails.has(emailLower)) return false;
+      return true;
+    });
+    const existingTeachers = (adminState.teachersList || []).filter((t) => {
+      if (normalizeOrgSchoolId(t.school_id) !== schoolId) return true;
+      if (!String(t.id || '').startsWith('usr-org-')) return true;
+      if (!activeOrgUserIds.has(t.id)) return false;
+      const emailLower = String(t.email || '').trim().toLowerCase();
+      if (emailLower && nonOrgTeacherEmails.has(emailLower)) return false;
+      return true;
+    });
     const existingPayroll = [...(adminState.staffPayroll || [])];
     const existingSubjects = [...(adminState.subjectsList || [])];
     const existingSchedules = [...(adminState.schedulesList || [])];
@@ -133,23 +159,70 @@ function syncGraphToServerAndAdminStore(
         updated_at: node.updatedAt,
       };
 
-      // Reportar SIEMPRE de forma inmediata en staffUsers para control total del Super Usuario (/admin y /superuser)
-      const staffIdx = existingStaff.findIndex((u) => u.id === canonicalUserId);
+      const nodeEmailLower = (node.username || '').trim().toLowerCase();
+
+      // Reportar SIEMPRE de forma inmediata en staffUsers para control total del Super Usuario (/admin y /superuser),
+      // evitando duplicar identidades canónicas preexistentes del mismo colegio con distinto id.
+      const staffIdx = existingStaff.findIndex(
+        (u) =>
+          u.id === canonicalUserId ||
+          (Boolean(nodeEmailLower) &&
+            normalizeOrgSchoolId(u.school_id) === schoolId &&
+            (u.email || '').trim().toLowerCase() === nodeEmailLower)
+      );
       if (staffIdx >= 0) {
-        existingStaff[staffIdx] = { ...existingStaff[staffIdx], ...userProfile };
+        const prevStaff = existingStaff[staffIdx];
+        const keepSeedIdentity = !String(prevStaff.id || '').startsWith('usr-org-');
+        existingStaff[staffIdx] = {
+          ...userProfile,
+          ...prevStaff,
+          id: keepSeedIdentity ? prevStaff.id : canonicalUserId,
+          role: keepSeedIdentity ? prevStaff.role : userProfile.role,
+          is_blocked: Boolean(node.isBlocked),
+          org_node_id: node.nodeId,
+          org_sub_role: node.subRole,
+          org_category: node.category,
+          org_role_title: node.customRoleLabel || node.roleTitle,
+          org_permissions: node.permissions,
+          org_is_provisioned: Boolean(node.isProvisioned),
+          org_monthly_salary_mxn: node.monthlyBaseSalaryMxn,
+          org_hourly_rate_mxn: node.hourlyRateMxn,
+        } as UserProfile & Record<string, any>;
       } else {
         existingStaff.unshift(userProfile);
       }
 
-      // Si es Profesor, aprovisionar Portal Académico en teachersList
+      // Si es Profesor, aprovisionar Portal Académico en teachersList sin duplicar semillas del colegio
       if (node.category === 'profesor') {
         const teacherProfile: UserProfile & Record<string, any> = {
           ...userProfile,
           role: 'teacher',
         };
-        const tIdx = existingTeachers.findIndex((t) => t.id === canonicalUserId);
+        const tIdx = existingTeachers.findIndex(
+          (t) =>
+            t.id === canonicalUserId ||
+            (Boolean(nodeEmailLower) &&
+              normalizeOrgSchoolId(t.school_id) === schoolId &&
+              (t.email || '').trim().toLowerCase() === nodeEmailLower)
+        );
         if (tIdx >= 0) {
-          existingTeachers[tIdx] = { ...existingTeachers[tIdx], ...teacherProfile };
+          const prevTeacher = existingTeachers[tIdx];
+          const keepSeedTeacher = !String(prevTeacher.id || '').startsWith('usr-org-');
+          existingTeachers[tIdx] = {
+            ...teacherProfile,
+            ...prevTeacher,
+            id: keepSeedTeacher ? prevTeacher.id : canonicalUserId,
+            role: 'teacher',
+            is_blocked: Boolean(node.isBlocked),
+            org_node_id: node.nodeId,
+            org_sub_role: node.subRole,
+            org_category: node.category,
+            org_role_title: node.customRoleLabel || node.roleTitle,
+            org_permissions: node.permissions,
+            org_is_provisioned: Boolean(node.isProvisioned),
+            org_monthly_salary_mxn: node.monthlyBaseSalaryMxn,
+            org_hourly_rate_mxn: node.hourlyRateMxn,
+          } as UserProfile & Record<string, any>;
         } else {
           existingTeachers.unshift(teacherProfile);
         }
@@ -393,7 +466,12 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
       getGraph: (rawSchoolId = 'sch-test-case') => {
         const schoolId = normalizeOrgSchoolId(rawSchoolId);
         const existing = get().graphsBySchool[schoolId];
-        if (existing) return existing;
+        if (existing) {
+          if (schoolId === 'sch-demo-0001' && isStaleDemoOrgGraph(existing)) {
+            return createDemoSchoolOrganizationGraph();
+          }
+          return existing;
+        }
         return createEmptyOrganizationGraph(schoolId);
       },
 
@@ -405,6 +483,19 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
           if (!res.ok) return;
           const data = await res.json();
           if (data?.success && data.graph) {
+            if (schoolId === 'sch-demo-0001' && isStaleDemoOrgGraph(data.graph)) {
+              const upgraded = createDemoSchoolOrganizationGraph();
+              set((state) => ({
+                graphsBySchool: {
+                  ...state.graphsBySchool,
+                  [schoolId]: upgraded,
+                },
+              }));
+              syncGraphToServerAndAdminStore(schoolId, upgraded, {
+                skipBroadcast: true,
+              });
+              return;
+            }
             const local = get().graphsBySchool[schoolId];
             const serverNodesCount = Array.isArray(data.graph.nodes) ? data.graph.nodes.length : 0;
             const localNodesCount = Array.isArray(local?.nodes) ? local.nodes.length : 0;
@@ -441,6 +532,7 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
           'sch-jjrosseau',
           'sch-montessori',
           'sch-test-case',
+          'sch-demo-0001',
           'emp-bmw',
           'emp-ventas',
           'emp-tech',
@@ -1150,6 +1242,29 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
     }),
     {
       name: 'iskool-organization-studio-v1',
+      version: 2,
+      migrate: (persistedState: any) => {
+        if (persistedState?.graphsBySchool) {
+          const demoGraph = persistedState.graphsBySchool['sch-demo-0001'];
+          if (!demoGraph || isStaleDemoOrgGraph(demoGraph)) {
+            persistedState.graphsBySchool['sch-demo-0001'] = createDemoSchoolOrganizationGraph();
+          }
+        }
+        return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        const existing = state.graphsBySchool?.['sch-demo-0001'];
+        if (!existing || isStaleDemoOrgGraph(existing)) {
+          const upgraded = createDemoSchoolOrganizationGraph();
+          useOrganizationStore.setState((prev) => ({
+            graphsBySchool: {
+              ...prev.graphsBySchool,
+              'sch-demo-0001': upgraded,
+            },
+          }));
+        }
+      },
       storage: createJSONStorage((): StateStorage => {
         if (typeof window !== 'undefined' && window.localStorage) {
           return window.localStorage;

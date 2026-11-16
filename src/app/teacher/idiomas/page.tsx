@@ -1124,6 +1124,19 @@ export default function TeacherIdiomasPage() {
             "Je suis Victor Hugo. J'ai écrit Les Misérables et Notre-Dame de Paris pour défendre la dignité humaine.",
           isHistorical: true,
         },
+        {
+          id: 'jeanne_darc',
+          targetLessonId: '',
+          name: "Jeanne d'Arc 3D",
+          subtitle: "1ª Persona: Le Siège d'Orléans · DELF A2–B1",
+          language: 'fr' as LanguageCode,
+          gender: 'female' as const,
+          voiceId: 'fr-FR-DeniseNeural',
+          image: '/images/languages/3d/jeanne_darc_3d.webp',
+          sampleText:
+            "Je suis Jeanne d'Arc, la Pucelle d'Orléans. À dix-sept ans, j'ai libéré Orléans et conduit le dauphin à Reims.",
+          isHistorical: true,
+        },
       ];
     }
 

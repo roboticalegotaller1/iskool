@@ -3,6 +3,8 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { resolveTenantFromHostOrHeader, TenantId } from '@/lib/auth/multiTenantSession';
 import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederationService';
 import { CurriculumExportPackage, UserAuditContext } from '@/lib/curriculum/types';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 /**
  * Endpoint REST: /api/v1/curriculum/import
@@ -47,6 +49,29 @@ export async function POST(req: NextRequest) {
       role: authResult.user.role || 'coordinator',
       tenant_id: (authResult.user.tenant_id || expectedTenant) as TenantId
     };
+
+    if (
+      isDemoSandboxContext({
+        email: userContext.email,
+        schoolId: authResult.user.school_id,
+        userId: userContext.user_id,
+        tenantId: userContext.tenant_id,
+      })
+    ) {
+      recordEphemeralVaultItem('curriculum_import', {
+        actorEmail: userContext.email,
+        title: `Importación demo (${pkg.plans.length} planes)`,
+        payload: { checksum: pkg.package_checksum },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        message: 'Modo Cuentas Demo: Paquete curricular simulado sin modificar la Bóveda Curricular.',
+        importedCount: pkg.plans.length,
+        planIds: [],
+      });
+    }
 
     const importResult = await CurriculumFederationService.importCurriculumPackage(pkg, userContext);
 

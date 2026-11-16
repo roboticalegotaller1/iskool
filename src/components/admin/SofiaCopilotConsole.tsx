@@ -240,7 +240,7 @@ export type SofiaHumanVoiceId =
   | 'es-MX-DaliaNeural'
   | 'es-US-PalomaNeural'
   | 'es-CO-SalomeNeural'
-  | 'es-PE-CamilaNeural';
+  | 'es-CR-MariaNeural';
 
 export const SOFIA_HUMAN_VOICES: Array<{
   id: SofiaHumanVoiceId;
@@ -271,9 +271,9 @@ export const SOFIA_HUMAN_VOICES: Array<{
     pitch: 1.0
   },
   {
-    id: 'es-PE-CamilaNeural',
-    shortLabel: 'Camila (Cristalina)',
-    fullLabel: 'Voz de Sofía: Camila Neural (Cristalina y Natural · Latinoamérica · 0 Tokens)',
+    id: 'es-CR-MariaNeural',
+    shortLabel: 'María (Cristalina)',
+    fullLabel: 'Voz de Sofía: María Neural (Cristalina y Natural · Latinoamérica · 0 Tokens)',
     rate: 1.01,
     pitch: 1.01
   }

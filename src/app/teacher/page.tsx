@@ -261,7 +261,12 @@ function TeacherDashboardContent() {
   const saveAttendanceList = useSchoolAdminStore(state => state.saveAttendanceList);
   const sendParentMessage = useSchoolAdminStore(state => state.sendParentMessage);
 
-  const effectiveSchoolId = querySchoolId || activeSchoolId || user?.school_id || (isIbime ? 'sch-ibime' : '');
+  const effectiveSchoolId =
+    querySchoolId ||
+    (!isAdminSupervisor && user?.school_id ? user.school_id : '') ||
+    activeSchoolId ||
+    user?.school_id ||
+    (isIbime ? 'sch-ibime' : '');
   const currentInstitution = useMemo(
     () => institutionsList.find(inst => inst.id === effectiveSchoolId) || null,
     [institutionsList, effectiveSchoolId]

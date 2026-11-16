@@ -154,7 +154,7 @@ export const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   arthur: {
     id: 'arthur',
     idle: '/images/languages/3d/mentor_male_3d_v2.webp',
-    talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_welcome.mp4',
+    talkMovie: '/images/languages/3d/movies/mentor_male_3d_v2_talk.mp4',
     gestureMovies: {
       welcome: '/images/languages/3d/movies/mentor_male_3d_v2_welcome.mp4',
       wave: '/images/languages/3d/movies/mentor_male_3d_v2_wave.mp4',
@@ -492,6 +492,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           impulseTrigger={impulseTrigger + gestureImpulse}
           fallbackImageSrc="/images/languages/3d/mentor_female_3d.webp"
           enableSmartBustCrop={false}
+          videoHasNativeLipSync={characterRig.id === 'claire'}
           className="w-full h-full object-contain object-bottom drop-shadow-2xl"
         />
       </div>

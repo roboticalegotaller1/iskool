@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import crypto from 'crypto';
+import { synthesizeDirectInstitutionalNeural } from './institutionalNeuralDirect';
 
 interface SynthesizeOptions {
   text: string;
@@ -19,7 +20,6 @@ const MAX_CACHE_ITEMS = 300;
 function resolvePythonExecutable(): string {
   const candidates = [
     path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'),
-    'C:\\Users\\kami-\\.gemini\\antigravity\\brain\\fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b\\scratch\\.venv\\Scripts\\python.exe',
   ];
   for (const c of candidates) {
     if (fs.existsSync(/*turbopackIgnore: true*/ c)) {
@@ -35,7 +35,7 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
-const WORKER_ENGINE_GENERATION = 'v8_neural_latam_38flash_calibrated_r1';
+const WORKER_ENGINE_GENERATION = 'v9_institutional_human_96k_r1';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
 let daemonGeneration = '';
 let daemonStdoutBuffer = '';
@@ -131,7 +131,7 @@ function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<
     const timer = setTimeout(() => {
       pendingRequests.delete(reqId);
       reject(new Error('Timeout en daemon TTS'));
-    }, 42000);
+    }, 6500);
 
     pendingRequests.set(reqId, { resolve, reject, timer });
 
@@ -172,10 +172,10 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     throw new Error('Texto vacío para síntesis');
   }
 
-  // Clave de caché v8 (Respaldo Neural Continuo de 24 Voces LatAm Calibrado Acústica y Prosódicamente a 3.8-flash-lite-tts)
+  // Clave de caché v9 (Motor Neuronal Directo 96kbps + Fonética Humana 0 Tokens)
   const cacheKey = crypto
     .createHash('sha256')
-    .update(`v8_neural_latam_38flash_calibrated::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
+    .update(`v9_institutional_human_96k_r1::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
     .digest('hex');
 
   // 1. Verificar caché en memoria
@@ -200,7 +200,31 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     } catch { }
   }
 
-  // 3. Intento primario ultrarrápido en memoria mediante el Daemon Persistente (sin cold-start ni disco temporal)
+  // 3. Motor Primario Ultra-Rápido Directo en Node.js (96 kbps, cero subprocesos, 0 Tokens)
+  try {
+    const directBuffer = await synthesizeDirectInstitutionalNeural({
+      text: cleanText,
+      voice,
+      rate,
+      pitch,
+      timeoutMs: 5500
+    });
+    if (directBuffer && directBuffer.length > 256) {
+      try {
+        fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, directBuffer);
+      } catch { }
+      if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
+        const firstKey = memoryAudioCache.keys().next().value;
+        if (firstKey) memoryAudioCache.delete(firstKey);
+      }
+      memoryAudioCache.set(cacheKey, directBuffer);
+      return directBuffer;
+    }
+  } catch {
+    // Si la pasarela directa falla momentáneamente, continuar transparentemente al daemon Python
+  }
+
+  // 4. Respaldo en memoria mediante Daemon Persistente Python
   try {
     const daemonBuffer = await synthesizeViaWarmDaemon({
       text: cleanText,
@@ -225,7 +249,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     // Si el daemon está reiniciando, continuar transparentemente al worker CLI por lote
   }
 
-  // 4. Respaldo por proceso CLI individual
+  // 5. Respaldo por proceso CLI individual
   const tempOutputFile = path.join(os.tmpdir(), `iskool_tts_${cacheKey}_${Date.now()}.mp3`);
   const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
 
@@ -251,7 +275,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     execFile(
       /*turbopackIgnore: true*/ pythonBin,
       [workerScript, '--json', payloadFile],
-      { timeout: 30000, env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' } },
+      { timeout: 6500, env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', ENABLE_CLOUD_STUDIO_TTS: '0' } },
       (err, _stdout, stderr) => {
         // Limpieza de payload
         try {

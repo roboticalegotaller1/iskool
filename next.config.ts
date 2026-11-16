@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       './.index/**/*',
       './src/data/video-1080p/**/*'
     ],
+    '/api/ai/tts': ['./node_modules/ws/**/*'],
   },
   outputFileTracingExcludes: {
     '*': [
@@ -68,7 +69,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400,
   },
   // pixi.js is a browser-only WebGL/canvas library; sharp uses native C++ binaries on Node
-  serverExternalPackages: ["pixi.js", "sharp"],
+  serverExternalPackages: ["pixi.js", "sharp", "ws"],
   typescript: {
     // Type safety is strictly verified across the entire repository (0 errors).
     ignoreBuildErrors: false,

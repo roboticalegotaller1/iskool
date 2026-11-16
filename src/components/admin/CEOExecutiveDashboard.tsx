@@ -116,6 +116,7 @@ import type { CrmStageKey } from '@/types/crm';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { formatCdmxTime } from '@/utils/timeZoneUtils';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 
 const CrmAdmissionsStudio = dynamic(
   () => import('@/components/crm/CrmAdmissionsStudio'),
@@ -218,6 +219,7 @@ export function buildHoldingForInstitution(
                  institution.id === 'sec-empresas-ceo' ||
                  (typeof institution.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(institution.name));
 
+  const isDemoSchool = institution.id === 'sch-demo-0001';
   const isTestCase = Boolean(
     institution.isTestCase ||
     institution.id === 'sch-test-case' ||
@@ -228,6 +230,12 @@ export function buildHoldingForInstitution(
   const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
   const schoolStudents = getSchoolStudents(detailedStudents || [], institution.id, schoolCampuses);
   const schoolTeachers = getSchoolTeachers(teachersList || [], institution.id, schoolCampuses);
+
+  const demoCollectionRates = [96, 91, 94];
+  const demoAdmissionsCounts = [6, 5, 4];
+  const demoCurriculumRates = [95, 92, 94];
+  const demoRetentionRates = [98, 96, 97];
+  const demoFocalCounts = [1, 2, 1];
 
   const mappedCampuses: CampusData[] = schoolCampuses.length > 0
     ? schoolCampuses.map((c, idx) => {
@@ -246,7 +254,7 @@ export function buildHoldingForInstitution(
             ? (Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || 2)
             : (idx === 0 && schoolTeachers.every(t => !schoolCampuses.some(sc => sc.id === t.campus_id)) ? schoolTeachers.length : 0);
 
-        const hasActiveOperation = stCount > 0 || tcCount > 0 || isTestCase;
+        const hasActiveOperation = stCount > 0 || tcCount > 0 || isTestCase || isDemoSchool;
 
         return {
           id: c.id,
@@ -254,12 +262,24 @@ export function buildHoldingForInstitution(
           location: c.address || `${c.name} · ${isCorp ? 'Planta / Sede Corporativa' : 'Sede Oficial'}`,
           students: stCount,
           teachers: tcCount,
-          collectionRate: stCount > 0 || isTestCase ? Math.max(88, 95 - (idx % 3)) : 0,
-          admissionsInProgress: hasActiveOperation ? Math.floor(8 + idx * 3) : 0,
-          academicHealth: hasActiveOperation ? Math.max(90, 96 - (idx % 2)) : 0,
-          focalIssues: isTestCase && idx === 1 ? 1 : 0,
-          curriculumCoverage: hasActiveOperation ? Math.min(98, 94 + (idx % 3)) : 0,
-          retentionRate: stCount > 0 || isTestCase ? Math.min(98, 96 - (idx % 2)) : 0
+          collectionRate: isDemoSchool
+            ? (demoCollectionRates[idx] ?? 93)
+            : (stCount > 0 || isTestCase ? Math.max(88, 95 - (idx % 3)) : 0),
+          admissionsInProgress: isDemoSchool
+            ? (demoAdmissionsCounts[idx] ?? 4)
+            : (hasActiveOperation ? Math.floor(8 + idx * 3) : 0),
+          academicHealth: isDemoSchool
+            ? Math.max(91, 96 - (idx % 3))
+            : (hasActiveOperation ? Math.max(90, 96 - (idx % 2)) : 0),
+          focalIssues: isDemoSchool
+            ? (demoFocalCounts[idx] ?? 1)
+            : (isTestCase && idx === 1 ? 1 : 0),
+          curriculumCoverage: isDemoSchool
+            ? (demoCurriculumRates[idx] ?? 93)
+            : (hasActiveOperation ? Math.min(98, 94 + (idx % 3)) : 0),
+          retentionRate: isDemoSchool
+            ? (demoRetentionRates[idx] ?? 97)
+            : (stCount > 0 || isTestCase ? Math.min(98, 96 - (idx % 2)) : 0)
         };
       })
     : [
@@ -1015,7 +1035,7 @@ export default function CEOExecutiveDashboard({
     return false;
   }, [schoolId, holding, currentInstitution]);
 
-  // Detección exclusiva de Laboratorio Pedagógico & Test Cases (única cuenta con simuladores activos)
+  // Detección de Laboratorio Pedagógico & Cuentas demo (simuladores y flujos resolutivos activos)
   const isTestCaseSchool = useMemo(() => {
     const instId = (schoolId || currentInstitution?.id || '').toLowerCase();
     const instName = (currentInstitution?.name || holding?.name || '').toLowerCase();
@@ -1023,7 +1043,10 @@ export default function CEOExecutiveDashboard({
     return Boolean(
       currentInstitution?.isTestCase ||
       instId === 'sch-test-case' ||
+      instId === 'sch-demo-0001' ||
       holdingSlug === 'test-case' ||
+      holdingSlug === 'demo-0001' ||
+      instName === 'cuentas demo' ||
       instName.includes('laboratorio') ||
       instName.includes('test case')
     );
@@ -1102,7 +1125,8 @@ export default function CEOExecutiveDashboard({
     capacityTarget: liveCapacityTarget
   } = useAdmissionsPipeline({ 
     campusId: selectedCampusId,
-    academicYear: '2026-2027'
+    academicYear: '2026-2027',
+    schoolId: schoolId || currentInstitution?.id
   });
 
   // Cerebro Institucional y Búsqueda Semántica Local (0 Tokens)
@@ -2059,6 +2083,14 @@ export default function CEOExecutiveDashboard({
 
   // Identificador institucional canónico y herméticamente aislado para 5. Organización (cada colegio/CEO tiene su propio grafo)
   const resolvedOrgSchoolId = useMemo(() => {
+    if (
+      schoolId === 'sch-demo-0001' ||
+      currentInstitution?.id === 'sch-demo-0001' ||
+      holding?.slug === 'demo-0001' ||
+      (holding?.name || '').toLowerCase() === 'cuentas demo'
+    ) {
+      return 'sch-demo-0001';
+    }
     const rawCandidate =
       corporateTheme?.id ||
       schoolId ||
@@ -2066,7 +2098,7 @@ export default function CEOExecutiveDashboard({
       holding?.id ||
       (holding?.slug ? `sch-${holding.slug}` : isIbime ? 'sch-ibime' : isTestCaseSchool ? 'sch-test-case' : 'sch-jjrosseau');
     return normalizeOrgSchoolId(rawCandidate);
-  }, [corporateTheme?.id, schoolId, currentInstitution?.id, holding?.id, holding?.slug, isIbime, isTestCaseSchool]);
+  }, [corporateTheme?.id, schoolId, currentInstitution?.id, holding?.id, holding?.slug, holding?.name, isIbime, isTestCaseSchool]);
 
   const activeSchoolOrgGraph = useOrganizationStore((s) => s.graphsBySchool[resolvedOrgSchoolId]);
   const activeSchoolOrgPayroll = useMemo(() => {
@@ -5349,7 +5381,15 @@ export default function CEOExecutiveDashboard({
                 curriculumCoverage={metrics.avgCurriculum}
                 isCorporate={isCorporate}
                 isTestCase={isTestCaseSchool}
-                onTriggerToast={triggerToast}
+                onTriggerToast={(msg) => {
+                  if (resolvedOrgSchoolId === 'sch-demo-0001') {
+                    useDemoInteractionStore.getState().recordCeoIntervention({
+                      title: msg.replace(/^[✓⚡🤖\s]+/, '').slice(0, 60) || 'Flujo Operativo CEO',
+                      campus: selectedCampusName,
+                    });
+                  }
+                  triggerToast(msg);
+                }}
                 onNavigateTab={handleNavClick}
               />
             </div>
@@ -5603,6 +5643,12 @@ export default function CEOExecutiveDashboard({
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => {
+                  if (resolvedOrgSchoolId === 'sch-demo-0001') {
+                    useDemoInteractionStore.getState().recordCeoIntervention({
+                      title: activeFocalModal.title,
+                      campus: activeFocalModal.campusAffected.join(', '),
+                    });
+                  }
                   triggerToast(`Instrucción despachada a los Directores de ${activeFocalModal.campusAffected.join(', ')}`);
                   setActiveFocalModal(null);
                 }}
@@ -5614,6 +5660,12 @@ export default function CEOExecutiveDashboard({
               
               <button
                 onClick={() => {
+                  if (resolvedOrgSchoolId === 'sch-demo-0001') {
+                    useDemoInteractionStore.getState().recordCeoIntervention({
+                      title: `Campaña 1-Clic · ${activeFocalModal.title}`,
+                      campus: activeFocalModal.campusAffected.join(', '),
+                    });
+                  }
                   triggerToast(`Campaña automatizada 1-Clic activada para ${activeFocalModal.campusAffected.join(', ')}`);
                   setActiveFocalModal(null);
                 }}

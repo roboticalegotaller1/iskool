@@ -167,12 +167,38 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
   // Estados de animación del avatar
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSpokenText, setCurrentSpokenText] = useState<string>('');
   const [isBlinking, setIsBlinking] = useState(false);
   const [mouthOpenRatio, setMouthOpenRatio] = useState(0);
   const [mouthWidthRatio, setMouthWidthRatio] = useState(0.5); // Bifactorial F2 (sonrisa / ancho)
   const [chestLift, setChestLift] = useState(false); // Elevación torácica por respiración (1.5px)
   const [activeGesture, setActiveGesture] = useState<IdleGesture | null>(null);
   const [lastInteractionTime, setLastInteractionTime] = useState<number>(Date.now());
+
+  // Streams de movimiento continuo para retratos históricos humanos (desactivado en sitios geográficos)
+  const portraitMovieStem = useMemo(() => {
+    if (isGeographicSite) return null;
+    const match = (avatarImageUrl || '').match(/\/([^/.]+)\.[a-z0-9]+$/i);
+    if (!match) return null;
+    const stem = match[1].replace(/_avatar$/i, '');
+    if (!stem || stem.includes('queretaro') || stem.includes('sitio_historico')) return null;
+    return stem;
+  }, [avatarImageUrl, isGeographicSite]);
+
+  const portraitTalkMovie = portraitMovieStem ? `/images/history/movies/${portraitMovieStem}_talk.mp4` : undefined;
+  const portraitCalmMovie = portraitMovieStem ? `/images/history/movies/${portraitMovieStem}_calm.mp4` : undefined;
+  const portraitGestureMovies = useMemo(
+    () =>
+      portraitTalkMovie && portraitCalmMovie
+        ? {
+            welcome: portraitTalkMovie,
+            explain: portraitTalkMovie,
+            exclaim: portraitTalkMovie,
+            calm: portraitCalmMovie,
+          }
+        : undefined,
+    [portraitTalkMovie, portraitCalmMovie]
+  );
 
   // Estados de conversación
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
@@ -300,6 +326,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const mouthIntervalRef = useRef<any>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const studioChainRef = useRef<{ cleanup: () => void } | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
   const ttsSeqRef = useRef<number>(0);
@@ -320,10 +347,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
       }
-      if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => {});
-        audioContextRef.current = null;
+      if (studioChainRef.current) {
+        try { studioChainRef.current.cleanup(); } catch {}
+        studioChainRef.current = null;
       }
+      audioContextRef.current = null;
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -483,10 +511,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
-    if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
+    if (studioChainRef.current) {
+      try { studioChainRef.current.cleanup(); } catch {}
+      studioChainRef.current = null;
     }
+    audioContextRef.current = null;
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -514,6 +543,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     const abortController = new AbortController();
     ttsAbortRef.current = abortController;
 
+    setCurrentSpokenText(cleanText);
     try {
       const ttsRes = await fetch('/api/ai/tts', {
         method: 'POST',
@@ -546,6 +576,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             role: 'character'
           });
           if (studioChain) {
+            studioChainRef.current = studioChain;
             const ctx = studioChain.context;
             const analyser = studioChain.analyser;
             audioContextRef.current = ctx;
@@ -596,14 +627,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               // Mapeo F1 (Apertura mandibular con inercia IIR)
               const rawF1 = Math.min(1, Math.max(0, (avgF1 - 8) / 38));
               smoothedF1 = smoothedF1 * 0.62 + rawF1 * 0.38;
-              setMouthOpenRatio(smoothedF1);
 
               // Mapeo F2 (Comisuras: Vocales abiertas E/I ensanchan, O/U estrechan)
               const f2Ratio = avgF1 > 4 ? Math.min(1, Math.max(0.1, (avgF2 / (avgF1 + 0.1)) * 0.95)) : 0.5;
               smoothedF2 = smoothedF2 * 0.72 + f2Ratio * 0.28;
-              setMouthWidthRatio(smoothedF2);
 
-              // Publicar niveles formánticos en tiempo real a 60 FPS para NanoBananaLipSyncCanvas
+              // Publicar niveles formánticos en tiempo real a 60 FPS sin re-renderizar el árbol React
               if (typeof window !== 'undefined') {
                 const rmsNorm = Math.min(1, (avgF1 + avgF2) / 140);
                 (window as any).__iskoolActiveFormantLevels = {
@@ -681,10 +710,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             cancelAnimationFrame(animFrameRef.current);
             animFrameRef.current = null;
           }
-          if (audioContextRef.current) {
-            audioContextRef.current.close().catch(() => {});
-            audioContextRef.current = null;
+          if (studioChainRef.current) {
+            try { studioChainRef.current.cleanup(); } catch {}
+            studioChainRef.current = null;
           }
+          audioContextRef.current = null;
           stopLipSyncAnimation();
           URL.revokeObjectURL(audioUrl);
           currentAudioRef.current = null;
@@ -695,10 +725,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             cancelAnimationFrame(animFrameRef.current);
             animFrameRef.current = null;
           }
-          if (audioContextRef.current) {
-            audioContextRef.current.close().catch(() => {});
-            audioContextRef.current = null;
+          if (studioChainRef.current) {
+            try { studioChainRef.current.cleanup(); } catch {}
+            studioChainRef.current = null;
           }
+          audioContextRef.current = null;
           stopLipSyncAnimation();
           URL.revokeObjectURL(audioUrl);
           currentAudioRef.current = null;
@@ -977,7 +1008,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
         recognition.onerror = async (e: any) => {
           console.warn('Web Speech API aviso/error:', e.error);
-          // Si da no-speech o error de red de Google, recurrir al audio capturado con MediaRecorder
+          // Si da no-speech o error de red del navegador, recurrir al audio capturado con MediaRecorder
           if (isListening || mediaRecorderRef.current) {
             await stopAndTranscribeAudio();
           } else {
@@ -1030,7 +1061,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       return { y: -2, scale: 1.015, rotateX: -3 };
     }
     if (isSpeaking) {
-      return { y: Math.sin(Date.now() / 200) * 2, rotateZ: Math.sin(Date.now() / 400) * 1 };
+      return { y: 0, rotateZ: 0, scale: 1.01 };
     }
     return { x: 0, y: 0, rotateY: 0, rotateZ: 0, scale: 1 };
   };
@@ -1063,10 +1094,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                   cancelAnimationFrame(animFrameRef.current);
                   animFrameRef.current = null;
                 }
-                if (audioContextRef.current) {
-                  audioContextRef.current.close().catch(() => {});
-                  audioContextRef.current = null;
+                if (studioChainRef.current) {
+                  try { studioChainRef.current.cleanup(); } catch {}
+                  studioChainRef.current = null;
                 }
+                audioContextRef.current = null;
                 if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
                   window.speechSynthesis.cancel();
                 }
@@ -1089,18 +1121,23 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             }
           }}
           title="Haz clic para escuchar nuevamente al personaje"
-          className="relative my-4 w-44 h-44 sm:w-48 sm:h-48 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl shadow-amber-500/20 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer"
+          className="relative my-4 w-52 h-52 sm:w-56 sm:h-56 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl shadow-amber-500/20 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer"
         >
           <motion.div 
             className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center"
             animate={getAvatarTransform()}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
-            {/* Motor Quirúrgico Nano Banana 2.1 a 60 FPS con Deformación Mandibular y Sincronización Labial Anatómica */}
+            {/* Motor Anatómico Institucional 60 FPS: sincronía labial formántica, parpadeo tarsal y micro-movimiento en vivo */}
             <NanoBananaLipSyncCanvas
               imageSrc={avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}
               characterId={slug || characterName}
               isSpeaking={isSpeaking}
+              spokenText={currentSpokenText}
+              videoSrc={portraitTalkMovie}
+              gestureVideoMap={portraitGestureMovies}
+              videoHasNativeLipSync={false}
+              isGeographicSite={isGeographicSite}
               mouthConfig={mouthCfg}
               externalMouthOpen={mouthOpenRatio}
               externalMouthSpread={mouthWidthRatio - 0.5}

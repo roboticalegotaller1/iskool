@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { InstitutionalMemoryReconcileService } from '@/lib/institutionalMemory';
-import { validateApiAuth } from '@/lib/authValidator';
+import { validateApiAuth, AuthValidationResult } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,12 +32,14 @@ export function timingSafeTokenCheck(provided: string, expected: string): boolea
  * Valida la autenticación para la reconciliación segura de la Bóveda Curricular.
  * Acepta sesión autenticada (validateApiAuth) con rol directivo/coordinación o token secreto de servidor.
  */
-async function validateReconcileSecurity(request: NextRequest): Promise<{ authorized: boolean; reason?: string }> {
+async function validateReconcileSecurity(
+  request: NextRequest
+): Promise<{ authorized: boolean; reason?: string; user?: AuthValidationResult['user'] }> {
   const authResult = await validateApiAuth(request);
   if (authResult.authenticated && authResult.user) {
     const allowedRoles = ['superadmin', 'admin', 'owner', 'ceo', 'director', 'coordinator'];
     if (allowedRoles.includes(authResult.user.role || '')) {
-      return { authorized: true };
+      return { authorized: true, user: authResult.user };
     }
     return { authorized: false, reason: 'Rol insuficiente para reconciliar la Bóveda Curricular.' };
   }
@@ -87,6 +91,34 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const branch = typeof body?.branch === 'string' ? body.branch : undefined;
+
+    if (
+      isDemoSandboxContext({
+        email: security.user?.email,
+        schoolId: security.user?.school_id || body?.schoolId,
+        userId: security.user?.id,
+        tenantId: security.user?.tenant_id,
+      })
+    ) {
+      recordEphemeralVaultItem('reconcile', {
+        actorEmail: security.user?.email,
+        title: `Reconciliación simulada (${branch || 'main'})`,
+        payload: { branch },
+      });
+      return NextResponse.json(
+        {
+          success: true,
+          demoSandbox: true,
+          persistedInVault: false,
+          reconciledCount: 0,
+          orphans: [],
+          durationMs: 12,
+          message: 'Modo Cuentas Demo: Reconciliación simulada sin modificar Bóveda ni Repositorio Central.',
+          telemetry: { success: true, demoSandbox: true, persistedInVault: false },
+        },
+        { status: 200 }
+      );
+    }
     const isServerlessProd = Boolean(process.env.VERCEL || process.env.NODE_ENV === 'production');
     const dryRun = body?.dryRun !== undefined ? Boolean(body.dryRun) : isServerlessProd;
     const delayMs = typeof body?.delayMs === 'number' ? body.delayMs : undefined;

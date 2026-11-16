@@ -65,7 +65,7 @@ describe('🎭 AVATAR 3D EN VIVO (60 FPS) — PARPADEO ANATÓMICO Y COMPENDIO DE
 
   it('2. Director contextual de movimientos genera secuencias pedagógicas ricas y cubre los 12 movimientos', () => {
     const fullSeq = buildContextualMovementSequence('Let us practice today.');
-    expect(fullSeq).toEqual(expect.arrayContaining(ALL_12_MOVEMENTS));
+    expect(fullSeq).toEqual(expect.arrayContaining(ALL_11_ACTIVE_MOVEMENTS));
 
     const phoneticSeq = buildContextualMovementSequence('Listen and repeat this syllable sound.');
     expect(phoneticSeq[0]).toBe('pronounce');
@@ -100,21 +100,21 @@ describe('🎭 AVATAR 3D EN VIVO (60 FPS) — PARPADEO ANATÓMICO Y COMPENDIO DE
     expect(claireCfg.eyeRy).toBe(39);
 
     const arthurCfg = getHistoricalMouthConfig('arthur');
-    expect(arthurCfg.leftEyeX).toBe(412);
-    expect(arthurCfg.leftEyeY).toBe(207);
-    expect(arthurCfg.rightEyeX).toBe(496);
+    expect(arthurCfg.leftEyeX).toBe(419);
+    expect(arthurCfg.leftEyeY).toBe(204);
+    expect(arthurCfg.rightEyeX).toBe(490);
     expect(arthurCfg.rightEyeY).toBe(208);
     expect(arthurCfg.eyeRx).toBe(34);
     expect(arthurCfg.eyeRy).toBe(27);
 
     const expectedHistoricalEyes: Array<[string, number, number, number, number, number, number]> = [
-      ['ada_lovelace', 456, 292, 564, 294, 38, 28],
-      ['shakespeare', 458, 224, 540, 224, 28, 22],
-      ['abraham_lincoln', 472, 190, 542, 190, 22, 15],
-      ['marie_curie', 474, 202, 528, 200, 20, 15],
-      ['napoleon', 474, 217, 534, 216, 20, 14],
-      ['victor_hugo', 442, 307, 562, 307, 30, 18],
-      ['jeanne_darc', 436, 314, 566, 314, 40, 27],
+      ['ada_lovelace', 461, 292, 573, 294, 38, 28],
+      ['shakespeare', 471, 227, 550, 228, 28, 22],
+      ['abraham_lincoln', 482, 189, 549, 186, 22, 15],
+      ['marie_curie', 485, 204, 535, 202, 20, 15],
+      ['napoleon', 476, 218, 536, 218, 20, 14],
+      ['victor_hugo', 450, 313, 566, 314, 30, 18],
+      ['jeanne_darc', 438, 314, 570, 315, 40, 27],
     ];
 
     for (const [id, lx, ly, rx, ry, erx, ery] of expectedHistoricalEyes) {

@@ -115,6 +115,70 @@ export const IBIME_CAMPUS_CAPACITY_TARGETS: Record<string, CampusCapacityTarget>
     targetSeats: 3740,
     monthlyTuitionAvg: 4100,
     enrollmentFee: 8200
+  },
+  // Cuentas demo (sch-demo-0001 · 3 Planteles · 650 alumnos activos)
+  'demo-pri': {
+    campusId: 'cmp-demo-pri',
+    name: 'Campus Central Primaria',
+    totalCapacity: 280,
+    baseEnrolled: 260,
+    targetSeats: 272,
+    monthlyTuitionAvg: 4200,
+    enrollmentFee: 8400
+  },
+  'cmp-demo-pri': {
+    campusId: 'cmp-demo-pri',
+    name: 'Campus Central Primaria',
+    totalCapacity: 280,
+    baseEnrolled: 260,
+    targetSeats: 272,
+    monthlyTuitionAvg: 4200,
+    enrollmentFee: 8400
+  },
+  'demo-sec': {
+    campusId: 'cmp-demo-sec',
+    name: 'Campus Norte Secundaria',
+    totalCapacity: 230,
+    baseEnrolled: 210,
+    targetSeats: 222,
+    monthlyTuitionAvg: 4800,
+    enrollmentFee: 9600
+  },
+  'cmp-demo-sec': {
+    campusId: 'cmp-demo-sec',
+    name: 'Campus Norte Secundaria',
+    totalCapacity: 230,
+    baseEnrolled: 210,
+    targetSeats: 222,
+    monthlyTuitionAvg: 4800,
+    enrollmentFee: 9600
+  },
+  'demo-prep': {
+    campusId: 'cmp-demo-prep',
+    name: 'Campus Sur Preparatoria',
+    totalCapacity: 210,
+    baseEnrolled: 180,
+    targetSeats: 198,
+    monthlyTuitionAvg: 5400,
+    enrollmentFee: 10800
+  },
+  'cmp-demo-prep': {
+    campusId: 'cmp-demo-prep',
+    name: 'Campus Sur Preparatoria',
+    totalCapacity: 210,
+    baseEnrolled: 180,
+    targetSeats: 198,
+    monthlyTuitionAvg: 5400,
+    enrollmentFee: 10800
+  },
+  'demo-all': {
+    campusId: 'all',
+    name: 'Consolidado Cuentas demo (3 Planteles)',
+    totalCapacity: 720,
+    baseEnrolled: 650,
+    targetSeats: 692,
+    monthlyTuitionAvg: 4750,
+    enrollmentFee: 9500
   }
 };
 
@@ -230,16 +294,30 @@ export function computeAdmissionsPipelineMetrics(
   leads: CrmLead[],
   candidates: CrmLeadCandidate[],
   selectedCampusId: string = 'all',
-  targetYear: string = '2026-2027'
+  targetYear: string = '2026-2027',
+  schoolId?: string
 ): PipelineAggregateReport {
   const normKey = normalizeCampusKey(selectedCampusId);
-  const targetConfig = IBIME_CAMPUS_CAPACITY_TARGETS[normKey] || IBIME_CAMPUS_CAPACITY_TARGETS['all'];
+  const isDemoSchoolScope = schoolId === 'sch-demo-0001' || normKey.startsWith('demo-');
+  const targetConfig =
+    normKey === 'all'
+      ? isDemoSchoolScope
+        ? IBIME_CAMPUS_CAPACITY_TARGETS['demo-all']
+        : IBIME_CAMPUS_CAPACITY_TARGETS['all']
+      : IBIME_CAMPUS_CAPACITY_TARGETS[normKey] ||
+        (isDemoSchoolScope ? IBIME_CAMPUS_CAPACITY_TARGETS['demo-all'] : IBIME_CAMPUS_CAPACITY_TARGETS['all']);
 
-  // 1. Filtrar leads por sede y ciclo escolar
+  // 1. Filtrar leads por institución, sede y ciclo escolar (aislamiento estricto de Cuentas demo respecto a IBIME)
   const scopedLeads = leads.filter(l => {
-    const matchYear = !targetYear || 
-      targetYear === 'all' || 
-      !l.target_academic_year || 
+    if (isDemoSchoolScope) {
+      if (l.school_id !== 'sch-demo-0001') return false;
+    } else if (l.school_id === 'sch-demo-0001') {
+      return false;
+    }
+
+    const matchYear = !targetYear ||
+      targetYear === 'all' ||
+      !l.target_academic_year ||
       l.target_academic_year === targetYear ||
       (targetYear.includes('2026') && l.target_academic_year.includes('2027')) ||
       (targetYear.includes('2027') && l.target_academic_year.includes('2026'));

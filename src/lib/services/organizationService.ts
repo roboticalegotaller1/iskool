@@ -20,6 +20,7 @@ import {
   WorkDaysMode,
 } from './organizationTypes';
 import { SectionDelegateConfig } from './ceoEmailSettingsTypes';
+import { DEMO_SUBJECTS, DEMO_TEACHERS } from '../demo/demoSchoolSeeds';
 
 export * from './organizationTypes';
 
@@ -455,6 +456,15 @@ export function normalizeOrgSchoolId(rawSchoolId?: string | null): string {
   if (clean === 'tech' || clean === 'emp-tech') {
     return 'emp-tech';
   }
+  if (
+    clean === 'sch-demo-0001' ||
+    clean === 'demo-0001' ||
+    clean === 'cuentas-demo' ||
+    clean === 'cuentas demo' ||
+    clean === '0001'
+  ) {
+    return 'sch-demo-0001';
+  }
   return (rawSchoolId || 'sch-test-case').trim();
 }
 
@@ -475,6 +485,8 @@ export function resolveOrgEmailDomain(schoolId?: string | null): string {
       return 'vanguardiaretail.mx';
     case 'emp-tech':
       return 'innovasoft.mx';
+    case 'sch-demo-0001':
+      return 'iskool.mx';
     default: {
       const slug = norm
         .replace(/^sch-/, '')
@@ -1188,8 +1200,253 @@ export function autoOrganizeOrgNodes(
 // PERSISTENCIA EN SERVIDOR Y MEMORIA GLOBAL (PARA API Y AUTENTICACIÓN SEGURA)
 // ============================================================================
 
+export function isStaleDemoOrgGraph(graph?: SchoolOrganizationGraph | null): boolean {
+  if (!graph || !Array.isArray(graph.nodes)) return true;
+  if (graph.nodes.length < 50) return true;
+  return !graph.nodes.some((n) => n.nodeId === 'demo-ceo-01');
+}
+
+export function createDemoSchoolOrganizationGraph(): SchoolOrganizationGraph {
+  const createdAt = '2026-03-10T08:00:00.000Z';
+  const salt = 'demo_iskool_salt_v1';
+  const passwordHash = hashOrgPassword('DemoISkool2026!', salt);
+
+  interface DemoOrgNodeSpec {
+    nodeId: string;
+    subRole: OrgNodeSubRole;
+    campusId: string;
+    campusName: string;
+    firstName: string;
+    paternalLastName: string;
+    maternalLastName: string;
+    username: string;
+    customRoleLabel?: string;
+    subjectNames?: string[];
+    parentNodeId?: string;
+    x: number;
+    y: number;
+  }
+
+  const adminSpecs: DemoOrgNodeSpec[] = [
+    {
+      nodeId: 'demo-ceo-01',
+      subRole: 'director_general',
+      campusId: 'cmp-demo-pri',
+      campusName: 'Presidencia & Dirección Ejecutiva (3 Planteles)',
+      firstName: 'Dr. Alejandro',
+      paternalLastName: 'Villarreal',
+      maternalLastName: 'Montes',
+      username: 'demo.ceo@iskool.mx',
+      customRoleLabel: 'Visión CEO & Dirección Corporativa',
+      x: 820,
+      y: 40,
+    },
+    {
+      nodeId: 'demo-dir-01',
+      subRole: 'director_general',
+      campusId: 'cmp-demo-pri',
+      campusName: 'Campus Central Primaria',
+      firstName: 'Dra. Beatriz Elena',
+      paternalLastName: 'Santillán',
+      maternalLastName: 'Torres',
+      username: 'demo.director@iskool.mx',
+      customRoleLabel: 'Director General · Campus Central Primaria',
+      parentNodeId: 'demo-ceo-01',
+      x: 240,
+      y: 210,
+    },
+    {
+      nodeId: 'demo-coord-sec',
+      subRole: 'coordinador',
+      campusId: 'cmp-demo-sec',
+      campusName: 'Campus Norte Secundaria',
+      firstName: 'Mtro. Fernando',
+      paternalLastName: 'Ríos',
+      maternalLastName: 'Alcántara',
+      username: 'coordinacion.sec.demo@iskool.mx',
+      customRoleLabel: 'Coordinador Académico Secundaria',
+      parentNodeId: 'demo-ceo-01',
+      x: 920,
+      y: 210,
+    },
+    {
+      nodeId: 'demo-coord-prep',
+      subRole: 'coordinador',
+      campusId: 'cmp-demo-prep',
+      campusName: 'Campus Sur Preparatoria',
+      firstName: 'Dra. Claudia',
+      paternalLastName: 'Morales',
+      maternalLastName: 'Ibarra',
+      username: 'coordinacion.prep.demo@iskool.mx',
+      customRoleLabel: 'Coordinadora Académica Preparatoria',
+      parentNodeId: 'demo-ceo-01',
+      x: 1620,
+      y: 210,
+    },
+    {
+      nodeId: 'demo-ctrl-01',
+      subRole: 'finanzas',
+      campusId: 'cmp-demo-pri',
+      campusName: 'Campus Central Primaria',
+      firstName: 'Lic. Sofía',
+      paternalLastName: 'Reyes',
+      maternalLastName: 'Aguilar',
+      username: 'demo.control@iskool.mx',
+      customRoleLabel: 'Control Escolar & Finanzas',
+      parentNodeId: 'demo-ceo-01',
+      x: 1960,
+      y: 40,
+    },
+  ];
+
+  const campusCounters: Record<string, number> = {
+    'cmp-demo-pri': 0,
+    'cmp-demo-sec': 0,
+    'cmp-demo-prep': 0,
+  };
+
+  const mapTeacherNodeId = (teacherId: string): string => {
+    if (teacherId === 'usr-demo-teacher-1') return 'demo-doc-01';
+    if (teacherId === 'usr-demo-teacher-2') return 'demo-idio-01';
+    if (teacherId === 'usr-demo-teacher-02') return 'demo-doc-02';
+    if (teacherId === 'usr-demo-teacher-03') return 'demo-doc-03';
+    return teacherId.replace(/^usr-/, '');
+  };
+
+  const teacherSpecs: DemoOrgNodeSpec[] = DEMO_TEACHERS.map((t) => {
+    const campusId = t.campus_id || 'cmp-demo-pri';
+    const localIdx = campusCounters[campusId] ?? 0;
+    campusCounters[campusId] = localIdx + 1;
+
+    const colBaseX =
+      campusId === 'cmp-demo-sec' ? 760 : campusId === 'cmp-demo-prep' ? 1480 : 40;
+    const x = colBaseX + (localIdx % 3) * 230;
+    const y = 390 + Math.floor(localIdx / 3) * 165;
+
+    const parentNodeId =
+      campusId === 'cmp-demo-sec'
+        ? 'demo-coord-sec'
+        : campusId === 'cmp-demo-prep'
+          ? 'demo-coord-prep'
+          : 'demo-dir-01';
+
+    const cleanLast = String(t.last_name || '').replace(/\s*\(Idiomas 3D\)/i, '').trim();
+    const lastParts = cleanLast.split(/\s+/).filter(Boolean);
+
+    return {
+      nodeId: mapTeacherNodeId(t.id),
+      subRole: 'profesor',
+      campusId,
+      campusName: t.campus_name || 'Campus Central Primaria',
+      firstName: t.first_name,
+      paternalLastName: lastParts[0] || '',
+      maternalLastName: lastParts.slice(1).join(' '),
+      username: t.email || `${mapTeacherNodeId(t.id)}@demo.iskool.mx`,
+      customRoleLabel:
+        t.id === 'usr-demo-teacher-2'
+          ? 'Docente Idiomas 3D'
+          : campusId === 'cmp-demo-sec'
+            ? 'Docente Secundaria'
+            : campusId === 'cmp-demo-prep'
+              ? 'Docente Preparatoria'
+              : 'Docente Primaria',
+      subjectNames:
+        t.assigned_subjects && t.assigned_subjects.length > 0
+          ? t.assigned_subjects
+          : ['Lenguajes (Español)'],
+      parentNodeId,
+      x,
+      y,
+    };
+  });
+
+  const specs: DemoOrgNodeSpec[] = [...adminSpecs, ...teacherSpecs];
+
+  const nodes: OrgSeatNode[] = specs.map((spec) => {
+    const meta = getSubRoleMeta(spec.subRole);
+    const subjects: TeacherSubjectAssignment[] = (spec.subjectNames || []).map((name, idx) => ({
+      id: `subj-${spec.nodeId}-${idx}`,
+      subjectName: name,
+      contourColor: SUBJECT_CONTOUR_PALETTE[idx % SUBJECT_CONTOUR_PALETTE.length],
+      teachAnother: idx === 0,
+    }));
+
+    return {
+      nodeId: spec.nodeId,
+      schoolId: 'sch-demo-0001',
+      campusId: spec.campusId,
+      campusName: spec.campusName,
+      category: meta.category,
+      subRole: spec.subRole,
+      accountTier: meta.accountTier,
+      roleTitle: meta.label,
+      customRoleLabel: spec.customRoleLabel,
+      x: spec.x,
+      y: spec.y,
+      firstName: spec.firstName,
+      paternalLastName: spec.paternalLastName,
+      maternalLastName: spec.maternalLastName,
+      username: spec.username,
+      passwordHash,
+      passwordSalt: salt,
+      tempPasswordPreview: 'DemoISkool2026!',
+      mustChangePassword: false,
+      initialPasswordInvalidated: false,
+      passwordUpdatedAt: createdAt,
+      permissions: getDefaultPermissionsForSubRole(spec.subRole),
+      subjects,
+      hourlyRateMxn: meta.defaultHourlyRateMxn,
+      monthlyBaseSalaryMxn: spec.nodeId === 'demo-ceo-01' ? 58000 : meta.defaultMonthlyBaseMxn,
+      slaHours: meta.defaultSlaHours,
+      isProvisioned: true,
+      isBlocked: false,
+      academicPortalProvisioned: meta.category === 'profesor',
+      imailMailbox: {
+        syncActive: true,
+        connectedEmail: spec.username,
+        preservedHistoricalEmails: buildDefaultHistoricalEmails(meta.label, spec.username, 'sch-demo-0001'),
+      },
+      previousCollaborators: [],
+      inheritedRecordsCount: 2,
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+
+  const savedSubjects: SavedSubjectCatalogItem[] = DEMO_SUBJECTS.map((subj, idx) => ({
+    id: `cat-${subj.id}`,
+    name: subj.name,
+    contourColor: SUBJECT_CONTOUR_PALETTE[idx % SUBJECT_CONTOUR_PALETTE.length],
+    createdAt,
+  }));
+
+  const edges: OrgHierarchyEdge[] = specs
+    .filter((spec) => Boolean(spec.parentNodeId))
+    .map((spec, idx) => ({
+      id: `edge-demo-${idx + 1}`,
+      schoolId: 'sch-demo-0001',
+      sourceNodeId: spec.parentNodeId!,
+      targetNodeId: spec.nodeId,
+      createdAt,
+    }));
+
+  return {
+    schoolId: 'sch-demo-0001',
+    nodes,
+    edges,
+    savedSubjects,
+    campusSchedules: {},
+    timetablePlacements: [],
+    alerts: [],
+    updatedAt: createdAt,
+  };
+}
+
 export function createEmptyOrganizationGraph(schoolId = 'sch-test-case'): SchoolOrganizationGraph {
   const clean = normalizeOrgSchoolId(schoolId);
+  if (clean === 'sch-demo-0001') {
+    return createDemoSchoolOrganizationGraph();
+  }
   return {
     schoolId: clean,
     nodes: [],
@@ -1297,12 +1554,17 @@ if (serverOrgMemory.size === 0) {
     serverOrgMemory.set(k, v);
   }
 }
+if (isStaleDemoOrgGraph(serverOrgMemory.get('sch-demo-0001'))) {
+  serverOrgMemory.set('sch-demo-0001', createDemoSchoolOrganizationGraph());
+}
 
 export const OrganizationServerService = {
   getGraph(schoolId = 'sch-test-case'): SchoolOrganizationGraph {
     const clean = normalizeOrgSchoolId(schoolId);
     const existing = serverOrgMemory.get(clean);
-    if (existing) return existing;
+    if (existing && (clean !== 'sch-demo-0001' || !isStaleDemoOrgGraph(existing))) {
+      return existing;
+    }
     const empty = createEmptyOrganizationGraph(clean);
     serverOrgMemory.set(clean, empty);
     return empty;
@@ -1461,7 +1723,11 @@ export function getUnifiedInstitutionAccounts(
   staffUsers?: any[] | null
 ): UnifiedInstitutionAccountsSummary {
   const schoolId = normalizeOrgSchoolId(rawSchoolId);
-  const nodes: OrgSeatNode[] = Array.isArray(orgGraph?.nodes) ? orgGraph!.nodes : [];
+  const effectiveGraph =
+    schoolId === 'sch-demo-0001' && isStaleDemoOrgGraph(orgGraph)
+      ? createDemoSchoolOrganizationGraph()
+      : orgGraph;
+  const nodes: OrgSeatNode[] = Array.isArray(effectiveGraph?.nodes) ? effectiveGraph!.nodes : [];
   const orgNodeIds = new Set<string>();
   const orgEmails = new Set<string>();
 

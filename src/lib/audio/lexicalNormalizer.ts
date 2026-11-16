@@ -421,10 +421,8 @@ export function normalizeMexicanSpanishText(text: string): string {
   result = result.replace(/\bpais\b/g, 'país');
   result = result.replace(/\bPaises\b/g, 'Países');
   result = result.replace(/\bpaises\b/g, 'países');
-  result = result.replace(/\bPatria\b/g, 'Pátria');
-  result = result.replace(/\bpatria\b/g, 'pátria');
-  result = result.replace(/\bPatrias\b/g, 'Pátrias');
-  result = result.replace(/\bpatrias\b/g, 'pátrias');
+  result = result.replace(/\bPátria(s?)\b/g, 'Patria$1');
+  result = result.replace(/\bpátria(s?)\b/g, 'patria$1');
   result = result.replace(/\bISkool\b/gi, 'Aiskul');
 
   return result;

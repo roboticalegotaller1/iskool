@@ -3,6 +3,8 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { resolveTenantFromHostOrHeader, TenantId } from '@/lib/auth/multiTenantSession';
 import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederationService';
 import { CreateOrExtendPlanInput, UserAuditContext } from '@/lib/curriculum/types';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 /**
  * Endpoint REST: /api/v1/curriculum/plans
@@ -83,6 +85,32 @@ export async function POST(req: NextRequest) {
       role: authResult.user.role || 'teacher',
       tenant_id: (authResult.user.tenant_id || 'iskool') as TenantId
     };
+
+    if (
+      isDemoSandboxContext({
+        email: userContext.email,
+        schoolId: authResult.user.school_id,
+        userId: userContext.user_id,
+        tenantId: userContext.tenant_id,
+      })
+    ) {
+      const eph = recordEphemeralVaultItem('planning', {
+        actorEmail: userContext.email,
+        title: body.title,
+        payload: { subject_code: body.subject_code },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        message: 'Modo Demo Sandbox: planeación simulada en memoria sin guardar en Bóveda Curricular.',
+        plan: {
+          id: eph.id,
+          ...body,
+          created_at: new Date().toISOString(),
+        },
+      });
+    }
 
     const savedPlan = await CurriculumFederationService.saveOrExtendPlan(body, userContext);
 

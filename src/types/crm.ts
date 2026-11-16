@@ -11,13 +11,14 @@
 // CONTROL DE ACCESO Y ROLES AUTORIZADOS DEL CRM
 // ============================================================
 
-export type CrmAuthorizedRole = 'owner' | 'director' | 'admin' | 'superadmin' | 'admissions_sales' | 'ventas';
+export type CrmAuthorizedRole = 'owner' | 'director' | 'admin' | 'superadmin' | 'ceo' | 'admissions_sales' | 'ventas';
 
 export const CRM_AUTHORIZED_ROLES: string[] = [
   'owner',
   'director',
   'admin',
   'superadmin',
+  'ceo',
   'admissions_sales',
   'ventas'
 ];

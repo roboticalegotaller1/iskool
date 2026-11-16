@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
 import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
+import { DemoGuidedTourDock } from "@/components/demo/DemoGuidedTourDock";
 import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
 import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProvider";
 import { NavigationTracker } from "@/components/navigation/NavigationTracker";
@@ -70,6 +71,7 @@ export default async function RootLayout({
             <NavigationTracker />
             <ComingSoonProvider>
               {children}
+              <DemoGuidedTourDock />
               <GlobalHelpFab />
             </ComingSoonProvider>
           </AuthProvider>

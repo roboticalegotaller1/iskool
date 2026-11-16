@@ -261,12 +261,13 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
                 <span>Efemérides del Calendario Cívico (Octubre & Noviembre • 0 Tokens):</span>
               </span>
               <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                20 Personajes Listos en Bóveda
+                21 Personajes Listos en Bóveda
               </span>
             </div>
             
             <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
               {[
+                { name: 'Leona Vicario', date: '10 abr', subtitle: 'Madre de la Patria' },
                 { name: 'Gustavo Díaz Ordaz', date: '2 oct', subtitle: 'Tlatelolco 1968' },
                 { name: 'Guadalupe Victoria', date: '4 oct', subtitle: '1.er Presidente' },
                 { name: 'Belisario Domínguez', date: '7 oct', subtitle: 'Discurso Histórico' },
@@ -329,7 +330,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
           </div>
         )}
 
-        {/* ================= ELECCIÓN DE LOS 5 TIPOS DE LOMOS DE LIBRO (REGLA 14 — PORTADAS NANO BANANA 2.1) ================= */}
+        {/* ================= ELECCIÓN DE LOS 5 TIPOS DE LOMOS DE LIBRO (REGLA 14 — PORTADAS MOTOR GRÁFICO INSTITUCIONAL) ================= */}
         <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <label className="text-xs font-black text-slate-700 dark:text-zinc-200 uppercase tracking-wide">
@@ -379,7 +380,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
                       }}
                     />
 
-                    {/* Portada Nano Banana 2.1 */}
+                    {/* Portada Motor Gráfico Institucional */}
                     <div className="relative w-full h-full rounded-l-[3px] rounded-r-[7px] overflow-hidden shadow-md border border-amber-500/30 bg-zinc-950">
                       <img
                         src={theme.coverImage}
@@ -474,7 +475,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-zinc-400">
-            Google Maps interactivo funcional con fotos, coordenadas geográficas y contexto histórico.
+            Mapa satelital interactivo funcional con fotos, coordenadas geográficas y contexto histórico.
           </p>
         </div>
 

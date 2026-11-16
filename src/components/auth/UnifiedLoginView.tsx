@@ -303,7 +303,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     } else {
       switch (role) {
         case 'ceo':
-          targetPath = '/admin/ceo';
+          targetPath =
+            userProfile?.school_id === 'sch-demo-0001'
+              ? '/admin/ceo?schoolId=sch-demo-0001'
+              : '/admin/ceo';
           break;
         case 'owner':
           targetPath = '/admin';
@@ -326,16 +329,30 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           targetPath = '/coordinator';
           break;
         case 'teacher':
-          targetPath = '/teacher';
+          targetPath =
+            userProfile?.email?.toLowerCase() === 'demo.idiomas@iskool.mx'
+              ? '/teacher/idiomas'
+              : '/teacher';
           break;
         case 'parent':
-          await switchStudent('std-pa');
+          await switchStudent(
+            userProfile?.school_id === 'sch-demo-0001' ||
+            userProfile?.email?.toLowerCase() === 'demo.familia@iskool.mx'
+              ? 'std-demo-01'
+              : 'std-pa'
+          );
           targetPath = '/parent';
           break;
         case 'student':
         default:
+          if (userProfile?.id === 'std-demo-01' || userProfile?.school_id === 'sch-demo-0001') {
+            await switchStudent(userProfile.id || 'std-demo-01');
+          }
           targetPath = '/student';
           break;
+      }
+      if (userProfile?.school_id === 'sch-demo-0001') {
+        useSchoolAdminStore.getState().selectSchool('sch-demo-0001');
       }
     }
 

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 /**
  * Endpoint de Sincronización y Persistencia de Protocolos y Directivas Institucionales
@@ -35,6 +37,31 @@ export async function POST(request: NextRequest) {
 
     if (!title || !title.trim()) {
       return NextResponse.json({ success: false, error: 'Título requerido' }, { status: 400 });
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: auth.user.school_id || body?.schoolId,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    ) {
+      const eph = recordEphemeralVaultItem('protocol', {
+        actorEmail: auth.user.email,
+        title: title.trim(),
+        payload: { cluster, bovedaPath },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persisted: false,
+        persistedInVault: false,
+        ephemeralId: eph.id,
+        filePath: `sandbox-ephemeral/protocol_${eph.id}.md`,
+        updatedAt: new Date().toISOString(),
+        message: 'Modo Cuentas Demo: Protocolo simulado en sesión sin escribir en Bóveda Curricular.',
+      });
     }
 
     // Directorio de protocolos en la Bóveda Curricular
@@ -122,6 +149,23 @@ export async function DELETE(request: NextRequest) {
     const title = searchParams.get('title');
     if (!title) {
       return NextResponse.json({ success: false, error: 'Título requerido' }, { status: 400 });
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: auth.user.school_id,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    ) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        deleted: true,
+        message: 'Modo Cuentas Demo: Eliminación simulada en sesión sin afectar archivos de Bóveda Curricular.',
+      });
     }
 
     const safeFilename = title

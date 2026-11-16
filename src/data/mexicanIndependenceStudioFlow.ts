@@ -918,7 +918,11 @@ export function buildDynamicHistoricalFigureData(
       detailedContext: isGeographicSite
         ? `Explora mis coordenadas geográficas, mi arquitectura y las crónicas documentadas en la Bóveda Curricular.`
         : `Dialoga conmigo en primera persona sobre mis aportaciones, contexto histórico y momentos decisivos.`,
-      avatarImageUrl: isGeographicSite ? '/images/history/santiago_de_queretaro_avatar.jpg' : '/images/history/hidalgo_avatar.png',
+      avatarImageUrl: isGeographicSite
+        ? '/images/history/santiago_de_queretaro_avatar.jpg'
+        : /leona|vicario/i.test(titleName)
+          ? '/images/history/leona_vicario_avatar.webp'
+          : '/images/history/personaje_generico_avatar.png',
       bookSpineStyle: isGeographicSite ? 'codice_antiguo' : 'diario_republicano',
       isFromVault: false,
       moments: [

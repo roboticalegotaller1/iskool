@@ -97,6 +97,18 @@ export const SYSTEM_PARENT_ACCOUNTS: SystemParentAccount[] = [
     grade: 'Primaria Alta 5º',
     institution: 'Colegio ISkool',
     isIbime: false
+  },
+  {
+    id: 'usr-demo-parent-01',
+    family: 'Familia Mendoza Gómez',
+    tutorName: 'Laura Gómez de Mendoza',
+    email: 'demo.familia@iskool.mx',
+    studentId: 'std-demo-01',
+    studentName: 'Valentina Mendoza Gómez',
+    campus: 'Campus Central Primaria',
+    grade: '5ºA Primaria',
+    institution: 'Cuentas demo',
+    isIbime: false
   }
 ];
 
@@ -265,7 +277,13 @@ export default function ParentDashboard() {
     }
 
     if (!loading) {
-      if (user && (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales'))) {
+      if (user && (user.school_id === 'sch-demo-0001' || user.id === 'usr-demo-parent-01' || user.email?.toLowerCase() === 'demo.familia@iskool.mx')) {
+        useStudentStore.getState().switchStudent('std-demo-01');
+        const demoParent = SYSTEM_PARENT_ACCOUNTS.find(acc => acc.studentId === 'std-demo-01');
+        if (demoParent) {
+          setSelectedParentAccount(demoParent);
+        }
+      } else if (user && (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales'))) {
         useStudentStore.getState().switchStudent('std-ibime-montes-01');
       } else if (user && (user.id === 'usr-parent-ibime-ximena' || user.email?.includes('castillo'))) {
         useStudentStore.getState().switchStudent('std-ibime-lagos-01');

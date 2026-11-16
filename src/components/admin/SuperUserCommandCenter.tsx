@@ -3,6 +3,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
+import { DEMO_DEFAULT_PASSWORD, DEMO_SCHOOL_ID } from '@/lib/demo/demoSandboxConfig';
 import { 
   Building2, 
   Users, 
@@ -47,6 +50,7 @@ interface SuperUserCommandCenterProps {
 
 export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCenterProps) {
   const router = useRouter();
+  const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<CommandCenterTab>('governance');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'official' | 'sandbox' | 'corporate' | 'independent'>('all');
@@ -487,6 +491,30 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
                           Controlar Cuentas
                         </button>
                       </div>
+
+                      {inst.id === DEMO_SCHOOL_ID && (
+                        <div className="mt-2.5 rounded-xl border border-emerald-200 bg-emerald-50/90 dark:bg-emerald-950/40 dark:border-emerald-800 px-3 py-2 flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1 truncate">
+                            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">Cero Bóveda · 6 Roles</span>
+                          </span>
+                          <button
+                            type="button"
+                            data-testid="cmd-start-demo-guided-tour"
+                            onClick={async () => {
+                              useDemoInteractionStore.getState().setTourMode('expanded');
+                              useDemoInteractionStore.getState().setStepIndex(0);
+                              selectSchool(DEMO_SCHOOL_ID);
+                              await login('demo.director@iskool.mx', DEMO_DEFAULT_PASSWORD);
+                              router.push('/director');
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black shrink-0 cursor-pointer flex items-center gap-1"
+                          >
+                            <Sparkles className="h-3 w-3" />
+                            <span>Recorrido Guiado</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Botones de Operación */}

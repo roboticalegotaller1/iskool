@@ -41,15 +41,6 @@ export const NATURAL_FEMALE_SPANISH_VOICES: FemaleSpanishVoiceProfile[] = [
     defaultPitch: 1.0
   },
   {
-    id: 'es-PE-CamilaNeural',
-    name: 'Camila (Natural Andina)',
-    region: 'Perú · es-PE',
-    style: 'Dulce, pausada, articulada y empática',
-    recommendedFor: 'Lectoescritura, Álbumes y Mentoras Históricas',
-    defaultRate: 0.98,
-    defaultPitch: 1.02
-  },
-  {
     id: 'es-US-PalomaNeural',
     name: 'Paloma (Natural Ejecutiva)',
     region: 'Hispanoamérica · es-US',
