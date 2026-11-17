@@ -2,7 +2,7 @@
  * Configuración centralizada del Sandbox Interactivo "Cuentas demo" (CCT: 0001)
  * Estándares internacionales de demostración multi-rol sin fricción:
  * - Aislamiento estricto: lectura real de Bóveda Curricular con cero escritura en disco.
- * - 6 Cuentas Interconectadas (Dirección, Docente Aula, Idiomas 3D, Familia, Alumna, Control Escolar).
+ * - 7 Cuentas Interconectadas (Dirección, Docente Aula, Idiomas 3D, Familia, Alumna, Control Escolar, Visión CEO).
  * - Recorrido guiado no intrusivo, minimizable o descartable en 1 clic.
  */
 

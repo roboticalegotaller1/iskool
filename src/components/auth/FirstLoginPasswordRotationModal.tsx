@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { KeyRound, ShieldCheck, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
 interface FirstLoginPasswordRotationModalProps {
   username: string;
@@ -21,6 +22,8 @@ export function FirstLoginPasswordRotationModal({
   const [showPass, setShowPass] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  useAccessibleDialog(true, onCancel);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +60,9 @@ export function FirstLoginPasswordRotationModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Rotación inicial de contraseña"
       data-testid="first-login-password-rotation-modal"
       className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
     >
@@ -101,6 +107,7 @@ export function FirstLoginPasswordRotationModal({
               />
               <button
                 type="button"
+                aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 onClick={() => setShowPass((s) => !s)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
               >

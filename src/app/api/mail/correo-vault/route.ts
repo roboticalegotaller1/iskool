@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
     if (!auth.authenticated) {
       return NextResponse.json({ success: false, error: 'Autenticación requerida para consultar asuntos delegados.' }, { status: 401 });
     }
+    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Permisos insuficientes para acceder a la bóveda de correo.' }, { status: 403 });
+    }
 
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get('tenantId') || 'IBIME';
@@ -29,6 +32,9 @@ export async function POST(req: NextRequest) {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
     if (!auth.authenticated) {
       return NextResponse.json({ success: false, error: 'Autenticación requerida para delegar asuntos.' }, { status: 401 });
+    }
+    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+      return NextResponse.json({ success: false, error: 'Permisos insuficientes para delegar asuntos ejecutivos.' }, { status: 403 });
     }
 
     const body = await req.json();

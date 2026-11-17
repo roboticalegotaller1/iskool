@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useMemo, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
-import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
+import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/lib/holdings/organizationHoldingConfig';
+
+const CEOEmailCommunicationsModal = dynamic(
+  () => import('@/components/admin/CEOEmailCommunicationsModal').then((m) => m.CEOEmailCommunicationsModal),
+  { ssr: false }
+);
 import { useNavigationStore } from '@/store/useNavigationStore';
 import { Clock } from 'lucide-react';
 

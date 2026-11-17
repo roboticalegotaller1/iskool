@@ -53,9 +53,14 @@ jobs:
             exit 0
           fi
 
-          # Si el endpoint remoto devuelve 401/404/5xx (por ejemplo, si VAULT_RECONCILE_SECRET aún no está configurado en el servidor remoto),
-          # culminar de forma limpia sin romper el pipeline ni generar correos de error falsos.
-          echo "ℹ️ Nota: El endpoint remoto respondió con HTTP $HTTP_CODE. La verificación autónoma de la Bóveda Curricular se completó en modo tolerante sin incidencias críticas."
+          # Si el endpoint falla por error de conexión (000) o error 5xx de servidor, fallar el job para alertar
+          if [ "$HTTP_CODE" = "000" ] || [ "$HTTP_CODE" -ge 500 ]; then
+            echo "❌ Error crítico en el endpoint remoto ($HTTP_CODE)."
+            exit 1
+          fi
+
+          # Si el endpoint remoto devuelve 401/404 (p. ej. secreto no desplegado aún), registrar aviso limpio
+          echo "ℹ️ Nota: El endpoint remoto respondió con HTTP $HTTP_CODE sin errores 5xx críticos."
           exit 0
 
       - name: Canal de Notificación / Webhook de Alerta en Caso de Fallo

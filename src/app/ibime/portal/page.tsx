@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
-import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
+import { DEFAULT_IBIME_HOLDING } from '@/lib/holdings/organizationHoldingConfig';
+
+const CEOExecutiveDashboard = dynamic(() => import('@/components/admin/CEOExecutiveDashboard'), { ssr: false });
 import { 
   IbimeCatalogService,
   IBIME_CAMPUSES,
@@ -44,7 +47,11 @@ import {
 import { DetailedStudent, Subject, Campus, UserProfile, isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { switchCanonicalStudent, resetCanonicalSelectedSchool } from '@/lib/auth/multiTenantSession';
-import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
+
+const CEOEmailCommunicationsModal = dynamic(
+  () => import('@/components/admin/CEOEmailCommunicationsModal').then((m) => m.CEOEmailCommunicationsModal),
+  { ssr: false }
+);
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 

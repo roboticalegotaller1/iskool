@@ -76,12 +76,9 @@ import {
   Mail,
   Mic
 } from 'lucide-react';
-import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution, isCorporateInstitution } from '@/types';
+import { OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution, isCorporateInstitution } from '@/types';
 import { 
   useSchoolAdminStore, 
-  getSchoolCampuses, 
-  getSchoolStudents, 
-  getSchoolTeachers, 
   getSchoolBillingRecords, 
   getSchoolAttendance,
   getSchoolPayroll
@@ -93,30 +90,55 @@ import {
   formatMXN,
   formatPercent
 } from '@/services/executiveAnalyticsEngine';
-import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
-import { OperationalEcosystemControl } from './OperationalEcosystemControl';
+import dynamic from 'next/dynamic';
 import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
-import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
-import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
-import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
-import { CEOOrganizationStudio } from './organization/CEOOrganizationStudio';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { normalizeOrgSchoolId } from '@/lib/services/organizationService';
-import { CEOEmailCommunicationsModal, IMailInitialDraftPayload } from './CEOEmailCommunicationsModal';
-import { SofiaCopilotConsole } from './SofiaCopilotConsole';
+import type { IMailInitialDraftPayload } from './CEOEmailCommunicationsModal';
 import { useAdmissionsPipeline } from '@/hooks/useAdmissionsPipeline';
 import BentoAdmissionsKanban from './BentoAdmissionsKanban';
 import { useCrmStore } from '@/store/useCrmStore';
 import { normalizeCampusKey } from '@/services/admissionsPipelineService';
 import type { CrmStageKey } from '@/types/crm';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { formatCdmxTime } from '@/utils/timeZoneUtils';
 import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
+import { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/lib/holdings/organizationHoldingConfig';
+
+export { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution };
+
+const InstitutionalBrainStudio = dynamic(
+  () => import('./InstitutionalBrainStudio').then((m) => m.InstitutionalBrainStudio),
+  { ssr: false }
+);
+const OperationalEcosystemControl = dynamic(
+  () => import('./OperationalEcosystemControl').then((m) => m.OperationalEcosystemControl),
+  { ssr: false }
+);
+const ExecutiveBiCommandCenter = dynamic(
+  () => import('./ExecutiveBiCommandCenter'),
+  { ssr: false }
+);
+const AcademicPortalAdminModal = dynamic(
+  () => import('./AcademicPortalAdminModal').then((m) => m.AcademicPortalAdminModal),
+  { ssr: false }
+);
+const CEOOrganizationStudio = dynamic(
+  () => import('./organization/CEOOrganizationStudio').then((m) => m.CEOOrganizationStudio),
+  { ssr: false }
+);
+const CEOEmailCommunicationsModal = dynamic(
+  () => import('./CEOEmailCommunicationsModal').then((m) => m.CEOEmailCommunicationsModal),
+  { ssr: false }
+);
+const SofiaCopilotConsole = dynamic(
+  () => import('./SofiaCopilotConsole').then((m) => m.SofiaCopilotConsole),
+  { ssr: false }
+);
 
 const CrmAdmissionsStudio = dynamic(
   () => import('@/components/crm/CrmAdmissionsStudio'),
@@ -131,187 +153,8 @@ const CrmAdmissionsStudio = dynamic(
   )}
 );
 
-// ==========================================
-// ==========================================
-// HOLDING OFICIAL EN PRODUCCIÓN: INSTITUTO BILINGÜE IBIME
-// (Red de 4 Planteles Oficiales en Ecatepec y Coacalco — Limpio de seeds teóricos para Producción)
-// ==========================================
-export const DEFAULT_IBIME_HOLDING: OrganizationHolding = {
-  id: 'org-ibime-holding',
-  name: 'Instituto Bilingüe IBIME',
-  slug: 'ibime',
-  tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Bachillerato UNAM CCH · 4 Planteles',
-  currency: 'MXN',
-  targetCollectionRate: 95,
-  targetCurriculumCoverage: 90,
-  targetRetentionRate: 95,
-  campuses: [
-    { 
-      id: 'montes', 
-      name: 'Campus Montes (Sede Matriz & CCH)', 
-      location: 'Jardines de Morelos Secc. Montes, Ecatepec', 
-      students: 0, 
-      teachers: 0, 
-      collectionRate: 0, 
-      admissionsInProgress: 0, 
-      academicHealth: 0, 
-      focalIssues: 0,
-      curriculumCoverage: 0,
-      retentionRate: 0
-    },
-    { 
-      id: 'lagos', 
-      name: 'Campus Lagos (Fundador 2004)', 
-      location: 'Jardines de Morelos Secc. Lagos, Ecatepec', 
-      students: 0, 
-      teachers: 0, 
-      collectionRate: 0, 
-      admissionsInProgress: 0, 
-      academicHealth: 0, 
-      focalIssues: 0,
-      curriculumCoverage: 0,
-      retentionRate: 0
-    },
-    { 
-      id: 'sancristobal', 
-      name: 'Campus San Cristóbal (Ecatepec Centro)', 
-      location: 'Av. Insurgentes, Lomas de Atzolco, Ecatepec', 
-      students: 0, 
-      teachers: 0, 
-      collectionRate: 0, 
-      admissionsInProgress: 0, 
-      academicHealth: 0, 
-      focalIssues: 0,
-      curriculumCoverage: 0,
-      retentionRate: 0
-    },
-    { 
-      id: 'coacalco', 
-      name: 'Campus Coacalco (Metropolitano)', 
-      location: 'Col. Guadalupe Victoria, Ecatepec-Coacalco', 
-      students: 0, 
-      teachers: 0, 
-      collectionRate: 0, 
-      admissionsInProgress: 0, 
-      academicHealth: 0, 
-      focalIssues: 0,
-      curriculumCoverage: 0,
-      retentionRate: 0
-    },
-  ]
-};
+// Configuración Holding extraída a @/lib/holdings/organizationHoldingConfig para code-splitting
 
-/**
- * Generador dinámico de Holding para cualquier institución o empresa dentro de ISkool.
- * Permite que cada organización (IBIME, Rosseau, Sandbox, Montessori o empresas B2B)
- * cuente con su propia suite ejecutiva completa (Visión CEO, Empresas & Plantas, Competencias, Finanzas, Bóveda, Operación).
- */
-export function buildHoldingForInstitution(
-  institution?: Institution | null,
-  campusesList?: Campus[],
-  detailedStudents?: DetailedStudent[],
-  teachersList?: any[]
-): OrganizationHolding {
-  if (!institution) return DEFAULT_IBIME_HOLDING;
-
-  const isCorp = isCorporateInstitution(institution) ||
-                 institution.id?.startsWith('emp-') ||
-                 institution.id === 'sec-empresas-ceo' ||
-                 (typeof institution.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(institution.name));
-
-  const isDemoSchool = institution.id === 'sch-demo-0001';
-  const isTestCase = Boolean(
-    institution.isTestCase ||
-    institution.id === 'sch-test-case' ||
-    (typeof institution.name === 'string' && institution.name.toLowerCase().includes('laboratorio'))
-  );
-
-  const allCampuses = campusesList || [];
-  const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
-  const schoolStudents = getSchoolStudents(detailedStudents || [], institution.id, schoolCampuses);
-  const schoolTeachers = getSchoolTeachers(teachersList || [], institution.id, schoolCampuses);
-
-  const demoCollectionRates = [96, 91, 94];
-  const demoAdmissionsCounts = [6, 5, 4];
-  const demoCurriculumRates = [95, 92, 94];
-  const demoRetentionRates = [98, 96, 97];
-  const demoFocalCounts = [1, 2, 1];
-
-  const mappedCampuses: CampusData[] = schoolCampuses.length > 0
-    ? schoolCampuses.map((c, idx) => {
-        const campStudents = schoolStudents.filter(s => s.campus_id === c.id);
-        const campTeachers = schoolTeachers.filter(t => t.campus_id === c.id);
-
-        const stCount = campStudents.length > 0
-          ? campStudents.length
-          : isTestCase
-            ? (Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || 12)
-            : (idx === 0 && schoolStudents.every(s => !schoolCampuses.some(sc => sc.id === s.campus_id)) ? schoolStudents.length : 0);
-
-        const tcCount = campTeachers.length > 0
-          ? campTeachers.length
-          : isTestCase
-            ? (Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || 2)
-            : (idx === 0 && schoolTeachers.every(t => !schoolCampuses.some(sc => sc.id === t.campus_id)) ? schoolTeachers.length : 0);
-
-        const hasActiveOperation = stCount > 0 || tcCount > 0 || isTestCase || isDemoSchool;
-
-        return {
-          id: c.id,
-          name: c.name,
-          location: c.address || `${c.name} · ${isCorp ? 'Planta / Sede Corporativa' : 'Sede Oficial'}`,
-          students: stCount,
-          teachers: tcCount,
-          collectionRate: isDemoSchool
-            ? (demoCollectionRates[idx] ?? 93)
-            : (stCount > 0 || isTestCase ? Math.max(88, 95 - (idx % 3)) : 0),
-          admissionsInProgress: isDemoSchool
-            ? (demoAdmissionsCounts[idx] ?? 4)
-            : (hasActiveOperation ? Math.floor(8 + idx * 3) : 0),
-          academicHealth: isDemoSchool
-            ? Math.max(91, 96 - (idx % 3))
-            : (hasActiveOperation ? Math.max(90, 96 - (idx % 2)) : 0),
-          focalIssues: isDemoSchool
-            ? (demoFocalCounts[idx] ?? 1)
-            : (isTestCase && idx === 1 ? 1 : 0),
-          curriculumCoverage: isDemoSchool
-            ? (demoCurriculumRates[idx] ?? 93)
-            : (hasActiveOperation ? Math.min(98, 94 + (idx % 3)) : 0),
-          retentionRate: isDemoSchool
-            ? (demoRetentionRates[idx] ?? 97)
-            : (stCount > 0 || isTestCase ? Math.min(98, 96 - (idx % 2)) : 0)
-        };
-      })
-    : [
-        {
-          id: `${institution.id}-matriz`,
-          name: isCorp ? `${institution.name} · Sede Central & Corporativo` : `${institution.name} · Plantel Central`,
-          location: institution.address || (isCorp ? 'Sede Corporativa Central' : 'Sede Central'),
-          students: schoolStudents.length > 0 ? schoolStudents.length : (isTestCase ? 450 : 0),
-          teachers: schoolTeachers.length > 0 ? schoolTeachers.length : (isTestCase ? 28 : 0),
-          collectionRate: schoolStudents.length > 0 || isTestCase ? 95 : 0,
-          admissionsInProgress: schoolStudents.length > 0 || isTestCase ? 16 : 0,
-          academicHealth: schoolStudents.length > 0 || schoolTeachers.length > 0 || isTestCase ? 96 : 0,
-          focalIssues: 0,
-          curriculumCoverage: schoolStudents.length > 0 || schoolTeachers.length > 0 || isTestCase ? 95 : 0,
-          retentionRate: schoolStudents.length > 0 || isTestCase ? 96 : 0
-        }
-      ];
-
-  return {
-    id: `org-${institution.id}-holding`,
-    name: institution.name,
-    slug: institution.id.replace('sch-', '').replace('emp-', ''),
-    tagline: institution.tagline || (isCorp
-      ? 'Consorcio corporativo de alta dirección, formación de talento y competencias laborales.'
-      : 'Institución de formación integral y excelencia académica.'),
-    currency: 'MXN',
-    targetCollectionRate: 95,
-    targetCurriculumCoverage: 90,
-    targetRetentionRate: 95,
-    campuses: mappedCampuses
-  };
-}
 
 // Base de conocimiento exhaustiva de la Bóveda Institucional IBIME (0 Tokens)
 const INSTITUTIONAL_KNOWLEDGE_BASE = [
@@ -1492,6 +1335,9 @@ export default function CEOExecutiveDashboard({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch {}
+    }, 5000);
     triggerToast(`✓ Directorio exportado con éxito (${listToExport.length} registros en CSV).`);
   };
 
@@ -2463,6 +2309,7 @@ export default function CEOExecutiveDashboard({
             {/* Selector de Campus (Consolidado vs Sede Específica) */}
             <div className="relative shrink-0">
               <select
+                aria-label="Seleccionar plantel o sede"
                 value={selectedCampusId}
                 onChange={(e) => {
                   setSelectedCampusId(e.target.value);
@@ -2484,6 +2331,7 @@ export default function CEOExecutiveDashboard({
             {isSuperUser && institutionsList.length > 0 && (
               <div className="relative hidden xl:inline-flex items-center">
                 <select
+                  aria-label="Cambiar institución activa"
                   value={schoolId || activeSchoolId || ''}
                   onChange={(e) => {
                     const newId = e.target.value;
@@ -2738,6 +2586,7 @@ export default function CEOExecutiveDashboard({
                   <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
                     <div className="relative">
                       <select
+                        aria-label="Filtrar por periodo de tiempo"
                         value={timeFilter}
                         onChange={(e) => setTimeFilter(e.target.value as any)}
                         className="appearance-none bg-transparent border-none text-xs font-bold text-slate-700 pl-3 pr-7 py-1.5 focus:outline-none cursor-pointer"
@@ -4134,6 +3983,7 @@ export default function CEOExecutiveDashboard({
                     <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
                       <span className="text-[11px] font-bold text-slate-500 pl-2">{isCorporate ? 'Planta:' : 'Sede:'}</span>
                       <select
+                        aria-label="Filtrar radar curricular por sede"
                         value={curriculumRadarCampus}
                         onChange={(e) => {
                           setCurriculumRadarCampus(e.target.value);
@@ -6052,6 +5902,7 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold text-slate-500 text-[11px]">{isCorporate ? 'Planta / Sede:' : 'Sede:'}</span>
                 <select
+                  aria-label="Filtrar prospectos por sede"
                   value={prospectFilterCampus}
                   onChange={(e) => setProspectFilterCampus(e.target.value)}
                   className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-purple-500"
@@ -6064,6 +5915,7 @@ export default function CEOExecutiveDashboard({
 
                 <span className="font-bold text-slate-500 text-[11px] ml-1">Etapa:</span>
                 <select
+                  aria-label="Filtrar prospectos por etapa"
                   value={prospectFilterStage}
                   onChange={(e) => setProspectFilterStage(e.target.value === 'all' ? 'all' : Number(e.target.value))}
                   className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-purple-500"

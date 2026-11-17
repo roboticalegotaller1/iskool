@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { QuizQuestionBlock } from '@/types/studioBlocks';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
+import { compressImageFile } from '@/utils/imageCompressor';
 import { 
   Plus, 
   Trash2, 
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { question, options, correctIndex, explanation, imageUrl, timeLimitSeconds } = block.data;
   const [showImageInput, setShowImageInput] = useState(!!imageUrl);
 
@@ -51,17 +52,20 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
     updateBlockData(block.id, { options: nextOptions, correctIndex: nextCorrect });
   };
 
-  // Subir imagen local via FileReader
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Subir imagen local comprimida (Regla 3) via FileReader
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const processed = file.type.startsWith('image/')
+        ? await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 }).catch(() => file)
+        : file;
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
           updateBlockData(block.id, { imageUrl: event.target.result as string });
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processed);
     }
   };
 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { StudioBlock } from '@/types/studioBlocks';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { TextNarrativeBlockView } from './TextNarrativeBlockView';
 import { QuizQuestionBlockView } from './QuizQuestionBlockView';
@@ -35,7 +36,13 @@ interface Props {
 }
 
 export const BlockDispatcher: React.FC<Props> = ({ block }) => {
-  const { blocks, updateBlockData, setIsNodeConfigDrawerOpen } = useActivityBuilderStore();
+  const { blocks, updateBlockData, setIsNodeConfigDrawerOpen } = useActivityBuilderStore(
+    useShallow((s) => ({
+      blocks: s.blocks,
+      updateBlockData: s.updateBlockData,
+      setIsNodeConfigDrawerOpen: s.setIsNodeConfigDrawerOpen
+    }))
+  );
 
   switch (block.type) {
     case 'historical_figure_block':

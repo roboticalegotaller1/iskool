@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export const runtime = 'nodejs';
 
@@ -9,9 +10,26 @@ export async function GET(req: NextRequest) {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
     if (!auth.authenticated) {
       return NextResponse.json(
-        { success: false, error: 'Autenticación requerida para consultar eventos de Google Calendar.' },
+        { success: false, error: 'Autenticación requerida para consultar eventos de calendario institucional.' },
         { status: 401 }
       );
+    }
+    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para consultar la agenda ejecutiva.' },
+        { status: 403 }
+      );
+    }
+    if (isDemoSandboxContext({ email: auth.user?.email, schoolId: auth.user?.school_id, userId: auth.user?.id })) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        isLiveApi: false,
+        accountEmail: auth.user?.email || 'demo.ceo@iskool.mx',
+        events: [],
+        methodUsed: 'GET',
+        synchronizedAt: new Date().toISOString(),
+      });
     }
 
     const emailParam = req.nextUrl.searchParams.get('email') || undefined;
@@ -47,6 +65,23 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Autenticación requerida para sincronizar eventos de calendario.' },
         { status: 401 }
       );
+    }
+    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para sincronizar agenda ejecutiva.' },
+        { status: 403 }
+      );
+    }
+    if (isDemoSandboxContext({ email: auth.user?.email, schoolId: auth.user?.school_id, userId: auth.user?.id })) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        isLiveApi: false,
+        accountEmail: auth.user?.email || 'demo.ceo@iskool.mx',
+        events: [],
+        synchronizedAt: new Date().toISOString(),
+        message: 'Evento procesado en entorno aislado de demostración.'
+      });
     }
 
     const body = await req.json();

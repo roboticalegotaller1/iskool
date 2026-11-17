@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, ParentMessage, Subject, UserProfile, Campus, TuitionPricing, FamilyBillingRecord, Institution, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, ROLE_HIERARCHY_LEVEL, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, resolveEffectiveSchoolId, StudentDeletionAuditLog, UserRole } from '../types';
 export { resolveEffectiveSchoolId, isPlatformSuperUser } from '../types';
 import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED, STAFF_USERS_SEED, DEFAULT_GOVERNANCE_SETTINGS, DEFAULT_DIRECTOR_LIMITS, STAFF_PAYROLL_SEED } from './seeds';
@@ -1709,13 +1710,13 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
     set((prevState) => ({
       detailedStudents: (prevState.detailedStudents || []).filter(s => s.id !== studentId),
-      studentDeletionAuditLogs: [auditLog, ...(prevState.studentDeletionAuditLogs || [])]
+      studentDeletionAuditLogs: [auditLog, ...(prevState.studentDeletionAuditLogs || [])].slice(0, 200)
     }));
 
     try {
       if (typeof localStorage !== 'undefined') {
         const existingLogs = JSON.parse(localStorage.getItem('iskool_deletion_audit_logs') || '[]');
-        localStorage.setItem('iskool_deletion_audit_logs', JSON.stringify([auditLog, ...existingLogs]));
+        localStorage.setItem('iskool_deletion_audit_logs', JSON.stringify([auditLog, ...existingLogs].slice(0, 200)));
       }
     } catch (e) {}
 
@@ -2710,6 +2711,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
     {
       name: 'iskool_school_admin_store',
       version: 6,
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any, version: number) => {
         if (persistedState) {
           const demoId = 'sch-demo-0001';

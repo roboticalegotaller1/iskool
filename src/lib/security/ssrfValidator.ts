@@ -21,6 +21,19 @@ export function isPrivateOrReservedIp(ip: string): boolean {
     return true;
   }
 
+  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1 o ::ffff:7f00:1)
+  const v4MappedDotted = clean.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+  if (v4MappedDotted) {
+    return isPrivateOrReservedIp(v4MappedDotted[1]);
+  }
+  const v4MappedHex = clean.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (v4MappedHex) {
+    const hi = parseInt(v4MappedHex[1], 16);
+    const lo = parseInt(v4MappedHex[2], 16);
+    const dotted = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+    return isPrivateOrReservedIp(dotted);
+  }
+
   // IPv4 Loopback, Link-Local y Privadas
   const ipv4Match = clean.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (ipv4Match) {

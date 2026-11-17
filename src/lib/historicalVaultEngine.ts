@@ -616,13 +616,15 @@ ${q.options.map((opt, oIdx) => `- [${oIdx === q.correctIndex ? 'x' : ' '}] ${opt
  * Validador estricto para rechazar respuestas genéricas, evasivas, con marcas
  * o que violen el canon de 1ª persona estricta.
  */
-export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
+export function isCorruptOrGenericPersonaAnswer(answer: string, characterName?: string): boolean {
   if (!answer || answer.trim().length < 20) return true;
   
   const text = answer.trim();
 
-  // Prefijos metadiscursivos prohibidos ("Como General...", "Como Doña Josefa...", etc.)
-  if (/^Como\s+[A-ZÁÉÍÓÚÑ]/i.test(text)) return true;
+  // Prefijos metadiscursivos prohibidos ("Como General...", "Como Doña Josefa...", etc.) sin rechazar expresiones legítimas ("Como dama...", "Como secretario...")
+  if (/^[Cc]omo\s+(?:General|Doña|Don|Cura|Presidente|Emperador|Tlatoani|Siervo|Prócer|Benemérito|Hidalgo|Morelos|Villa|Zapata|Allende|Juárez|Curie|Napoleón|Shakespeare|Lovelace|Lincoln|[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+[A-ZÁÉÍÓÚÑ])/.test(text)) {
+    return true;
+  }
   if (text.includes('no fue un capricho de cuartel')) return true;
   if (text.includes('Con la serenidad del deber cumplido, afirmo que')) return true;
   if (text.includes('Como General Francisco Villa')) return true;
@@ -695,14 +697,18 @@ export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
       text.includes('Héroes verdaderos') ||
       text.includes('Trayectoria') ||
       text.includes('Alicia de Roc') ||
-      /\((19\d\d|20\d\d)\)/.test(text)
+      /\((198[5-9]|199\d|20\d\d)\)/.test(text)
     ) {
       return true;
     }
   }
 
-  // Habla en 3ª persona sobre sí mismo
-  if (/^(Francisco Villa|Josefa Ortiz|Miguel Hidalgo|Benito Ju[aá]rez|Emiliano Zapata)\s+(fue|era|naci[oó]|muri[oó]|falleci[oó])/i.test(text)) {
+  // Habla en 3ª persona sobre sí mismo (protege todos los próceres, no solo 5 nombres fijos)
+  const escapedChar = characterName ? characterName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') : '';
+  const thirdPersonStart = escapedChar
+    ? new RegExp(`^(?:${escapedChar}|Francisco Villa|Josefa Ortiz|Miguel Hidalgo|Benito Ju[aá]rez|Emiliano Zapata)\\s+(?:fue|era|naci[oó]|muri[oó]|falleci[oó])`, 'i')
+    : /^(Francisco Villa|Josefa Ortiz|Miguel Hidalgo|Benito Ju[aá]rez|Emiliano Zapata)\s+(fue|era|naci[oó]|muri[oó]|falleci[oó])/i;
+  if (thirdPersonStart.test(text)) {
     return true;
   }
 

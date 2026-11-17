@@ -1645,9 +1645,30 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       rafId = requestAnimationFrame(renderFrame);
     };
 
-    rafId = requestAnimationFrame(renderFrame);
+    const handleVisibilityChange = () => {
+      if (typeof document === 'undefined') return;
+      if (document.hidden) {
+        cancelAnimationFrame(rafId);
+      } else {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(renderFrame);
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      if (!document.hidden) {
+        rafId = requestAnimationFrame(renderFrame);
+      }
+    } else {
+      rafId = requestAnimationFrame(renderFrame);
+    }
+
     return () => {
       cancelAnimationFrame(rafId);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
     };
   }, [resolvedConfig, enableSmartBustCrop, loadedSrc]);
 

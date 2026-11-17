@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { content, style, speakerName } = block.data;
 
   return (

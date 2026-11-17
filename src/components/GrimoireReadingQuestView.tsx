@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Quest, ReadingQuestContent, SubmitReadingQuestResult } from '@/types';
 import { useStudentStore, useCurrentStudentStats } from '@/store/useStudentStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   BookOpen, 
   Sparkles, 
@@ -92,9 +93,8 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
   const playSound = (type: 'laser' | 'hit' | 'victory' | 'defeat' | 'error' | 'powerup' | 'charge' | 'spell') => {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
       const now = ctx.currentTime;
 
       if (type === 'laser' || type === 'spell') {

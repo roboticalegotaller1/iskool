@@ -140,9 +140,13 @@ Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura:
   let res: Response | null = null;
   for (const targetEndpoint of candidateEndpoints) {
     try {
-      const response = await fetch(`${targetEndpoint}?key=${apiKey}`, {
+      const response = await fetch(targetEndpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(12000),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }]
         })

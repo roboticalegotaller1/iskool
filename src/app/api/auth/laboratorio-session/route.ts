@@ -35,14 +35,18 @@ const LaboratorioAuthInputSchema = z.object({
   }).optional()
 });
 
-let ephemeralLaboratorioSecret: string | null = null;
+import { getSecuritySecret } from '@/lib/security/secretManager';
+
+let testJsdomLaboratorioSecret: string | null = null;
 function getLaboratorioSecret(): string {
-  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
-  if (process.env.SUPABASE_JWT_SECRET) return process.env.SUPABASE_JWT_SECRET;
-  if (!ephemeralLaboratorioSecret) {
-    ephemeralLaboratorioSecret = globalThis.crypto.randomUUID() + '-' + Date.now().toString(36);
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'test') {
+    if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+    if (!testJsdomLaboratorioSecret) {
+      testJsdomLaboratorioSecret = 'vitest-laboratorio-hermetic-session-secret-key-2026';
+    }
+    return testJsdomLaboratorioSecret;
   }
-  return ephemeralLaboratorioSecret;
+  return getSecuritySecret('SESSION_SECRET');
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -316,11 +320,20 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    // FLUJO 3: Autenticación con Google (Callback o Sandbox Dinámico)
-    else if (auth_method === 'google' && (user?.email || email)) {
-      targetEmail = user?.email || email!;
-      targetUserId = user?.id || `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
-      resolvedProvider = 'google';
+    // FLUJO 3: Autenticación federada OAuth / Sandbox aislado
+    else if (auth_method === 'google') {
+      const candidateEmail = user?.email || email;
+      const isIsolated = candidateEmail ? resolveLaboratorioTenant(candidateEmail).is_isolated_sandbox : false;
+      if (candidateEmail && (process.env.NODE_ENV === 'test' || isIsolated)) {
+        targetEmail = candidateEmail;
+        targetUserId = user?.id || `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
+        resolvedProvider = 'google';
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'Se requiere token OAuth criptográfico verificado para iniciar sesión.' },
+          { status: 401 }
+        );
+      }
     }
     // FLUJO 4: Demostración Institucional Autorizada
     else if (auth_method === 'demo') {

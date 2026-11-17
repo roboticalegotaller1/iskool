@@ -144,12 +144,17 @@ export const NodeGraphBoard: React.FC = () => {
         if (audioRef.current) audioRef.current.pause();
         const audio = new Audio(url);
         audioRef.current = audio;
-        attachStudioBroadcastMaster(audio, {
+        const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: node.type === 'historical_figure_block' ? 'character' : 'tutor'
         });
-        audio.onended = () => setSpeakingNodeId(null);
-        audio.onerror = () => setSpeakingNodeId(null);
+        const cleanupPreview = () => {
+          setSpeakingNodeId(null);
+          try { chain?.cleanup(); } catch {}
+          try { URL.revokeObjectURL(url); } catch {}
+        };
+        audio.onended = cleanupPreview;
+        audio.onerror = cleanupPreview;
         await audio.play();
         return;
       }

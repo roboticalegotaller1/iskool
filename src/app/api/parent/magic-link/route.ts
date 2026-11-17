@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { validateApiAuth } from '@/lib/authValidator';
@@ -161,6 +162,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'Token no encontrado' }, { status: 404 });
   }
 
+  // Bloquear volcado global sin sesión autenticada cuando no se consulta por token específico
+  if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    return NextResponse.json(
+      { ok: false, error: 'Autenticación o token de enlace requerido' },
+      { status: 401 }
+    );
+  }
+
   // Enmascarar PII telefónica si la consulta general no proviene de sesión autenticada
   const maskIfUnauth = (list: MagicLinkRecord[]) =>
     auth.authenticated
@@ -180,6 +189,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { ok: false, error: 'Autenticación docente requerida para emitir Magic Link' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const records = readMagicLinksStore();
 
@@ -187,12 +204,13 @@ export async function POST(req: NextRequest) {
     const timeLabel =
       body.timeLabel ||
       now.toLocaleTimeString('es-MX', {
+        timeZone: 'America/Mexico_City',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
       }).toUpperCase();
 
-    const token = body.token || `ml_${body.studentId || 'stu'}_${Date.now().toString(36)}`;
+    const token = body.token || `ml_${crypto.randomBytes(16).toString('base64url')}`;
     const studentId = String(body.studentId || 's1');
 
     const newRecord: MagicLinkRecord = {
@@ -278,7 +296,12 @@ export async function PATCH(req: NextRequest) {
         teacherName: 'Docente Titular ISkool',
         subjectName: 'Historia & Ciencias',
         createdAt: now.toISOString(),
-        timeLabel: now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase(),
+        timeLabel: now.toLocaleTimeString('es-MX', {
+          timeZone: 'America/Mexico_City',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }).toUpperCase(),
         status: status || 'signed',
         signedAt: now.toISOString(),
         signedBy: String(signedBy || 'Tutor Familiar'),

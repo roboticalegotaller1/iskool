@@ -29,7 +29,14 @@ export async function GET(req: NextRequest) {
   const curp = escapeHtml(rawCurp);
   const level = escapeHtml(rawLevel);
   const rvoe = escapeHtml(rawRvoe);
-  const dateStr = escapeHtml(new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }));
+  const dateStr = escapeHtml(
+    new Date().toLocaleDateString('es-MX', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  );
 
   const tenantParam = req.nextUrl.searchParams.get('tenant') || '';
   const cookieTenant = req.cookies.get('tenant-id')?.value || '';

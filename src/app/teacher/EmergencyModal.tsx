@@ -7,6 +7,7 @@ import {
   Square, RefreshCw, FileText
 } from 'lucide-react';
 import { DetailedStudent, UserProfile } from '@/types';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
 // ==========================================
 // PROTOCOLOS DE SEGURIDAD NEM - CONFIGURACIÓN
@@ -360,10 +361,12 @@ export function EmergencyModal({ isOpen, onClose, currentTeacher, detailedStuden
     window.print();
   };
 
+  useAccessibleDialog(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md transition-opacity duration-300 text-left overflow-y-auto">
+    <div role="dialog" aria-modal="true" aria-label="Protocolo de Emergencia Escolar" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md transition-opacity duration-300 text-left overflow-y-auto print:static print:p-0 print:bg-white print:backdrop-blur-none print:overflow-visible">
       
       {/* Toast Notification */}
       {toastMessage && (

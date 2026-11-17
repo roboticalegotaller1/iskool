@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { 
   StudioBlock, 
   StudioBlockType, 
@@ -1567,6 +1568,7 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
     {
       name: 'iskool_activity_builder_state',
       version: 3,
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any, version: number) => {
         if (!persistedState || version < 3) {
           // Migrar al flujo evolucionado sin colisiones y con personajes diversificados

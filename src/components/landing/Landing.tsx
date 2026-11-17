@@ -1,3 +1,4 @@
+import './landing.css'
 import { LANDING_FONT_VARIABLES } from './fonts'
 import { Benefits } from './sections/Benefits'
 import { Closing } from './sections/Closing'

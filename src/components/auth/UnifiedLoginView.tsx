@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth, getDemoUser } from '@/context/AuthContext';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   GraduationCap, 
@@ -1076,17 +1077,17 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">
-              <a href="/privacidad" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/privacidad" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Política de Privacidad
-              </a>
+              </Link>
               <span aria-hidden="true">•</span>
-              <a href="/terminos" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/terminos" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Condiciones del Servicio
-              </a>
+              </Link>
               <span aria-hidden="true">•</span>
-              <a href="/" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/" className="underline hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Sitio Oficial ISkool
-              </a>
+              </Link>
             </div>
           </div>
 

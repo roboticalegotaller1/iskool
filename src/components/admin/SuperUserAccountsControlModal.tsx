@@ -23,6 +23,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import {
   ORG_SUBROLE_CATALOG,
@@ -71,6 +72,8 @@ export default function SuperUserAccountsControlModal({
   const deleteSeatNode = useOrganizationStore((s) => s.deleteSeatNode);
   const recoverNodePassword = useOrganizationStore((s) => s.recoverNodePassword);
   const toggleNodeBlock = useOrganizationStore((s) => s.toggleNodeBlock);
+
+  useAccessibleDialog(isOpen, onClose);
 
   const staffUsers = useSchoolAdminStore((s) => s.staffUsers);
   const campusesList = useSchoolAdminStore((s) => s.campusesList);
@@ -386,6 +389,9 @@ export default function SuperUserAccountsControlModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Centro de Control Total de Cuentas"
       data-testid="superuser-accounts-control-modal"
       className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
     >

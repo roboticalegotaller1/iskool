@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { compressImageFile } from '@/utils/imageCompressor';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
 import { InstitutionalMemoryOverview } from '@/components/coordinator/InstitutionalMemoryOverview';
 import { useComingSoon } from '@/components/ui/ComingSoonModal';
@@ -284,65 +285,70 @@ export default function CoordinatorDashboard() {
     file: File, 
     onSuccess: (logoUrl: string, colors?: { primary: string; secondary: string; accent: string }) => void
   ) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      if (!dataUrl) return;
+    void (async () => {
+      const processedFile = file.type.startsWith('image/')
+        ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
+        : file;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (!dataUrl) return;
 
-      const img = new window.Image();
-      img.src = dataUrl;
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            canvas.width = 50;
-            canvas.height = 50;
-            ctx.drawImage(img, 0, 0, 50, 50);
-            const imgData = ctx.getImageData(0, 0, 50, 50).data;
+        const img = new window.Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              canvas.width = 50;
+              canvas.height = 50;
+              ctx.drawImage(img, 0, 0, 50, 50);
+              const imgData = ctx.getImageData(0, 0, 50, 50).data;
 
-            let totalR = 0, totalG = 0, totalB = 0, count = 0;
-            for (let i = 0; i < imgData.length; i += 16) {
-              const alpha = imgData[i + 3];
-              if (alpha > 128) {
-                totalR += imgData[i];
-                totalG += imgData[i + 1];
-                totalB += imgData[i + 2];
-                count++;
-              }
-            }
-
-            if (count > 0) {
-              const r = (totalR / count) / 255;
-              const g = (totalG / count) / 255;
-              const b = (totalB / count) / 255;
-              const max = Math.max(r, g, b), min = Math.min(r, g, b);
-              let h = 0, s = 0, l = (max + min) / 2;
-              if (max !== min) {
-                const d = max - min;
-                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                switch(max) {
-                  case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-                  case g: h = (b - r) / d + 2; break;
-                  case b: h = (r - g) / d + 4; break;
+              let totalR = 0, totalG = 0, totalB = 0, count = 0;
+              for (let i = 0; i < imgData.length; i += 16) {
+                const alpha = imgData[i + 3];
+                if (alpha > 128) {
+                  totalR += imgData[i];
+                  totalG += imgData[i + 1];
+                  totalB += imgData[i + 2];
+                  count++;
                 }
-                h /= 6;
               }
-              const primary = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-              const secondary = `${(Math.round(h * 360) + 40) % 360} ${Math.max(20, Math.round(s * 100) - 20)}% ${Math.max(20, Math.round(l * 100) - 10)}%`;
-              const accent = `${(Math.round(h * 360) + 160) % 360} 75% 45%`;
 
-              onSuccess(dataUrl, { primary, secondary, accent });
-              return;
+              if (count > 0) {
+                const r = (totalR / count) / 255;
+                const g = (totalG / count) / 255;
+                const b = (totalB / count) / 255;
+                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h = 0, s = 0, l = (max + min) / 2;
+                if (max !== min) {
+                  const d = max - min;
+                  s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                  switch(max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                  }
+                  h /= 6;
+                }
+                const primary = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+                const secondary = `${(Math.round(h * 360) + 40) % 360} ${Math.max(20, Math.round(s * 100) - 20)}% ${Math.max(20, Math.round(l * 100) - 10)}%`;
+                const accent = `${(Math.round(h * 360) + 160) % 360} 75% 45%`;
+
+                onSuccess(dataUrl, { primary, secondary, accent });
+                return;
+              }
             }
+          } catch (e) {
+            console.warn("Logo color extraction exception:", e);
           }
-        } catch (e) {
-          console.warn("Logo color extraction exception:", e);
-        }
-        onSuccess(dataUrl);
+          onSuccess(dataUrl);
+        };
       };
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(processedFile);
+    })();
   };
 
 

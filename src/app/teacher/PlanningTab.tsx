@@ -40,6 +40,7 @@ import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { SmartBookNotebookModal } from '@/components/books/SmartBookNotebookModal';
 import { SchoolDigitalBook } from '@/types/schoolBooks';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { compressImageFile } from '@/utils/imageCompressor';
 
 // ==========================================
 // BASE DE DATOS CURRICULAR DE LA NEM 2022
@@ -954,14 +955,25 @@ export function PlanningTab({
     }
   }, []);
 
-  // Guardar historial en localStorage
+  // Guardar historial en localStorage con protección anti-cuota (máximo 30 planeaciones recientes)
   const saveHistory = (newHistory: any[]) => {
-    setPlanningsHistory(newHistory);
-    localStorage.setItem('iskool_generated_plannings', JSON.stringify(newHistory));
+    const trimmed = newHistory.slice(0, 30);
+    setPlanningsHistory(trimmed);
+    try {
+      const compact = trimmed.map(({ renderedHtml, ...rest }) => rest);
+      localStorage.setItem('iskool_generated_plannings', JSON.stringify(compact));
+    } catch {
+      try {
+        const minimal = trimmed.slice(0, 8).map(({ renderedHtml, ...rest }) => rest);
+        localStorage.setItem('iskool_generated_plannings', JSON.stringify(minimal));
+      } catch {
+        // Quota exhausted: mantener estado en memoria sin interrumpir flujo docente
+      }
+    }
   };
 
   // --- Manejadores de Archivos ---
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -975,11 +987,14 @@ export function PlanningTab({
     });
 
     if (type === 'image') {
+      const processed = file.type.startsWith('image/')
+        ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
+        : file;
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processed);
     } else {
       setImagePreview(null);
     }
@@ -1109,14 +1124,10 @@ export function PlanningTab({
     // Step 2: Si NO existe en Bóveda o se subió una imagen, activar motor de Inteligencia Artificial Pedagógica
     if (!resultPlanning) {
       console.log(`🤖 [IA NEM 2024]: Generando nueva planeación didáctica (${sessionCount} sesiones)...`);
-      if (aiApiKey.trim()) {
-        try {
-          resultPlanning = await callAiService(inputText, selectedLevel, currKey, sessionCount, imagePreview, selectedSuggestedPda);
-        } catch (err) {
-          console.error("Fallo llamada al servicio de IA, usando motor pedagógico local", err);
-          resultPlanning = generateLocalNEMPlanning(inputText, selectedLevel, currKey, sessionCount, selectedSuggestedPda, currentSubjectObj);
-        }
-      } else {
+      try {
+        resultPlanning = await callAiService(inputText, selectedLevel, currKey, sessionCount, imagePreview, selectedSuggestedPda);
+      } catch (err) {
+        console.warn("Fallo llamada al servicio de IA o sin clave activa, usando motor pedagógico local:", err);
         resultPlanning = generateLocalNEMPlanning(inputText, selectedLevel, currKey, sessionCount, selectedSuggestedPda, currentSubjectObj);
       }
     }
@@ -1149,34 +1160,36 @@ export function PlanningTab({
         setInputText(cleanTitleDisplay);
       }
 
-      // Step 3: Guardar automáticamente en la Bóveda Curricular y Sincronización Remota
-      try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (sessionData?.session?.access_token) {
-          headers['Authorization'] = `Bearer ${sessionData.session.access_token}`;
-        }
-
-        const obsSaveRes = await fetch('/api/vault', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            ...resultPlanning,
-            teacherName: isIsraelLopez ? 'Prof. Israel López Ángeles' : `${currentTeacher.first_name} ${currentTeacher.last_name}`,
-            syncGit: isIsraelLopez || true,
-            isSuperUser: isIsraelLopez
-          })
-        });
-
-        if (obsSaveRes.ok) {
-          const obsData = await obsSaveRes.json();
-          if (obsData.gitSyncStatus === 'synced_and_pushed') {
-            console.log("🚀 Planeación guardada en Bóveda Curricular y sincronizada en repositorio remoto.");
-            resultPlanning.gitSynced = true;
+      // Step 3: Guardar automáticamente en la Bóveda Curricular solo si es planeación nueva (evita duplicados en cache hit)
+      if (!foundInVault) {
+        try {
+          const { data: sessionData } = await supabase.auth.getSession();
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (sessionData?.session?.access_token) {
+            headers['Authorization'] = `Bearer ${sessionData.session.access_token}`;
           }
+
+          const obsSaveRes = await fetch('/api/vault', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              ...resultPlanning,
+              teacherName: isIsraelLopez ? 'Prof. Israel López Ángeles' : `${currentTeacher.first_name} ${currentTeacher.last_name}`,
+              syncGit: isIsraelLopez || true,
+              isSuperUser: isIsraelLopez
+            })
+          });
+
+          if (obsSaveRes.ok) {
+            const obsData = await obsSaveRes.json();
+            if (obsData.gitSyncStatus === 'synced_and_pushed') {
+              console.log("🚀 Planeación guardada en Bóveda Curricular y sincronizada en repositorio remoto.");
+              resultPlanning.gitSynced = true;
+            }
+          }
+        } catch (e) {
+          console.warn("No se pudo auto-guardar en Bóveda Curricular:", e);
         }
-      } catch (e) {
-        console.warn("No se pudo auto-guardar en Bóveda Curricular:", e);
       }
 
       // Step 4: Integración Automática 360° con todo el Ecosistema iSkool

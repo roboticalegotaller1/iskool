@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { Mission, QuestAttempt, StudentBadge, GuildBoss, GuildMemberSubmission, ShopArtifact, Quest, Badge, SubmitReadingQuestResult } from '../types';
 import { MISSIONS_SEED, BOSS_SEED, GUILD_SUBMISSIONS_SEED, DEFAULT_ARTIFACTS_SEED, SUBJECTS_SEED, BADGES_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
@@ -1408,6 +1409,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
     {
       name: 'iskool_gamification_store',
       version: 2,
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any, version: number) => {
         if (version < 2 || !persistedState?.shopArtifacts?.some((a: any) => a.id === 'art-hp-potion')) {
           return {

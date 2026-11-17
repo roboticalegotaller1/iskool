@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const YouTubeVideoBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { videoUrl, videoTitle, startAtSeconds } = block.data;
 
   const embedUrl = getYouTubeEmbedUrl(videoUrl, startAtSeconds);

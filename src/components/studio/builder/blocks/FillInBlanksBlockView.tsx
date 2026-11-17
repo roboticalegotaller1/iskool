@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const FillInBlanksBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { instructions, textWithBlanks, wordBank } = block.data;
 
   // Extraer palabras entre corchetes [palabra] para generar banco automático

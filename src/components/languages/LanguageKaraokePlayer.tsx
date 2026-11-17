@@ -484,7 +484,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
     if (recordedBlob && recordedBlob.size > 0) {
       const audioUrl = URL.createObjectURL(recordedBlob);
-      setRecordedAudioUrl(audioUrl);
+      setRecordedAudioUrl((prev) => {
+        if (prev && prev !== audioUrl) {
+          try { URL.revokeObjectURL(prev); } catch {}
+        }
+        return audioUrl;
+      });
     }
 
     if (audioStreamRef.current) {
@@ -1232,7 +1237,13 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         mediaRecorder.onstop = () => {
           const finalMime = supportedMime || mediaRecorder.mimeType || 'audio/mp4';
           const audioBlob = new Blob(audioChunksRef.current, { type: finalMime });
-          setRecordedAudioUrl(URL.createObjectURL(audioBlob));
+          const nextUrl = URL.createObjectURL(audioBlob);
+          setRecordedAudioUrl((prev) => {
+            if (prev && prev !== nextUrl) {
+              try { URL.revokeObjectURL(prev); } catch {}
+            }
+            return nextUrl;
+          });
         };
         mediaRecorder.start(100);
       } catch (e) {

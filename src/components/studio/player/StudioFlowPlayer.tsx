@@ -7,7 +7,7 @@ import { useStudentStore } from '@/store/useStudentStore';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
-import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
+import { attachStudioBroadcastMaster, getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import {
   extractExamQuestionsFromStudioBlocks,
@@ -239,14 +239,16 @@ export const StudioFlowPlayer: React.FC<Props> = ({
   const playSound = (type: 'correct' | 'wrong' | 'victory' | 'attack' | 'chest' | 'match' | 'fanfare') => {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
       const now = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
+      osc.onended = () => {
+        try { osc.disconnect(); gain.disconnect(); } catch {}
+      };
 
       if (type === 'correct' || type === 'match') {
         osc.type = 'sine';
@@ -321,12 +323,17 @@ export const StudioFlowPlayer: React.FC<Props> = ({
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        attachStudioBroadcastMaster(audio, {
+        const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
         });
-        audio.onended = () => setIsSpeakingTts(false);
-        audio.onerror = () => setIsSpeakingTts(false);
+        const cleanupPreview = () => {
+          setIsSpeakingTts(false);
+          try { chain?.cleanup(); } catch {}
+          try { URL.revokeObjectURL(url); } catch {}
+        };
+        audio.onended = cleanupPreview;
+        audio.onerror = cleanupPreview;
         await audio.play();
         return;
       }

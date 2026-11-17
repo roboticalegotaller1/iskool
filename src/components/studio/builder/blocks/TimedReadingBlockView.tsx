@@ -131,7 +131,7 @@ Su rasgo biológico más fascinante es su asombrosa capacidad de regenerar extre
 ];
 
 export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { 
     readingText = '', 
     timeLimitSeconds = 60, 

@@ -185,18 +185,23 @@ export async function middleware(request: NextRequest) {
     return createBlockedPhpResponse();
   }
 
-  // 0. Sanitización Perimetral Zero-Trust: Eliminar cualquier cabecera x-resolved-tenant spoofed del cliente entrante
-  try {
-    request.headers.delete('x-resolved-tenant');
-    request.headers.delete('x-resolved-tenant-id');
-  } catch {
-    // Si los headers son inmutables en tiempo de ejecución, se garantiza su purga en requestHeaders abajo
-  }
+  // 0. Sanitización Perimetral Zero-Trust: Eliminar cabeceras de identidad/tenant spoofed del cliente entrante
+  const strippedRequestHeaders = new Headers(request.headers);
+  strippedRequestHeaders.delete('x-resolved-tenant');
+  strippedRequestHeaders.delete('x-resolved-tenant-id');
+  strippedRequestHeaders.delete('x-user-id');
+  strippedRequestHeaders.delete('x-user-role');
+  strippedRequestHeaders.delete('x-user-tenant');
+  strippedRequestHeaders.delete('x-school-id');
 
-  // Excluir el CRM de Admisiones para demostración y evaluación sin fricción
+  const isOAuthPopupRoute =
+    pathname.startsWith('/api/auth/google') ||
+    pathname.startsWith('/api/auth/callback/google');
+
+  // Excluir el CRM de Admisiones para demostración y evaluación sin fricción (con cabeceras ya purgadas)
   if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm') || pathname === '/crm' || pathname.startsWith('/crm')) {
-    const res = NextResponse.next();
-    applyDefensiveSecurityHeaders(res);
+    const res = NextResponse.next({ request: { headers: strippedRequestHeaders } });
+    applyDefensiveSecurityHeaders(res, false, isOAuthPopupRoute);
     return res;
   }
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
@@ -267,9 +272,7 @@ export async function middleware(request: NextRequest) {
   // Si la ruta es pública o de autenticación, permitir paso directo inyectando el tenant resuelto sanitizado
   // NUNCA abortar con 404 en /login o /ibime/login ante presencia de cookies del tenant contrario
   if (isPublicOrAuthPath(pathname) || !isProtected) {
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.delete('x-resolved-tenant');
-    requestHeaders.delete('x-resolved-tenant-id');
+    const requestHeaders = new Headers(strippedRequestHeaders);
     requestHeaders.set('x-resolved-tenant', targetTenantRequired);
     requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
 
@@ -280,13 +283,12 @@ export async function middleware(request: NextRequest) {
     });
     response.headers.set('x-resolved-tenant', targetTenantRequired);
     response.headers.set('x-resolved-tenant-id', targetTenantRequired);
-    applyDefensiveSecurityHeaders(response, isAppHost);
+    applyDefensiveSecurityHeaders(response, isAppHost, isOAuthPopupRoute);
     return response;
   }
 
   // 2. Extracción y Resolución Determinista de Credenciales Criptográficas Exclusivas
   let candidateToken: string | null = null;
-  let opposingTenantCookiePresent = false;
 
   if (targetTenantRequired === 'ibime') {
     candidateToken = ibimeCookie || bearerToken || null;
@@ -313,7 +315,7 @@ export async function middleware(request: NextRequest) {
         }
       }
     );
-    applyDefensiveSecurityHeaders(response, isAppHost);
+    applyDefensiveSecurityHeaders(response, isAppHost, isOAuthPopupRoute);
     return response;
   }
 
@@ -322,18 +324,8 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     response.headers.set('Vary', 'Accept, Next-Action, RSC, Cookie, x-tenant-id');
-    applyDefensiveSecurityHeaders(response, isAppHost);
+    applyDefensiveSecurityHeaders(response, isAppHost, isOAuthPopupRoute);
     return response;
-  }
-
-  // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario:
-  // - Para API / Server Actions / Accept: application/json: Retorna 404 JSON estructurado
-  // - Para HTML y navegaciones RSC de página: Reescribe a página /404 interna sin romper el cliente
-  if (opposingTenantCookiePresent) {
-    if (isJsonExpected) {
-      return createCrossTenantNotFoundResponse();
-    }
-    return createCrossTenantRewrite404Response();
   }
 
   if (!candidateToken) {
@@ -389,11 +381,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  const userSchoolId = (verifiedUser?.school_id || '').toLowerCase();
+  const userEmailLower = (verifiedUser?.email || '').toLowerCase();
+  const isDemoAccount = userSchoolId === 'sch-demo-0001' || userEmailLower.startsWith('demo.');
   const isSuperUser =
-    userRole === 'superadmin' ||
-    userRole === 'admin' ||
-    userRole === 'owner' ||
-    userRole === 'ceo';
+    !isDemoAccount &&
+    (userRole === 'superadmin' ||
+      userRole === 'admin' ||
+      userRole === 'owner' ||
+      userRole === 'ceo');
 
   // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)
   // Si el usuario autenticado pertenece a un tenant distinto al recurso solicitado
@@ -478,9 +474,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 6. Inyección de Headers Confiables hacia Server Components
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.delete('x-resolved-tenant');
-  requestHeaders.delete('x-resolved-tenant-id');
+  const requestHeaders = new Headers(strippedRequestHeaders);
   requestHeaders.set('x-resolved-tenant', targetTenantRequired);
   requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
   requestHeaders.set('x-user-id', userId);
@@ -496,21 +490,26 @@ export async function middleware(request: NextRequest) {
   // Cabecera de respuesta para trazabilidad perimetral
   response.headers.set('x-resolved-tenant', targetTenantRequired);
   response.headers.set('x-resolved-tenant-id', targetTenantRequired);
-  applyDefensiveSecurityHeaders(response, isAppHost);
+  applyDefensiveSecurityHeaders(response, isAppHost, isOAuthPopupRoute);
 
   return response;
 }
 
-function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false) {
+function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false, isOAuthPopupRoute = false) {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   response.headers.set('Permissions-Policy', 'camera=(self), microphone=(self), autoplay=(self "https://www.youtube.com" "https://www.youtube-nocookie.com"), geolocation=(), browsing-topics=()');
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Opener-Policy', isOAuthPopupRoute ? 'same-origin-allow-popups' : 'same-origin');
   response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('X-XSS-Protection', '0');
+
+  const isDev = process.env.NODE_ENV !== 'production';
+  const scriptSrcDirective = isDev
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com https://www.youtube.com https://s.ytimg.com"
+    : "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com https://www.youtube.com https://s.ytimg.com";
 
   // CSP perimetral de máxima robustez según OWASP ASVS V14.4 / CASA Tier 3
   if (!response.headers.has('Content-Security-Policy')) {
@@ -518,7 +517,7 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
       'Content-Security-Policy',
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com https://www.youtube.com https://s.ytimg.com",
+        scriptSrcDirective,
         "style-src 'self' 'unsafe-inline' https:",
         "font-src 'self' data: https:",
         "img-src 'self' data: blob: https:",
@@ -526,6 +525,8 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
         "connect-src 'self' https: wss:",
         "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
         "frame-ancestors 'self'",
+        "form-action 'self' https://accounts.google.com",
+        "worker-src 'self' blob:",
         "object-src 'none'",
         "base-uri 'self'"
       ].join('; ')

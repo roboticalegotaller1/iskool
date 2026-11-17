@@ -18,10 +18,8 @@ export const MatterDetailDrawer: React.FC<MatterDetailProps> = ({
   onDelegate,
   onCorrect,
 }) => {
-  if (!matter) return null;
-
-  const [draft, setDraft] = useState<string>(matter.suggested_draft_reply || '');
-  const [selectedRole, setSelectedRole] = useState<string>(matter.assigned_role || 'Coordinación Primaria');
+  const [draft, setDraft] = useState<string>(matter?.suggested_draft_reply || '');
+  const [selectedRole, setSelectedRole] = useState<string>(matter?.assigned_role || 'Coordinación Primaria');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'DRAFT' | 'EVIDENCE' | 'FEEDBACK'>('DRAFT');
   const [feedbackReason, setFeedbackReason] = useState<string>('');
@@ -32,6 +30,8 @@ export const MatterDetailDrawer: React.FC<MatterDetailProps> = ({
       setSelectedRole(matter.assigned_role || 'Coordinación Primaria');
     }
   }, [matter]);
+
+  if (!matter) return null;
 
   const handleApprove = async () => {
     setIsSubmitting(true);

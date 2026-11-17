@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useBrandTheme } from '@/context/brand-theme-context';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
 export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const { theme, updateTheme } = useBrandTheme();
   const [colors, setColors] = useState(theme);
   const [isSaving, setIsSaving] = useState(false);
+
+  useAccessibleDialog(isOpen, onClose);
 
   useEffect(() => {
     if (isOpen && theme) {
@@ -28,20 +31,26 @@ export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => vo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Personalización de Marca"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+    >
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-xl font-bold text-slate-800">Herramientas: Personalización de Marca</h2>
             <p className="text-xs text-slate-500">Configura la paleta institucional de iSkool para tu colegio</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+          <button type="button" aria-label="Cerrar" onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
         </div>
 
         <div className="mt-4 space-y-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase">Nombre de la Institución</label>
             <input
+              aria-label="Nombre de la Institución"
               type="text"
               value={colors.school_name}
               onChange={(e) => handleChange('school_name', e.target.value)}
@@ -54,6 +63,7 @@ export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => vo
               <label className="block text-xs font-medium text-slate-600">Color Primario (Header & Navegación)</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
+                  aria-label="Color Primario"
                   type="color"
                   value={colors.primary_color}
                   onChange={(e) => handleChange('primary_color', e.target.value)}
@@ -67,6 +77,7 @@ export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => vo
               <label className="block text-xs font-medium text-slate-600">Color Secundario (Botones & Acciones)</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
+                  aria-label="Color Secundario"
                   type="color"
                   value={colors.secondary_color}
                   onChange={(e) => handleChange('secondary_color', e.target.value)}
@@ -80,6 +91,7 @@ export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => vo
               <label className="block text-xs font-medium text-slate-600">Color de Acento (Alertas & Tags)</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
+                  aria-label="Color de Acento"
                   type="color"
                   value={colors.accent_color}
                   onChange={(e) => handleChange('accent_color', e.target.value)}
@@ -93,6 +105,7 @@ export const BrandCustomizerModal: React.FC<{ isOpen: boolean; onClose: () => vo
               <label className="block text-xs font-medium text-slate-600">Fondo General</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
+                  aria-label="Fondo General"
                   type="color"
                   value={colors.background_color}
                   onChange={(e) => handleChange('background_color', e.target.value)}

@@ -29,8 +29,14 @@ export default function TeacherLayout({
     >
       <RoleGuard allowedRoles={['teacher', 'admin', 'superadmin', 'owner', 'director', 'coordinator']}>
         <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
+          <a
+            href="#portal-main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-slate-900 focus:text-white focus:text-xs focus:font-bold focus:shadow-lg"
+          >
+            Saltar al contenido principal
+          </a>
           <TeacherNavbar />
-          <div className="flex-1 w-full">
+          <div id="portal-main-content" tabIndex={-1} className="flex-1 w-full outline-none">
             {children}
           </div>
         </div>

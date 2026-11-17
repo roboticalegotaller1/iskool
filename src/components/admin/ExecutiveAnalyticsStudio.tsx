@@ -1042,6 +1042,9 @@ export default function ExecutiveAnalyticsStudio({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch {}
+    }, 5000);
   };
 
   // Filtrado reactivo de la tabla de datos

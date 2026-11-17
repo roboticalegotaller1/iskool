@@ -153,6 +153,19 @@ function getOrBuildVaultIndex(planningsDir: string): CachedNodeMeta[] {
     const cleanFilename = cleanString(filename);
     const cleanPath = cleanString(filePath);
 
+    // Extracción ultrarrápida de tema y PDA desde cabecera YAML (primeros 1.5 KB)
+    let cleanPda = '';
+    try {
+      const fd = fs.openSync(/*turbopackIgnore: true*/ filePath, 'r');
+      const buf = Buffer.alloc(1536);
+      const bytesRead = fs.readSync(fd, buf, 0, 1536, 0);
+      fs.closeSync(fd);
+      const head = buf.subarray(0, bytesRead).toString('utf8');
+      const temaMatch = head.match(/^(?:tema|title):\s*"?([^\n"]+)"?/im);
+      const pdaMatch = head.match(/^pda:\s*"?([^\n"]+)"?/im);
+      cleanPda = cleanString([temaMatch?.[1] || '', pdaMatch?.[1] || ''].filter(Boolean).join(' '));
+    } catch { }
+
     // Extracción ultrarrápida de tema desde el nombre del archivo
     const cleanTopic = cleanFilename.replace(/^planeacion_/, '').replace(/\.md$/, '').replace(/_/g, ' ');
 
@@ -162,7 +175,7 @@ function getOrBuildVaultIndex(planningsDir: string): CachedNodeMeta[] {
       cleanFilename,
       cleanPath,
       cleanTopic,
-      cleanPda: ''
+      cleanPda
     });
   }
 
@@ -297,7 +310,12 @@ export async function GET(request: NextRequest) {
       let topicMatches = 0;
 
       // Bono de coincidencia de frase completa directa (+10)
-      if (cleanQuery.length >= 3 && (node.cleanFilename.includes(cleanQuery) || node.cleanTopic.includes(cleanQuery))) {
+      if (
+        cleanQuery.length >= 3 &&
+        (node.cleanFilename.includes(cleanQuery) ||
+          node.cleanTopic.includes(cleanQuery) ||
+          node.cleanPda.includes(cleanQuery))
+      ) {
         score += 10;
         topicMatches++;
       }
@@ -309,6 +327,9 @@ export async function GET(request: NextRequest) {
           if (!isGenericContextWord) topicMatches++;
         } else if (node.cleanTopic.includes(word)) {
           score += isGenericContextWord ? 1 : 4;
+          if (!isGenericContextWord) topicMatches++;
+        } else if (node.cleanPda.includes(word)) {
+          score += isGenericContextWord ? 1 : 3.5;
           if (!isGenericContextWord) topicMatches++;
         } else if (node.cleanPath.includes(word)) {
           score += isGenericContextWord ? 0.5 : 2;

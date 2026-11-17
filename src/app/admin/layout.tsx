@@ -35,7 +35,15 @@ export default function AdminLayout({
       }
     >
       <RoleGuard allowedRoles={['admin', 'superadmin', 'owner', 'ceo']}>
-        {children}
+        <a
+          href="#portal-main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-slate-900 focus:text-white focus:text-xs focus:font-bold focus:shadow-lg"
+        >
+          Saltar al contenido principal
+        </a>
+        <div id="portal-main-content" tabIndex={-1} className="outline-none">
+          {children}
+        </div>
       </RoleGuard>
     </Suspense>
   );

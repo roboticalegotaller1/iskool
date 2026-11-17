@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const MinigameBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { minigameType, difficulty, items } = block.data;
   const [newItemText, setNewItemText] = useState('');
 

@@ -174,10 +174,12 @@ function syncGraphToServerAndAdminStore(
         const prevStaff = existingStaff[staffIdx];
         const keepSeedIdentity = !String(prevStaff.id || '').startsWith('usr-org-');
         existingStaff[staffIdx] = {
-          ...userProfile,
           ...prevStaff,
+          ...userProfile,
           id: keepSeedIdentity ? prevStaff.id : canonicalUserId,
           role: keepSeedIdentity ? prevStaff.role : userProfile.role,
+          first_name: node.firstName || (keepSeedIdentity ? prevStaff.first_name : undefined) || userProfile.first_name,
+          last_name: lastNames || (keepSeedIdentity ? prevStaff.last_name : undefined) || userProfile.last_name,
           is_blocked: Boolean(node.isBlocked),
           org_node_id: node.nodeId,
           org_sub_role: node.subRole,
@@ -209,10 +211,12 @@ function syncGraphToServerAndAdminStore(
           const prevTeacher = existingTeachers[tIdx];
           const keepSeedTeacher = !String(prevTeacher.id || '').startsWith('usr-org-');
           existingTeachers[tIdx] = {
-            ...teacherProfile,
             ...prevTeacher,
+            ...teacherProfile,
             id: keepSeedTeacher ? prevTeacher.id : canonicalUserId,
             role: 'teacher',
+            first_name: node.firstName || (keepSeedTeacher ? prevTeacher.first_name : undefined) || teacherProfile.first_name,
+            last_name: lastNames || (keepSeedTeacher ? prevTeacher.last_name : undefined) || teacherProfile.last_name,
             is_blocked: Boolean(node.isBlocked),
             org_node_id: node.nodeId,
             org_sub_role: node.subRole,

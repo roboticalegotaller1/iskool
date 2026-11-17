@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const data = (block as any).data || {};
 

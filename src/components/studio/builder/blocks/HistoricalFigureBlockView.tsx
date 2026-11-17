@@ -35,7 +35,7 @@ interface Props {
 }
 
 export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const data = block.data;
   const isSuperUser = useIsSuperUser();
 

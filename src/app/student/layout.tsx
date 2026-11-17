@@ -70,10 +70,16 @@ export default function StudentLayout({
             <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(99,102,241,0.18),rgba(15,23,42,0))] pointer-events-none z-0" />
             
             {/* Gamer HUD Superior */}
+            <a
+              href="#portal-main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-slate-900 focus:text-white focus:text-xs focus:font-bold focus:shadow-lg"
+            >
+              Saltar al contenido principal
+            </a>
             <StudentHUD />
 
             {/* Contenedor de Pantalla Completa Inmersivo */}
-            <div className="flex-1 w-full flex flex-col relative z-10">
+            <div id="portal-main-content" tabIndex={-1} className="flex-1 w-full flex flex-col relative z-10 outline-none">
               {children}
             </div>
           </div>

@@ -77,8 +77,8 @@ function sanitizePersonaAnswer(text: string, characterName: string): string {
     return '';
   }
 
-  // Rechazar menciones de películas, series, telenovelas, actores, créditos y años contemporáneos
-  if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(19\d\d\)|\(20\d\d\))/i.test(cleaned)) {
+  // Rechazar menciones de películas, series, telenovelas, actores, créditos y años modernos posteriores a la época histórica
+  if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(198[5-9]\)|\(199\d\)|\(20\d\d\))/i.test(cleaned)) {
     return '';
   }
 
@@ -104,7 +104,8 @@ function sanitizePersonaAnswer(text: string, characterName: string): string {
   }
 
   // Rechazar si habla de sí mismo en tercera persona como biografía enciclopédica (ej. "Francisco Villa fue...", "Josefa Ortiz nació...")
-  const thirdPersonRegex = new RegExp(`(^|\\b)(${characterName}|Josefa Ortiz|Miguel Hidalgo|Francisco Villa|Pancho Villa)\\s+(fue|era|naci[oó]|muri[oó]|falleci[oó]|lider[oó])`, 'i');
+  const safeCharacterName = characterName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const thirdPersonRegex = new RegExp(`(^|\\b)(${safeCharacterName}|Josefa Ortiz|Miguel Hidalgo|Francisco Villa|Pancho Villa)\\s+(fue|era|naci[oó]|muri[oó]|falleci[oó]|lider[oó])`, 'i');
   if (thirdPersonRegex.test(cleaned)) {
     return '';
   }
@@ -285,9 +286,12 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
           const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
           const timeoutId = controller ? setTimeout(() => controller.abort(), 5000) : null;
           try {
-            const aiRes = await fetch(`${ep}?key=${googleApiKey}`, {
+            const aiRes = await fetch(ep, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-goog-api-key': googleApiKey,
+                },
                 ...(controller ? { signal: controller.signal } : {}),
               body: JSON.stringify({
                 contents: [
@@ -345,6 +349,7 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
         try {
           const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
+            signal: AbortSignal.timeout(8000),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${openAiKey}`

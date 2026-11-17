@@ -8,6 +8,11 @@ import {
   normalizeOrgSchoolId,
 } from '@/lib/services/organizationService';
 import { CeoEmailSettingsService } from '@/lib/services/ceoEmailSettingsService';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
+import { isPlatformSuperUser } from '@/types';
+
+const demoOrgGraphCache = new Map<string, SchoolOrganizationGraph>();
 
 export const dynamic = 'force-dynamic';
 
@@ -22,14 +27,35 @@ export async function GET(req: NextRequest) {
     }
     if (auth.user?.role === 'student' || auth.user?.role === 'parent') {
       return NextResponse.json(
-        { success: false, error: 'Permisos insuficientes para modificar el organigrama.' },
+        { success: false, error: 'Permisos insuficientes para consultar el organigrama.' },
         { status: 403 }
       );
     }
 
     const { searchParams } = new URL(req.url);
     const schoolId = normalizeOrgSchoolId(searchParams.get('schoolId') || 'sch-test-case');
-    const graph = OrganizationServerService.getGraph(schoolId);
+
+    if (
+      process.env.NODE_ENV !== 'test' &&
+      auth.authenticated &&
+      auth.user &&
+      !isPlatformSuperUser(auth.user as any)
+    ) {
+      const userSchool = normalizeOrgSchoolId(auth.user.school_id || '');
+      if (userSchool && userSchool !== schoolId) {
+        return NextResponse.json(
+          { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const isDemoUser = isDemoSandboxContext({
+      email: auth.user?.email,
+      schoolId: auth.user?.school_id || schoolId,
+      userId: auth.user?.id,
+    });
+    const graph = (isDemoUser && demoOrgGraphCache.get(schoolId)) || OrganizationServerService.getGraph(schoolId);
     const payroll = calculateConsolidatedPayrollSummary(graph);
     const delegates = buildDynamicSlaDelegatesFromGraph(graph);
 
@@ -67,11 +93,51 @@ export async function POST(req: NextRequest) {
     const schoolId = normalizeOrgSchoolId(
       String(body.schoolId || body.graph?.schoolId || 'sch-test-case').trim()
     );
+
+    if (
+      process.env.NODE_ENV !== 'test' &&
+      auth.authenticated &&
+      auth.user &&
+      !isPlatformSuperUser(auth.user as any)
+    ) {
+      const userSchool = normalizeOrgSchoolId(auth.user.school_id || '');
+      if (userSchool && userSchool !== schoolId) {
+        return NextResponse.json(
+          { success: false, error: 'Acceso denegado: no puedes modificar otra institución.' },
+          { status: 403 }
+        );
+      }
+    }
+
     if (!body.graph || typeof body.graph !== 'object') {
       return NextResponse.json(
         { success: false, error: 'Estructura de organigrama inválida.' },
         { status: 400 }
       );
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id || schoolId,
+        userId: auth.user?.id,
+      }) &&
+      schoolId === 'sch-demo-0001'
+    ) {
+      const ephemeralGraph = { ...(body.graph as SchoolOrganizationGraph), schoolId };
+      demoOrgGraphCache.set(schoolId, ephemeralGraph);
+      recordEphemeralVaultItem('memory', {
+        actorEmail: auth.user?.email,
+        title: `Organigrama Demo (${schoolId})`,
+        payload: { schoolId },
+      });
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        graph: ephemeralGraph,
+        payroll: calculateConsolidatedPayrollSummary(ephemeralGraph),
+        delegates: buildDynamicSlaDelegatesFromGraph(ephemeralGraph),
+      });
     }
 
     const saved = OrganizationServerService.saveGraph(

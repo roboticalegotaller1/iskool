@@ -189,9 +189,13 @@ ACTIVIDAD ACTUAL:
 
       for (const ep of candidateEndpoints) {
         try {
-          const aiResponse = await fetch(`${ep}?key=${effectiveApiKey}`, {
+          const aiResponse = await fetch(ep, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': effectiveApiKey,
+            },
+            signal: AbortSignal.timeout(12000),
             body: JSON.stringify({
               contents: [
                 {
@@ -228,6 +232,7 @@ ACTIVIDAD ACTUAL:
       try {
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
+          signal: AbortSignal.timeout(12000),
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`

@@ -12,9 +12,11 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const receiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
+  const rawReceiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
+  const receiptId = rawReceiptId.replace(/[^a-zA-Z0-9_-]/g, '') || 'REC-2026-08102';
   const format = req.nextUrl.searchParams.get('format') || 'xml'; // 'xml' | 'pdf'
-  const uuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
+  const rawUuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
+  const uuid = rawUuid.replace(/[^a-zA-Z0-9_-]/g, '') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
   const rfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
   const taxName = req.nextUrl.searchParams.get('tax_name') || 'PÚBLICO EN GENERAL';
   const amount = Number(req.nextUrl.searchParams.get('amount')) || 3450.00;

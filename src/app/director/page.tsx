@@ -59,9 +59,14 @@ import {
   resolveEffectiveSchoolId
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, isPlatformSuperUser } from '@/types';
+import dynamic from 'next/dynamic';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
-import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
-import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
+import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/lib/holdings/organizationHoldingConfig';
+
+const CEOEmailCommunicationsModal = dynamic(
+  () => import('@/components/admin/CEOEmailCommunicationsModal').then((m) => m.CEOEmailCommunicationsModal),
+  { ssr: false }
+);
 
 type DirectorTab = 'overview' | 'governance' | 'school_control' | 'vault' | 'finances';
 

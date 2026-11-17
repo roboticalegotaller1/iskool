@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const BadgeCertificateBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { certificateTitle, recipientHonor, teacherSignatureName } = block.data;
 
   return (

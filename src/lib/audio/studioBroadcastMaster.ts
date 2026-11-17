@@ -53,6 +53,14 @@ export function unlockSharedBroadcastAudioContext(): AudioContext | null {
   }
 }
 
+/**
+ * Singleton AudioContext ligero compartido para efectos SFX de UI (hover/clicks/juegos)
+ * evitando agotar el límite de 6–8 contextos de hardware del navegador.
+ */
+export function getSharedSfxAudioContext(): AudioContext | null {
+  return unlockSharedBroadcastAudioContext();
+}
+
 function ensureGestureUnlockInstalled(): void {
   if (typeof window === 'undefined' || gestureListenersInstalled) return;
   gestureListenersInstalled = true;

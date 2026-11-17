@@ -5,7 +5,8 @@
  */
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import {
   WritingLanguage,
   LanguageLevel,
@@ -294,6 +295,7 @@ export const useWritingEngineStore = create<WritingEngineState>()(
     }),
     {
       name: 'iskool_writing_engine_store',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       partialize: (state) => ({
         selectedLanguage: state.selectedLanguage,
         selectedLevel: state.selectedLevel,

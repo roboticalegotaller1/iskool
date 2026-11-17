@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CanvasActivityJSON, ISKOOL_TEMPLATES } from '@/types';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Sparkles, Trophy, Coins, Flame, Heart, RefreshCw, 
   ArrowRight, CheckCircle2, XCircle, Clock, Volume2, 
@@ -107,14 +108,16 @@ export const InteractiveUniversalGamePlayer: React.FC<InteractiveUniversalGamePl
   const playSound = (type: 'correct' | 'wrong' | 'victory' | 'spin' | 'click') => {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
       const now = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
+      osc.onended = () => {
+        try { osc.disconnect(); gain.disconnect(); } catch {}
+      };
 
       if (type === 'correct') {
         osc.type = 'sine';

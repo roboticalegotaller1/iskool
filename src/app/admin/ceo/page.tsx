@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useMemo, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import CEOExecutiveDashboard, { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
+import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/lib/holdings/organizationHoldingConfig';
+
+const CEOExecutiveDashboard = dynamic(() => import('@/components/admin/CEOExecutiveDashboard'), { ssr: false });
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';

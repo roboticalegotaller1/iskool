@@ -79,7 +79,9 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution, isCorporateInstitution } from '@/types';
 import dynamic from 'next/dynamic';
-import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/components/admin/CEOExecutiveDashboard';
+import { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/lib/holdings/organizationHoldingConfig';
+
+const CEOExecutiveDashboard = dynamic(() => import('@/components/admin/CEOExecutiveDashboard'), { ssr: false });
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { RowActionMenu } from '@/components/ui';
@@ -90,6 +92,7 @@ import { SuperUserFourQuadrantCockpit } from '@/components/ergonomics/SuperUserF
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { getUnifiedInstitutionAccounts, normalizeOrgSchoolId } from '@/lib/services/organizationService';
 import SuperUserAccountsControlModal from '@/components/admin/SuperUserAccountsControlModal';
+import { compressImageFile } from '@/utils/imageCompressor';
 
 const ExecutiveAnalyticsStudio = dynamic(() => import('@/components/admin/ExecutiveAnalyticsStudio'), { ssr: false });
 const CEOEmailCommunicationsModal = dynamic(() => import('@/components/admin/CEOEmailCommunicationsModal').then(m => m.CEOEmailCommunicationsModal), { ssr: false });
@@ -708,17 +711,20 @@ export default function SuperUserAdminPage() {
     });
   };
 
-  // Manejo de Subida de Logotipo de Colegio
-  const handleSchoolLogoUpload = (e: React.ChangeEvent<HTMLInputElement>, schoolId: string) => {
+  // Manejo de Subida de Logotipo de Colegio (compresión WebP obligatoria Regla 3)
+  const handleSchoolLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, schoolId: string) => {
     const file = e.target.files?.[0];
     if (file) {
+      const processed = file.type.startsWith('image/')
+        ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
+        : file;
       const reader = new FileReader();
       reader.onloadend = () => {
         const logoData = reader.result as string;
         updateInstitution(schoolId, { logoUrl: logoData });
         showToast('🎨 Logotipo escolar actualizado correctamente.');
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processed);
     }
   };
 
@@ -1158,15 +1164,18 @@ export default function SuperUserAdminPage() {
     });
   };
 
-  // Manejo de Subida de Imagen del Taller
-  const handleWorkshopImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Manejo de Subida de Imagen del Taller (compresión WebP obligatoria Regla 3)
+  const handleWorkshopImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const processed = file.type.startsWith('image/')
+        ? await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 }).catch(() => file)
+        : file;
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewWorkshopForm(prev => ({ ...prev, image_url: reader.result as string }));
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processed);
     }
   };
 
@@ -1366,12 +1375,15 @@ export default function SuperUserAdminPage() {
         setBulkTextInput(text);
         parseBulkText(text);
       } else {
+        const MAX_XLSX_BYTES = 5 * 1024 * 1024;
+        if (file.size > MAX_XLSX_BYTES) {
+          alert('El archivo Excel supera el límite máximo seguro de 5 MB.');
+          return;
+        }
         try {
-          const XLSX = await import('xlsx');
+          const { convertXlsxBufferToCsv } = await import('@/utils/safeXlsxToCsv');
           const data = await file.arrayBuffer();
-          const workbook = XLSX.read(data);
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const csvText = XLSX.utils.sheet_to_csv(firstSheet);
+          const csvText = await convertXlsxBufferToCsv(data, { maxFileBytes: MAX_XLSX_BYTES, maxRows: 5000 });
           setBulkTextInput(csvText);
           parseBulkText(csvText);
         } catch {
@@ -1414,6 +1426,9 @@ export default function SuperUserAdminPage() {
     link.href = url;
     link.download = `credenciales_up_juan_jacobo_rosseau_${new Date().toISOString().substring(0, 10)}.csv`;
     link.click();
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch {}
+    }, 5000);
     showToast('Descargando archivo CSV de credenciales...');
   };
 
@@ -4673,14 +4688,17 @@ export default function SuperUserAdminPage() {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          const processed = file.type.startsWith('image/')
+                            ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
+                            : file;
                           const reader = new FileReader();
                           reader.onloadend = () => {
                             setInstEditForm(prev => ({ ...prev, logoUrl: reader.result as string }));
                           };
-                          reader.readAsDataURL(file);
+                          reader.readAsDataURL(processed);
                         }
                       }}
                     />
@@ -6731,14 +6749,17 @@ export default function SuperUserAdminPage() {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          const processed = file.type.startsWith('image/')
+                            ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
+                            : file;
                           const reader = new FileReader();
                           reader.onloadend = () => {
                             setNewSchoolForm(prev => ({ ...prev, logoUrl: reader.result as string }));
                           };
-                          reader.readAsDataURL(file);
+                          reader.readAsDataURL(processed);
                         }
                       }}
                     />

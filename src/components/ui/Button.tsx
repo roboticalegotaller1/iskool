@@ -38,20 +38,20 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
   // Estilos según variante: Minimalista (Docentes) vs Gamificado (Estudiantes)
   const variantIntentClasses = {
     minimalist: {
-      primary: 'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs transition-colors hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/50',
-      secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition-colors focus-visible:ring-2 focus-visible:ring-slate-400/50',
-      outline: 'bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold transition-colors shadow-2xs focus-visible:ring-2 focus-visible:ring-slate-300',
-      ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold transition-colors',
-      danger: 'bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-rose-500/50',
-      gold: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-amber-500/50'
+      primary: 'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs transition-colors hover:shadow-sm focus-visible:ring-2 focus-visible:ring-blue-500/50 focus-visible:ring-offset-2',
+      secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition-colors focus-visible:ring-2 focus-visible:ring-slate-400/50 focus-visible:ring-offset-2',
+      outline: 'bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold transition-colors shadow-2xs focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2',
+      ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      danger: 'bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-rose-500/50 focus-visible:ring-offset-2',
+      gold: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-black shadow-xs transition-colors focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:ring-offset-2'
     },
     gamified: {
-      primary: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-black uppercase tracking-wider border border-indigo-400/40 shadow-lg shadow-indigo-600/30 glow-indigo transition-all hover:scale-102 active:scale-95',
-      secondary: 'bg-slate-900/85 hover:bg-slate-800 text-teal-300 font-black uppercase tracking-wider border border-teal-500/40 shadow-md shadow-teal-950/40 glow-teal transition-all hover:scale-102 active:scale-95',
-      outline: 'bg-indigo-950/50 hover:bg-indigo-900/70 border-2 border-indigo-400/60 text-indigo-200 font-black uppercase tracking-wider shadow-md transition-all hover:scale-102 active:scale-95',
-      ghost: 'bg-white/5 hover:bg-white/15 text-slate-200 font-bold border border-white/10 transition-all hover:scale-102 active:scale-95',
-      danger: 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black uppercase tracking-wider border border-rose-400/40 shadow-lg shadow-rose-950/50 transition-all hover:scale-102 active:scale-95',
-      gold: 'btn-golden-action glow-gold font-black uppercase tracking-wider transition-all hover:scale-103 active:scale-95'
+      primary: 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-black uppercase tracking-wider border border-indigo-400/40 shadow-lg shadow-indigo-600/30 glow-indigo transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      secondary: 'bg-slate-900/85 hover:bg-slate-800 text-teal-300 font-black uppercase tracking-wider border border-teal-500/40 shadow-md shadow-teal-950/40 glow-teal transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      outline: 'bg-indigo-950/50 hover:bg-indigo-900/70 border-2 border-indigo-400/60 text-indigo-200 font-black uppercase tracking-wider shadow-md transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      ghost: 'bg-white/5 hover:bg-white/15 text-slate-200 font-bold border border-white/10 transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      danger: 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-black uppercase tracking-wider border border-rose-400/40 shadow-lg shadow-rose-950/50 transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2',
+      gold: 'btn-golden-action glow-gold font-black uppercase tracking-wider transition-all hover:scale-103 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2'
     }
   }[variant][intent];
 

@@ -31,10 +31,14 @@ const SRC_DIR = path.join(ROOT_DIR, 'src');
 const PROHIBITED_COMMERCIAL_BRANDS = [
   'canvas lms',
   'google classroom',
+  'google ai',
   'blackboard',
   'gemini',
   'obsidian',
-  'github'
+  'obsidean',
+  'github',
+  'kahoot',
+  'duolingo'
 ];
 
 function scanDirectory(dir: string, fileList: string[] = []): string[] {

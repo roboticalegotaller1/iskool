@@ -419,29 +419,68 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     } catch (e) {
       console.warn('DSP AudioAnalyser fallback activo:', e);
     }
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
   }, [audioElement]);
 
-  // Análisis de energía acústica cuando está hablando
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+      analyserRef.current = null;
+      sourceNodeRef.current = null;
+    };
+  }, []);
+
+  // Análisis de energía acústica cuando está hablando (con throttle ~15fps y pausa en segundo plano / reduced-motion)
   useEffect(() => {
     if (!isPlaying) {
       setAudioEnergy(0.05);
       return;
     }
 
-    const renderLoop = () => {
-      if (analyserRef.current && isPlaying) {
-        const bufferLength = analyserRef.current.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        analyserRef.current.getByteFrequencyData(dataArray);
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setAudioEnergy(0.35);
+      return;
+    }
 
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
+    const bufferLength = analyserRef.current ? analyserRef.current.frequencyBinCount : 0;
+    const dataArray = bufferLength > 0 ? new Uint8Array(bufferLength) : null;
+    let lastUpdateMs = 0;
+
+    const renderLoop = (now: number) => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        animationFrameRef.current = requestAnimationFrame(renderLoop);
+        return;
+      }
+
+      if (now - lastUpdateMs >= 66) {
+        lastUpdateMs = now;
+        if (analyserRef.current && dataArray && isPlaying) {
+          analyserRef.current.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / (dataArray.length * 255);
+          setAudioEnergy(avg);
+        } else {
+          setAudioEnergy(0.65);
         }
-        const avg = sum / (bufferLength * 255);
-        setAudioEnergy(avg);
-      } else {
-        setAudioEnergy(0.65);
       }
       animationFrameRef.current = requestAnimationFrame(renderLoop);
     };

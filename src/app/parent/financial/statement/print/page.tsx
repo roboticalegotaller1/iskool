@@ -22,7 +22,17 @@ import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 export default function AccountStatementPrintPage() {
   const [isIbime, setIsIbime] = React.useState(false);
 
+  const [dateStr, setDateStr] = React.useState('');
+
   useEffect(() => {
+    setDateStr(
+      new Date().toLocaleDateString('es-MX', {
+        timeZone: 'America/Mexico_City',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    );
     if (typeof window !== 'undefined') {
       const isIb = 
         document.documentElement.getAttribute('data-tenant') === 'ibime' ||
@@ -32,11 +42,6 @@ export default function AccountStatementPrintPage() {
       setIsIbime(isIb);
     }
   }, []);
-  const dateStr = new Date().toLocaleDateString('es-MX', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
 
   const pendingCharges = [
     {

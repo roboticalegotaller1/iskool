@@ -7,8 +7,14 @@ import { isHoneypotFilled, parseDemoRequest, validateDemoRequest } from '@/lib/l
 // Las credenciales del servidor de correo viven en variables de entorno del hosting, nunca en el código.
 export async function POST(request: Request) {
   let body: unknown
+  const contentType = (request.headers.get('content-type') || '').toLowerCase()
   try {
-    body = await request.json()
+    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      const form = await request.formData()
+      body = Object.fromEntries(form.entries())
+    } else {
+      body = await request.json()
+    }
   } catch {
     return Response.json({ ok: false }, { status: 400 })
   }
@@ -35,6 +41,9 @@ export async function POST(request: Request) {
       port,
       secure: port === 465,
       auth: { user: SMTP_USER, pass: SMTP_PASS },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000,
     })
     await transport.sendMail({
       from: { name: SITE.teamName, address: SMTP_USER },

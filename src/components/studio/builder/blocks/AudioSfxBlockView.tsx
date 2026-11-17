@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { soundType, volume, autoPlay } = block.data;
 
   const sounds = [

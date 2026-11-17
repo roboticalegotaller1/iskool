@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
 import { supabase } from '@/lib/supabaseClient';
 import { validateApiAuth } from '@/lib/authValidator';
@@ -94,10 +94,13 @@ export function normalizeExecutiveQuery(raw: string): string {
 async function generateQueryEmbedding(text: string, apiKey: string): Promise<number[] | null> {
   try {
     const endpoint = Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktZW1iZWRkaW5nLTAwMTplbWJlZENvbnRlbnQ=', 'base64').toString('ascii');
-    const url = `${endpoint}?key=${apiKey}`;
-    const response = await fetch(url, {
+    const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      signal: AbortSignal.timeout(10000),
       body: JSON.stringify({
         content: { parts: [{ text }] },
         outputDimensionality: 1536
@@ -332,6 +335,12 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { error: 'Permisos insuficientes para consultar el Oráculo Ejecutivo.' },
+        { status: 403 }
+      );
+    }
 
     const clientId = authResult.user?.id || req.headers.get('x-forwarded-for') || 'anon';
     if (!checkRateLimit(clientId)) {
@@ -426,7 +435,7 @@ Entrega siempre dos partes bien definidas:
 2. Desglose forense en Markdown con tablas compactas, métricas comparativas y porcentajes.`;
 
     const modelName = 'models/gemini-3.1-flash-lite';
-    const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
+    const generateUrl = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent`;
 
     const toolsPayload = [
       {
@@ -457,7 +466,11 @@ Entrega siempre dos partes bien definidas:
     for (let step = 0; step < 3; step++) {
       loopResponse = await fetch(generateUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
+        signal: AbortSignal.timeout(12000),
         body: JSON.stringify({
           contents: conversationContents,
           tools: toolsPayload,
@@ -532,9 +545,9 @@ Entrega siempre dos partes bien definidas:
 
     const dualOutput = synthesizeDualOutput(finalModelText);
 
-    // 6. PERSISTENCIA EN CACHÉ SEMÁNTICA (BACKGROUND PROMISE)
+    // 6. PERSISTENCIA EN CACHÉ SEMÁNTICA (AFTER RESPONSE LIFECYCLE)
     if (queryVector) {
-      (async () => {
+      const persistCache = async () => {
         try {
           await (supabase.from('bi_semantic_cache') as any).insert({
             query_normalized: normalizedQuery,
@@ -550,7 +563,12 @@ Entrega siempre dos partes bien definidas:
         } catch {
           // Ignorar fallo de inserción en caché silenciosamente
         }
-      })();
+      };
+      try {
+        after(() => { void persistCache(); });
+      } catch {
+        void persistCache();
+      }
     }
 
     return NextResponse.json({

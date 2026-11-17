@@ -46,12 +46,19 @@ type CommandCenterTab = 'governance' | 'tokens' | 'vault' | 'audit';
 
 interface SuperUserCommandCenterProps {
   onBackToDirectory?: () => void;
+  activeTabOverride?: { tab: CommandCenterTab; nonce: number } | null;
 }
 
-export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCenterProps) {
+export function SuperUserCommandCenter({ onBackToDirectory, activeTabOverride }: SuperUserCommandCenterProps) {
   const router = useRouter();
   const { login } = useAuth();
   const [activeTab, setActiveTab] = useState<CommandCenterTab>('governance');
+
+  useEffect(() => {
+    if (activeTabOverride?.tab) {
+      setActiveTab(activeTabOverride.tab);
+    }
+  }, [activeTabOverride]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'official' | 'sandbox' | 'corporate' | 'independent'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -496,7 +503,7 @@ export function SuperUserCommandCenter({ onBackToDirectory }: SuperUserCommandCe
                         <div className="mt-2.5 rounded-xl border border-emerald-200 bg-emerald-50/90 dark:bg-emerald-950/40 dark:border-emerald-800 px-3 py-2 flex items-center justify-between gap-2">
                           <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1 truncate">
                             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">Cero Bóveda · 6 Roles</span>
+                            <span className="truncate">Cero Bóveda · 7 Roles</span>
                           </span>
                           <button
                             type="button"

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const RewardChestBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { xpAmount, coinsAmount, badgeName, chestRarity } = block.data;
 
   const rarities = [

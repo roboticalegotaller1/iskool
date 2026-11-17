@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { FormattedDate } from '@/components/FormattedDate';
 import { 
   Building2, 
   Lock, 
@@ -127,7 +128,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-500">Fecha y Hora:</span>
-                <span className="text-slate-300">{new Date().toLocaleString('es-MX')}</span>
+                <span className="text-slate-300"><FormattedDate date={new Date().toISOString()} /></span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-500">Concepto:</span>

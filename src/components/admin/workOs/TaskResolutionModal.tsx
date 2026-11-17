@@ -8,6 +8,7 @@ import {
 } from '@/lib/services/workOs/workOsTypes';
 import { WorkOsService } from '@/lib/services/workOs/workOsService';
 import { EvidencePreviewModal } from './EvidencePreviewModal';
+import { compressImageFile } from '@/utils/imageCompressor';
 import {
   X,
   CheckCircle2,
@@ -111,8 +112,8 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
     activeTab === 'resolver' ? 100 : progressPercent
   );
 
-  // Manejo de carga de archivos (PDF, JPG, JPEG, DOC)
-  const handleFileUpload = (
+  // Manejo de carga de archivos (PDF, JPG, JPEG, DOC) con compresión WebP automática en imágenes
+  const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     mode: 'resolver' | 'en_proceso'
   ) => {
@@ -120,19 +121,23 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
     if (!files || files.length === 0) return;
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const ext = file.name.split('.').pop()?.toLowerCase();
+      const originalFile = files[i];
+      const ext = originalFile.name.split('.').pop()?.toLowerCase();
       
       let validExt: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx' = 'pdf';
       if (ext === 'jpg' || ext === 'jpeg') validExt = ext;
       else if (ext === 'doc' || ext === 'docx') validExt = ext;
       else validExt = 'pdf';
 
+      const processed = originalFile.type.startsWith('image/')
+        ? await compressImageFile(originalFile, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => originalFile)
+        : originalFile;
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const item = {
-          fileName: file.name,
-          fileSize: file.size,
+          fileName: processed.name,
+          fileSize: processed.size,
           fileType: validExt,
           dataUrl: event.target?.result as string,
           notes: mode === 'resolver' ? 'Evidencia de resolución de caso' : 'Avance documental de seguimiento'
@@ -144,7 +149,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
           setInProgressDocs(prev => [...prev, item]);
         }
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processed);
     }
   };
 

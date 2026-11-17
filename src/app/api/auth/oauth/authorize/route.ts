@@ -25,6 +25,27 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const ALLOWED_OAUTH_REDIRECT_ORIGINS = new Set([
+      'https://iskool.mx',
+      'https://app.iskool.mx',
+      'https://ibime.iskool.mx',
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      req.nextUrl.origin,
+    ]);
+    let parsedRedirect: URL;
+    try {
+      parsedRedirect = new URL(redirectUri);
+    } catch {
+      return NextResponse.json({ error: 'redirect_uri inválido.' }, { status: 400 });
+    }
+    if (!ALLOWED_OAUTH_REDIRECT_ORIGINS.has(parsedRedirect.origin)) {
+      return NextResponse.json(
+        { error: 'redirect_uri no pertenece a un origen institucional autorizado.' },
+        { status: 400 }
+      );
+    }
+
     if (responseType !== 'code') {
       return NextResponse.json(
         { error: 'Tipo de respuesta no soportado. Debe ser response_type=code.' },

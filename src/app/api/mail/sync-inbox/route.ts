@@ -32,6 +32,7 @@ import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { isEmailResolvedServer } from '@/app/api/mail/raw-inbox/route';
 import { validateApiAuth } from '@/lib/authValidator';
 import { validateMailTarget } from '@/lib/security/ssrfValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,9 +43,34 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+    if (auth.authenticated && ['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para sincronizar buzones institucionales.' },
+        { status: 403 }
+      );
+    }
 
     const payload = (await req.json()) as SyncInboxPayload;
     const { email, host, port, protocol, password, tenantId, institutionName, schoolSlug, manualEmail } = payload;
+
+    if (
+      auth.authenticated &&
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id,
+        userId: auth.user?.id,
+        tenantId: auth.user?.tenant_id || tenantId,
+      })
+    ) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        newMatters: [],
+        count: 0,
+        appPasswordRequired: false,
+        message: 'Sincronización aislada de correo en entorno Cuentas Demo.',
+      });
+    }
 
     if (host && port) {
       const targetCheck = validateMailTarget(host, Number(port));

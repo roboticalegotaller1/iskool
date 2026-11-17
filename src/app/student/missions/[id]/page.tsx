@@ -5,6 +5,8 @@ import { useStudentStore, useCurrentStudentStats } from '@/store/useStudentStore
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { Header } from '@/components/Header';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
+import { compressImageFile } from '@/utils/imageCompressor';
 import { Loader } from '@/components/Loader';
 import { useHydration } from '@/hooks/useHydration';
 import { 
@@ -171,11 +173,13 @@ function MissionPageContent({ params }: MissionPageContentProps) {
   // Play audio synthesizer effect
   const playRetroSound = (type: 'laser' | 'hit' | 'victory' | 'defeat' | 'error' | 'powerup' | 'charge') => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      osc.onended = () => {
+        try { osc.disconnect(); gain.disconnect(); } catch {}
+      };
       
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -283,21 +287,25 @@ function MissionPageContent({ params }: MissionPageContentProps) {
   const [isSubmissionFinished, setIsSubmissionFinished] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleRealFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRealFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const isAudio = file.type.startsWith('audio');
+    const processed = !isAudio && file.type.startsWith('image/')
+      ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
+      : file;
 
     const reader = new FileReader();
     reader.onload = (evt) => {
       const url = evt.target?.result as string;
-      const isAudio = file.type.startsWith('audio');
       setMockFile({
         url: url,
         type: isAudio ? 'audio' : 'image',
-        name: file.name
+        name: processed.name
       });
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processed);
   };
 
 

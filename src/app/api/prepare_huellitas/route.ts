@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
   sharp.cache(false);
 
-  const brainDir = 'C:/Users/kami-/.gemini/antigravity-ide/brain/857a2b8b-6bf7-44b2-a4b6-0eba05c0008a';
+  const brainDir = process.env.REDESIGN_SOURCE_ASSETS_DIR || path.join(process.cwd(), 'scratch', 'redesign_assets');
   const outputDir = path.join(process.cwd(), 'public', 'redisenos_assets', 'huellitas');
 
   if (!fs.existsSync(/*turbopackIgnore: true*/ outputDir)) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import * as PIXI from 'pixi.js';
+import { Application, Assets, Container, Graphics, Point, Sprite, Text, Texture } from 'pixi.js';
 import { useStudentStore } from '@/store/useStudentStore';
 import { DRAGON_ENEMIES_MAP, getDragonEnemyKey } from './PixiCombatView';
 
@@ -51,22 +51,22 @@ export default function DataDrivenCombatView({
   onAttackFinish
 }: DataDrivenCombatViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const appRef = useRef<PIXI.Application | null>(null);
+  const appRef = useRef<Application | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Referencias a huesos para animaciones programáticas
-  const boneBodyRefs = useRef<Map<string, PIXI.Container>>(new Map());
-  const boneArmRefs = useRef<Map<string, PIXI.Container>>(new Map());
-  const boneHeadRefs = useRef<Map<string, PIXI.Container>>(new Map());
-  const boneWeaponRefs = useRef<Map<string, PIXI.Container>>(new Map());
+  const boneBodyRefs = useRef<Map<string, Container>>(new Map());
+  const boneArmRefs = useRef<Map<string, Container>>(new Map());
+  const boneHeadRefs = useRef<Map<string, Container>>(new Map());
+  const boneWeaponRefs = useRef<Map<string, Container>>(new Map());
 
   // Referencias globales de contenedores
-  const bossRef = useRef<PIXI.Container | null>(null);
-  const bossRedRef = useRef<PIXI.Sprite | null>(null);
-  const bossCyanRef = useRef<PIXI.Sprite | null>(null);
-  const rootStageRef = useRef<PIXI.Container | null>(null);
-  const lasersRef = useRef<PIXI.Graphics | null>(null);
-  const shockwaveRef = useRef<PIXI.Graphics | null>(null);
+  const bossRef = useRef<Container | null>(null);
+  const bossRedRef = useRef<Sprite | null>(null);
+  const bossCyanRef = useRef<Sprite | null>(null);
+  const rootStageRef = useRef<Container | null>(null);
+  const lasersRef = useRef<Graphics | null>(null);
+  const shockwaveRef = useRef<Graphics | null>(null);
 
   // Parallax y Cámara
   const targetParallax = useRef({ x: 0, y: 0 });
@@ -85,13 +85,13 @@ export default function DataDrivenCombatView({
 
 
   const particles = useRef<Array<{
-    text: PIXI.Text;
+    text: Text;
     vx: number;
     vy: number;
     life: number;
   }>>([]);
 
-  const fitToHeight = (sprite: PIXI.Sprite, targetHeight: number) => {
+  const fitToHeight = (sprite: Sprite, targetHeight: number) => {
     if (sprite.texture) {
       const ratio = targetHeight / sprite.texture.height;
       sprite.scale.set(ratio);
@@ -121,7 +121,7 @@ export default function DataDrivenCombatView({
         setTimeout(() => setPetTriggerEffect(false), 2000);
         
         // Spawn floating text over pet
-        const shieldText = new PIXI.Text({
+        const shieldText = new Text({
           text: "🛡️ BARRERA MASCOTA (-15% Daño Boss)",
           style: {
             fontFamily: 'monospace',
@@ -176,31 +176,31 @@ export default function DataDrivenCombatView({
     async function initPixi() {
       if (!containerRef.current) return;
 
-      let bgTex: PIXI.Texture, bossTex: PIXI.Texture;
-      let hpFrameTex: PIXI.Texture, hpFillTex: PIXI.Texture, hpFillAltTex: PIXI.Texture;
+      let bgTex: Texture, bossTex: Texture;
+      let hpFrameTex: Texture, hpFillTex: Texture, hpFillAltTex: Texture;
       let activeDragonDef = DRAGON_ENEMIES_MAP.blood_dragon;
-      let mainDragonTex: PIXI.Texture;
-      let sparksDragonTex: PIXI.Texture | null = null;
-      const attackerTextures: Map<string, PIXI.Texture> = new Map();
+      let mainDragonTex: Texture;
+      let sparksDragonTex: Texture | null = null;
+      const attackerTextures: Map<string, Texture> = new Map();
 
       try {
-        await PIXI.Assets.load(assetsToLoad);
+        await Assets.load(assetsToLoad);
 
-        bgTex = PIXI.Assets.get('/images/rpg/combat_bg.png');
-        bossTex = PIXI.Assets.get('/images/rpg/boss_sprite.png');
+        bgTex = Assets.get('/images/rpg/combat_bg.png');
+        bossTex = Assets.get('/images/rpg/boss_sprite.png');
         
-        hpFrameTex = PIXI.Assets.get('/images/rpg/ui/Dragonhpbar.png');
-        hpFillTex = PIXI.Assets.get('/images/rpg/ui/DragonHpBar2.png');
-        hpFillAltTex = PIXI.Assets.get('/images/rpg/ui/DragonHpBar3.png');
+        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.png');
+        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.png');
+        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.png');
 
         const selectedDragonKey = getDragonEnemyKey(payload.enemy_data.name, payload.enemy_data.skin_id);
         activeDragonDef = DRAGON_ENEMIES_MAP[selectedDragonKey] || DRAGON_ENEMIES_MAP.blood_dragon;
-        mainDragonTex = PIXI.Assets.get(activeDragonDef.textureUrl) || bossTex;
-        sparksDragonTex = activeDragonDef.sparkTextureUrl ? (PIXI.Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
+        mainDragonTex = Assets.get(activeDragonDef.textureUrl) || bossTex;
+        sparksDragonTex = activeDragonDef.sparkTextureUrl ? (Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
 
         for (const attacker of payload.attackers) {
           const skinUrl = `/images/rpg/${(attacker.skin_texture_id || 'skin_marine').replace('skin_', '')}_sprite.png`;
-          const tex = PIXI.Assets.get(skinUrl) || bossTex;
+          const tex = Assets.get(skinUrl) || bossTex;
           attackerTextures.set(attacker.student_id, tex);
         }
       } catch (e) {
@@ -210,13 +210,13 @@ export default function DataDrivenCombatView({
 
       if (!active) {
         try {
-          PIXI.Assets.unload(assetsToLoad);
+          Assets.unload(assetsToLoad);
         } catch {}
         return;
       }
 
       // 2. Inicializar PixiJS Application
-      const app = new PIXI.Application();
+      const app = new Application();
       await app.init({
         width: 800,
         height: 320,
@@ -228,7 +228,7 @@ export default function DataDrivenCombatView({
       if (!active) {
         try {
           app.destroy(true, { children: true, texture: true, textureSource: true });
-          PIXI.Assets.unload(assetsToLoad);
+          Assets.unload(assetsToLoad);
         } catch {}
         return;
       }
@@ -243,18 +243,18 @@ export default function DataDrivenCombatView({
       containerRef.current.appendChild(app.canvas);
 
       // --- CONFIGURACIÓN DE CAPAS ---
-      const rootStage = new PIXI.Container();
+      const rootStage = new Container();
       app.stage.addChild(rootStage);
       rootStageRef.current = rootStage;
 
-      const bgContainer = new PIXI.Container();
+      const bgContainer = new Container();
       rootStage.addChild(bgContainer);
 
-      const mainContainer = new PIXI.Container();
+      const mainContainer = new Container();
       rootStage.addChild(mainContainer);
 
       // Fondo
-      const bgSprite = new PIXI.Sprite(bgTex);
+      const bgSprite = new Sprite(bgTex);
       bgSprite.anchor.set(0.5);
       bgSprite.position.set(400, 160);
       bgSprite.width = 860;
@@ -282,27 +282,27 @@ export default function DataDrivenCombatView({
         const tex = attackerTextures.get(attacker.student_id);
         if (!tex) return;
 
-        const charContainer = new PIXI.Container();
+        const charContainer = new Container();
         charContainer.position.set(slot.x, slot.y);
         charContainer.zIndex = slot.zIndex;
         mainContainer.addChild(charContainer);
 
         // Sombra
-        const sombra = new PIXI.Graphics();
+        const sombra = new Graphics();
         sombra.fill({ color: 0x000, alpha: 0.45 });
         sombra.ellipse(0, 36, 26, 8);
         charContainer.addChild(sombra);
 
         // --- JERARQUÍA ÓSEA (Bones) ---
-        const boneRoot = new PIXI.Container();
+        const boneRoot = new Container();
         charContainer.addChild(boneRoot);
 
         // Hueso Torso / Cuerpo
-        const boneBody = new PIXI.Container();
+        const boneBody = new Container();
         boneRoot.addChild(boneBody);
         boneBodyRefs.current.set(attacker.student_id, boneBody);
 
-        const bodySprite = new PIXI.Sprite(tex);
+        const bodySprite = new Sprite(tex);
         bodySprite.anchor.set(0.5, 0.5);
         fitToHeight(bodySprite, slot.height);
         boneBody.addChild(bodySprite);
@@ -313,40 +313,40 @@ export default function DataDrivenCombatView({
         if (attacker.role === 'Scout_Space') roleColor = 0xFF9900; // Orange
 
         // Hueso Cabeza (con visor glowing neón dinámico)
-        const boneHead = new PIXI.Container();
+        const boneHead = new Container();
         boneHead.position.set(0, -slot.height * 0.18);
         boneBody.addChild(boneHead);
         boneHeadRefs.current.set(attacker.student_id, boneHead);
 
-        const visorOverlay = new PIXI.Graphics();
+        const visorOverlay = new Graphics();
         visorOverlay.fill({ color: roleColor, alpha: 0.4 });
         visorOverlay.drawCircle(0, 0, slot.height * 0.08);
         boneHead.addChild(visorOverlay);
 
         // Hueso Brazo Derecho (apuntando al jefe)
-        const boneArmRight = new PIXI.Container();
+        const boneArmRight = new Container();
         boneArmRight.position.set(slot.height * 0.15, -slot.height * 0.1);
         boneBody.addChild(boneArmRight);
         boneArmRefs.current.set(attacker.student_id, boneArmRight);
 
         // Hueso Arma / Cañón (Focal point del láser)
-        const boneWeapon = new PIXI.Container();
+        const boneWeapon = new Container();
         boneWeapon.position.set(slot.height * 0.2, 0); // Punta del arma
         boneArmRight.addChild(boneWeapon);
         boneWeaponRefs.current.set(attacker.student_id, boneWeapon);
 
         // --- DRAGON HP BAR (OPERATOR UI) ---
-        const charHpContainer = new PIXI.Container();
+        const charHpContainer = new Container();
         charHpContainer.position.set(0, -slot.height * 0.60);
         charContainer.addChild(charHpContainer);
 
-        const hpFrameSprite = new PIXI.Sprite(hpFrameTex);
+        const hpFrameSprite = new Sprite(hpFrameTex);
         hpFrameSprite.anchor.set(0.5, 0.5);
         const hpBarWidth = 90;
         const scale = hpBarWidth / hpFrameTex.width;
         hpFrameSprite.scale.set(scale);
 
-        const hpFillSprite = new PIXI.Sprite(hpFillAltTex);
+        const hpFillSprite = new Sprite(hpFillAltTex);
         hpFillSprite.anchor.set(0.5, 0.5);
         hpFillSprite.scale.set(scale);
 
@@ -355,7 +355,7 @@ export default function DataDrivenCombatView({
         const leftX = -barW / 2;
         const topY = -barH / 2;
 
-        const hpMask = new PIXI.Graphics();
+        const hpMask = new Graphics();
         hpMask.rect(leftX, topY, barW, barH);
         hpMask.fill({ color: 0xffffff });
 
@@ -366,7 +366,7 @@ export default function DataDrivenCombatView({
 
         // Etiqueta del alumno
         const isLocal = attacker.student_id === localStudentId;
-        const nameTag = new PIXI.Text({
+        const nameTag = new Text({
           text: isLocal ? `TÚ (${attacker.name})` : attacker.name,
           style: {
             fontFamily: 'monospace',
@@ -392,14 +392,14 @@ export default function DataDrivenCombatView({
       const petType = studentAvatar?.pet_type || 'dragon';
       const petStage = studentStats?.pet_stage || 'egg';
 
-      let petContainer: PIXI.Container | null = null;
+      let petContainer: Container | null = null;
       if (petHappiness > 80) {
-        petContainer = new PIXI.Container();
+        petContainer = new Container();
         petContainer.position.set(180, 240);
         mainContainer.addChild(petContainer);
 
         // Pet shadow
-        const petShadow = new PIXI.Graphics();
+        const petShadow = new Graphics();
         petShadow.fill({ color: 0x000, alpha: 0.35 });
         petShadow.ellipse(0, 18, 16, 5);
         petContainer.addChild(petShadow);
@@ -416,7 +416,7 @@ export default function DataDrivenCombatView({
           else if (petType === 'gatito') petEmoji = petStage === 'mystic' ? '🌌🐱' : '🐱';
         }
 
-        const petSprite = new PIXI.Text({
+        const petSprite = new Text({
           text: petEmoji,
           style: {
             fontSize: 26,
@@ -427,7 +427,7 @@ export default function DataDrivenCombatView({
         petContainer.addChild(petSprite);
 
         // Name tag
-        const petName = new PIXI.Text({
+        const petName = new Text({
           text: studentAvatar?.pet_name || 'Compañero',
           style: {
             fontFamily: 'monospace',
@@ -446,18 +446,18 @@ export default function DataDrivenCombatView({
 
       // --- CREACIÓN DEL JEFE DRAGÓN ---
       const dragonHeight = activeDragonDef.scaleHeight || 195;
-      const boss = new PIXI.Container();
+      const boss = new Container();
       boss.position.set(680, 245); // Floor level at Y=245
       mainContainer.addChild(boss);
       bossRef.current = boss;
 
-      const bossSombra = new PIXI.Graphics();
+      const bossSombra = new Graphics();
       bossSombra.fill({ color: 0x000, alpha: 0.55 });
       bossSombra.ellipse(0, 5, 55, 14);
       boss.addChild(bossSombra);
 
       const dragonCenterY = -dragonHeight * 0.5;
-      const bossEscudo = new PIXI.Graphics();
+      const bossEscudo = new Graphics();
       bossEscudo.stroke({ width: 1.5, color: 0xFF00FF, alpha: 0.4 });
       bossEscudo.moveTo(0, dragonCenterY - 70);
       bossEscudo.lineTo(65, dragonCenterY - 30);
@@ -468,10 +468,10 @@ export default function DataDrivenCombatView({
       bossEscudo.closePath();
       boss.addChild(bossEscudo);
 
-      const bossMatrix = new PIXI.Container();
+      const bossMatrix = new Container();
       boss.addChild(bossMatrix);
 
-      const fitDragonSprite = (sprite: PIXI.Sprite, targetHeight: number) => {
+      const fitDragonSprite = (sprite: Sprite, targetHeight: number) => {
         sprite.anchor.set(0.5, 1.0);
         if (sprite.texture && sprite.texture.height > 0) {
           const ratio = targetHeight / sprite.texture.height;
@@ -479,7 +479,7 @@ export default function DataDrivenCombatView({
         }
       };
 
-      const bossRed = new PIXI.Sprite(mainDragonTex);
+      const bossRed = new Sprite(mainDragonTex);
       fitDragonSprite(bossRed, dragonHeight);
       bossRed.tint = 0xFF0000;
       bossRed.alpha = 0.65;
@@ -487,7 +487,7 @@ export default function DataDrivenCombatView({
       bossMatrix.addChild(bossRed);
       bossRedRef.current = bossRed;
 
-      const bossCyan = new PIXI.Sprite(mainDragonTex);
+      const bossCyan = new Sprite(mainDragonTex);
       fitDragonSprite(bossCyan, dragonHeight);
       bossCyan.tint = 0x00FFFF;
       bossCyan.alpha = 0.65;
@@ -495,25 +495,25 @@ export default function DataDrivenCombatView({
       bossMatrix.addChild(bossCyan);
       bossCyanRef.current = bossCyan;
 
-      const bossMain = new PIXI.Container();
+      const bossMain = new Container();
       bossMatrix.addChild(bossMain);
 
-      const bossMainSprite = new PIXI.Sprite(mainDragonTex);
+      const bossMainSprite = new Sprite(mainDragonTex);
       fitDragonSprite(bossMainSprite, dragonHeight);
       bossMain.addChild(bossMainSprite);
 
       // --- BOSS DRAGON HP BAR ---
-      const bossHpBarContainer = new PIXI.Container();
+      const bossHpBarContainer = new Container();
       bossHpBarContainer.position.set(0, -dragonHeight - 15);
       boss.addChild(bossHpBarContainer);
 
 
-      const bossHpFrameSprite = new PIXI.Sprite(hpFrameTex);
+      const bossHpFrameSprite = new Sprite(hpFrameTex);
       bossHpFrameSprite.anchor.set(0.5, 0.5);
       const bossHpScale = 145 / hpFrameTex.width;
       bossHpFrameSprite.scale.set(bossHpScale);
 
-      const bossHpFillSprite = new PIXI.Sprite(hpFillTex);
+      const bossHpFillSprite = new Sprite(hpFillTex);
       bossHpFillSprite.anchor.set(0.5, 0.5);
       bossHpFillSprite.scale.set(bossHpScale);
 
@@ -522,7 +522,7 @@ export default function DataDrivenCombatView({
       const bLeftX = -bBarW / 2;
       const bTopY = -bBarH / 2;
 
-      const bossHpMask = new PIXI.Graphics();
+      const bossHpMask = new Graphics();
       bossHpMask.rect(bLeftX, bTopY, bBarW, bBarH);
       bossHpMask.fill({ color: 0xffffff });
 
@@ -532,7 +532,7 @@ export default function DataDrivenCombatView({
       bossHpBarContainer.addChild(bossHpMask);
       bossHpFillSprite.mask = bossHpMask;
 
-      const bossHpText = new PIXI.Text({
+      const bossHpText = new Text({
         text: `${payload.enemy_data.hp_remaining} / ${payload.enemy_data.hp_max}`,
         style: {
           fontFamily: 'monospace',
@@ -549,12 +549,12 @@ export default function DataDrivenCombatView({
 
 
       // --- LASERS Y SHOCKWAVE ---
-      const lasers = new PIXI.Graphics();
+      const lasers = new Graphics();
       lasers.blendMode = 'add';
       mainContainer.addChild(lasers);
       lasersRef.current = lasers;
 
-      const shockwave = new PIXI.Graphics();
+      const shockwave = new Graphics();
       shockwave.blendMode = 'add';
       mainContainer.addChild(shockwave);
       shockwaveRef.current = shockwave;
@@ -727,7 +727,7 @@ export default function DataDrivenCombatView({
             if (!boneWeapon) return;
 
             // Obtener coordenadas globales del cañón usando la jerarquía ósea
-            const weaponGlobal = boneWeapon.toGlobal(new PIXI.Point(0, 0));
+            const weaponGlobal = boneWeapon.toGlobal(new Point(0, 0));
             // Ajustar del espacio de root a mainContainer
             const localMuzzleX = mainContainer.toLocal(weaponGlobal).x;
             const localMuzzleY = mainContainer.toLocal(weaponGlobal).y;
@@ -818,7 +818,7 @@ export default function DataDrivenCombatView({
         appRef.current = null;
       }
       try {
-        PIXI.Assets.unload(assetsToLoad);
+        Assets.unload(assetsToLoad);
       } catch (err) {
         console.warn("Error descargando texturas de Pixi:", err);
       }
@@ -836,7 +836,7 @@ export default function DataDrivenCombatView({
         
         for (let i = 0; i < numParticles; i++) {
           const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
-          const text = new PIXI.Text({
+          const text = new Text({
             text: glyph,
             style: {
               fontFamily: 'monospace',

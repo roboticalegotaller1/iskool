@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TimedReadingBlock, ComprehensionQuestion } from '@/types/studioBlocks';
 import { selectHistoricalSpeechVoice, stopAllIskoolAudio, playUniversalIskoolVoice, UniversalAudioController } from '@/lib/historicalVoiceEngine';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   BookOpen, 
   Clock, 
@@ -138,9 +139,8 @@ Al comprender que el calor representa la transferencia energética derivada de u
   const playSfx = (type: 'page_flip' | 'seal' | 'hit' | 'correct' | 'wrong' | 'victory') => {
     if (!soundEnabled || typeof window === 'undefined') return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
 
       if (type === 'page_flip') {
         const bufferSize = ctx.sampleRate * 0.25;

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const CheckpointGateBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { checkpointTitle, reflectionPrompt, requiredScorePercent } = block.data;
 
   return (

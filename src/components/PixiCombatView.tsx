@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import * as PIXI from 'pixi.js';
+import { Application, Assets, Container, Graphics, Rectangle, Sprite, Text, Texture } from 'pixi.js';
 import { useCoopStore, PartyAction } from '@/store/useCoopStore';
 import { useStudentStore } from '@/store/useStudentStore';
 
@@ -127,17 +127,17 @@ export default function PixiCombatView({
   enemyType
 }: PixiCombatViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const appRef = useRef<PIXI.Application | null>(null);
+  const appRef = useRef<Application | null>(null);
   const [loading, setLoading] = useState(true);
 
 
   // References
-  const bossRef = useRef<PIXI.Container | null>(null);
-  const bossRedRef = useRef<PIXI.Sprite | null>(null);
-  const bossCyanRef = useRef<PIXI.Sprite | null>(null);
-  const rootStageRef = useRef<PIXI.Container | null>(null);
-  const lasersRef = useRef<PIXI.Graphics | null>(null);
-  const shockwaveRef = useRef<PIXI.Graphics | null>(null);
+  const bossRef = useRef<Container | null>(null);
+  const bossRedRef = useRef<Sprite | null>(null);
+  const bossCyanRef = useRef<Sprite | null>(null);
+  const rootStageRef = useRef<Container | null>(null);
+  const lasersRef = useRef<Graphics | null>(null);
+  const shockwaveRef = useRef<Graphics | null>(null);
 
   // Parallax target positions
   const mousePos = useRef({ x: 0, y: 0 });
@@ -162,7 +162,7 @@ export default function PixiCombatView({
 
   // Code/binary floating particles list
   const particles = useRef<Array<{
-    text: PIXI.Text;
+    text: Text;
     vx: number;
     vy: number;
     life: number;
@@ -191,7 +191,7 @@ export default function PixiCombatView({
         setTimeout(() => setPetTriggerEffect(false), 2000);
         
         // Spawn floating text over pet
-        const shieldText = new PIXI.Text({
+        const shieldText = new Text({
           text: "🛡️ BARRERA MASCOTA (-15% Daño Boss)",
           style: {
             fontFamily: 'monospace',
@@ -229,7 +229,7 @@ export default function PixiCombatView({
   const shakeTimer = useRef(0);
 
   // Helper to scale sprites maintaining ratio
-  const fitToHeight = (sprite: PIXI.Sprite, targetHeight: number) => {
+  const fitToHeight = (sprite: Sprite, targetHeight: number) => {
     if (sprite.texture) {
       const ratio = targetHeight / sprite.texture.height;
       sprite.scale.set(ratio);
@@ -263,47 +263,47 @@ export default function PixiCombatView({
     async function initPixi() {
       if (!containerRef.current) return;
 
-      // 1. Preload all textures asynchronously before instantiating PIXI.Sprite
-      let bgTex: PIXI.Texture, bossTex: PIXI.Texture;
-      let hpFrameTex: PIXI.Texture, hpFillTex: PIXI.Texture, hpFillAltTex: PIXI.Texture;
+      // 1. Preload all textures asynchronously before instantiating Sprite
+      let bgTex: Texture, bossTex: Texture;
+      let hpFrameTex: Texture, hpFillTex: Texture, hpFillAltTex: Texture;
       let activeDragonDef: DragonEnemyDef = DRAGON_ENEMIES_MAP.blood_dragon;
-      let mainDragonTex: PIXI.Texture;
-      let sparksDragonTex: PIXI.Texture | null = null;
-      const avatarTextures = new Map<string, PIXI.Texture>();
+      let mainDragonTex: Texture;
+      let sparksDragonTex: Texture | null = null;
+      const avatarTextures = new Map<string, Texture>();
 
       try {
-        await PIXI.Assets.load(assetsToLoad);
+        await Assets.load(assetsToLoad);
 
-        bgTex = PIXI.Assets.get('/images/rpg/combat_bg.png');
-        bossTex = PIXI.Assets.get('/images/rpg/boss_sprite.png');
+        bgTex = Assets.get('/images/rpg/combat_bg.png');
+        bossTex = Assets.get('/images/rpg/boss_sprite.png');
         
         // High fidelity Dragon HP Bar UI Assets
-        hpFrameTex = PIXI.Assets.get('/images/rpg/ui/Dragonhpbar.png');
-        hpFillTex = PIXI.Assets.get('/images/rpg/ui/DragonHpBar2.png');
-        hpFillAltTex = PIXI.Assets.get('/images/rpg/ui/DragonHpBar3.png');
+        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.png');
+        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.png');
+        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.png');
 
         const selectedDragonKey = getDragonEnemyKey(guildBoss.name, enemyType || guildBoss.enemy_type);
         activeDragonDef = DRAGON_ENEMIES_MAP[selectedDragonKey] || DRAGON_ENEMIES_MAP.blood_dragon;
         
-        mainDragonTex = PIXI.Assets.get(activeDragonDef.textureUrl) || bossTex;
-        sparksDragonTex = activeDragonDef.sparkTextureUrl ? (PIXI.Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
+        mainDragonTex = Assets.get(activeDragonDef.textureUrl) || bossTex;
+        sparksDragonTex = activeDragonDef.sparkTextureUrl ? (Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
 
         // Dynamic student avatars
-        avatarTextures.set('default', PIXI.Assets.get('/images/students/default.png'));
-        avatarTextures.set('elena', PIXI.Assets.get('/images/students/elena.png'));
-        avatarTextures.set('lucas', PIXI.Assets.get('/images/students/lucas.png'));
-        avatarTextures.set('mateo', PIXI.Assets.get('/images/students/mateo.png'));
-        avatarTextures.set('santi', PIXI.Assets.get('/images/students/santi.png'));
+        avatarTextures.set('default', Assets.get('/images/students/default.png'));
+        avatarTextures.set('elena', Assets.get('/images/students/elena.png'));
+        avatarTextures.set('lucas', Assets.get('/images/students/lucas.png'));
+        avatarTextures.set('mateo', Assets.get('/images/students/mateo.png'));
+        avatarTextures.set('santi', Assets.get('/images/students/santi.png'));
 
         // RPG sprites y Bruxa Helena
-        avatarTextures.set('santi_sprite', PIXI.Assets.get('/images/rpg/santi_sprite.png'));
-        avatarTextures.set('lucas_sprite', PIXI.Assets.get('/images/rpg/lucas_sprite.png'));
+        avatarTextures.set('santi_sprite', Assets.get('/images/rpg/santi_sprite.png'));
+        avatarTextures.set('lucas_sprite', Assets.get('/images/rpg/lucas_sprite.png'));
         
-        const rawBruxaTex = PIXI.Assets.get('/images/caracteres/bruja/bruxa.png');
+        const rawBruxaTex = Assets.get('/images/caracteres/bruja/bruxa.png');
         if (rawBruxaTex) {
           try {
-            const frame = new PIXI.Rectangle(100, 0, 100, 100);
-            const croppedBruxaTex = new PIXI.Texture({
+            const frame = new Rectangle(100, 0, 100, 100);
+            const croppedBruxaTex = new Texture({
               source: rawBruxaTex.source,
               frame: frame
             });
@@ -317,7 +317,7 @@ export default function PixiCombatView({
             avatarTextures.set('helena', rawBruxaTex);
           }
         } else {
-          avatarTextures.set('elena_sprite', PIXI.Assets.get('/images/rpg/elena_sprite.png'));
+          avatarTextures.set('elena_sprite', Assets.get('/images/rpg/elena_sprite.png'));
         }
       } catch (e) {
         console.error("Error preloading combat assets:", e);
@@ -326,13 +326,13 @@ export default function PixiCombatView({
 
       if (!active) {
         try {
-          PIXI.Assets.unload(assetsToLoad);
+          Assets.unload(assetsToLoad);
         } catch {}
         return;
       }
 
       // 2. Initialize PixiJS Application
-      const app = new PIXI.Application();
+      const app = new Application();
       await app.init({
         width: 800,
         height: 320,
@@ -344,7 +344,7 @@ export default function PixiCombatView({
       if (!active) {
         try {
           app.destroy(true, { children: true, texture: true, textureSource: true });
-          PIXI.Assets.unload(assetsToLoad);
+          Assets.unload(assetsToLoad);
         } catch {}
         return;
       }
@@ -359,20 +359,20 @@ export default function PixiCombatView({
         containerRef.current.appendChild(app.canvas);
 
         // --- LAYER CONFIGURATION ---
-        const rootStage = new PIXI.Container();
+        const rootStage = new Container();
         app.stage.addChild(rootStage);
         rootStageRef.current = rootStage;
 
         // Background layer
-        const bgContainer = new PIXI.Container();
+        const bgContainer = new Container();
         rootStage.addChild(bgContainer);
 
         // Main action layer
-        const mainContainer = new PIXI.Container();
+        const mainContainer = new Container();
         rootStage.addChild(mainContainer);
 
         // --- ADD BACKGROUND ---
-        const bgSprite = new PIXI.Sprite(bgTex);
+        const bgSprite = new Sprite(bgTex);
         bgSprite.anchor.set(0.5);
         bgSprite.position.set(400, 160);
         bgSprite.width = 860;
@@ -413,8 +413,8 @@ export default function PixiCombatView({
         // --- RENDER CHARACTERS ---
         interface RenderedCharacter {
           id: string;
-          container: PIXI.Container;
-          sprite: PIXI.Sprite;
+          container: Container;
+          sprite: Sprite;
           baseX: number;
           baseY: number;
           height: number;
@@ -428,35 +428,35 @@ export default function PixiCombatView({
 
         charactersData.forEach((char, idx) => {
           const slot = slots[idx % slots.length];
-          const container = new PIXI.Container();
+          const container = new Container();
           container.position.set(slot.x, slot.y);
           mainContainer.addChild(container);
 
           // Shadow
-          const sombra = new PIXI.Graphics();
+          const sombra = new Graphics();
           sombra.fill({ color: 0x000, alpha: 0.45 });
           sombra.ellipse(0, 36, 26, 8);
           container.addChild(sombra);
 
           // Sprite
           const tex = avatarTextures.get(char.texKey) || avatarTextures.get('default')!;
-          const sprite = new PIXI.Sprite(tex);
+          const sprite = new Sprite(tex);
           sprite.anchor.set(0.5, 0.5);
           fitToHeight(sprite, slot.height);
           container.addChild(sprite);
 
           // --- DRAGON HP BAR (STUDENT UI) ---
-          const studentHpContainer = new PIXI.Container();
+          const studentHpContainer = new Container();
           studentHpContainer.position.set(0, -slot.height * 0.60);
           container.addChild(studentHpContainer);
 
-          const hpFrameSprite = new PIXI.Sprite(hpFrameTex);
+          const hpFrameSprite = new Sprite(hpFrameTex);
           hpFrameSprite.anchor.set(0.5, 0.5);
           const hpBarWidth = 90;
           const scale = hpBarWidth / hpFrameTex.width;
           hpFrameSprite.scale.set(scale);
 
-          const hpFillSprite = new PIXI.Sprite(hpFillAltTex);
+          const hpFillSprite = new Sprite(hpFillAltTex);
           hpFillSprite.anchor.set(0.5, 0.5);
           hpFillSprite.scale.set(scale);
 
@@ -465,7 +465,7 @@ export default function PixiCombatView({
           const leftX = -fullBarWidth / 2;
           const topY = -fullBarHeight / 2;
 
-          const hpMask = new PIXI.Graphics();
+          const hpMask = new Graphics();
           hpMask.rect(leftX, topY, fullBarWidth, fullBarHeight);
           hpMask.fill({ color: 0xffffff });
 
@@ -483,7 +483,7 @@ export default function PixiCombatView({
           };
 
           // Tag text
-          const tag = new PIXI.Text({
+          const tag = new Text({
             text: char.name,
             style: {
               fontFamily: 'monospace',
@@ -522,14 +522,14 @@ export default function PixiCombatView({
         const petType = studentAvatar?.pet_type || 'dragon';
         const petStage = studentStats?.pet_stage || 'egg';
 
-        let petContainer: PIXI.Container | null = null;
+        let petContainer: Container | null = null;
         if (petHappiness > 80) {
-          petContainer = new PIXI.Container();
+          petContainer = new Container();
           petContainer.position.set(160, 240);
           mainContainer.addChild(petContainer);
 
           // Pet shadow
-          const petShadow = new PIXI.Graphics();
+          const petShadow = new Graphics();
           petShadow.fill({ color: 0x000, alpha: 0.35 });
           petShadow.ellipse(0, 18, 16, 5);
           petContainer.addChild(petShadow);
@@ -546,7 +546,7 @@ export default function PixiCombatView({
             else if (petType === 'gatito') petEmoji = petStage === 'mystic' ? '🌌🐱' : '🐱';
           }
 
-          const petSprite = new PIXI.Text({
+          const petSprite = new Text({
             text: petEmoji,
             style: {
               fontSize: 26,
@@ -557,7 +557,7 @@ export default function PixiCombatView({
           petContainer.addChild(petSprite);
 
           // Name tag
-          const petName = new PIXI.Text({
+          const petName = new Text({
             text: studentAvatar?.pet_name || 'Compañero',
             style: {
               fontFamily: 'monospace',
@@ -573,18 +573,18 @@ export default function PixiCombatView({
 
         // --- CREATION OF DRAGON BOSS / ENEMY ---
         const dragonHeight = activeDragonDef.scaleHeight || 195;
-        const boss = new PIXI.Container();
+        const boss = new Container();
         boss.position.set(680, 245); // Floor level at Y=245
         mainContainer.addChild(boss);
         bossRef.current = boss;
 
-        const bossSombra = new PIXI.Graphics();
+        const bossSombra = new Graphics();
         bossSombra.fill({ color: 0x000, alpha: 0.55 });
         bossSombra.ellipse(0, 5, 55, 14);
         boss.addChild(bossSombra);
 
         const dragonCenterY = -dragonHeight * 0.5;
-        const bossEscudo = new PIXI.Graphics();
+        const bossEscudo = new Graphics();
         bossEscudo.stroke({ width: 1.5, color: 0xFF00FF, alpha: 0.4 });
         bossEscudo.moveTo(0, dragonCenterY - 70);
         bossEscudo.lineTo(65, dragonCenterY - 30);
@@ -595,11 +595,11 @@ export default function PixiCombatView({
         bossEscudo.closePath();
         boss.addChild(bossEscudo);
 
-        const bossMatrix = new PIXI.Container();
+        const bossMatrix = new Container();
         boss.addChild(bossMatrix);
 
         // Dragon anchor set to (0.5, 1.0) so feet rest on ground (Y=245) and scale adjusted to high-res image height
-        const fitDragonSprite = (sprite: PIXI.Sprite, targetHeight: number) => {
+        const fitDragonSprite = (sprite: Sprite, targetHeight: number) => {
           sprite.anchor.set(0.5, 1.0);
           if (sprite.texture && sprite.texture.height > 0) {
             const ratio = targetHeight / sprite.texture.height;
@@ -609,7 +609,7 @@ export default function PixiCombatView({
           }
         };
 
-        const bossRed = new PIXI.Sprite(mainDragonTex);
+        const bossRed = new Sprite(mainDragonTex);
         fitDragonSprite(bossRed, dragonHeight);
         bossRed.tint = 0xFF0000;
         bossRed.alpha = 0.65;
@@ -617,7 +617,7 @@ export default function PixiCombatView({
         bossMatrix.addChild(bossRed);
         bossRedRef.current = bossRed;
 
-        const bossCyan = new PIXI.Sprite(mainDragonTex);
+        const bossCyan = new Sprite(mainDragonTex);
         fitDragonSprite(bossCyan, dragonHeight);
         bossCyan.tint = 0x00FFFF;
         bossCyan.alpha = 0.65;
@@ -625,24 +625,24 @@ export default function PixiCombatView({
         bossMatrix.addChild(bossCyan);
         bossCyanRef.current = bossCyan;
 
-        const bossMain = new PIXI.Container();
+        const bossMain = new Container();
         bossMatrix.addChild(bossMain);
 
-        const bossMainSprite = new PIXI.Sprite(mainDragonTex);
+        const bossMainSprite = new Sprite(mainDragonTex);
         fitDragonSprite(bossMainSprite, dragonHeight);
         bossMain.addChild(bossMainSprite);
 
         // --- BOSS DRAGON HP BAR UI ---
-        const bossHpBarContainer = new PIXI.Container();
+        const bossHpBarContainer = new Container();
         bossHpBarContainer.position.set(0, -dragonHeight - 15);
         boss.addChild(bossHpBarContainer);
 
-        const bossHpFrameSprite = new PIXI.Sprite(hpFrameTex);
+        const bossHpFrameSprite = new Sprite(hpFrameTex);
         bossHpFrameSprite.anchor.set(0.5, 0.5);
         const bossHpScale = 145 / hpFrameTex.width;
         bossHpFrameSprite.scale.set(bossHpScale);
 
-        const bossHpFillSprite = new PIXI.Sprite(hpFillTex);
+        const bossHpFillSprite = new Sprite(hpFillTex);
         bossHpFillSprite.anchor.set(0.5, 0.5);
         bossHpFillSprite.scale.set(bossHpScale);
 
@@ -651,7 +651,7 @@ export default function PixiCombatView({
         const bLeftX = -bBarW / 2;
         const bTopY = -bBarH / 2;
 
-        const bossHpMask = new PIXI.Graphics();
+        const bossHpMask = new Graphics();
         bossHpMask.rect(bLeftX, bTopY, bBarW, bBarH);
         bossHpMask.fill({ color: 0xffffff });
 
@@ -661,7 +661,7 @@ export default function PixiCombatView({
         bossHpBarContainer.addChild(bossHpMask);
         bossHpFillSprite.mask = bossHpMask;
 
-        const bossHpText = new PIXI.Text({
+        const bossHpText = new Text({
           text: `${guildBoss.hp_actual} / ${guildBoss.hp_max}`,
           style: {
             fontFamily: 'monospace',
@@ -679,12 +679,12 @@ export default function PixiCombatView({
 
 
       // --- LASERS AND ATTACKS ---
-      const lasers = new PIXI.Graphics();
+      const lasers = new Graphics();
       lasers.blendMode = 'add';
       mainContainer.addChild(lasers);
       lasersRef.current = lasers;
 
-      const shockwave = new PIXI.Graphics();
+      const shockwave = new Graphics();
       shockwave.blendMode = 'add';
       mainContainer.addChild(shockwave);
       shockwaveRef.current = shockwave;
@@ -711,7 +711,7 @@ export default function PixiCombatView({
             const numParticles = 15 + Math.floor(Math.random() * 10);
             for (let i = 0; i < numParticles; i++) {
               const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
-              const text = new PIXI.Text({
+              const text = new Text({
                 text: glyph,
                 style: {
                   fontFamily: 'monospace',
@@ -739,7 +739,7 @@ export default function PixiCombatView({
           playSound('charge');
         }
 
-        const projectile = new PIXI.Graphics();
+        const projectile = new Graphics();
         projectile.blendMode = 'add';
         projectile.fill({ color: 0xFF00FF, alpha: 0.85 });
         projectile.drawCircle(0, 0, 10);
@@ -763,7 +763,7 @@ export default function PixiCombatView({
           projectile.position.set(currentX, currentY);
 
           // Sparkle trail
-          const trail = new PIXI.Graphics();
+          const trail = new Graphics();
           trail.fill({ color: 0xFF99FF, alpha: 0.4 });
           trail.drawCircle(0, 0, 5);
           trail.position.set(currentX, currentY);
@@ -796,7 +796,7 @@ export default function PixiCombatView({
             }, 500);
             
             // Floating damage indicators
-            const damageText = new PIXI.Text({
+            const damageText = new Text({
               text: `-${damage} HP\n(${studentName})`,
               style: {
                 fontFamily: 'monospace',
@@ -928,7 +928,7 @@ export default function PixiCombatView({
             
             // Spawn violet smoke particles
             if (Math.random() > 0.45 && boss.alpha > 0.05) {
-              const text = new PIXI.Text({
+              const text = new Text({
                 text: Math.random() > 0.5 ? '🔮' : '✨',
                 style: { fontSize: 12 + Math.floor(Math.random() * 12) }
               });
@@ -991,7 +991,7 @@ export default function PixiCombatView({
         }
 
         // Helper to draw muzzle flashes
-        const drawMuzzleFlash = (g: PIXI.Graphics, x: number, y: number, radius: number, color: number) => {
+        const drawMuzzleFlash = (g: Graphics, x: number, y: number, radius: number, color: number) => {
           g.fill({ color, alpha: 0.35 });
           g.drawCircle(x, y, radius * 1.55);
           g.fill({ color: 0xFFFFFF, alpha: 0.9 });
@@ -1148,7 +1148,7 @@ export default function PixiCombatView({
         appRef.current = null;
       }
       try {
-        PIXI.Assets.unload(assetsToLoad);
+        Assets.unload(assetsToLoad);
       } catch (err) {
         console.warn("Error descargando texturas de Pixi:", err);
       }
@@ -1168,7 +1168,7 @@ export default function PixiCombatView({
           const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
           const size = 10 + Math.floor(Math.random() * 8);
           
-          const text = new PIXI.Text({
+          const text = new Text({
             text: glyph,
             style: {
               fontFamily: 'monospace',
@@ -1192,7 +1192,7 @@ export default function PixiCombatView({
       }
     } else if (combatState === 'victory' && appRef.current) {
       // Majestic victory float text: ¡HECHIZO COMPLETADO! +[X] Puntos para tu Casa
-      const text = new PIXI.Text({
+      const text = new Text({
         text: `¡HECHIZO COMPLETADO!\n+${guildBoss.xp_reward} Puntos para tu Casa`,
         style: {
           fontFamily: 'serif',

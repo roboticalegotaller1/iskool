@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const OpenPollWordcloudBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { prompt, minWords, aiFeedbackRubric } = block.data;
 
   return (

@@ -11,6 +11,7 @@ import {
 import { DetailedStudent, Group, ClassSchedule, Subject, Attendance, AttendanceStatus } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
 interface AttendanceCompendiumModalProps {
   isOpen: boolean;
@@ -414,6 +415,9 @@ export function AttendanceCompendiumModal({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch {}
+    }, 5000);
   };
 
   // Función para disparar impresión optimizada
@@ -421,13 +425,15 @@ export function AttendanceCompendiumModal({
     window.print();
   };
 
+  useAccessibleDialog(isOpen, onClose);
+
   if (!isOpen) return null;
 
   const currentGroupObj = groupsList.find(g => g.id === selectedGroupId);
   const currentSubjectObj = subjects.find(s => s.id === selectedSubjectId);
 
   return (
-    <div id="compendium-modal-root" className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-zinc-950/75 backdrop-blur-md animate-in fade-in duration-200 print:static print:p-0 print:bg-white print:backdrop-blur-none print:z-auto print:block">
+    <div id="compendium-modal-root" role="dialog" aria-modal="true" aria-label="Compendio de Asistencia Escolar" className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-zinc-950/75 backdrop-blur-md animate-in fade-in duration-200 print:static print:p-0 print:bg-white print:backdrop-blur-none print:z-auto print:block">
       
       {/* Estilos globales específicos para impresión ultra compacta y legible */}
       <style jsx global>{`

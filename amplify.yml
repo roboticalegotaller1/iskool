@@ -20,8 +20,16 @@ frontend:
         - if [ -n "$SMTP_PORT" ]; then echo "SMTP_PORT=$SMTP_PORT" >> .env.production; fi
         - if [ -n "$SMTP_USER" ]; then echo "SMTP_USER=$SMTP_USER" >> .env.production; fi
         - if [ -n "$SMTP_PASS" ]; then echo "SMTP_PASS=$SMTP_PASS" >> .env.production; fi
-        - if [ -n "$MOTOR_IA_API_KEY" ]; then echo "MOTOR_IA_API_KEY=$MOTOR_IA_API_KEY" >> .env.production; fi
-        - if [ -n "$AI_API_KEY" ]; then echo "AI_API_KEY=$AI_API_KEY" >> .env.production; fi
+        - if [ -n "$MOTOR_IA_API_KEY" ]; then printf '%s=%s\n' "MOTOR_IA_API_KEY" "$MOTOR_IA_API_KEY" >> .env.production; fi
+        - if [ -n "$AI_API_KEY" ]; then printf '%s=%s\n' "AI_API_KEY" "$AI_API_KEY" >> .env.production; fi
+        - if [ -n "$TOKEN_ENCRYPTION_SECRET" ]; then printf '%s=%s\n' "TOKEN_ENCRYPTION_SECRET" "$TOKEN_ENCRYPTION_SECRET" >> .env.production; fi
+        - if [ -n "$OAUTH_SECRET" ]; then printf '%s=%s\n' "OAUTH_SECRET" "$OAUTH_SECRET" >> .env.production; fi
+        - if [ -n "$PAYMENT_GATEWAY_SECRET" ]; then printf '%s=%s\n' "PAYMENT_GATEWAY_SECRET" "$PAYMENT_GATEWAY_SECRET" >> .env.production; fi
+        - if [ -n "$PAYMENT_GATEWAY_WEBHOOK_SECRET" ]; then printf '%s=%s\n' "PAYMENT_GATEWAY_WEBHOOK_SECRET" "$PAYMENT_GATEWAY_WEBHOOK_SECRET" >> .env.production; fi
+        - if [ -n "$GAME_SECURITY_SECRET" ]; then printf '%s=%s\n' "GAME_SECURITY_SECRET" "$GAME_SECURITY_SECRET" >> .env.production; fi
+        - if [ -n "$INTERNAL_SERVICE_SECRET" ]; then printf '%s=%s\n' "INTERNAL_SERVICE_SECRET" "$INTERNAL_SERVICE_SECRET" >> .env.production; fi
+        - if [ -n "$RAILS_INGESTION_SECRET" ]; then printf '%s=%s\n' "RAILS_INGESTION_SECRET" "$RAILS_INGESTION_SECRET" >> .env.production; fi
+        - if [ -n "$VAULT_RECONCILE_SECRET" ]; then printf '%s=%s\n' "VAULT_RECONCILE_SECRET" "$VAULT_RECONCILE_SECRET" >> .env.production; fi
     build:
       commands:
         - npm run build

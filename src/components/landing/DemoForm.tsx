@@ -82,10 +82,9 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
     <form
       ref={formRef}
       noValidate
-      // Destino nativo si el envío ocurre sin JavaScript o antes de hidratar: abre el correo del visitante, nunca la URL del sitio.
-      action={`mailto:${email}`}
+      // Destino seguro same-origin si el envío ocurre antes de hidratar (evita advertencia Mixed Content sobre HTTPS).
+      action="/api/demo"
       method="post"
-      encType="text/plain"
       onSubmit={onSend}
       className="rounded-[2rem] border border-lp-navy/10 bg-white p-6 shadow-[0_30px_70px_-40px_rgba(11,27,63,0.55)] sm:p-9"
     >

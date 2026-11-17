@@ -24,11 +24,14 @@ import {
 } from 'lucide-react';
 
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
 export const GlobalHelpFab: React.FC = () => {
   const pathname = usePathname();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  useAccessibleDialog(isOpen, () => setIsOpen(false));
 
   // Integración con el estado del Taller de Actividades para evitar solapar botones de configuración
   const isNodeConfigDrawerOpen = useActivityBuilderStore((s) => s.isNodeConfigDrawerOpen);
@@ -85,7 +88,12 @@ export const GlobalHelpFab: React.FC = () => {
 
       {/* Cajón Lateral Deslizante de Asistencia Rápida */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden print:hidden">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Asistencia Rápida ISkool"
+          className="fixed inset-0 z-50 overflow-hidden print:hidden"
+        >
           {/* Fondo semi-transparente */}
           <div 
             className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in"

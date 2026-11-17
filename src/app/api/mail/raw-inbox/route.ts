@@ -5,6 +5,7 @@ import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
 import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs, sanitizeCommercialTrademarks, decodeEmailBodyOrSnippet } from '@/utils/timeZoneUtils';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export const runtime = 'nodejs';
 
@@ -225,9 +226,35 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
+    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para acceder al buzón ejecutivo.' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    if (
+      isDemoSandboxContext({
+        email: authResult.user?.email,
+        schoolId: authResult.user?.school_id,
+        userId: authResult.user?.id,
+        tenantId: authResult.user?.tenant_id || tenantId,
+      })
+    ) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        authenticated: true,
+        requiresAppPassword: false,
+        emails: getFallbackRawEmails(authResult.user?.email || 'sandbox@iskool.mx'),
+        total: 0,
+        unreadCount: 0,
+        connectedEmail: authResult.user?.email || 'demo.ceo@iskool.mx',
+        lastSyncTime: 'Entorno Demo Aislado',
+      });
+    }
     let rawEmail = (searchParams.get('email') || '').trim();
     if (!rawEmail || rawEmail === 'DISCONNECTED') {
       if (tenantId === 'e1000000-0000-0000-0000-000000000001' || tenantId.includes('ibime')) {
@@ -625,6 +652,12 @@ export async function POST(request: NextRequest) {
 
     // Para sincronizar o inyectar buzón, se requiere o sesión autenticada o credenciales directas de cuenta (email)
     const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (authResult.authenticated && ['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para operar en el buzón ejecutivo.' },
+        { status: 403 }
+      );
+    }
     if (!authResult.authenticated && !body.email && !body.injectEmail) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
@@ -1006,6 +1039,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
         { status: 401 }
+      );
+    }
+    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para eliminar correos ejecutivos.' },
+        { status: 403 }
       );
     }
     const body = await request.json().catch(() => ({}));

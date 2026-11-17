@@ -385,12 +385,17 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audio.playbackRate = ttsSpeed;
-        attachStudioBroadcastMaster(audio, {
+        const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
         });
-        audio.onended = () => setIsSimulatorSpeaking(false);
-        audio.onerror = () => setIsSimulatorSpeaking(false);
+        const cleanupPreview = () => {
+          setIsSimulatorSpeaking(false);
+          try { chain?.cleanup(); } catch {}
+          try { URL.revokeObjectURL(url); } catch {}
+        };
+        audio.onended = cleanupPreview;
+        audio.onerror = cleanupPreview;
         await audio.play();
         return;
       }

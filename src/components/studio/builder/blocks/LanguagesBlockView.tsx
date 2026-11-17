@@ -10,6 +10,7 @@ import {
   LanguagesEvaluationRubricBlock,
   StudioBlock
 } from '@/types/studioBlocks';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { 
   Languages, 
@@ -33,7 +34,9 @@ interface Props {
 
 export const LanguagesBlockView: React.FC<Props> = ({ block }) => {
   const router = useRouter();
-  const { updateBlockData, updateBlockTitle } = useActivityBuilderStore();
+  const { updateBlockData, updateBlockTitle } = useActivityBuilderStore(
+    useShallow((s) => ({ updateBlockData: s.updateBlockData, updateBlockTitle: s.updateBlockTitle }))
+  );
 
   const isPractice = block.type === 'languages_practice_portal';
   const isKaraoke = block.type === 'languages_karaoke_block';

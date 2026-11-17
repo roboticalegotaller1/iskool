@@ -13,15 +13,18 @@ import {
 } from 'lucide-react';
 import { StudioFlowPlayer } from '@/components/studio/player/StudioFlowPlayer';
 
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
+import { compressImageFile } from '@/utils/imageCompressor';
+import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
+
 // Dynamically load the PixiCombatView to avoid SSR hydration issues
 const PixiCombatView = dynamic(() => import('./PixiCombatView'), { ssr: false });
 
 // Retro Sound Chiptune Synth Player
 const playChiptuneSound = (type: string) => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getSharedSfxAudioContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
     
     if (type === 'charge') {
@@ -105,7 +108,20 @@ export default function QuestCardModal() {
   const [showCanvas, setShowCanvas] = useState(false);
   const [canvasCombatState, setCanvasCombatState] = useState<'idle' | 'attacking' | 'boss_hurt' | 'victory' | 'defeat'>('idle');
   const [showVictoryBanner, setShowVictoryBanner] = useState(false);
+  const isLoadingRef = React.useRef(false);
+  const showCanvasRef = React.useRef(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    isLoadingRef.current = isLoading;
+    showCanvasRef.current = showCanvas;
+  }, [isLoading, showCanvas]);
+
+  useAccessibleDialog(Boolean(isQuestModalOpen && activeQuest), () => {
+    if (!isLoadingRef.current && !showCanvasRef.current) {
+      closeQuestModal();
+    }
+  });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -129,21 +145,25 @@ export default function QuestCardModal() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleRealFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRealFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const isAudio = file.type.startsWith('audio');
+    const processed = !isAudio && file.type.startsWith('image/')
+      ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
+      : file;
 
     const reader = new FileReader();
     reader.onload = (evt) => {
       const url = evt.target?.result as string;
-      const isAudio = file.type.startsWith('audio');
       setMockFile({
         type: isAudio ? 'audio' : 'image',
         url: url,
-        name: file.name
+        name: processed.name
       });
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(processed);
   };
 
   // Reset local states when activeQuest changes
@@ -486,7 +506,12 @@ export default function QuestCardModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md transition-all duration-300">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Misión Académica"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md transition-all duration-300"
+    >
       
       {/* Toast Notification */}
       {toastMessage && (

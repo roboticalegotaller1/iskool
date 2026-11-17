@@ -21,18 +21,21 @@ import { ModularAnimeAvatarSprite } from '@/components/avatar/ModularAnimeAvatar
 import { AvatarAnimationState } from '@/components/avatar/avatarCustomizationTypes';
 import { ShopArtifact, ShopArtifactCategory, ShopArtifactRarity } from '@/types';
 import { DEFAULT_ARTIFACTS_SEED } from '@/store/seeds';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 
 // Motor de audio Web Audio API sintetizado para retroalimentación inmediata
 function playShopSound(type: 'buy' | 'hover' | 'error' | 'inspect' | 'pose') {
   if (typeof window === 'undefined') return;
   try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    const ctx = getSharedSfxAudioContext();
+    if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
+    osc.onended = () => {
+      try { osc.disconnect(); gain.disconnect(); } catch {}
+    };
     const now = ctx.currentTime;
 
     if (type === 'buy') {

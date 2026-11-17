@@ -306,7 +306,7 @@ describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', 
     expect(resolveCertifiedPlatformVoice('es-419-advisor-4', 'es', 'female').voice).toBe('es-MX-DaliaNeural');
     expect(resolveCertifiedPlatformVoice('es-419-commercial-6', 'es', 'female').voice).toBe('es-CO-SalomeNeural');
     expect(resolveCertifiedPlatformVoice('es-419-tutor-3', 'es', 'female').voice).toBe('es-CR-MariaNeural');
-    expect(resolveCertifiedPlatformVoice('es-419-assistant-1', 'es', 'female').voice).toBe('es-PE-CamilaNeural');
+    expect(resolveCertifiedPlatformVoice('es-419-assistant-1', 'es', 'female').voice).toBe('es-CR-MariaNeural');
     expect(resolveCertifiedPlatformVoice('es-419-concierge-2', 'es', 'male').voice).toBe('es-MX-JorgeNeural');
     expect(resolveCertifiedPlatformVoice('es-419-concierge-7', 'es', 'male').voice).toBe('es-CO-GonzaloNeural');
     expect(resolveCertifiedPlatformVoice('es-419-concierge-8', 'es', 'male').voice).toBe('es-US-AlonsoNeural');

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const BossEnemyBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { bossName, spriteKey, maxHp, attackPower, backgroundScene } = block.data;
 
   const bosses = [

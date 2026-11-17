@@ -5,7 +5,6 @@ import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import { pipeline } from '@xenova/transformers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,9 +13,10 @@ const execFileAsync = promisify(execFile);
 
 function resolvePythonExecutable(): string {
   const candidates = [
+    process.env.LOCAL_PYTHON_BIN || '',
     path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'),
-    'C:\\Users\\kami-\\.gemini\\antigravity\\brain\\fde3a4d8-54b9-4be2-95e3-e8a0eb4d4f5b\\scratch\\.venv\\Scripts\\python.exe',
-  ];
+    path.join(process.cwd(), '.venv', 'bin', 'python'),
+  ].filter(Boolean);
   for (const c of candidates) {
     if (fs.existsSync(/*turbopackIgnore: true*/ c)) {
       return c;
@@ -32,12 +32,11 @@ function getFfmpegPath(): string {
   const arch = process.arch;
 
   const candidates = [
+    process.env.FFMPEG_PATH || '',
     path.join(cwd, 'node_modules', '@ffmpeg-installer', `${platform}-${arch}`, platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg'),
     path.join(cwd, 'node_modules', '@ffmpeg-installer', 'win32-x64', 'ffmpeg.exe'),
-    'C:\\Users\\kami-\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg.Essentials_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-9.0.1-essentials_build\\bin\\ffmpeg.exe',
-    'C:\\Users\\kami-\\AppData\\Local\\Microsoft\\WinGet\\Links\\ffmpeg.exe',
     'ffmpeg'
-  ];
+  ].filter(Boolean);
 
   for (const c of candidates) {
     if (c === 'ffmpeg' || fs.existsSync(/*turbopackIgnore: true*/ c)) {
@@ -125,8 +124,7 @@ function getOrStartSttDaemon(): ChildProcessWithoutNullStreams | null {
   }
 }
 
-// Pre-iniciar demonio STT al cargar el módulo para 0ms de arranque en frío
-getOrStartSttDaemon();
+// Arranque bajo demanda (evita spawn de subproceso durante compilación o arranque en frío serverless)
 
 function encodeFloat32ToWav16kHz(samples: Float32Array, sampleRate = 16000): Buffer {
   const numSamples = samples.length;
@@ -214,14 +212,17 @@ function normalizeInstitutionalSpanishTranscript(raw: string): string {
   return text.trim();
 }
 
-// Singleton de respaldo offline local (Xenova/whisper-tiny)
+// Singleton de respaldo offline local (cargado bajo demanda para no bloquear serverless)
 let transcriberPromise: any = null;
 
 async function getOfflineTranscriber() {
   if (!transcriberPromise) {
-    transcriberPromise = pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
-      quantized: true,
-    });
+    transcriberPromise = (async () => {
+      const { pipeline } = await import('@xenova/transformers');
+      return pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
+        quantized: true,
+      });
+    })();
   }
   return transcriberPromise;
 }
@@ -272,10 +273,17 @@ export async function POST(req: NextRequest) {
     }
 
     let float32Samples: Float32Array;
+    const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 
     // Vía rápida 1: Muestras PCM Float32 a 16kHz desde WebAudio API (0ms latencia de ffmpeg)
     if (pcmF32Blob && typeof (pcmF32Blob as any).arrayBuffer === 'function') {
       const pcmAb = await pcmF32Blob.arrayBuffer();
+      if (pcmAb.byteLength > MAX_AUDIO_BYTES) {
+        return NextResponse.json(
+          { error: 'El flujo PCM de audio supera el límite máximo permitido de 15MB' },
+          { status: 413 }
+        );
+      }
       if (!pcmAb || pcmAb.byteLength < 640) {
         return NextResponse.json({
           success: true,
@@ -293,6 +301,12 @@ export async function POST(req: NextRequest) {
         alignedLength / 4
       );
     } else if (jsonAudioBuffer && jsonMimeType === 'pcm_f32') {
+      if (jsonAudioBuffer.byteLength > MAX_AUDIO_BYTES) {
+        return NextResponse.json(
+          { error: 'El flujo PCM de audio supera el límite máximo permitido de 15MB' },
+          { status: 413 }
+        );
+      }
       if (jsonAudioBuffer.byteLength < 640) {
         return NextResponse.json({
           success: true,
@@ -320,7 +334,6 @@ export async function POST(req: NextRequest) {
         rawInputBuffer = Buffer.from(arrayBuffer);
       }
 
-      const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
       if (rawInputBuffer.byteLength > MAX_AUDIO_BYTES) {
         return NextResponse.json(
           { error: 'El archivo de audio supera el límite máximo permitido de 15MB' },
@@ -448,7 +461,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error en Motor de Transcripción Fonética:', error);
     return NextResponse.json(
-      { error: 'Error al procesar el audio fonético', details: error?.message || String(error) },
+      {
+        error: 'Error al procesar el audio fonético',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message || String(error) } : {}),
+      },
       { status: 500 }
     );
   } finally {

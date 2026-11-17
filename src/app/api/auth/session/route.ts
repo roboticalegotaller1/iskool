@@ -248,26 +248,29 @@ export async function POST(req: NextRequest) {
 
       if (!authUser) {
         const hasSeedToken = typeof token === 'string' && token.startsWith('seed-session-');
-        const isIbimeCandidate = String(identifier || '').toLowerCase().includes('ibime') || u.school_id === 'sch-ibime';
-        const isCredentialValid =
-          !suppliedPass ||
-          VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) ||
-          isIbimeCandidate ||
-          hasSeedToken;
+        const canonicalDemo = identifier ? resolveCanonicalDemoUser(identifier) : null;
+        const isPrivilegedRole = Boolean(
+          canonicalDemo &&
+          (canonicalDemo.role === 'superadmin' ||
+            canonicalDemo.role === 'admin' ||
+            canonicalDemo.role === 'owner' ||
+            canonicalDemo.id.startsWith('usr-superadmin') ||
+            canonicalDemo.id === 'usr-admin-1')
+        );
+        const isCredentialValid = isPrivilegedRole
+          ? (VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) || hasSeedToken)
+          : (!suppliedPass || VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) || hasSeedToken);
 
-        if (identifier && isCredentialValid) {
-          const canonicalDemo = resolveCanonicalDemoUser(identifier);
-          if (canonicalDemo) {
-            // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor
-            authUser = {
-              id: canonicalDemo.id,
-              email: canonicalDemo.email,
-              role: canonicalDemo.role,
-              school_id: canonicalDemo.school_id,
-              first_name: canonicalDemo.first_name,
-              last_name: canonicalDemo.last_name
-            };
-          }
+        if (canonicalDemo && isCredentialValid) {
+          // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor
+          authUser = {
+            id: canonicalDemo.id,
+            email: canonicalDemo.email,
+            role: canonicalDemo.role,
+            school_id: canonicalDemo.school_id,
+            first_name: canonicalDemo.first_name,
+            last_name: canonicalDemo.last_name
+          };
         }
       }
     }
@@ -378,6 +381,26 @@ export async function DELETE() {
     name: 'ibime_session',
     value: '',
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
+  response.cookies.set({
+    name: 'laboratorio_session',
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
+  response.cookies.set({
+    name: 'tenant-id',
+    value: '',
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',

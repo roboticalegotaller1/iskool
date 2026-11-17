@@ -239,9 +239,15 @@ export async function GET(request: NextRequest) {
   const gradeLevel = searchParams.get('gradeLevel') || searchParams.get('grade') || undefined;
   const topic = searchParams.get('topic') || searchParams.get('q') || undefined;
 
+  const forwardedHeaders = new Headers({ 'Content-Type': 'application/json' });
+  const cookieHeader = request.headers.get('cookie');
+  const authHeader = request.headers.get('authorization');
+  if (cookieHeader) forwardedHeaders.set('cookie', cookieHeader);
+  if (authHeader) forwardedHeaders.set('authorization', authHeader);
+
   const mockPostReq = new NextRequest(request.url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: forwardedHeaders,
     body: JSON.stringify({
       subjectId,
       gradeLevel,

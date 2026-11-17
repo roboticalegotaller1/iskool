@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { 
   SchoolDigitalBook, 
   BookChapter, 
@@ -178,7 +179,7 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
     {
       name: 'iskool_school_digital_books_v1',
       version: 2,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any) => {
         if (persistedState && Array.isArray(persistedState.books)) {
           const existingIds = new Set(persistedState.books.map((b: any) => b.id));

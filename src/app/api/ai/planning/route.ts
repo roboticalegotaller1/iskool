@@ -184,9 +184,13 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
     let response: Response | null = null;
     for (const ep of candidateEndpoints) {
       try {
-        const res = await fetch(`${ep}?key=${effectiveApiKey}`, {
+        const res = await fetch(ep, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(15000),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': effectiveApiKey,
+          },
           body: JSON.stringify({
             contents: [{ parts: requestParts }]
           })

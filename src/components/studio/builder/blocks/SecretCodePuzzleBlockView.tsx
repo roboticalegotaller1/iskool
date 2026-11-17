@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const SecretCodePuzzleBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { clueText, secretAnswer, hintText } = block.data;
 
   return (

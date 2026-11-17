@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const OrderingSequenceBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { instructions, stepsInCorrectOrder } = block.data;
 
   const handleUpdateStep = (index: number, val: string) => {

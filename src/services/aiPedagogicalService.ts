@@ -171,6 +171,7 @@ export class AIPedagogicalService {
 
       const response = await fetch('/api/ai/assistant', {
         method: 'POST',
+        signal: AbortSignal.timeout(15000),
         headers,
         body: JSON.stringify({
           message: req.message,

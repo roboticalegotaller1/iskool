@@ -12,9 +12,19 @@ import { isPlatformSuperUser } from '@/types';
 export function useIsSuperUser(): boolean {
   const { user } = useAuth();
   const staffUsers = useSchoolAdminStore((s) => s.staffUsers);
-  const target = user || staffUsers?.find((u) => isPlatformSuperUser(u));
+  if (!user) return false;
 
-  if (!target) return false;
+  const userEmailLower = user.email?.trim().toLowerCase();
+  const matchedStaff = staffUsers?.find(
+    (u) =>
+      u.id === user.id ||
+      Boolean(userEmailLower && u.email && u.email.trim().toLowerCase() === userEmailLower)
+  );
+  const target = matchedStaff ? { ...matchedStaff, ...user } : user;
+
+  if (target.school_id === 'sch-demo-0001' && target.role !== 'superadmin') {
+    return false;
+  }
 
   return (
     isPlatformSuperUser(target) ||

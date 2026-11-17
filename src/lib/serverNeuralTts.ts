@@ -15,7 +15,16 @@ interface SynthesizeOptions {
 }
 
 const memoryAudioCache = new Map<string, Buffer>();
+const inFlightRequests = new Map<string, Promise<Buffer>>();
 const MAX_CACHE_ITEMS = 300;
+
+function writeCacheFileAtomic(targetPath: string, data: Buffer): void {
+  try {
+    const tmpPath = `${targetPath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(/*turbopackIgnore: true*/ tmpPath, data);
+    fs.renameSync(/*turbopackIgnore: true*/ tmpPath, /*turbopackIgnore: true*/ targetPath);
+  } catch { }
+}
 
 function resolvePythonExecutable(): string {
   const candidates = [
@@ -61,6 +70,9 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
 
   try {
     const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
+    if (!fs.existsSync(/*turbopackIgnore: true*/ workerScript)) {
+      return null;
+    }
     const pythonBin = resolvePythonExecutable();
     const child = spawn(/*turbopackIgnore: true*/ pythonBin, ['-u', workerScript, '--daemon'], {
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -117,8 +129,7 @@ function getOrStartNeuralDaemon(): ChildProcessWithoutNullStreams | null {
   }
 }
 
-// Pre-iniciar el demonio de síntesis neural al cargar el módulo para 0ms de arranque en frío
-getOrStartNeuralDaemon();
+// Arranque bajo demanda: se inicia únicamente si el motor WebSocket directo requiere respaldo Python
 
 function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
@@ -184,6 +195,12 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     return memoryHit;
   }
 
+  const inflight = inFlightRequests.get(cacheKey);
+  if (inflight) {
+    return inflight;
+  }
+
+  const workPromise = (async (): Promise<Buffer> => {
   // 2. Verificar caché en disco
   const cacheDir = path.join(process.cwd(), '.cache', 'tts_audio');
   if (!fs.existsSync(/*turbopackIgnore: true*/ cacheDir)) {
@@ -210,9 +227,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       timeoutMs: 5500
     });
     if (directBuffer && directBuffer.length > 256) {
-      try {
-        fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, directBuffer);
-      } catch { }
+      writeCacheFileAtomic(cachedFilePath, directBuffer);
       if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
         const firstKey = memoryAudioCache.keys().next().value;
         if (firstKey) memoryAudioCache.delete(firstKey);
@@ -235,9 +250,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       role
     });
     if (daemonBuffer && daemonBuffer.length > 0) {
-      try {
-        fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, daemonBuffer);
-      } catch { }
+      writeCacheFileAtomic(cachedFilePath, daemonBuffer);
       if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
         const firstKey = memoryAudioCache.keys().next().value;
         if (firstKey) memoryAudioCache.delete(firstKey);
@@ -302,9 +315,7 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
           }
 
           // Guardar en caché de disco y memoria
-          try {
-            fs.writeFileSync(/*turbopackIgnore: true*/ cachedFilePath, audioBuffer);
-          } catch { }
+          writeCacheFileAtomic(cachedFilePath, audioBuffer);
 
           if (memoryAudioCache.size >= MAX_CACHE_ITEMS) {
             const firstKey = memoryAudioCache.keys().next().value;
@@ -319,4 +330,12 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       }
     );
   });
+  })();
+
+  inFlightRequests.set(cacheKey, workPromise);
+  try {
+    return await workPromise;
+  } finally {
+    inFlightRequests.delete(cacheKey);
+  }
 }

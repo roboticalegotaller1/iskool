@@ -52,84 +52,114 @@ export async function compressImageFile(
   }
 
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const objectUrl = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+      ? URL.createObjectURL(file)
+      : null;
 
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const { width, height } = calculateOptimalDimensions(
-            img.width,
-            img.height,
-            options.maxWidth,
-            options.maxHeight
-          );
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            resolve(file); // Fallback seguro
-            return;
-          }
-
-          // Filtros de calidad para escalado bicúbico nítido
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-
-          // Dibujar en el lienzo
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // Determinar formato compatible (preferir WebP para máxima fidelidad y compresión)
-          const targetFormat = options.format;
-          
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                resolve(file);
-                return;
-              }
-
-              // Si el archivo comprimido resultó ser mayor que el original, conservar el original
-              if (blob.size >= file.size && file.type === targetFormat) {
-                resolve(file);
-                return;
-              }
-
-              const cleanBaseName = file.name
-                .replace(/\.[^/.]+$/, '')
-                .replace(/[^a-zA-Z0-9_-]/g, '_')
-                .slice(0, 60) || 'imagen_optimizada';
-              const newFileName = `${cleanBaseName}${targetFormat === 'image/webp' ? '.webp' : '.jpg'}`;
-              const compressedFile = new File([blob], newFileName, {
-                type: targetFormat,
-                lastModified: Date.now()
-              });
-
-              resolve(compressedFile);
-            },
-            targetFormat,
-            options.quality
-          );
-        } catch (err) {
-          console.warn('Error en compresión de imagen, usando original:', err);
-          resolve(file);
+    const handleLoadedImage = (img: HTMLImageElement, revokeOnFinish: boolean) => {
+      const cleanup = () => {
+        if (revokeOnFinish && objectUrl) {
+          try { URL.revokeObjectURL(objectUrl); } catch {}
         }
       };
 
-      img.onerror = () => {
-        resolve(file);
+      const renderScaledBlob = (maxW: number, maxH: number, format: string, quality: number): Promise<Blob | null> => {
+        return new Promise((resBlob) => {
+          const { width, height } = calculateOptimalDimensions(img.width, img.height, maxW, maxH);
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resBlob(null);
+            return;
+          }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => resBlob(blob), format, quality);
+        });
       };
 
+      (async () => {
+        try {
+          const targetFormat = options.format;
+          const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
+          const qualitySteps = Array.from(
+            new Set([options.quality, 0.74, 0.64, 0.54].filter((q) => q <= options.quality + 0.01 && q >= 0.4))
+          );
+
+          let bestBlob = await renderScaledBlob(options.maxWidth, options.maxHeight, targetFormat, options.quality);
+          if (bestBlob && bestBlob.size > maxBytes) {
+            for (const q of qualitySteps.slice(1)) {
+              const candidate = await renderScaledBlob(options.maxWidth, options.maxHeight, targetFormat, q);
+              if (candidate && candidate.size < bestBlob.size) {
+                bestBlob = candidate;
+              }
+              if (bestBlob && bestBlob.size <= maxBytes) break;
+            }
+          }
+          if (bestBlob && bestBlob.size > maxBytes) {
+            const smaller = await renderScaledBlob(
+              Math.round(options.maxWidth * 0.78),
+              Math.round(options.maxHeight * 0.78),
+              targetFormat,
+              0.62
+            );
+            if (smaller && smaller.size < bestBlob.size) {
+              bestBlob = smaller;
+            }
+          }
+
+          cleanup();
+
+          if (!bestBlob) {
+            resolve(file);
+            return;
+          }
+
+          if (bestBlob.size >= file.size && file.type === targetFormat) {
+            resolve(file);
+            return;
+          }
+
+          const cleanBaseName = file.name
+            .replace(/\.[^/.]+$/, '')
+            .replace(/[^a-zA-Z0-9_-]/g, '_')
+            .slice(0, 60) || 'imagen_optimizada';
+          const ext = targetFormat === 'image/webp' ? '.webp' : targetFormat === 'image/png' ? '.png' : '.jpg';
+          const compressedFile = new File([bestBlob], `${cleanBaseName}${ext}`, {
+            type: targetFormat,
+            lastModified: Date.now()
+          });
+          resolve(compressedFile);
+        } catch (err) {
+          cleanup();
+          console.warn('Error en compresión de imagen, usando original:', err);
+          resolve(file);
+        }
+      })();
+    };
+
+    if (objectUrl) {
+      const img = new Image();
+      img.onload = () => handleLoadedImage(img, true);
+      img.onerror = () => {
+        try { URL.revokeObjectURL(objectUrl); } catch {}
+        resolve(file);
+      };
+      img.src = objectUrl;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => handleLoadedImage(img, false);
+      img.onerror = () => resolve(file);
       img.src = e.target?.result as string;
     };
-
-    reader.onerror = () => {
-      reject(new Error('No se pudo leer el archivo de imagen para compresión'));
-    };
-
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo de imagen para compresión'));
     reader.readAsDataURL(file);
   });
 }
@@ -143,7 +173,7 @@ export async function compressImageDataUrl(
 ): Promise<string> {
   const options = { ...DEFAULT_OPTIONS, ...customOptions };
 
-  if (!dataUrl || !dataUrl.startsWith('data:image')) {
+  if (!dataUrl || !dataUrl.startsWith('data:image') || dataUrl.startsWith('data:image/svg+xml')) {
     return dataUrl;
   }
 
@@ -172,8 +202,18 @@ export async function compressImageDataUrl(
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedDataUrl = canvas.toDataURL(options.format, options.quality);
-        resolve(compressedDataUrl);
+        const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
+        const maxChars = Math.ceil((maxBytes * 4) / 3) + 64;
+        const qualitySteps = Array.from(new Set([options.quality, 0.74, 0.62, 0.5]));
+        let compressedDataUrl = canvas.toDataURL(options.format, options.quality);
+        for (const q of qualitySteps.slice(1)) {
+          if (compressedDataUrl.length <= maxChars) break;
+          const nextUrl = canvas.toDataURL(options.format, q);
+          if (nextUrl.length < compressedDataUrl.length) {
+            compressedDataUrl = nextUrl;
+          }
+        }
+        resolve(compressedDataUrl.length < dataUrl.length ? compressedDataUrl : dataUrl);
       } catch (err) {
         console.warn('Error en compresión de DataURL, usando original:', err);
         resolve(dataUrl);
@@ -188,7 +228,7 @@ export async function compressImageDataUrl(
 /**
  * Calcula las dimensiones proporcionales respetando límites máximos
  */
-function calculateOptimalDimensions(
+export function calculateOptimalDimensions(
   srcWidth: number,
   srcHeight: number,
   maxWidth: number,

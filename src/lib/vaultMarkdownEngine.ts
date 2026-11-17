@@ -89,16 +89,25 @@ export function sanitizeHtml(dirtyHtml: string): string {
  * Transforma enlaces estilo Bóveda Curricular [[Destino|Etiqueta]] en enlaces HTML seguros.
  */
 export function transformWikiLinksToHtml(markdown: string): string {
+  const encodeVaultPath = (raw: string) =>
+    raw
+      .trim()
+      .replace(/\.md$/, '')
+      .split('/')
+      .filter(Boolean)
+      .map((seg) => encodeURIComponent(seg))
+      .join('/');
+
   // Patrón 1: [[Destino|Etiqueta]]
   const withPipe = markdown.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, (_match, target, label) => {
-    const cleanTarget = encodeURIComponent(target.trim().replace(/\.md$/, ''));
+    const cleanTarget = encodeVaultPath(target);
     return `[${label.trim()}](/planeaciones/${cleanTarget})`;
   });
 
   // Patrón 2: [[Destino]]
   return withPipe.replace(/\[\[([^\]]+)\]\]/g, (_match, target) => {
     const rawTarget = target.trim();
-    const cleanTarget = encodeURIComponent(rawTarget.replace(/\.md$/, ''));
+    const cleanTarget = encodeVaultPath(rawTarget);
     return `[${rawTarget}](/planeaciones/${cleanTarget})`;
   });
 }

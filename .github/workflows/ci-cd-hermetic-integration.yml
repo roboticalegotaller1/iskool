@@ -55,14 +55,8 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=6144 --no-warnings'
 
-      - name: 🧪 Ejecución de Tests Unitarios
-        run: npm run test:unit
-        env:
-          SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
-          NODE_OPTIONS: '--max-old-space-size=6144 --no-warnings'
-
-      - name: 🔒 Ejecución de Tests de Contratos e Integración Hermética
-        run: npm run test:hermetic
+      - name: 🧪 Ejecución Integral de Tests Unitarios y de Seguridad (Vitest)
+        run: npx vitest run
         env:
           SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
           NODE_OPTIONS: '--max-old-space-size=6144 --no-warnings'
@@ -106,12 +100,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: 🌐 Garantizar Librerías Nativas del Sistema Operativo para Chromium
-        run: npx playwright install-deps chromium
-
-      - name: 🌐 Instalar Binarios de Chromium para Playwright
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install chromium
+      - name: 🌐 Instalar Navegador Oficial y Grabador Multimedia E2E
+        run: npx playwright install --with-deps chrome ffmpeg
 
       - name: 🚀 Ejecutar Suite E2E Real de Navegador
         run: npm run test:e2e

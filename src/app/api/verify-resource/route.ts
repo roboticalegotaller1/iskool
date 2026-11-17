@@ -67,7 +67,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const urls: string[] = Array.isArray(body.urls) ? body.urls : (body.url ? [body.url] : []);
+    const rawUrls: string[] = Array.isArray(body.urls) ? body.urls : (body.url ? [body.url] : []);
+    const urls: string[] = rawUrls
+      .filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
+      .slice(0, 25);
 
     if (urls.length === 0) {
       return NextResponse.json({ error: 'No URLs provided' }, { status: 400 });

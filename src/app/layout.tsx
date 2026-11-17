@@ -3,31 +3,45 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
-import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
-import { DemoGuidedTourDock } from "@/components/demo/DemoGuidedTourDock";
+import { ClientFloatingShell } from "@/components/layout/ClientFloatingShell";
 import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
 import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProvider";
 import { NavigationTracker } from "@/components/navigation/NavigationTracker";
 import { generateServerTenantCss } from "@/lib/branding/tenantThemeTokens";
 import { TenantId } from "@/lib/auth/multiTenantSession";
 
-export const metadata: Metadata = {
-  title: "ISkool - Módulo Académico Gamificado",
-  description: "Plataforma educativa interactiva alineada con la Nueva Escuela Mexicana",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "ISkool",
-  },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
-  },
-  formatDetection: {
-    telephone: false,
-    address: false,
-    email: false,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const resolvedTenant = (headersList.get('x-resolved-tenant') as TenantId) || 'iskool';
+  const isIbime = resolvedTenant === 'ibime';
+
+  return {
+    metadataBase: new URL('https://iskool.mx'),
+    title: isIbime
+      ? 'IBIME · Ecosistema Académico Institucional'
+      : 'ISkool - Módulo Académico Gamificado',
+    description: isIbime
+      ? 'Portal institucional del Instituto Bilingüe IBIME conectado a la Nueva Escuela Mexicana'
+      : 'Plataforma educativa interactiva alineada con la Nueva Escuela Mexicana',
+    icons: {
+      icon: isIbime ? '/brand/ibime_favicon.png' : '/brand/iskool-icono.png',
+      apple: isIbime ? '/brand/ibime_favicon.png' : '/brand/iskool-icono.png',
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: isIbime ? 'IBIME' : 'ISkool',
+    },
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    },
+    formatDetection: {
+      telephone: false,
+      address: false,
+      email: false,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -71,8 +85,7 @@ export default async function RootLayout({
             <NavigationTracker />
             <ComingSoonProvider>
               {children}
-              <DemoGuidedTourDock />
-              <GlobalHelpFab />
+              <ClientFloatingShell />
             </ComingSoonProvider>
           </AuthProvider>
         </TenantBrandingProvider>

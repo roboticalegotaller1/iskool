@@ -1861,6 +1861,9 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
+                    setTimeout(() => {
+                      try { URL.revokeObjectURL(url); } catch {}
+                    }, 5000);
                   }}
                   className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-600/30"
                 >

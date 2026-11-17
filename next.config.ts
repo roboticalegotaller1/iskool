@@ -4,15 +4,17 @@ const nextConfig: NextConfig = {
   // Turbopack config (Next.js 16 default bundler)
   turbopack: {},
   productionBrowserSourceMaps: false,
+  enablePrerenderSourceMaps: false,
   outputFileTracingIncludes: {
-    '/api/**/*': [
+    '/api/video-stream': ['./src/data/video-1080p/**/*'],
+    '/api/ai/historical-figure': ['./personajes_historicos/**/*'],
+    '/api/vault/historical-figures': ['./personajes_historicos/**/*'],
+    '/api/(mail|portal/ceo)/**/*': ['./Correo/**/*'],
+    '/api/(vault|obsidian|v1/curriculum|iskool|ai/planning|ai/assistant)/**/*': [
       './planeaciones/**/*',
-      './personajes_historicos/**/*',
-      './Correo/**/*',
-      './knowledge/**/*',
-      './.index/**/*',
-      './src/data/video-1080p/**/*'
+      './knowledge/**/*'
     ],
+    '/planeaciones/**/*': ['./planeaciones/**/*'],
     '/api/ai/tts': ['./node_modules/ws/**/*'],
   },
   outputFileTracingExcludes: {
@@ -50,26 +52,26 @@ const nextConfig: NextConfig = {
   // Deshabilitar cabecera X-Powered-By para blindaje anti-fingerprinting (OWASP ASVS 14.4.1 / CASA)
   poweredByHeader: false,
   experimental: {
+    serverSourceMaps: false,
+    turbopackFileSystemCacheForBuild: process.env.CI ? false : true,
     optimizePackageImports: [
       "lucide-react",
       "framer-motion",
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "@dnd-kit/utilities",
-      "zustand",
-      "marked",
-      "isomorphic-dompurify",
-      "zod",
-      "gray-matter"
+      "@supabase/supabase-js",
+      "zod"
     ],
   },
   // Optimización de imágenes de alto rendimiento
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 85],
     minimumCacheTTL: 86400,
   },
-  // pixi.js is a browser-only WebGL/canvas library; sharp uses native C++ binaries on Node
-  serverExternalPackages: ["pixi.js", "sharp", "ws"],
+  // Motor gráfico WebGL opera únicamente en navegador; paquetes binarios y de transporte permanecen externos en servidor
+  serverExternalPackages: ["pixi.js", "sharp", "ws", "nodemailer"],
   typescript: {
     // Type safety is strictly verified across the entire repository (0 errors).
     ignoreBuildErrors: false,
@@ -81,6 +83,33 @@ const nextConfig: NextConfig = {
       ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com"
       : "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com";
     return [
+      {
+        source: "/fonts/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/images/(languages/3d/movies|history/movies)/(.*)\\.mp4",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
+        source: "/redisenos_assets/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=2592000",
+          },
+        ],
+      },
       {
         source: "/(images|brand|icons|fonts)/(.*)",
         headers: [
@@ -105,6 +134,8 @@ const nextConfig: NextConfig = {
               "connect-src 'self' https: wss:",
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
               "frame-ancestors 'self'",
+              "form-action 'self' https://accounts.google.com",
+              "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'"
             ].join("; "),
@@ -131,7 +162,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "X-XSS-Protection",
-            value: "1; mode=block",
+            value: "0",
           },
         ],
       },

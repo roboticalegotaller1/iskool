@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { embedUrl, resourceTitle, instructions } = block.data;
 
   // Sugerencias de simuladores populares PhET

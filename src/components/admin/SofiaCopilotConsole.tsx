@@ -648,19 +648,19 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
         try {
           const logsKey = `iskool_ceo_logs_${tenantId}`;
           const prevLogs = JSON.parse(localStorage.getItem(logsKey) || '[]');
-          localStorage.setItem(logsKey, JSON.stringify([logEntry, ...(Array.isArray(prevLogs) ? prevLogs : [])]));
+          localStorage.setItem(logsKey, JSON.stringify([logEntry, ...(Array.isArray(prevLogs) ? prevLogs : [])].slice(0, 150)));
         } catch {}
 
         try {
           const mattersKey = `iskool_matters_v3_${tenantId}`;
           const prevMatters = JSON.parse(localStorage.getItem(mattersKey) || '[]');
-          localStorage.setItem(mattersKey, JSON.stringify([matterEntry, ...(Array.isArray(prevMatters) ? prevMatters : [])]));
+          localStorage.setItem(mattersKey, JSON.stringify([matterEntry, ...(Array.isArray(prevMatters) ? prevMatters : [])].slice(0, 150)));
         } catch {}
 
         try {
           const rawKey = `iskool_raw_emails_v3_${tenantId}`;
           const prevRaw = JSON.parse(localStorage.getItem(rawKey) || '[]');
-          localStorage.setItem(rawKey, JSON.stringify([rawEmailEntry, ...(Array.isArray(prevRaw) ? prevRaw : [])]));
+          localStorage.setItem(rawKey, JSON.stringify([rawEmailEntry, ...(Array.isArray(prevRaw) ? prevRaw : [])].slice(0, 150)));
         } catch {}
 
         window.dispatchEvent(

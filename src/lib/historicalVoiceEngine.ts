@@ -30,7 +30,7 @@ export type {
 };
 
 
-export type HistoricalEra = 'virreinal' | 'independencia' | 'revolucion' | 'reforma';
+export type HistoricalEra = 'virreinal' | 'independencia' | 'revolucion' | 'reforma' | 'moderna';
 export type OratoricalIntention = 'arenga' | 'philosophical' | 'rhetorical' | 'solemn_narrative';
 
 export type HistoricalAgeCohort = 
@@ -809,6 +809,11 @@ export function generateHistoricalSSML(
   const finalStyle = overrides?.style || expressive.style;
   const finalStyleDegree = overrides?.styleDegree || expressive.styleDegree;
 
+  const langMatch = voiceName.match(/^([a-z]{2}-[A-Z]{2})-/);
+  const derivedLocale = langMatch ? langMatch[1] : 'es-MX';
+  const rawLang = derivedLocale.slice(0, 2);
+  const derivedLang: 'es' | 'fr' | 'en' = rawLang === 'fr' ? 'fr' : rawLang === 'en' ? 'en' : 'es';
+
   return buildOptimizedSSML({
     voice: voiceName,
     text,
@@ -816,8 +821,8 @@ export function generateHistoricalSSML(
     pitch: finalPitch,
     style: finalStyle,
     styleDegree: finalStyleDegree,
-    locale: 'es-MX',
-    language: 'es',
+    locale: derivedLocale,
+    language: derivedLang,
     intention
   });
 }
@@ -1190,7 +1195,7 @@ export async function playUniversalIskoolVoice(
     : voiceId?.startsWith('en-')
     ? 'en'
     : 'es';
-  const cacheKey = `v6_studio_human_conv::${voiceId || characterName || role}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
+  const cacheKey = `v6_studio_human_conv::${voiceId || characterName || role}::${variantIndex ?? 0}::${historicalAge ?? ''}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
 
   // Intentar primero con el motor neural de alta fidelidad
   try {
@@ -1225,6 +1230,16 @@ export async function playUniversalIskoolVoice(
         return controller;
       }
       audioUrl = URL.createObjectURL(blob);
+      if (universalAudioBlobCache.size >= 100) {
+        const oldestKey = universalAudioBlobCache.keys().next().value;
+        if (oldestKey) {
+          const oldestUrl = universalAudioBlobCache.get(oldestKey);
+          universalAudioBlobCache.delete(oldestKey);
+          if (oldestUrl) {
+            try { URL.revokeObjectURL(oldestUrl); } catch {}
+          }
+        }
+      }
       universalAudioBlobCache.set(cacheKey, audioUrl);
     }
 

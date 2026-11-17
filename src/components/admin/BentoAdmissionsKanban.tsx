@@ -632,6 +632,8 @@ export default function BentoAdmissionsKanban({
             />
             {searchQuery && (
               <button
+                type="button"
+                aria-label="Limpiar búsqueda"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
               >
@@ -642,6 +644,7 @@ export default function BentoAdmissionsKanban({
 
           {/* Filtro Fases / Estados */}
           <select
+            aria-label="Filtrar por fase o estado"
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
             className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
@@ -657,6 +660,7 @@ export default function BentoAdmissionsKanban({
           {/* Filtro Secciones Escolares */}
           {!isCorporate && (
             <select
+              aria-label="Filtrar por sección escolar"
               value={sectionFilter}
               onChange={(e) => setSectionFilter(e.target.value)}
               className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
@@ -672,6 +676,7 @@ export default function BentoAdmissionsKanban({
 
           {/* Filtro Prioridad / Temperatura */}
           <select
+            aria-label="Filtrar por prioridad"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as any)}
             className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
@@ -804,6 +809,7 @@ export default function BentoAdmissionsKanban({
 
                             <div onClick={e => e.stopPropagation()}>
                               <select
+                                aria-label="Cambiar prioridad de prospecto"
                                 value={lead.priority}
                                 onChange={(e) => handlePriorityChange(lead.id, formatTutorName(lead), e.target.value as LeadPriority)}
                                 className={`text-[9px] font-bold px-1.5 py-0.2 rounded border cursor-pointer focus:outline-none transition-all ${
@@ -897,6 +903,7 @@ export default function BentoAdmissionsKanban({
                             <ArrowRight className="h-3 w-3 text-slate-400" /> Mover:
                           </span>
                           <select
+                            aria-label="Transferir aspirante a fase"
                             value=""
                             onChange={(e) => {
                               const targetPhaseNum = parseInt(e.target.value, 10);

@@ -5,6 +5,9 @@ import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { markEmailAsResolvedServer } from '../raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 import { validateMailTarget } from '@/lib/security/ssrfValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+
+const stripCrLf = (val?: string) => (val || '').replace(/[\r\n]+/g, ' ').trim();
 
 export const runtime = 'nodejs';
 
@@ -185,9 +188,9 @@ export async function POST(req: NextRequest) {
     const payload: SendMailRequest = await req.json();
     const {
       senderEmail,
-      recipientEmail,
-      recipientName,
-      subject,
+      recipientEmail: rawRecipientEmail,
+      recipientName: rawRecipientName,
+      subject: rawSubject,
       bodyText,
       bodyHtml,
       inlineVisualAttachment,
@@ -197,12 +200,38 @@ export async function POST(req: NextRequest) {
       smtpConfig
     } = payload;
 
-    if (!recipientEmail || !recipientEmail.trim()) {
+    const recipientEmail = stripCrLf(rawRecipientEmail);
+    const recipientName = rawRecipientName ? stripCrLf(rawRecipientName) : undefined;
+    const subject = stripCrLf(rawSubject);
+
+    if (!recipientEmail) {
       return NextResponse.json({ success: false, error: 'Destinatario no especificado' }, { status: 400 });
     }
 
     if (!bodyText || !bodyText.trim()) {
       return NextResponse.json({ success: false, error: 'El contenido del correo no puede estar vacío' }, { status: 400 });
+    }
+
+    if (
+      auth.authenticated &&
+      isDemoSandboxContext({
+        email: auth.user?.email,
+        schoolId: auth.user?.school_id,
+        userId: auth.user?.id,
+        tenantId: auth.user?.tenant_id || tenantId,
+      })
+    ) {
+      const now = new Date();
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        messageId: `demo-mail-${Date.now()}`,
+        threadId: threadId || `demo-thread-${Date.now()}`,
+        recipient: recipientEmail,
+        sender: stripCrLf(auth.user?.email || senderEmail || 'demo.ceo@iskool.mx'),
+        dispatchedAt: `${formatCdmxDate(now)} ${formatCdmxTime(now)} (CDMX)`,
+        provider: 'demo_sandbox',
+      });
     }
 
     let validatedInlineVisual: InlineVisualAttachmentPayload | undefined;
@@ -222,12 +251,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Si el usuario es un docente o rol no directivo, forzar que el remitente sea su propio correo verificado
-    let effectiveSender = GoogleOAuthService.resolveEffectiveGoogleEmail(senderEmail);
+    let effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(senderEmail));
     if (auth.authenticated && auth.user) {
       const userRole = (auth.user.role || '').toLowerCase();
       const isDirectorOrAdmin = ['admin', 'superadmin', 'director', 'ceo', 'owner'].includes(userRole);
       if (!isDirectorOrAdmin && auth.user.email) {
-        effectiveSender = GoogleOAuthService.resolveEffectiveGoogleEmail(auth.user.email);
+        effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(auth.user.email));
       }
     }
 

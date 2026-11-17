@@ -141,8 +141,10 @@ export async function GET(req: NextRequest) {
   const session = getOrCreateSession(teacherId);
   const isAuthorizedForPin = auth.authenticated || (providedPin && providedPin === session.pin);
 
-  // Filtrar comandos recientes posteriores a `since`
-  const recentCommands = session.commands.filter((cmd) => cmd.timestamp > since);
+  // Filtrar comandos recientes posteriores a `since` sin exponer PIN
+  const recentCommands = session.commands
+    .filter((cmd) => cmd.timestamp > since)
+    .map(({ pin: _pin, ...sanitized }) => sanitized);
 
   return NextResponse.json({
     ok: true,
@@ -171,18 +173,13 @@ export async function POST(req: NextRequest) {
     const actionType = body.type as PocketRemoteCommand['type'];
 
     const existingSession = sessionsMap.get(teacherId);
-    if (
-      existingSession &&
-      actionType !== 'SYNC_LESSON_STATE' &&
-      !auth.authenticated &&
-      pin &&
-      existingSession.pin &&
-      pin !== existingSession.pin
-    ) {
-      return NextResponse.json(
-        { ok: false, error: 'PIN de vinculación QR no válido para esta sesión docente.' },
-        { status: 403 }
-      );
+    if (!auth.authenticated && actionType !== 'SYNC_LESSON_STATE') {
+      if (!pin || (existingSession?.pin && pin !== existingSession.pin)) {
+        return NextResponse.json(
+          { ok: false, error: 'PIN de vinculación QR requerido o inválido para esta sesión docente.' },
+          { status: 403 }
+        );
+      }
     }
 
     const session = getOrCreateSession(teacherId, teacherEmail, teacherName, campusName, pin || '482915');

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 
 export interface WhiteLabelState {
   logoUrl: string;
@@ -195,6 +196,7 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
     }),
     {
       name: 'iskool_whitelabel_store',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       onRehydrateStorage: () => (state) => {
         if (state?.primaryColor) {
           applyWhiteLabelCssVariables(state.primaryColor);

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { LogicBranchBlock } from '@/types/studioBlocks';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { GitBranch, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
@@ -10,7 +11,9 @@ interface Props {
 }
 
 export const LogicBranchBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData, blocks } = useActivityBuilderStore();
+  const { updateBlockData, blocks } = useActivityBuilderStore(
+    useShallow((s) => ({ updateBlockData: s.updateBlockData, blocks: s.blocks }))
+  );
   const { condition, thresholdValue, ifTrueNextBlockId, ifFalseNextBlockId } = block.data;
 
   // Otros bloques disponibles para bifurcación

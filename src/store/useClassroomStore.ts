@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { 
   ClassroomEdicto, 
   SocioemotionalCheckin, 
@@ -357,7 +358,7 @@ export const useClassroomStore = create<ClassroomStore>()(
     }),
     {
       name: 'iskool-classroom-store',
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => createSafeLocalStorage())
     }
   )
 );

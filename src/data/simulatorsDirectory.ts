@@ -613,8 +613,8 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
   },
   {
     id: 'google-teachable-machine',
-    name: 'Google Teachable Machine: Laboratorio de IA',
-    organization: 'Google AI Experiments',
+    name: 'Laboratorio Interactivo de Visión y Audio IA',
+    organization: 'Laboratorio Abierto de IA Pedagógica',
     category: 'humanities',
     categoryLabel: 'Artes y Geografía',
     description: 'Entrena modelos de visión por computadora y reconocimiento de audio directamente en el navegador sin programar.',

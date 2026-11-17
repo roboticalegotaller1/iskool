@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 
 export type LanguageCode = 'en' | 'fr';
 export type AvatarGender = 'female' | 'male';
@@ -1063,6 +1064,7 @@ export const useLanguagesStore = create<LanguagesState>()(
     }),
     {
       name: 'iskool-languages-storage',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       partialize: (state) => ({
         lessons: state.lessons,
         studentReports: state.studentReports,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import * as PIXI from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, Text, Ticker } from 'pixi.js';
 
 export interface CarouselItem {
   id: string;
@@ -30,7 +30,7 @@ export default function AdminCarouselStudio({
   onCardSelect
 }: AdminCarouselStudioProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const appRef = useRef<PIXI.Application | null>(null);
+  const appRef = useRef<Application | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Keep latest props in refs to avoid recreating the Pixi application on prop changes
@@ -80,14 +80,14 @@ export default function AdminCarouselStudio({
 
   useEffect(() => {
     let active = true;
-    let app: PIXI.Application | null = null;
+    let app: Application | null = null;
     let initialized = false;
 
     async function initPixi() {
       if (!containerRef.current) return;
 
       // Initialize Pixi application
-      app = new PIXI.Application();
+      app = new Application();
       await app.init({
         width: 1000,
         height: 560,
@@ -113,7 +113,7 @@ export default function AdminCarouselStudio({
       containerRef.current.appendChild(app.canvas);
 
       // Root Container
-      const stage = new PIXI.Container();
+      const stage = new Container();
       stage.sortableChildren = true;
       app.stage.addChild(stage);
 
@@ -123,19 +123,19 @@ export default function AdminCarouselStudio({
       // ----------------------------------------------------
       // 1. HUD CONCENTRICO EN EL FONDO (Holographic Floor Platform)
       // ----------------------------------------------------
-      const hudContainer = new PIXI.Container();
+      const hudContainer = new Container();
       hudContainer.x = centerX;
       hudContainer.y = centerY + 130;
       hudContainer.scale.y = 0.35; // Tilted for 3D perspective
       hudContainer.zIndex = 0;
       stage.addChild(hudContainer);
 
-      const hudOuter = new PIXI.Graphics();
+      const hudOuter = new Graphics();
       hudOuter.stroke({ width: 1, color: 0x06b6d4, alpha: 0.15 });
       hudOuter.circle(0, 0, 260);
       hudContainer.addChild(hudOuter);
 
-      const hudMiddle = new PIXI.Graphics();
+      const hudMiddle = new Graphics();
       hudMiddle.stroke({ width: 1.5, color: 0x3b82f6, alpha: 0.2 });
       // Draw a dashed middle circle
       const dashes = 48;
@@ -148,7 +148,7 @@ export default function AdminCarouselStudio({
       }
       hudContainer.addChild(hudMiddle);
 
-      const hudInner = new PIXI.Graphics();
+      const hudInner = new Graphics();
       hudInner.stroke({ width: 2, color: 0x6366f1, alpha: 0.25 });
       // Draw tick marks inside the inner circle
       const ticks = 60;
@@ -164,7 +164,7 @@ export default function AdminCarouselStudio({
       hudContainer.addChild(hudInner);
 
       // HUD Label Technology Collection
-      const hudLabel = new PIXI.Text({
+      const hudLabel = new Text({
         text: "ISKOOL SYSTEM // MULTI-PORTAL ACCESS",
         style: {
           fontFamily: 'monospace',
@@ -181,10 +181,10 @@ export default function AdminCarouselStudio({
       hudContainer.addChild(hudLabel);
 
       // HUD Binary Matrix Floating Particles
-      const particles: Array<{ text: PIXI.Text; speed: number; yLimit: number }> = [];
+      const particles: Array<{ text: Text; speed: number; yLimit: number }> = [];
       const symbols = ['01', '10', '00', '11', 'SYS_OK', 'SECURE', 'NEM_v2.6', 'ADMIN_SYS'];
       for (let i = 0; i < 12; i++) {
-        const txt = new PIXI.Text({
+        const txt = new Text({
           text: symbols[Math.floor(Math.random() * symbols.length)],
           style: {
             fontFamily: 'monospace',
@@ -207,7 +207,7 @@ export default function AdminCarouselStudio({
       // ----------------------------------------------------
       // 2. CONTENEDOR DE TARJETAS Y LOGOS VECTORIALES
       // ----------------------------------------------------
-      const cardsContainer = new PIXI.Container();
+      const cardsContainer = new Container();
       cardsContainer.zIndex = 10;
       stage.addChild(cardsContainer);
 
@@ -216,7 +216,7 @@ export default function AdminCarouselStudio({
       const cardH = 390;
 
       // Function to draw vector emblems/logos
-      const drawEmblem = (graphics: PIXI.Graphics, type: string, color: number) => {
+      const drawEmblem = (graphics: Graphics, type: string, color: number) => {
         graphics.clear();
         
         switch (type) {
@@ -443,7 +443,7 @@ export default function AdminCarouselStudio({
 
         const currentItems = itemsRef.current;
         currentItems.forEach((item, idx) => {
-          const cardNode = new PIXI.Container();
+          const cardNode = new Container();
           cardNode.label = `card_${idx}`;
           (cardNode as any).itemId = item.id;
           (cardNode as any).itemCode = item.code;
@@ -456,14 +456,14 @@ export default function AdminCarouselStudio({
           cardNode.cursor = 'pointer';
 
           // 3.1 Sombra proyectada
-          const shadowNode = new PIXI.Graphics();
+          const shadowNode = new Graphics();
           shadowNode.label = "shadow";
           shadowNode.fill({ color: 0x000000, alpha: 0.45 });
           shadowNode.ellipse(0, cardH / 2 + 10, cardW / 2 + 10, 14);
           cardNode.addChild(shadowNode);
 
           // 3.2 Borde de selección brillante (Glow)
-          const borderGlow = new PIXI.Graphics();
+          const borderGlow = new Graphics();
           borderGlow.label = "glow";
           // We draw a larger rounded rect that acts as a glowing border
           borderGlow.stroke({ width: 4, color: 0x3b82f6, alpha: 0 }); // Default alpha is 0
@@ -471,7 +471,7 @@ export default function AdminCarouselStudio({
           cardNode.addChild(borderGlow);
 
           // 3.3 Cuerpo de la tarjeta
-          const cardBody = new PIXI.Graphics();
+          const cardBody = new Graphics();
           cardBody.label = "body";
           // Dark glassmorphic gradient simulation
           cardBody.fill({ color: 0x111827, alpha: 0.9 }); // Zinc 900
@@ -480,7 +480,7 @@ export default function AdminCarouselStudio({
           cardNode.addChild(cardBody);
 
           // 3.4 Star Bookmark flag on top right
-          const starFlag = new PIXI.Graphics();
+          const starFlag = new Graphics();
           starFlag.fill({ color: 0xf59e0b }); // Gold
           starFlag.moveTo(cardW / 2 - 40, -cardH / 2);
           starFlag.lineTo(cardW / 2, -cardH / 2);
@@ -488,7 +488,7 @@ export default function AdminCarouselStudio({
           starFlag.closePath();
           cardNode.addChild(starFlag);
 
-          const starChar = new PIXI.Text({
+          const starChar = new Text({
             text: "★",
             style: {
               fontFamily: 'Arial',
@@ -501,7 +501,7 @@ export default function AdminCarouselStudio({
           cardNode.addChild(starChar);
 
           // 3.5 Círculo de área del logo (Ampliado)
-          const logoArea = new PIXI.Graphics();
+          const logoArea = new Graphics();
           logoArea.fill({ color: item.logoBgColor, alpha: 1 });
           logoArea.stroke({ width: 1.5, color: 0x374151 });
           logoArea.circle(0, -90, 52);
@@ -509,8 +509,8 @@ export default function AdminCarouselStudio({
 
           // 3.6 Dibujo de Emblema Vectorial o Carga de Escudo funcional
           if (item.imageUrl) {
-            PIXI.Assets.load(item.imageUrl).then((texture) => {
-              const sprite = new PIXI.Sprite(texture);
+            Assets.load(item.imageUrl).then((texture) => {
+              const sprite = new Sprite(texture);
               sprite.anchor.set(0.5);
               sprite.position.set(0, -90);
               
@@ -522,7 +522,7 @@ export default function AdminCarouselStudio({
               }
 
               // Clip inside circle mask
-              const clipMask = new PIXI.Graphics();
+              const clipMask = new Graphics();
               clipMask.fill({ color: 0xffffff });
               clipMask.circle(0, -90, 44);
               cardNode.addChild(clipMask);
@@ -532,14 +532,14 @@ export default function AdminCarouselStudio({
             }).catch((err) => {
               console.error("Error loading custom school logo:", err);
               // Fallback
-              const emblemGraphics = new PIXI.Graphics();
+              const emblemGraphics = new Graphics();
               emblemGraphics.position.set(0, -90);
               emblemGraphics.scale.set(1.2);
               drawEmblem(emblemGraphics, item.logoType, item.themeColor);
               cardNode.addChild(emblemGraphics);
             });
           } else {
-            const emblemGraphics = new PIXI.Graphics();
+            const emblemGraphics = new Graphics();
             emblemGraphics.position.set(0, -90);
             emblemGraphics.scale.set(1.2);
             drawEmblem(emblemGraphics, item.logoType, item.themeColor);
@@ -549,7 +549,7 @@ export default function AdminCarouselStudio({
           const isColegio = item.logoType.startsWith('shield_');
 
           // 3.7 Rol / Subtítulo ("Bienvenido - DUEÑO -")
-          const subText = new PIXI.Text({
+          const subText = new Text({
             text: item.subtitle.toUpperCase(),
             resolution: 2,
             style: {
@@ -565,7 +565,7 @@ export default function AdminCarouselStudio({
           cardNode.addChild(subText);
 
           // 3.8 Nombre principal del colegio o materia
-          const titleText = new PIXI.Text({
+          const titleText = new Text({
             text: item.title,
             resolution: 2,
             style: {
@@ -583,7 +583,7 @@ export default function AdminCarouselStudio({
           cardNode.addChild(titleText);
 
           // 3.9 Información adicional (Creador, Acceso)
-          const creatorText = new PIXI.Text({
+          const creatorText = new Text({
             text: item.creator,
             resolution: 2,
             style: {
@@ -596,7 +596,7 @@ export default function AdminCarouselStudio({
           creatorText.position.set(0, 80);
           cardNode.addChild(creatorText);
 
-          const accessText = new PIXI.Text({
+          const accessText = new Text({
             text: item.lastAccess,
             resolution: 2,
             style: {
@@ -610,13 +610,13 @@ export default function AdminCarouselStudio({
           cardNode.addChild(accessText);
 
           // 3.10 Pastilla / Botón para el Código de Aventura
-          const codeBg = new PIXI.Graphics();
+          const codeBg = new Graphics();
           codeBg.fill({ color: item.themeColor, alpha: 0.15 });
           codeBg.stroke({ width: 1, color: item.themeColor, alpha: 0.6 });
           codeBg.roundRect(-110, 138, 220, 30, 15);
           cardNode.addChild(codeBg);
 
-          const codeText = new PIXI.Text({
+          const codeText = new Text({
             text: isColegio ? `Código de aventura: ${item.code}` : `Código: ${item.code}`,
             resolution: 2,
             style: {
@@ -684,7 +684,7 @@ export default function AdminCarouselStudio({
       // ----------------------------------------------------
       // 4. INTERACTIVIDAD GLOBAL (DRAG DEL CANVAS)
       // ----------------------------------------------------
-      const hitArea = new PIXI.Graphics();
+      const hitArea = new Graphics();
       hitArea.fill({ color: 0x000000, alpha: 0.001 }); // Invisible but interactive
       hitArea.rect(0, 0, 1000, 520);
       hitArea.zIndex = 1;
@@ -740,7 +740,7 @@ export default function AdminCarouselStudio({
       // ----------------------------------------------------
       let lastReportedIndex = -1;
 
-      const tickerCallback = (ticker: PIXI.Ticker) => {
+      const tickerCallback = (ticker: Ticker) => {
         const dt = ticker.deltaTime;
 
         // 5.0 Rebuild cards if length or content changed
@@ -804,7 +804,7 @@ export default function AdminCarouselStudio({
           const radiusZ = 120; // Simulated depth
 
           cardsContainer.children.forEach((card, index) => {
-            const cardNode = card as PIXI.Container;
+            const cardNode = card as Container;
             let diff = index - currentScrollIndex.current;
 
             // Infinite scroll wrapping math
@@ -837,14 +837,14 @@ export default function AdminCarouselStudio({
             cardNode.zIndex = Math.round(z * 1000);
 
             // Shadow size and opacity scaling
-            const shadow = cardNode.getChildByName("shadow") as PIXI.Graphics;
+            const shadow = cardNode.getChildByName("shadow") as Graphics;
             if (shadow) {
               shadow.alpha = 0.1 + z * 0.35;
               shadow.scale.set(1 / targetScale * (0.8 + z * 0.2));
             }
 
             // Glow border highlights
-            const glow = cardNode.getChildByName("glow") as PIXI.Graphics;
+            const glow = cardNode.getChildByName("glow") as Graphics;
             if (glow) {
               const isActive = Math.abs(diff) < 0.1;
               if (isActive) {

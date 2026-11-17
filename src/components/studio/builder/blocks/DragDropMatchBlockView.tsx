@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
-  const { updateBlockData } = useActivityBuilderStore();
+  const updateBlockData = useActivityBuilderStore((s) => s.updateBlockData);
   const { instructions, pairs, timeLimitSeconds } = block.data;
 
   const handleUpdatePair = (index: number, side: 'left' | 'right', val: string) => {

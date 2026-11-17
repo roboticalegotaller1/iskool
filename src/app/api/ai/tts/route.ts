@@ -11,6 +11,7 @@ import {
   normalizeLatinHistoricalPhonetics,
   detectOratoricalIntention,
   injectLongClauseBreathing,
+  NARRATOR_VOICE_PROFILES,
   NarratorMode
 } from '@/lib/historicalVoiceEngine';
 import { getLanguagePipeline } from '@/lib/audio';
@@ -441,13 +442,14 @@ export async function POST(req: NextRequest) {
         const validMode: NarratorMode = ['epic_chronist', 'wisdom_guide', 'time_chrononaut'].includes(narratorMode)
           ? narratorMode 
           : 'wisdom_guide';
+        const narratorDefaults = NARRATOR_VOICE_PROFILES[validMode] || NARRATOR_VOICE_PROFILES.wisdom_guide;
         const rawNarratorSSML = generateNarratorSSML(cleanText, validMode);
-        preliminaryVoice = voice || (validMode === 'wisdom_guide' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural');
+        preliminaryVoice = voice || narratorDefaults.voiceId;
         const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', validMode === 'wisdom_guide' ? 'female' : 'male');
         targetSSML = sanitizeSSMLForNeuralEngine(rawNarratorSSML, certified.voice, certified.locale);
         preliminaryVoice = certified.voice;
-        resolvedProsodyRate = validMode === 'wisdom_guide' ? '-2%' : '+0%';
-        resolvedProsodyPitch = validMode === 'wisdom_guide' ? '+0Hz' : '-1Hz';
+        resolvedProsodyRate = narratorDefaults.prosodyRate;
+        resolvedProsodyPitch = narratorDefaults.prosodyPitch;
       } else if (characterProfile && resolved.lang === 'es') {
         // Próceres Históricos Mexicanos y Latinoamericanos con Calibración de Autor
         const certified = resolveCertifiedPlatformVoice(voice || characterProfile.voiceId, 'es', characterProfile.gender);

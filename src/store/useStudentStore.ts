@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { useMemo } from 'react';
 import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest, ElementalPetRace, PetEvolutionStage, DetailedStudent } from '../types';
 import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED, DETAILED_STUDENTS_SEED, DEFAULT_ARTIFACTS_SEED } from './seeds';
@@ -1768,6 +1769,7 @@ export const useStudentStore = create<StudentStoreState>()(
 }),
     {
       name: 'iskool_student_store',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
       partialize: (state) => ({
         activeStudentId: state.activeStudentId,
         allStats: state.allStats,
