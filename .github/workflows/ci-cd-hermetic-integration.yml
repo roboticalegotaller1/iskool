@@ -14,6 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
   NODE_OPTIONS: '--max-old-space-size=6144 --no-warnings'
 
@@ -31,12 +32,12 @@ jobs:
 
     steps:
       - name: 📥 Checkout del Repositorio Central
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
       - name: ⚙️ Configurar Entorno Node.js (LTS 22)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
           cache: 'npm'
@@ -75,10 +76,10 @@ jobs:
 
     steps:
       - name: 📥 Checkout del Repositorio Central
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
 
       - name: ⚙️ Configurar Node.js (LTS 22)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: 22
           cache: 'npm'
@@ -95,7 +96,7 @@ jobs:
 
       - name: 💾 Restaurar Caché de Binarios de Playwright
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
