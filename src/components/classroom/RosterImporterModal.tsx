@@ -31,7 +31,7 @@ export const RosterImporterModal: React.FC<Props> = ({
   const [isParsed, setIsParsed] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Parsear texto copiado de Excel / CSV
+  // Parsear texto copiado de Hoja de Cálculo / CSV
   const handleParseText = () => {
     if (!rawText.trim()) return;
 
@@ -183,7 +183,7 @@ Diego	Navarro Peña	4º A - Primaria	tutor.diego@gmail.com	5555667788`;
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                  Copia y pega la tabla de tus alumnos desde Excel o CSV:
+                  Copia y pega la tabla de tus alumnos desde Hoja de Cálculo o CSV:
                 </label>
                 <button
                   type="button"

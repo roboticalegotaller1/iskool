@@ -19,7 +19,7 @@ import {
 export class PaymentGatewayService {
   private static instance: PaymentGatewayService;
   private readonly gatewayProviderName: string = 'PaymentGateway';
-  private readonly baseUrl: string = process.env.NEXT_PUBLIC_APP_URL || 'https://iskool.edu.mx';
+  private readonly baseUrl: string = process.env.NEXT_PUBLIC_APP_URL || 'https://iskool.mx';
 
   private constructor() {}
 

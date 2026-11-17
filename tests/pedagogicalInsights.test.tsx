@@ -3,21 +3,42 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { POST as pedagogicalInsightsHandler } from '@/app/api/vault/pedagogical-insights/route';
 import { InstitutionalMemoryAdvisor } from '@/components/studio/InstitutionalMemoryAdvisor';
+import { signSessionToken } from '@/lib/sessionToken';
 import { NextRequest } from 'next/server';
+
+async function withServerWindowSuspended<T>(fn: () => Promise<T>): Promise<T> {
+  const savedWindow = globalThis.window;
+  delete (globalThis as any).window;
+  try {
+    return await fn();
+  } finally {
+    (globalThis as any).window = savedWindow;
+  }
+}
 
 describe('Fase 9: Endpoint POST /api/vault/pedagogical-insights', () => {
   it('retorna fricciones ordenadas por relevancia y tasa de dominio para temas conocidos', async () => {
-    const req = new NextRequest('http://localhost:3000/api/vault/pedagogical-insights', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subjectId: 'matematicas',
-        gradeLevel: '4',
-        topicKeywords: ['fracciones', 'equivalentes']
-      })
+    const response = await withServerWindowSuspended(async () => {
+      const token = await signSessionToken({
+        id: 'usr-test-teacher',
+        email: 'profesor@iskool.edu.mx',
+        role: 'teacher',
+        school_id: 'sch-ibime',
+      });
+      const req = new NextRequest('http://localhost:3000/api/vault/pedagogical-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `iskool_session=${token}`,
+        },
+        body: JSON.stringify({
+          subjectId: 'matematicas',
+          gradeLevel: '4',
+          topicKeywords: ['fracciones', 'equivalentes']
+        })
+      });
+      return pedagogicalInsightsHandler(req);
     });
-
-    const response = await pedagogicalInsightsHandler(req);
     expect(response.status).toBe(200);
 
     const data = await response.json();
@@ -40,17 +61,27 @@ describe('Fase 9: Endpoint POST /api/vault/pedagogical-insights', () => {
   });
 
   it('retorna found: false de forma limpia ante temas sin registros históricos', async () => {
-    const req = new NextRequest('http://localhost:3000/api/vault/pedagogical-insights', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subjectId: 'astronomia_cuantica_inexistente',
-        gradeLevel: '99',
-        topicKeywords: ['particulas_subatomicas_ficticias']
-      })
+    const response = await withServerWindowSuspended(async () => {
+      const token = await signSessionToken({
+        id: 'usr-test-teacher',
+        email: 'profesor@iskool.edu.mx',
+        role: 'teacher',
+        school_id: 'sch-ibime',
+      });
+      const req = new NextRequest('http://localhost:3000/api/vault/pedagogical-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: `iskool_session=${token}`,
+        },
+        body: JSON.stringify({
+          subjectId: 'astronomia_cuantica_inexistente',
+          gradeLevel: '99',
+          topicKeywords: ['particulas_subatomicas_ficticias']
+        })
+      });
+      return pedagogicalInsightsHandler(req);
     });
-
-    const response = await pedagogicalInsightsHandler(req);
     expect(response.status).toBe(200);
 
     const data = await response.json();

@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { PortfolioItem, FeedbackAuthorRole, PortfolioItemStatus, PortfolioFeedback, UserProfile } from '../types';
 import { PORTFOLIO_SEED, SUBJECTS_SEED, TEACHER_SEED, PARENT_SEED, STUDENTS_LIST_SEED, BADGES_SEED } from './seeds';
 import { useStudentStore, normalizeStudentId, mapStudentIdToUuid } from './useStudentStore';
@@ -119,7 +121,9 @@ interface PortfolioStoreState {
   resetPortfolioStore: () => void;
 }
 
-export const usePortfolioStore = create<PortfolioStoreState>((set, get) => ({
+export const usePortfolioStore = create<PortfolioStoreState>()(
+  persist(
+    (set, get) => ({
   portfolioItems: PORTFOLIO_SEED,
   isLoadingPortfolio: false,
   portfolioError: null,
@@ -867,4 +871,13 @@ export const usePortfolioStore = create<PortfolioStoreState>((set, get) => ({
       portfolioError: null
     });
   }
-}));
+    }),
+    {
+      name: 'iskool_portfolio_store_v1',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
+      partialize: (state) => ({
+        portfolioItems: state.portfolioItems
+      })
+    }
+  )
+);

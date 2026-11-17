@@ -569,7 +569,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
       )}
 
       {/* =====================================================================
-          BARRA SUPERIOR MAESTRA: MARCA BLANCA + HUD GAMIFICADO NANO BANANA 2.1
+          BARRA SUPERIOR MAESTRA: MARCA BLANCA + HUD GAMIFICADO ESTUDIO COGNITIVO 3D
           ===================================================================== */}
       <div className="bg-gradient-to-r from-[#FFFFFF] via-[#F8FAFC] to-[#FFFFFF] rounded-3xl border-2 border-slate-200/90 p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -578,7 +578,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
             <div className="relative w-16 h-16 rounded-2xl bg-white border-2 border-amber-300 shadow-md p-1 flex items-center justify-center shrink-0">
               <img
                 src="/images/languages/nanobanana-gamified/nb_bloom_crown_mastery.webp"
-                alt="Corona Cognitiva Bloom Nano Banana 2.1"
+                alt="Corona Cognitiva Bloom Estudio Cognitivo 3D"
                 className="w-full h-full object-contain"
               />
               <span className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-indigo-600 text-white font-black text-[9px] shadow">
@@ -589,7 +589,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-[10px] font-black uppercase tracking-wider">
-                  NANO BANANA 2.1 · CABINA COGNITIVA BLOOM-BKT
+                  ESTUDIO COGNITIVO 3D · CABINA COGNITIVA BLOOM-BKT
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
                   {sepCenniProjection.cefrBand} · {sepCenniProjection.cenniBandLabel}
@@ -672,7 +672,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
         </div>
 
         {/* ===================================================================
-            6 TARJETAS DE EMBLEMAS 3D NANO BANANA 2.1 (SIN CORTE NI SALTO DE LÍNEA)
+            6 TARJETAS DE EMBLEMAS 3D ESTUDIO COGNITIVO 3D (SIN CORTE NI SALTO DE LÍNEA)
             =================================================================== */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
           {/* 1. Nivel Cognitivo Bloom */}
@@ -1853,19 +1853,19 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
             )}
           </div>
 
-          {/* 2. DOCK AUXILIAR NANO BANANA 2.1 (SECUNDARIO, ABAJO EN MODO CLARO): GUÍA DE ARTICULACIÓN & FORMANTES */}
+          {/* 2. DOCK AUXILIAR ESTUDIO COGNITIVO 3D (SECUNDARIO, ABAJO EN MODO CLARO): GUÍA DE ARTICULACIÓN & FORMANTES */}
           <div className="w-full bg-gradient-to-r from-slate-50 via-white to-indigo-50/40 rounded-3xl border-2 border-indigo-100 p-4 sm:p-5 shadow-2xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <img
                   src="/images/languages/nanobanana-gamified/nb_articulatory_coach_badge.webp"
-                  alt="Coach de Articulación Nano Banana 2.1"
+                  alt="Coach de Articulación Estudio Cognitivo 3D"
                   className="w-11 h-11 rounded-2xl object-contain bg-white border border-indigo-200 p-0.5 shadow-2xs shrink-0"
                 />
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[10px] font-black uppercase text-indigo-800 bg-indigo-100/80 px-2 py-0.5 rounded border border-indigo-200">
-                      APOYO COMPLEMENTARIO NANO BANANA 2.1 · GUÍA BIOMECÁNICA DE PRONUNCIACIÓN
+                      APOYO COMPLEMENTARIO ESTUDIO COGNITIVO 3D · GUÍA BIOMECÁNICA DE PRONUNCIACIÓN
                     </span>
                     <span className="text-[10px] font-bold text-emerald-700">
                       Fonema Activo: {activePhoneticSpec.symbolIpa} ({activePhoneticSpec.titleEs})
@@ -1888,7 +1888,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
               </div>
             </div>
 
-            {/* Grid Horizontal de 3 Columnas en Estética Blanca/Perla Nano Banana 2.1 */}
+            {/* Grid Horizontal de 3 Columnas en Estética Blanca/Perla Estudio Cognitivo 3D */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
               {/* Columna 1 (4 cols): Selector de los 4 Fonemas Críticos + Palabras Ejemplares */}
               <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-3.5 flex flex-col justify-between space-y-3">
@@ -1939,7 +1939,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                 </div>
               </div>
 
-              {/* Columna 2 (4 cols): Esquema Articular Claro Nano Banana 2.1 (Fondo Blanco/Perla) */}
+              {/* Columna 2 (4 cols): Esquema Articular Claro Estudio Cognitivo 3D (Fondo Blanco/Perla) */}
               <div className="lg:col-span-4 bg-gradient-to-br from-white via-indigo-50/40 to-emerald-50/40 rounded-2xl border border-indigo-200/80 p-3.5 flex flex-col justify-between space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-1.5">
                   <span className="text-xs font-black text-indigo-950 font-mono">
@@ -2179,6 +2179,10 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                   <button
                     type="button"
                     onClick={() => {
+                      if (!studentOralResponseText.trim()) {
+                        showToast('⚠️ Escribe o graba primero tu respuesta en el idioma objetivo antes de validarla.');
+                        return;
+                      }
                       setSttPercentage((prev) => Math.min(100, prev + 2));
                       handleRecordMasteryEvidence(
                         'PO',
@@ -2543,7 +2547,7 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                     <strong>Limitación Tradicional Superada:</strong> {audit.structuralLimitations[0]}
                   </div>
                   <div className="p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-950 font-medium">
-                    <strong>🚀 Síntesis Quirúrgica ISkool Nano Banana 2.1:</strong>{' '}
+                    <strong>🚀 Síntesis Quirúrgica ISkool Estudio Cognitivo 3D:</strong>{' '}
                     {audit.iskoolSynthesisAndUpgrade}
                   </div>
                 </div>

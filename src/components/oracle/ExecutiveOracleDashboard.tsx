@@ -231,10 +231,18 @@ export const ExecutiveOracleDashboard: React.FC = () => {
     }
   };
 
-  // Renderizador seguro de Markdown nativo
+  // Renderizador seguro de Markdown nativo con lista blanca estricta XSS
   const renderMarkdownContent = (md: string) => {
     const rawHtml = marked.parse(md, { async: false }) as string;
-    const sanitizedHtml = DOMPurify.sanitize(rawHtml);
+    const sanitizedHtml = DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'b', 'i', 'u', 'h1', 'h2', 'h3', 'h4',
+        'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'table', 'thead',
+        'tbody', 'tr', 'th', 'td', 'hr', 'span'
+      ],
+      ALLOWED_ATTR: ['class'],
+      ALLOW_DATA_ATTR: false,
+    });
     return { __html: sanitizedHtml };
   };
 

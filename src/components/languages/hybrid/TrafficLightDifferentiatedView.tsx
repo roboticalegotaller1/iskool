@@ -39,15 +39,28 @@ export const TrafficLightDifferentiatedView: React.FC<Props> = ({
   isLightMode,
 }) => {
   const [selectedBandFilter, setSelectedBandFilter] = useState<'all' | 'green' | 'amber' | 'red'>('all');
-  const [homeworkSent, setHomeworkSent] = useState<boolean>(false);
+  const [homeworkSent, setHomeworkSent] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem(`iskool_languages_triad_${lesson.id}`) === 'sent';
+    } catch {
+      return false;
+    }
+  });
   const [selectedStudentForBoleta, setSelectedStudentForBoleta] = useState<string>(
     'Sofía Ramírez Morales · 2º A'
   );
 
   const handleSendDifferentiatedTriad = () => {
     setHomeworkSent(true);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`iskool_languages_triad_${lesson.id}`, 'sent');
+      } catch { /* ignore */ }
+    }
+    studentReports.slice(0, 3).forEach((rep) => onMarkReviewed(rep.id));
     onTriggerToast(
-      '🚀 Triada Pedagógica enviada: 3 alumnos recibieron Refuerzo Lento, 5 Práctica Estándar y 18 Reto Avanzado'
+      '🚀 Triada Pedagógica enviada y guardada: 3 alumnos recibieron Refuerzo Lento, 5 Práctica Estándar y 18 Reto Avanzado'
     );
   };
 

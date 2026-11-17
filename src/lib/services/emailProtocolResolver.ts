@@ -82,7 +82,7 @@ export const COMMERCIAL_PROVIDERS: EmailServerPreset[] = [
   },
   {
     providerId: 'microsoft',
-    providerName: 'Microsoft 365 / Outlook / Hotmail',
+    providerName: 'Correo Corporativo Empresarial / Outlook',
     domains: ['outlook.com', 'hotmail.com', 'live.com', 'msn.com', 'office365.com', 'outlook.es'],
     isCommercial: true,
     imap: {
@@ -101,7 +101,7 @@ export const COMMERCIAL_PROVIDERS: EmailServerPreset[] = [
       security: 'STARTTLS'
     },
     requiresAppPassword: true,
-    notes: 'Soporta autenticación moderna y contraseñas de aplicación Microsoft.'
+    notes: 'Soporta autenticación moderna y contraseñas de aplicación empresarial.'
   },
   {
     providerId: 'yahoo',

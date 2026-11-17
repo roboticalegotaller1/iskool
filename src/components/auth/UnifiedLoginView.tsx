@@ -171,9 +171,9 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           id: currentSession.user.id,
           first_name: currentSession.user.user_metadata?.first_name || currentSession.user.user_metadata?.given_name || (currentSession.user.user_metadata?.full_name ? currentSession.user.user_metadata.full_name.split(' ')[0] : 'Docente/Estudiante'),
           last_name: currentSession.user.user_metadata?.last_name || currentSession.user.user_metadata?.family_name || '',
-          role: (currentSession.user.user_metadata?.role || (userEmail.includes('docente') || userEmail.includes('profesor') ? 'teacher' : 'student')) as any,
+          role: (currentSession.user.app_metadata?.role || 'student') as any,
           email: userEmail,
-          school_id: 'sch-ibime',
+          school_id: currentSession.user.app_metadata?.school_id || 'sch-ibime',
           created_at: currentSession.user.created_at,
           updated_at: new Date().toISOString()
         };

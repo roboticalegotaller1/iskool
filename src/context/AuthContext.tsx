@@ -843,9 +843,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: u.id,
             first_name: u.user_metadata?.first_name || 'Usuario',
             last_name: u.user_metadata?.last_name || '',
-            role: (u.user_metadata?.role || 'student') as any,
+            role: (u.app_metadata?.role || 'student') as any,
             email: u.email || '',
-            school_id: u.user_metadata?.school_id,
+            school_id: u.app_metadata?.school_id,
             created_at: u.created_at,
             updated_at: new Date().toISOString()
           };
@@ -912,8 +912,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: currentSession.user.id,
           first_name: currentSession.user.user_metadata?.first_name || 'Usuario',
           last_name: currentSession.user.user_metadata?.last_name || '',
-          role: (currentSession.user.user_metadata?.role || 'student') as any,
+          role: (currentSession.user.app_metadata?.role || 'student') as any,
           email: currentSession.user.email || '',
+          school_id: currentSession.user.app_metadata?.school_id,
           created_at: currentSession.user.created_at,
           updated_at: new Date().toISOString()
         });
@@ -933,35 +934,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useSchoolAdminStore.getState().syncUserSchool(user);
   }, [user]);
 
-  const isMatchingSeedPassword = (user: UserProfile, pass: string): boolean => {
+  const isMatchingLocalSeedCredential = (user: UserProfile, pass: string): boolean => {
     if (!pass) return false;
     const p = pass.trim();
-
-    // Contraseñas universales de demostración y presentación
-    if (p === 'ISkoolPassword2026!' || p === '008805' || p === 'ISkoolAdmin2026!') {
-      return true;
-    }
-
-    // Cuentas del Instituto Bilingüe IBIME (Directiva, Docentes, Alumnos 360, Familias)
-    const isIbime = user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'));
-    if (isIbime) {
-      // Acceso garantizado para presentaciones institucionales en todas las semillas oficiales IBIME
-      return true;
-    }
-
-    // Claves preasignadas en perfil o store
+    // Solo contraseñas explícitas adjuntas al registro de prueba del showcase o cuenta temporal
     if ((user as any).temporary_password && p === (user as any).temporary_password) {
       return true;
     }
     if ((user as any).defaultPass && p === (user as any).defaultPass) {
       return true;
     }
-
-    // Claves directivas y de holdings
-    if (p === 'DIR2026' || p === 'CRD2026' || p === 'COB2026' || p === 'DUE2026' || p === 'IBI2026' || p === 'CEO2026' || p === 'NEX2026' || p === 'BMW2026' || p === 'BMW2026!' || p === 'RETAIL2026' || p === 'DemoISkool2026!') {
-      return true;
-    }
-
     return false;
   };
 
@@ -1076,11 +1058,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     const resolvedUser = getDemoUser(cleanEmail);
-    const isIbime = resolvedUser.school_id === 'sch-ibime' || (resolvedUser.email && resolvedUser.email.toLowerCase().includes('ibime'));
-
-    const effectivePass = (userPassword && userPassword.trim())
-      ? userPassword.trim()
-      : (isIbime ? 'DIR2026' : (resolvedUser as any).defaultPass || 'ISkoolPassword2026!');
+    const effectivePass = (userPassword && userPassword.trim()) ? userPassword.trim() : '';
     
     if (resolvedUser.is_blocked) {
       setLoading(false);
@@ -1126,20 +1104,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let finalUser: UserProfile | null = null;
     let sessionObj: any = null;
+    let sessionAlreadySynced = false;
 
-    // 1. Soporte prioritario e instantáneo para cuentas institucionales semilla (IBIME e ISkool)
-    if (isMatchingSeedPassword(resolvedUser, effectivePass)) {
+    // 1. Verificación autoritativa en servidor (/api/auth/session) para credenciales institucionales y cuentas demo
+    if (typeof window !== 'undefined' && effectivePass) {
+      try {
+        const serverRes = await fetch('/api/auth/session', {
+          method: 'POST',
+          cache: 'no-store',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            password: effectivePass,
+            user: { id: resolvedUser.id, email: resolvedUser.email }
+          })
+        });
+        if (serverRes.ok) {
+          const serverData = await serverRes.json().catch(() => null);
+          if (serverData?.success && serverData?.user) {
+            finalUser = {
+              ...resolvedUser,
+              ...serverData.user,
+              updated_at: new Date().toISOString()
+            };
+            sessionObj = { user: finalUser };
+            sessionAlreadySynced = true;
+          }
+        }
+      } catch {
+        // Fallback a verificación secundaria
+      }
+    }
+
+    if (!finalUser && isMatchingLocalSeedCredential(resolvedUser, effectivePass)) {
       finalUser = {
         ...resolvedUser,
         updated_at: new Date().toISOString()
       };
-      sessionObj = {
-        access_token: `seed-session-${resolvedUser.id}-${Date.now()}`,
-        user: finalUser
-      };
+      sessionObj = { user: finalUser };
     }
 
-    // 2. Intentar autenticación criptográfica con Supabase Auth si no coincidió con semilla local
+    // 2. Intentar autenticación criptográfica con el proveedor Auth si no coincidió con catálogo de servidor
     if (!finalUser) {
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -1154,9 +1159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: userObj.id,
             first_name: userObj.user_metadata?.first_name || resolvedUser.first_name,
             last_name: userObj.user_metadata?.last_name || resolvedUser.last_name,
-            role: (userObj.user_metadata?.role || resolvedUser.role) as any,
+            role: (userObj.app_metadata?.role || resolvedUser.role) as any,
             email: userObj.email || resolvedUser.email,
-            school_id: userObj.user_metadata?.school_id || resolvedUser.school_id,
+            school_id: userObj.app_metadata?.school_id || resolvedUser.school_id,
             created_at: userObj.created_at || new Date().toISOString(),
             updated_at: new Date().toISOString()
           };
@@ -1188,20 +1193,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isIbimeTenant = finalUser.school_id === 'sch-ibime' || (finalUser.email && finalUser.email.toLowerCase().includes('ibime'));
       const resolvedTenant = isIbimeTenant ? 'ibime' : 'iskool';
 
-      try {
-        await fetch('/api/auth/session', {
-          method: 'POST',
-          cache: 'no-store',
-          credentials: 'same-origin',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            access_token: sessionObj?.access_token,
-            password: effectivePass,
-            user: finalUser
-          })
-        });
-      } catch {
-        // No bloquear la interfaz ante latencia de red secundaria
+      if (!sessionAlreadySynced) {
+        try {
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            cache: 'no-store',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              access_token: sessionObj?.access_token,
+              password: effectivePass,
+              user: finalUser
+            })
+          });
+        } catch {
+          // No bloquear la interfaz ante latencia de red secundaria
+        }
       }
 
       const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';

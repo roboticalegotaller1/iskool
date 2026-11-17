@@ -9,8 +9,6 @@ import { validateApiAuth } from '@/lib/authValidator';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const VALID_ADMIN_KEYS = ['ISKOOL2026', 'DIR2026', 'ADMIN2026', 'iskool2026', 'dir2026'];
-
 export async function GET() {
   try {
     const config = QrVideoConfigService.getConfig();
@@ -43,7 +41,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { youtubeUrl, title, subtitle, badgeText, autoplay, loop, adminKey } = body;
 
-    // Permitir actualización con clave rápida de administración o sesión activa de directivo/administrador
+    // Solo sesiones autenticadas de dirección/administración o clave de servidor configurada
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
     const hasAdminSession =
       auth.authenticated &&
@@ -51,16 +49,21 @@ export async function POST(req: NextRequest) {
       ['admin', 'superadmin', 'director', 'owner', 'ceo', 'coordinator'].includes(
         (auth.user.role || '').toLowerCase()
       );
-    const hasValidPin =
-      typeof adminKey === 'string' && VALID_ADMIN_KEYS.includes(adminKey.trim());
+    const serverPin = process.env.VIDEO_ADMIN_KEY?.trim();
+    const hasValidPin = Boolean(
+      serverPin &&
+      serverPin.length >= 8 &&
+      typeof adminKey === 'string' &&
+      adminKey.trim() === serverPin
+    );
 
     if (!hasAdminSession && !hasValidPin) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Clave de administración inválida. Usa la clave institucional (ej. ISKOOL2026 o DIR2026).'
+          error: 'No autorizado. Se requiere sesión directiva autenticada para actualizar la configuración de vídeo.'
         },
-        { status: 403 }
+        { status: hasAdminSession ? 403 : 401 }
       );
     }
 

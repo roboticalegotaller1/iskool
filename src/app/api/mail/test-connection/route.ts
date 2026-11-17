@@ -157,15 +157,16 @@ async function verifyImapCredentials(
         {
           servername: host,
           timeout: timeoutMs,
-          rejectUnauthorized: false
+          rejectUnauthorized: process.env.NODE_ENV !== 'development'
         }
       );
 
       socket.setTimeout(timeoutMs);
 
       socket.once('data', (_banner) => {
-        const safeUser = targetU.replace(/"/g, '\\"');
-        const safePass = pass.replace(/"/g, '\\"');
+        // Bloquear inyección CRLF/comandos IMAP en credenciales antes de serializar LOGIN
+        const safeUser = targetU.replace(/[\r\n\0"\\]/g, '');
+        const safePass = pass.replace(/[\r\n\0"\\]/g, '');
         socket.write(`a001 LOGIN "${safeUser}" "${safePass}"\r\n`);
 
         socket.once('data', (data) => {
@@ -207,37 +208,23 @@ async function verifyImapCredentials(
     return { ...res1, matchedEmail: user };
   }
 
-  const cleanU = user.trim().toLowerCase();
-  const isGmail = host.includes('gmail') || cleanU.includes('gmail.com');
-  if (isGmail && pass.length >= 8) {
-    const fallbackUser =
-      cleanU === 'roboticalegotaller1@gmail.com'
-        ? 'israell35mac@gmail.com'
-        : cleanU === 'israell35mac@gmail.com'
-          ? 'roboticalegotaller1@gmail.com'
-          : null;
-    if (fallbackUser) {
-      const res2 = await tryUser(fallbackUser);
-      if (res2.authenticated) {
-        return {
-          authenticated: true,
-          message: `Autenticación IMAP confirmada con éxito (${fallbackUser}).`,
-          matchedEmail: fallbackUser
-        };
-      }
-    }
-  }
-
   return res1;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para verificar conexiones de correo institucional.' },
         { status: 401 }
+      );
+    }
+    const roleLower = (auth.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin'].includes(roleLower)) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos ejecutivos requeridos para probar conexiones de servidor de correo.' },
+        { status: 403 }
       );
     }
 
@@ -257,21 +244,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validación Anti-SSRF para servidores de correo entrante
+    // Validación síncrona Anti-SSRF inmediata para puertos y hosts internos/reservados
     const incomingTargetCheck = validateMailTarget(payload.incomingHost, Number(payload.incomingPort));
     if (!incomingTargetCheck.valid) {
       return NextResponse.json(
-        { success: false, error: incomingTargetCheck.reason || 'Servidor o puerto de entrada no autorizado.' },
+        { success: false, pingSuccess: false, error: incomingTargetCheck.reason || 'Servidor o puerto de entrada no autorizado.' },
         { status: 400 }
       );
     }
 
-    // Validación Anti-SSRF para servidor saliente si se especificó
     if (payload.outgoingHost && payload.outgoingPort) {
       const outgoingTargetCheck = validateMailTarget(payload.outgoingHost, Number(payload.outgoingPort));
       if (!outgoingTargetCheck.valid) {
         return NextResponse.json(
-          { success: false, error: outgoingTargetCheck.reason || 'Servidor o puerto saliente no autorizado.' },
+          { success: false, pingSuccess: false, error: outgoingTargetCheck.reason || 'Servidor o puerto saliente no autorizado.' },
           { status: 400 }
         );
       }
@@ -313,17 +299,22 @@ export async function POST(req: NextRequest) {
     let resolvedIp = '127.0.0.1';
     if (!isLocalSandboxDomain) {
       try {
-        const lookup = await dns.lookup(payload.incomingHost);
-        resolvedIp = lookup.address;
-        if (isPrivateOrReservedIp(resolvedIp)) {
-          return NextResponse.json(
-            {
-              success: false,
-              pingSuccess: false,
-              error: `Acceso denegado: El servidor "${payload.incomingHost}" resolvió a una dirección interna (${resolvedIp}) bloqueada por la directiva perimetral anti-SSRF.`
-            },
-            { status: 403 }
-          );
+        const lookups = await dns.lookup(payload.incomingHost, { all: true });
+        if (!lookups || lookups.length === 0) {
+          throw new Error('ENOTFOUND');
+        }
+        resolvedIp = lookups[0].address;
+        for (const entry of lookups) {
+          if (isPrivateOrReservedIp(entry.address)) {
+            return NextResponse.json(
+              {
+                success: false,
+                pingSuccess: false,
+                error: `Acceso denegado: El servidor "${payload.incomingHost}" resolvió a una dirección interna (${entry.address}) bloqueada por la directiva perimetral anti-SSRF.`
+              },
+              { status: 403 }
+            );
+          }
         }
       } catch (hostErr: any) {
         return NextResponse.json(

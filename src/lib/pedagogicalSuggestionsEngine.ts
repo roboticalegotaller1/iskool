@@ -103,7 +103,7 @@ const CURATED_SUGGESTIONS_DATABASE: Record<string, Record<string, CuratedTopicDa
       backupVideos: [
         {
           id: 'vid-indep-pre-backup-1',
-          url: 'https://www.youtube.com/watch?v=7X0meTYpmgY',
+          url: 'https://www.youtube.com/watch?v=ZLSOOM8nfhg',
           title: 'Canción de Independencia de México / Letra Infantil',
           channelName: 'Leonardo Leon Música Infantil',
           channelVerified: true,
@@ -573,7 +573,7 @@ const CURATED_SUGGESTIONS_DATABASE: Record<string, Record<string, CuratedTopicDa
         },
         {
           id: 'vid-eco-pre-4',
-          url: 'https://www.youtube.com/watch?v=W5LgZ1A9Bbo',
+          url: 'https://www.youtube.com/watch?v=NAr27_PK0kw',
           title: 'El Huerto en el Kínder: Sembrando frijolitos',
           channelName: 'Canal Once Niñas y Niños',
           channelVerified: true,
@@ -700,7 +700,7 @@ const CURATED_SUGGESTIONS_DATABASE: Record<string, Record<string, CuratedTopicDa
         },
         {
           id: 'vid-eco-real-5',
-          url: 'https://www.youtube.com/watch?v=W5LgZ1A9Bbo',
+          url: 'https://www.youtube.com/watch?v=Hut5uxHda38',
           title: 'Ecotecnias y sustentabilidad en las escuelas de México',
           channelName: 'Canal Once',
           channelVerified: true,

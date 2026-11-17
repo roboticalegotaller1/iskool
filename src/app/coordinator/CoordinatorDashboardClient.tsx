@@ -1095,7 +1095,7 @@ export default function CoordinatorDashboard() {
                                     alt={formatStudentName(student)} 
                                     className="h-full w-full object-cover"
                                     onError={(e) => {
-                                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=250&auto=format&fit=crop&q=80';
+                                      (e.target as HTMLImageElement).src = '/images/students/default.png';
                                     }}
                                   />
                                 </div>
@@ -3057,7 +3057,7 @@ export default function CoordinatorDashboard() {
                   alt={`${selectedStudent.first_name} ${selectedStudent.last_name_1}`}
                   className="h-full w-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=250&auto=format&fit=crop&q=80';
+                    (e.target as HTMLImageElement).src = '/images/students/default.png';
                   }}
                 />
               </div>

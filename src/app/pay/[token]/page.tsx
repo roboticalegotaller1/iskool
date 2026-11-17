@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
   Building2, 
   Lock, 
@@ -47,32 +48,90 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
   const [cardCvv, setCardCvv] = useState('');
   const [cardHolder, setCardHolder] = useState('Israel López Ángeles');
   const [formError, setFormError] = useState<string | null>(null);
+  const [paidReceiptNumber, setPaidReceiptNumber] = useState<string>('REC-2026-098234');
+  const [resolvedCharge, setResolvedCharge] = useState<{
+    recordId?: string;
+    invoiceNumber?: string;
+    concept?: string;
+    schoolName?: string;
+    studentName?: string;
+    studentGrade?: string;
+    parentName?: string;
+    total?: number;
+    dueDate?: string;
+  }>({});
 
   // Datos estructurados del cargo
   const invoiceData = {
-    invoiceNumber: 'COL-2026-00452',
-    concept: 'Colegiatura de Septiembre 2026',
-    schoolName: 'Colegio ISkool México',
-    studentName: 'Mateo López Mendoza',
-    studentGrade: '3º de Secundaria — Grupo A',
-    parentName: 'Israel López Ángeles',
-    subtotal: 3600.00,
-    discount: 150.00,
+    invoiceNumber: resolvedCharge.invoiceNumber || 'COL-2026-00452',
+    concept: resolvedCharge.concept || 'Colegiatura de Septiembre 2026',
+    schoolName: resolvedCharge.schoolName || 'Colegio ISkool México',
+    studentName: resolvedCharge.studentName || 'Mateo López Mendoza',
+    studentGrade: resolvedCharge.studentGrade || '3º de Secundaria — Grupo A',
+    parentName: resolvedCharge.parentName || 'Israel López Ángeles',
+    subtotal: resolvedCharge.total ?? 3600.00,
+    discount: resolvedCharge.total ? 0.00 : 150.00,
     surcharge: 0.00,
-    total: 3450.00,
-    dueDate: '10 de Septiembre de 2026',
+    total: resolvedCharge.total ?? 3450.00,
+    dueDate: resolvedCharge.dueDate || '10 de Septiembre de 2026',
     speiClabe: '710969000145829103',
     speiBank: 'Sistema de Pagos Interbancarios (SPEI)',
     storeReference: '9845 2301 9842 1094'
   };
 
   useEffect(() => {
-    params.then((p) => {
+    let active = true;
+    params.then(async (p) => {
+      if (!active) return;
       setTokenValue(p.token);
       if (p.token === 'expired') {
         setIsExpired(true);
+        return;
+      }
+
+      const adminState = useSchoolAdminStore.getState();
+      const matchedBilling = (adminState.billingRecords || []).find(
+        (r) => r.id === p.token || r.invoiceNumber === p.token
+      );
+      if (matchedBilling) {
+        const inst = (adminState.institutionsList || []).find((i) => i.id === matchedBilling.school_id);
+        setResolvedCharge({
+          recordId: matchedBilling.id,
+          invoiceNumber: matchedBilling.invoiceNumber,
+          concept: matchedBilling.concept,
+          schoolName: inst?.name || adminState.schoolSettings?.name || 'Colegio ISkool México',
+          studentName: matchedBilling.studentName,
+          studentGrade: `${matchedBilling.grade} ${matchedBilling.level} — Grupo ${matchedBilling.group}`,
+          parentName: matchedBilling.parentName,
+          total: matchedBilling.amount,
+          dueDate: matchedBilling.dueDate
+        });
+        if (matchedBilling.parentName) setCardHolder(matchedBilling.parentName);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/parent/magic-link?token=${encodeURIComponent(p.token)}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (active && json?.ok && json.record) {
+          const rec = json.record;
+          setResolvedCharge({
+            recordId: rec.invoiceId || rec.id,
+            invoiceNumber: rec.invoiceNumber || p.token,
+            concept: rec.concept,
+            studentName: rec.studentName || rec.student_name,
+            parentName: rec.parentName || rec.parent_name,
+            total: typeof rec.amount === 'number' ? rec.amount : undefined,
+            dueDate: rec.dueDate
+          });
+          if (rec.parentName || rec.parent_name) setCardHolder(rec.parentName || rec.parent_name);
+        }
+      } catch {
+        // Fallback silencioso a datos por defecto del enlace
       }
     });
+    return () => { active = false; };
   }, [params]);
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,13 +175,27 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
         setFormError('Ingrese el código de seguridad CVV (3 o 4 dígitos).');
         return;
       }
+      if (cardHolder.trim().length < 3) {
+        setFormError('Ingrese el nombre completo del titular de la tarjeta.');
+        return;
+      }
     }
 
     setIsProcessing(true);
     setTimeout(() => {
+      const generatedReceipt = `REC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+      setPaidReceiptNumber(generatedReceipt);
+      const targetId = resolvedCharge.recordId || invoiceData.invoiceNumber || tokenValue;
+      if (targetId) {
+        useSchoolAdminStore.getState().recordBillingPayment(targetId, {
+          method: selectedMethod,
+          reference: generatedReceipt,
+          amount: invoiceData.total
+        });
+      }
       setIsProcessing(false);
       setIsSuccess(true);
-    }, 1800);
+    }, 800);
   };
 
   if (isExpired) {
@@ -198,7 +271,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 text-xs text-slate-700 space-y-3 mb-6">
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Folio de Recibo:</span>
-                <span className="font-mono font-semibold text-slate-900">REC-2026-098234</span>
+                <span className="font-mono font-semibold text-slate-900">{paidReceiptNumber}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Fecha de Operación:</span>
@@ -224,7 +297,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
 
             <div className="space-y-3">
               <a
-                href={`/api/billing/invoice/pdf?receipt_id=REC-2026-098234&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}`}
+                href={`/api/billing/invoice/pdf?receipt_id=${encodeURIComponent(paidReceiptNumber)}&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm shadow-sm text-center"
@@ -235,7 +308,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
 
               <div className="grid grid-cols-2 gap-2">
                 <a
-                  href={`/api/billing/invoice/download?receipt_id=REC-2026-098234&format=xml&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}`}
+                  href={`/api/billing/invoice/download?receipt_id=${encodeURIComponent(paidReceiptNumber)}&format=xml&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-emerald-800 font-medium py-2.5 px-3 rounded-xl transition-colors text-xs border border-slate-300"

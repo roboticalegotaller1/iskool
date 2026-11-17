@@ -83,8 +83,12 @@ export interface PedagogicalInsightsResponse {
 export async function POST(request: NextRequest) {
   try {
     const auth = await validateApiAuth(request, { allowSuperAdminBypass: true });
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para acceder a las memorias pedagógicas.' }, { status: 401 });
+    }
+    const roleLower = (auth.user.role || '').toLowerCase();
+    if (!['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(roleLower)) {
+      return NextResponse.json({ error: 'Permisos insuficientes para consultar analítica de memorias.' }, { status: 403 });
     }
 
     const body: PedagogicalInsightsRequest = await request.json().catch(() => ({}));

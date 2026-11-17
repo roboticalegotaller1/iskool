@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { z } from 'zod';
-import { supabase } from '@/lib/supabaseClient';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { validateApiAuth } from '@/lib/authValidator';
 import {
   EXECUTIVE_ORACLE_TOOLS,
@@ -210,7 +210,8 @@ async function handleExecuteForensicQuery(args: ExecuteForensicQueryArgs): Promi
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    // Ejecución segura de solo lectura en Supabase
+    const supabase = getServiceSupabaseClient();
+    // Ejecución segura de solo lectura en Base de Datos con alcance de escuela
     const { data, error } = await (supabase.rpc as any)('execute_forensic_query', {
       sql_text: args.sql_query
     }, { signal: controller.signal });
@@ -329,18 +330,20 @@ export async function POST(req: NextRequest) {
   try {
     // 1. Verificación de Seguridad y Autenticación Perimetral
     const authResult = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!authResult.authenticated) {
+    if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: authResult.error || 'No autorizado para acceder al Oráculo Ejecutivo.' },
         { status: 401 }
       );
     }
-    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+    const oracleRole = (authResult.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin'].includes(oracleRole)) {
       return NextResponse.json(
-        { error: 'Permisos insuficientes para consultar el Oráculo Ejecutivo.' },
+        { error: 'Permisos ejecutivos requeridos para consultar el Oráculo.' },
         { status: 403 }
       );
     }
+    const oracleSchoolScope = authResult.user.school_id || authResult.user.tenant_id || 'sch-default';
 
     const clientId = authResult.user?.id || req.headers.get('x-forwarded-for') || 'anon';
     if (!checkRateLimit(clientId)) {
@@ -361,7 +364,7 @@ export async function POST(req: NextRequest) {
     }
 
     const rawQuery = parseResult.data.query;
-    const normalizedQuery = normalizeExecutiveQuery(rawQuery);
+    const normalizedQuery = `[${oracleSchoolScope}] ${normalizeExecutiveQuery(rawQuery)}`;
 
     // 3. Resolución de Clave del Motor de IA
     let apiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY;
@@ -387,7 +390,8 @@ export async function POST(req: NextRequest) {
 
       if (queryVector) {
         try {
-          const { data: cacheMatch, error: cacheErr } = await (supabase.rpc as any)('match_bi_cache', {
+          const serviceDb = getServiceSupabaseClient();
+          const { data: cacheMatch, error: cacheErr } = await (serviceDb.rpc as any)('match_bi_cache', {
             query_embedding: queryVector,
             match_threshold: 0.92,
             match_count: 1
@@ -549,17 +553,22 @@ Entrega siempre dos partes bien definidas:
     if (queryVector) {
       const persistCache = async () => {
         try {
-          await (supabase.from('bi_semantic_cache') as any).insert({
+          const serviceDb = getServiceSupabaseClient();
+          const { error: cacheInsertErr } = await (serviceDb.from('bi_semantic_cache') as any).insert({
             query_normalized: normalizedQuery,
             query_vector: queryVector,
             sql_template: 'SELECT metrics FROM executive_telemetry',
             metric_snapshot: {
               ...capturedSnapshots,
+              school_id: oracleSchoolScope,
               forensic_display: dualOutput.forensic_display
             },
             tables_involved: Array.from(tablesInvolved),
             is_valid: true
           });
+          if (cacheInsertErr) {
+            console.warn('[Oracle Cache] Error persistiendo caché semántico:', cacheInsertErr.message);
+          }
         } catch {
           // Ignorar fallo de inserción en caché silenciosamente
         }

@@ -174,6 +174,41 @@ function IbimePortalContent() {
     return IbimeCatalogService.getPayroll();
   }, []);
 
+  const selectedCampusObj = useMemo(
+    () => (selectedCampusId === 'all' ? null : ibimeCampuses.find(c => c.id === selectedCampusId) || null),
+    [ibimeCampuses, selectedCampusId]
+  );
+
+  const matchesSelectedCampus = (campusIdVal?: string, campusNameVal?: string) => {
+    if (selectedCampusId === 'all') return true;
+    if (campusIdVal && campusIdVal === selectedCampusId) return true;
+    const slug = selectedCampusId.replace('cmp-ibime-', '').toLowerCase();
+    const targetName = (selectedCampusObj?.name || '').toLowerCase();
+    const haystack = (campusNameVal || '').toLowerCase();
+    if (!haystack) return false;
+    return haystack.includes(slug) || (targetName && haystack.includes(targetName.replace('campus ', '')));
+  };
+
+  const filteredCampuses = useMemo(
+    () => (selectedCampusId === 'all' ? ibimeCampuses : ibimeCampuses.filter(c => c.id === selectedCampusId)),
+    [ibimeCampuses, selectedCampusId]
+  );
+
+  const campusScopedStudents = useMemo(
+    () => (selectedCampusId === 'all' ? ibimeStudents : ibimeStudents.filter(std => matchesSelectedCampus(std.campus_id, std.campus_name))),
+    [ibimeStudents, selectedCampusId, selectedCampusObj]
+  );
+
+  const filteredTeachers = useMemo(
+    () => (selectedCampusId === 'all' ? ibimeTeachers : ibimeTeachers.filter(t => matchesSelectedCampus(t.campus_id, t.campus_name))),
+    [ibimeTeachers, selectedCampusId, selectedCampusObj]
+  );
+
+  const filteredPayroll = useMemo(
+    () => (selectedCampusId === 'all' ? ibimePayroll : ibimePayroll.filter(p => matchesSelectedCampus(undefined, p.campus_name))),
+    [ibimePayroll, selectedCampusId, selectedCampusObj]
+  );
+
   // Alumnos filtrados por campus, nivel y búsqueda
   const filteredStudents = useMemo(() => {
     return ibimeStudents.filter(std => {
@@ -488,7 +523,7 @@ function IbimePortalContent() {
                 <span>Alumnos Matriculados</span>
                 <Users className="w-4 h-4 text-blue-300" />
               </div>
-              <p className="text-2xl font-black text-white mt-1">{ibimeStudents.length} Alumnos 360</p>
+              <p className="text-2xl font-black text-white mt-1">{campusScopedStudents.length} Alumnos 360</p>
               <p className="text-[10px] text-blue-200/80">Seguimiento bilingüe y becas SEP</p>
             </div>
 
@@ -497,7 +532,7 @@ function IbimePortalContent() {
                 <span>Cuerpo Docente</span>
                 <GraduationCap className="w-4 h-4 text-cyan-300" />
               </div>
-              <p className="text-2xl font-black text-white mt-1">{ibimeTeachers.length + 2} Profesores</p>
+              <p className="text-2xl font-black text-white mt-1">{filteredTeachers.length + 2} Profesores</p>
               <p className="text-[10px] text-blue-200/80">Docentes Bilingües STEAM y CCH</p>
             </div>
 
@@ -565,7 +600,7 @@ function IbimePortalContent() {
             <Users className="w-4 h-4" />
             <span>Control Escolar & Alumnos 360</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 dark:bg-emerald-900 text-emerald-800 dark:text-blue-200">
-              {ibimeStudents.length}
+              {campusScopedStudents.length}
             </span>
           </button>
 
@@ -627,7 +662,7 @@ function IbimePortalContent() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {ibimeCampuses.map((campus) => {
+              {filteredCampuses.map((campus) => {
                 const isMontes = campus.id === 'cmp-ibime-montes';
                 const isLagos = campus.id === 'cmp-ibime-lagos';
                 const isSanCristobal = campus.id === 'cmp-ibime-sancristobal';
@@ -1081,7 +1116,7 @@ function IbimePortalContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {ibimePayroll.map((rec) => (
+                    {filteredPayroll.map((rec) => (
                       <tr key={rec.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30">
                         <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
                           <p>{rec.employee_name}</p>

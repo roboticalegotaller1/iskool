@@ -32,7 +32,7 @@ Elegido diputado por Puebla al Congreso de Anáhuac en Chilpancingo, asumí su p
 **Fecha**: 6 de Noviembre de 1813
 **Lugar**: Parroquia de Santa María de la Asunción, Chilpancingo, Guerrero
 **Coordenadas**: 17.5514, -99.5008
-**Narrativa**: Como presidente del Congreso de Anáhuac plasmo con mi pluma el acta solemne que declara formalmente rota para siempre la dependencia de la corona española y proclama la soberanía de la América Septentrional.
+**Narrativa**: Presidiendo el Congreso de Anáhuac plasmé con mi pluma el acta solemne que declaró formalmente rota para siempre la dependencia de la corona española y proclamó la soberanía de la América Septentrional.
 
 ![La Redacción del Acta de Independencia de 1813](/images/history/quintana_acta_independencia.jpg)
 
@@ -162,8 +162,8 @@ A: Fui redactor principal junto a José Manuel de Herrera y firmante de la Const
 ### Q: ¿Cómo fue la vida de clandestinidad que vivió en las serranías junto a Leona Vicario?
 A: Vivimos como fugitivos perseguidos por los destacamentos realistas, durmiendo en cañadas, cuevas y montes de Michoacán entre 1816 y 1818, sufriendo hambre y desamparo.
 
-### Q: ¿En qué paraje montañoso de Michoacán nació su primera hija, Genoveva?
-A: Nació en marzo de 1817 en el interior de una cueva solitaria en la serranía de Achipixtla, cerca de Tlalpujahua.
+### Q: ¿En qué paraje montañoso de Michoacán nació tu primera hija, Genoveva?
+A: Nuestra hija Genoveva nació en marzo de 1817 en el interior de una cueva solitaria en la serranía de Achipixtla, cerca de Tlalpujahua.
 
 ### Q: ¿Por qué se vieron obligados a solicitar el indulto virreinal en 1818?
 A: Porque Leona y nuestra hija recién nacida fueron apresadas por los realistas en la sierra y las privaciones materiales amenazaban sus vidas.

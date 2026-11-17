@@ -49,6 +49,7 @@ import {
   Check
 } from "lucide-react";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
+import { useCrmStore } from "@/store/useCrmStore";
 
 // Tipos de diapositiva
 type SlideType = "curtain" | "showcase";
@@ -747,14 +748,59 @@ export default function PromoPage() {
               </div>
             </div>
 
-            {/* Contenedor del Iframe con Borde Neón */}
-            <div className="relative w-full h-[68vh] min-h-[480px] sm:min-h-[520px] rounded-3xl border border-teal-400/40 bg-slate-950 overflow-hidden shadow-2xl shadow-teal-500/10">
+            {/* Vista Interactiva del Portal sin bloqueo X-Frame-Options */}
+            <div className="relative w-full h-[68vh] min-h-[480px] sm:min-h-[520px] rounded-3xl border border-teal-400/40 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/60 overflow-y-auto shadow-2xl shadow-teal-500/10 p-6 sm:p-10 flex flex-col justify-between gap-6">
               {currentSlide.portalUrl ? (
-                <iframe
-                  src={currentSlide.portalUrl}
-                  className="w-full h-full border-none pointer-events-auto bg-slate-950"
-                  title={currentSlide.portalName}
-                />
+                <>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-500/20 text-teal-300 border border-teal-400/30">
+                        {currentSlide.badge}
+                      </span>
+                      <span className="text-xs font-mono text-amber-300 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/30">
+                        Ruta: {currentSlide.portalUrl}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl font-black text-white">{currentSlide.title}</h3>
+                    <p className="text-sm sm:text-base text-slate-300 max-w-3xl leading-relaxed">{currentSlide.subtitle}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                      {currentSlide.metrics.map((m, idx) => (
+                        <div key={idx} className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                          <div className="text-[11px] text-slate-400 font-semibold">{m.label}</div>
+                          <div className="text-sm font-black text-emerald-400 mt-1">{m.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {currentSlide.features.map((f, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl bg-slate-900/70 border border-teal-500/20 space-y-1.5">
+                        <div className="text-sm font-bold text-white">{f.title}</div>
+                        <p className="text-xs text-slate-300 leading-relaxed">{f.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+                    <span className="text-xs text-slate-400">
+                      Portal protegido con aislamiento criptográfico de sesión. Inicia demostración interactiva directa:
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href="/Lcxad5iH8kGm3ZC"
+                        className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all"
+                      >
+                        Probar Demostración en 1 Clic →
+                      </Link>
+                      <Link
+                        href={currentSlide.portalUrl}
+                        target="_blank"
+                        className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition-all"
+                      >
+                        Abrir {currentSlide.portalUrl}
+                      </Link>
+                    </div>
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center p-8">
                   <GraduationCap className="h-16 w-16 text-emerald-400 animate-pulse mb-4" />
@@ -978,8 +1024,45 @@ export default function PromoPage() {
               </div>
             ) : (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
+                  const nameParts = (contactName || 'Director Escolar').trim().split(/\s+/);
+                  const firstName = nameParts[0] || 'Director';
+                  const last1 = nameParts[1] || schoolName.trim().split(/\s+/)[0] || 'Escolar';
+                  const last2 = nameParts.slice(2).join(' ');
+                  const crmStore = useCrmStore.getState();
+                  crmStore.createLead({
+                    school_id: 'sch-demo-0001',
+                    pipeline_type: 'new_enrollment',
+                    stage: 'registered',
+                    tutor_first_name: firstName,
+                    tutor_last_name_1: last1,
+                    tutor_last_name_2: last2 || undefined,
+                    tutor_last_name: `${last1} ${last2}`.trim(),
+                    tutor_phone: contactPhone,
+                    tutor_email: contactEmail,
+                    tutor_relationship: 'Directivo / Institución',
+                    source_channel: 'website_form',
+                    priority: 'hot',
+                    referral_incentive_applied: false,
+                    outcome: null,
+                    notes: `Solicitud de prueba piloto desde /promo para ${schoolName || 'Institución Educativa'}`
+                  });
+                  try {
+                    await fetch('/api/demo', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        action: 'request_pilot',
+                        schoolName,
+                        contactName,
+                        contactEmail,
+                        contactPhone
+                      })
+                    });
+                  } catch {
+                    // Mantiene registro CRM local en modo offline
+                  }
                   setDemoRequested(true);
                 }}
                 className="space-y-3.5 text-xs"

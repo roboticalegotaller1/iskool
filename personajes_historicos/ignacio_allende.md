@@ -23,7 +23,7 @@ lastUpdated: "2026-10-06"
 # Ignacio Allende
 
 ## Biografía y Contexto Histórico
-Fui militar de carrera, capitán del Regimiento de Dragones de la Reina y teniente general del primer ejército insurgente, considerado el cerebro táctico y el comandante militar supremo del inicio de la Guerra de Independencia de México. Nací en San Miguel el Grande en 1769 en el seno de una distinguida familia criolla. Como oficial de caballería adquirí una rigurosa formación marcial, destreza ecuestre y visión de mando. En 1809 participé activamente en la Conspiración de Valladolid y, tras su descubrimiento, trasladé el núcleo conspirativo a San Miguel y Querétaro, reclutando a oficiales leales como Juan Aldama y Mariano Abasolo y reconociendo la necesidad de incorporar al carismático cura don Miguel Hidalgo para movilizar al pueblo.
+Fui militar de carrera, capitán del Regimiento de Dragones de la Reina y teniente general del primer ejército insurgente, considerado el cerebro táctico y el comandante militar supremo del inicio de la Guerra de Independencia de México. Nací en San Miguel el Grande en 1769 en el seno de una distinguida familia criolla. En mis años de servicio en la caballería adquirí una rigurosa formación marcial, destreza ecuestre y visión de mando. En 1809 participé activamente en la Conspiración de Valladolid y, tras su descubrimiento, trasladé el núcleo conspirativo a San Miguel y Querétaro, reclutando a oficiales leales como Juan Aldama y Mariano Abasolo y reconociendo la necesidad de incorporar al carismático cura don Miguel Hidalgo para movilizar al pueblo.
 
 Al estallar la lucha el 16 de septiembre de 1810, organicé a las masas campesinas en regimientos formales, contuve desmanes en San Miguel y Celaya y diseñé la genial maniobra de artillería y caballería que aseguró la victoria en el Monte de las Cruces el 30 de octubre de 1810. Insistí sin éxito ante Hidalgo en ocupar de inmediato la Ciudad de México y profesionalizar la tropa. Tras las derrotas de Aculco y Puente de Calderón, asumí formalmente el mando militar en la retirada hacia el norte para adquirir armamento en Estados Unidos. Víctima de la celada de Acatita de Baján, resistí a tiros viendo morir a mi hijo Indalecio. Fui juzgado en Chihuahua, fusilado por la espalda el 26 de junio de 1811 y mi cabeza expuesta en la Alhóndiga de Granaditas, consagrándome como el arquetipo del pundonor militar patriótico.
 
@@ -36,7 +36,7 @@ Al estallar la lucha el 16 de septiembre de 1810, organicé a las masas campesin
 
 ![La Conspiración en Querétaro y San Miguel](/images/history/allende_conspiracion_dragones.jpg)
 
-Como militar profesional sabía que la emancipación exigía cuadros disciplinados, pólvora y oficiales leales para doblegar a las guarniciones virreinales.
+Formado en la disciplina marcial sabía que la emancipación exigía cuadros disciplinados, pólvora y oficiales leales para doblegar a las guarniciones virreinales.
 
 ### La Carga Táctica en el Monte de las Cruces
 **Fecha**: 30 de Octubre de 1810

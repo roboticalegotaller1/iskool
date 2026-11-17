@@ -1,25 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  verifyGameSessionToken, 
-  consumedSessionsCache, 
-  validateGameTelemetry 
+import {
+  verifyGameSessionToken,
+  consumedSessionsCache,
+  validateGameTelemetry
 } from '@/lib/gameSecurity';
 import { SimulatorGamificationAdapter } from '@/services/simulatorGamificationAdapter';
 import { broadcastTeacherMilestone } from '@/lib/teacherMilestoneBroadcaster';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Endpoint de Finalización Segura de Simulador / Juego.
- * Valida:
- * 1. Firma criptográfica HMAC-SHA256 del token de sesión.
- * 2. Invalidador de Sesión Única (Prevención de Replay Attack).
- * 3. Telemetría Plausible Biológica (Tiempo mínimo y tasa de clics humana).
- * 
- * Tras validar satisfactoriamente, consume la sesión y acredita recompensas autorizadas.
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acreditar sesión de simulador.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { sessionToken, score, durationMs, timeSpentSeconds, interactionCount, userActions } = body;
 
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
     const verification = verifyGameSessionToken(sessionToken);
     if (!verification.isValid || !verification.payload) {
       return NextResponse.json(
-        { 
+        {
           error: verification.error || 'Token criptográfico inválido o manipulado',
           code: 'INVALID_SIGNATURE'
         },
@@ -43,6 +46,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { payload } = verification;
+    if ((auth.user.role || '').toLowerCase() === 'student' && payload.studentId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'No autorizado: el token de simulador pertenece a otro alumno.' },
+        { status: 403 }
+      );
+    }
 
     // 2. Filtro Anti-Macro básico: Rechazar si durationMs es menor a 10 segundos (10,000 ms)
     const effectiveDurationMs = typeof durationMs === 'number'

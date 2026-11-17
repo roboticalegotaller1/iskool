@@ -281,8 +281,23 @@ export default function LaboratorioPedagógicoPage() {
     setTimeout(() => setCopiedDraft(false), 2500);
   };
 
-  const approveDispatch = () => {
+  const approveDispatch = async () => {
     setDispatchApproved(true);
+    try {
+      await fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: senderEmail,
+          recipientName: senderName,
+          subject: editableSubject || `Re: ${subject}`,
+          bodyText: editableBody || '',
+          tenantId: triageResult?.telemetry?.tenant_id
+        })
+      });
+    } catch {
+      // Mantiene estado local aprobado si el ambiente está en modo prueba/aislado
+    }
   };
 
   // Renderizador del Badge de Cuadrante

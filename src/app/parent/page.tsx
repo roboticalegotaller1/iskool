@@ -283,16 +283,40 @@ export default function ParentDashboard() {
         if (demoParent) {
           setSelectedParentAccount(demoParent);
         }
-      } else if (user && (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales'))) {
+      } else if (user && (user.id === 'usr-parent-ibime-01' || user.email?.toLowerCase().includes('morales'))) {
         useStudentStore.getState().switchStudent('std-ibime-montes-01');
-      } else if (user && (user.id === 'usr-parent-ibime-ximena' || user.email?.includes('castillo'))) {
+      } else if (user && (user.id === 'usr-parent-ibime-ximena' || user.email?.toLowerCase().includes('castillo'))) {
         useStudentStore.getState().switchStudent('std-ibime-lagos-01');
-      } else if (user && (user.id === 'usr-parent-ibime-regina' || user.email?.includes('albarran'))) {
+      } else if (user && (user.id === 'usr-parent-ibime-regina' || user.email?.toLowerCase().includes('albarran'))) {
         useStudentStore.getState().switchStudent('std-ibime-coac-01');
-      } else if (user && (user.id === 'usr-parent-ibime-mateo' || user.email?.includes('navas'))) {
+      } else if (user && (user.id === 'usr-parent-ibime-mateo' || user.email?.toLowerCase().includes('navas'))) {
         useStudentStore.getState().switchStudent('std-ibime-san-01');
-      } else {
-        useStudentStore.getState().switchStudent('std-ibime-montes-01');
+      } else if (user) {
+        const adminState = useSchoolAdminStore.getState();
+        const userEmailLower = (user.email || '').toLowerCase();
+        const matchedSystemParent = SYSTEM_PARENT_ACCOUNTS.find(
+          (acc) => acc.email.toLowerCase() === userEmailLower
+        );
+        const matchedStudent = (adminState.detailedStudents || []).find(
+          (s: any) =>
+            (s.tutor_email && s.tutor_email.toLowerCase() === userEmailLower) ||
+            (s.parent_email && s.parent_email.toLowerCase() === userEmailLower) ||
+            (user.school_id && s.school_id === user.school_id)
+        );
+        const isIbimeParent =
+          user.school_id === 'sch-ibime' ||
+          userEmailLower.includes('ibime');
+
+        if (matchedSystemParent) {
+          useStudentStore.getState().switchStudent(matchedSystemParent.studentId);
+          setSelectedParentAccount(matchedSystemParent);
+        } else if (matchedStudent) {
+          useStudentStore.getState().switchStudent(matchedStudent.id);
+        } else if (isIbimeParent) {
+          useStudentStore.getState().switchStudent('std-ibime-montes-01');
+        } else {
+          useStudentStore.getState().switchStudent('std-pa');
+        }
       }
     }
   }, [user, loading, router]);
@@ -400,9 +424,8 @@ export default function ParentDashboard() {
   const childLevelInfo = getStudentAcademicLevelInfo(adminStudent || (currentStudent as any));
   const isIbime = adminStudent?.school_id === 'sch-ibime' || 
                   user?.school_id === 'sch-ibime' || 
-                  user?.id === 'usr-parent-ibime-01' || 
-                  user?.email?.includes('ibime') ||
-                  currentStudent?.id?.includes('ibime');
+                  user?.email?.toLowerCase().includes('ibime') ||
+                  Boolean(currentStudent?.id?.includes('ibime'));
 
   const getStudentLevelLabel = (_id?: string) => {
     return childLevelInfo.fullGradeLabel;

@@ -8,13 +8,13 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para consultar eventos de calendario institucional.' },
         { status: 401 }
       );
     }
-    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator'].includes((auth.user.role || '').toLowerCase())) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para consultar la agenda ejecutiva.' },
         { status: 403 }
@@ -60,13 +60,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para sincronizar eventos de calendario.' },
         { status: 401 }
       );
     }
-    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator'].includes((auth.user.role || '').toLowerCase())) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para sincronizar agenda ejecutiva.' },
         { status: 403 }

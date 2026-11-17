@@ -21,10 +21,17 @@ const PlanningRequestSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const auth = await validateApiAuth(request);
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { error: auth.error || 'No autorizado. Se requiere sesión activa.' },
         { status: 401 }
+      );
+    }
+    const planningRole = (auth.user.role || '').toLowerCase();
+    if (!['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(planningRole)) {
+      return NextResponse.json(
+        { error: 'Permisos insuficientes para generar planeaciones docentes.' },
+        { status: 403 }
       );
     }
 

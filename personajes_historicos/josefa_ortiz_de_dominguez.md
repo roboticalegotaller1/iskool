@@ -23,26 +23,26 @@ lastUpdated: "2026-10-01"
 # Josefa Ortiz de Domínguez
 
 ## Biografía y Contexto Histórico
-Conocida en la historia patria como la Heroína de la Independencia y Corregidora de Querétaro, Doña Josefa Ortiz de Domínguez fue una mujer de ideales inquebrantables, inteligencia política y profundo compromiso con la soberanía y la justicia social en la Nueva España.
+Fui conocida como la Heroína de la Independencia desde mi hogar en el Corregimiento de Querétaro, defendiendo con ideales inquebrantables y profunda convicción la soberanía y la justicia social en la Nueva España.
 
-Nacida en Valladolid (hoy Morelia), quedó huérfana a temprana edad y se educó en el prestigiado Colegio de las Vizcaínas en la Ciudad de México, donde se formó en el pensamiento ilustrado y humanista. Al contraer matrimonio con el letrado Miguel Domínguez, posterior Corregidor de Letras de Santiago de Querétaro, se estableció en dicha ciudad. Desde su residencia oficial abrazó con vehemencia las causas insurgentes, organizando tertulias literarias secretas que congregaron a patriotas como Miguel Hidalgo, Ignacio Allende y Juan Aldama. Cuando la conspiración fue descubierta en septiembre de 1810, encerrada en su alcoba, alertó mediante golpes en el piso al alcaide Ignacio Pérez, salvando el movimiento libertario que dio origen a la nación mexicana.
+Nací en Valladolid (hoy Morelia), quedé huérfana a temprana edad y me eduqué en el Colegio de las Vizcaínas en la Ciudad de México, donde me formé en el pensamiento ilustrado y humanista. Tras casarme con don Miguel Domínguez, nombrado Corregidor de Letras de Santiago de Querétaro, abracé las causas insurgentes desde nuestra residencia oficial organizando tertulias literarias secretas junto a Miguel Hidalgo, Ignacio Allende y Juan Aldama. Cuando la conspiración fue descubierta en septiembre de 1810 y quedé encerrada en mi alcoba, di tres golpes firmes en el piso para alertar al alcaide Ignacio Pérez, salvando el levantamiento que dio origen a nuestra patria libre.
 
 ## 4 Momentos Históricos Clave (Novela Gráfica)
 ### La Conspiración de Querétaro en las Tertulias Literarias
 **Fecha**: Agosto - Septiembre 1810
 **Lugar**: Palacio de la Corregidora, Santiago de Querétaro
 **Coordenadas**: 20.593, -100.392
-**Narrativa**: Bajo la apariencia de tertulias literarias y académicas en la residencia de los Corregidores, se gestaba en secreto el plan emancipador de la patria junto a Hidalgo y Allende.
+**Narrativa**: Bajo la apariencia de tertulias literarias y académicas en nuestra residencia, gestamos en secreto el plan emancipador de la patria junto a Hidalgo y Allende.
 
 ![La Conspiración de Querétaro en las Tertulias Literarias](/images/history/josefa_conspiracion_comic_1.png)
 
-En los salones virreinales de Querétaro, ilustrados criollos debatían sobre los derechos del pueblo y la ilegitimidad del gobierno virreinal, resguardados por la hospitalidad y convicción de Josefa.
+En los salones virreinales de Querétaro debatimos sobre los derechos del pueblo y la ilegitimidad del régimen colonial, resguardando con lealtad los planes libertarios.
 
 ### El Taconeo Heroico en el Aposento Cerrado
 **Fecha**: 13 - 15 Septiembre 1810
 **Lugar**: Casa de la Corregidora, Querétaro
 **Coordenadas**: 20.5932, -100.3918
-**Narrativa**: Al enterarse del cateo realista, el Corregidor encerró bajo llave a Josefa en su recámara para protegerla; con determinación suprema, ella golpeó el entarimado con su tacón para alertar al alcaide Ignacio Pérez en el piso inferior.
+**Narrativa**: Al enterarse del cateo realista, mi esposo me encerró bajo llave en mi recámara para resguardarme; con determinación golpeé el entarimado con mi tacón para llamar al alcaide Ignacio Pérez al piso inferior.
 
 ![El Taconeo Heroico en el Aposento Cerrado](/images/history/josefa_taconeo_comic_2.png)
 
@@ -569,23 +569,23 @@ A: Vestía con la elegancia sobria de una dama criolla de Querétaro: un vestido
 
 
 ## 5 Preguntas Clave de Verificación Formativa
-### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
+### 1. ¿Bajo qué pretexto organicé las reuniones clandestinas en Querétaro?
 - [ ] Concursos de pintura virreinal
 - [x] Tertulias literarias y académicas
 - [ ] Subastas de granos y ganado
 - [ ] Recepciones de la Real Audiencia
 
-**Retroalimentación**: Las tertulias literarias servían de fachada intelectual para que insurgentes como Allende, Aldama e Hidalgo planearan el levantamiento sin levantar sospechas realistas.
+**Retroalimentación**: Utilicé nuestras tertulias literarias como fachada intelectual para que junto con Allende, Aldama e Hidalgo planeáramos el levantamiento sin despertar sospechas realistas.
 **PDA**: Ética, Naturaleza y Sociedades - Organización ciudadana y emancipación.
 
 
-### 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
-- [ ] Envió una paloma mensajera
-- [x] Golpeó tres veces el piso con su zapato para alertar a Ignacio Pérez
-- [ ] Tiró una moneda de oro a la calle
-- [ ] Rompió el candado de la puerta principal
+### 2. ¿Qué táctica empleé al quedar encerrada en mi habitación para avisar al alcaide?
+- [ ] Envíe una paloma mensajera
+- [x] Golpeé tres veces el piso con mi zapato para alertar a Ignacio Pérez
+- [ ] Tiré una moneda de oro a la calle
+- [ ] Rompí el candado de la puerta principal
 
-**Retroalimentación**: El legendario taconeo en el piso de su alcoba alertó al alcaide Ignacio Pérez, cuya vivienda se situaba exactamente en la planta baja del palacio.
+**Retroalimentación**: Con mi taconeo en el entarimado alerté al alcaide Ignacio Pérez, cuya vivienda se situaba exactamente en la planta baja del palacio.
 **PDA**: Resolución valiente de problemas en momentos críticos de la historia.
 
 

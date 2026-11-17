@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { createClient } from '@supabase/supabase-js';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
@@ -21,16 +21,15 @@ export interface GoogleTokens {
 const TOKENS_FILE = path.join(process.cwd(), '.data', 'google_tokens.json');
 
 function getSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dekeyzuqpqxdfnnhohne.supabase.co';
-  const envKey =
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
     '';
-  const fallbackPubKey = process.env.VITEST ? '' : 'sb_publishable_qW12f-wH3U48y-eMce33AA_gH3d293W';
-  const key = envKey || fallbackPubKey;
-  return key ? createClient(url, key) : null;
+  if (!url || !key || url.includes('placeholder')) return null;
+  return getServiceSupabaseClient();
 }
 
 function loadTokensFromFile(): Map<string, GoogleTokens> {
@@ -232,12 +231,10 @@ export class GoogleOAuthService {
   }
 
   /**
-   * Resuelve la cuenta de Google activa para operaciones OAuth (prioriza la cuenta
-   * recién vinculada en la sesión o la cuenta explícita del usuario).
+   * Resuelve la cuenta de correo activa para operaciones OAuth evitando mezcla cross-tenant.
    */
   static resolveEffectiveGoogleEmail(email?: string): string {
     const clean = email ? email.toLowerCase().trim() : '';
-    const lastConnected = ((globalThis as any).__iskoolLastConnectedGoogleEmail || '').toLowerCase().trim();
     if (
       clean &&
       !clean.includes('directora.general') &&
@@ -246,7 +243,7 @@ export class GoogleOAuthService {
     ) {
       return clean;
     }
-    return lastConnected || 'roboticalegotaller1@gmail.com';
+    return process.env.DEFAULT_EXECUTIVE_MAILBOX || '';
   }
 
   /**
@@ -455,7 +452,6 @@ export class GoogleOAuthService {
     };
 
     if (email) {
-      (globalThis as any).__iskoolLastConnectedGoogleEmail = email;
       tokenStore.set(email, tokens);
       saveTokensToFile(tokenStore);
       await this.persistTokensToDb(tokens);
@@ -1451,9 +1447,6 @@ export class GoogleOAuthService {
       }
 
       // Purgar de memoria y cachés locales
-      if ((globalThis as any).__iskoolLastConnectedGoogleEmail === effectiveEmail || (globalThis as any).__iskoolLastConnectedGoogleEmail === clean) {
-        delete (globalThis as any).__iskoolLastConnectedGoogleEmail;
-      }
       tokenStore.delete(effectiveEmail);
       tokenStore.delete(clean);
       saveTokensToFile(tokenStore);

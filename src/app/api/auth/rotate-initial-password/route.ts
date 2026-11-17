@@ -5,7 +5,7 @@ import { OrganizationServerService } from '@/lib/services/organizationService';
 const RotatePasswordSchema = z.object({
   username: z.string().min(2).max(160),
   currentPassword: z.string().min(4).max(128),
-  newPassword: z.string().min(6).max(128),
+  newPassword: z.string().min(8).max(128),
 });
 
 const rotationAttemptTracker = new Map<string, { count: number; resetAtMs: number }>();

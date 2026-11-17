@@ -10,6 +10,7 @@ import {
   applyWhiteLabelCssVariables 
 } from '@/store/useWhiteLabelStore';
 import { supabase } from '@/lib/supabaseClient';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useComingSoon } from '@/components/ui/ComingSoonModal';
 import { 
   Paintbrush, 
@@ -44,19 +45,19 @@ const COLOR_PRESETS = [
   { name: 'Turquesa Caribe', hex: '#0D9488', description: 'Comunidad, frescura y colaboración' }
 ];
 
-// Logotipos de Demostración SVG listos para pruebas instantáneas
+// Logotipos institucionales locales en formato WebP optimizado listos para pruebas instantáneas
 const LOGO_PRESETS = [
   {
     name: 'Escudo Heráldico Colegio México',
-    url: 'https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?w=128&auto=format&fit=crop&q=80'
+    url: '/images/studio-icons/cat_pedagogy.webp'
   },
   {
     name: 'Instituto Pedagógico Siglo XXI',
-    url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=128&auto=format&fit=crop&q=80'
+    url: '/images/studio-icons/cat_logic_math.webp'
   },
   {
     name: 'Academia de Ciencias y Humanidades',
-    url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=128&auto=format&fit=crop&q=80'
+    url: '/images/studio-icons/cat_history.webp'
   }
 ];
 
@@ -99,7 +100,14 @@ export default function WhiteLabelAdminPage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido (PNG, JPG, SVG).');
+      alert('Por favor selecciona un archivo de imagen válido (PNG, JPG o WebP).');
+      return;
+    }
+
+    // Seguridad SVG & Regla 3: bloquear SVG crudo ejecutable o rasterizar/comprimir por debajo de 400 KB
+    if (file.type === 'image/svg+xml') {
+      alert('Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP (se optimizará automáticamente a WebP).');
+      e.target.value = '';
       return;
     }
 
@@ -107,16 +115,20 @@ export default function WhiteLabelAdminPage() {
     reader.onload = async (event) => {
       const result = event.target?.result as string;
       if (result) {
-        if (file.type === 'image/svg+xml') {
-          setLogoUrl(result);
-        } else {
+        try {
           const compressed = await compressImageDataUrl(result, {
             maxWidth: 512,
             maxHeight: 512,
             quality: 0.85,
             format: 'image/webp'
           });
+          if (!compressed || compressed.length > 560 * 1024) {
+            alert('La imagen procesada supera el límite institucional de 400 KB tras la compresión.');
+            return;
+          }
           setLogoUrl(compressed);
+        } catch {
+          alert('No se pudo comprimir la imagen por debajo del límite permitido (400 KB).');
         }
       }
     };
@@ -139,19 +151,26 @@ export default function WhiteLabelAdminPage() {
       // 2. Aplicar inmediatamente al DOM
       applyWhiteLabelCssVariables(primaryColor.trim());
 
-      // 3. Persistir en Supabase (tabla `school_settings`)
+      // 3. Persistir en base de datos institucional (tabla `school_settings` particionada por school_id)
       try {
-        await supabase
+        const targetSchoolId = useSchoolAdminStore.getState().activeSchoolId || 'sch-jjrosseau';
+        const { error: dbErr } = await supabase
           .from('school_settings')
-          .upsert({
-            id: '00000000-0000-0000-0000-000000000000',
-            name: schoolName.trim() || undefined,
-            logo_url: logoUrl.trim() || undefined,
-            primary_color: primaryColor.trim(),
-            updated_at: new Date().toISOString()
-          });
+          .upsert(
+            {
+              school_id: targetSchoolId,
+              name: schoolName.trim() || undefined,
+              logo_url: logoUrl.trim() || undefined,
+              primary_color: primaryColor.trim(),
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: 'school_id' }
+          );
+        if (dbErr) {
+          console.warn('Persistencia local activa (school_settings):', dbErr.message);
+        }
       } catch (dbErr) {
-        console.warn('Persistencia local activa (Supabase offline o sin tabla):', dbErr);
+        console.warn('Persistencia local activa (BD offline):', dbErr);
       }
 
       setSaveSuccess(true);

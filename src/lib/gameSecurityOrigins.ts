@@ -12,8 +12,34 @@ export const ALLOWED_SIMULATOR_ORIGINS: readonly string[] = Object.freeze([
   'https://desmos.com',
   'https://falstad.com',
   'https://www.falstad.com',
+  'https://www.ophysics.com',
+  'https://www.myphysicslab.com',
+  'https://www.physicsclassroom.com',
+  'https://www.walter-fendt.de',
+  'https://graspablemath.com',
+  'https://visualgo.net',
+  'https://demonstrations.wolfram.com',
+  'https://toytheater.com',
+  'https://www.mathopenref.com',
+  'https://embed.molview.org',
+  'https://molview.org',
+  'https://ptable.com',
+  'https://chemcollective.org',
+  'https://www.rcsb.org',
+  'https://learn.genetics.utah.edu',
+  'https://stellarium-web.org',
+  'https://www.solarsystemscope.com',
+  'https://earth.nullschool.net',
   'https://wokwi.com',
   'https://www.wokwi.com',
+  'https://makecode.microbit.org',
+  'https://arcade.makecode.com',
+  'https://snap.berkeley.edu',
+  'https://trinket.io',
+  'https://musiclab.chromeexperiments.com',
+  'https://www.chronas.org',
+  'https://www.gapminder.org',
+  'https://www.beepbox.co',
   'https://tinkercad.com',
   'https://www.tinkercad.com'
 ]);
@@ -41,7 +67,7 @@ export function isAllowedSimulatorOrigin(origin: string, localOrigin?: string): 
     if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
       return true;
     }
-    if (url.hostname.endsWith('.iskool.edu.mx') || url.hostname === 'iskool.edu.mx') {
+    if (url.hostname.endsWith('.iskool.mx') || url.hostname === 'iskool.mx' || url.hostname.endsWith('.iskool.edu.mx') || url.hostname === 'iskool.edu.mx') {
       return true;
     }
   } catch {

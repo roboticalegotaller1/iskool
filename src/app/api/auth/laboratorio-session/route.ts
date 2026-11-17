@@ -278,9 +278,8 @@ export async function POST(req: NextRequest) {
     else if (auth_method === 'credentials' && email && password) {
       // 1. Validar contra el catálogo de cuentas demo autorizadas
       const canonicalDemo = resolveCanonicalDemoUser(email);
-      const isAllowedDemoPassword = password === '008805' || 
-                                    password === 'admin123' || 
-                                    password === 'ISkoolPassword2026!' || 
+      const isAllowedDemoPassword = password === '008805' ||
+                                    password === 'ISkoolPassword2026!' ||
                                     password === 'DIR2026' ||
                                     password === (canonicalDemo as any)?.defaultPass;
 
@@ -335,17 +334,18 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    // FLUJO 4: Demostración Institucional Autorizada
+    // FLUJO 4: Demostración Institucional Autorizada (siempre confinada en sandbox sin credenciales reales)
     else if (auth_method === 'demo') {
       const demoEmail = user?.email || email;
       const canonicalDemo = demoEmail ? resolveCanonicalDemoUser(demoEmail) : null;
-      if (canonicalDemo) {
+      const isExecutiveDemo = canonicalDemo && ['ceo', 'director', 'owner'].includes(canonicalDemo.role);
+      if (canonicalDemo && isExecutiveDemo) {
         targetEmail = canonicalDemo.email;
         targetUserId = canonicalDemo.id;
         resolvedProvider = 'sandbox';
       } else {
         return NextResponse.json(
-          { success: false, error: 'Cuenta demo no autorizada o no registrada en el catálogo institucional.' },
+          { success: false, error: 'Cuenta demo no autorizada o sin privilegios ejecutivos de demostración.' },
           { status: 401 }
         );
       }
@@ -366,14 +366,15 @@ export async function POST(req: NextRequest) {
 
     // RESOLUCIÓN DINÁMICA DEL BOUNDED CONTEXT MULTI-TENANT
     const tenantContext = resolveLaboratorioTenant(targetEmail);
+    const forceSandboxForUnverifiedDemo = resolvedProvider === 'sandbox';
     const now = Math.floor(Date.now() / 1000);
     const expiresIn = 7 * 24 * 3600; // 7 días
 
     const sessionMetadata: LaboratorioSessionMetadata = {
-      tenant_id: tenantContext.tenant_id,
+      tenant_id: forceSandboxForUnverifiedDemo ? globalThis.crypto.randomUUID() : tenantContext.tenant_id,
       role: 'CEO',
-      institution_name: tenantContext.institution_name,
-      is_isolated_sandbox: tenantContext.is_isolated_sandbox,
+      institution_name: forceSandboxForUnverifiedDemo ? `Sandbox Demo (${tenantContext.institution_name})` : tenantContext.institution_name,
+      is_isolated_sandbox: forceSandboxForUnverifiedDemo ? true : tenantContext.is_isolated_sandbox,
       email: targetEmail,
       user_id: targetUserId,
       auth_provider: resolvedProvider,

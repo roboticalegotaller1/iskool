@@ -116,21 +116,29 @@ export async function GET(req: NextRequest) {
     // Exclusivamente opera con los alcances autorizados: gmail.send y calendar.events
     // =========================================================================
     if (flow === 'workspace_connect') {
+      const boundUserId = stateVerification.payload.userId;
+      const boundSchoolId = stateVerification.payload.schoolId || (targetTenantId.startsWith('sch-') ? targetTenantId : 'sch-demo-0001');
+      const boundRole = stateVerification.payload.role || 'director';
+      if (!boundUserId) {
+        return new NextResponse('Estado OAuth sin identidad de origen autorizada.', { status: 403 });
+      }
+
       const safeEmail = JSON.stringify(tokens.email);
-      const safeName = JSON.stringify(tokens.name || 'Google Workspace');
+      const safeName = JSON.stringify(tokens.name || 'Workspace Institucional');
       const safeCount = 0;
       const safeOrigin = JSON.stringify(origin);
       const fallbackPath = redirectUrl && redirectUrl.startsWith('/') ? redirectUrl : '/director';
       const destinationUrl = `${fallbackPath}${fallbackPath.includes('?') ? '&' : '?'}oauth_success=1&email=${encodeURIComponent(tokens.email)}`;
       const safeDestinationUrl = JSON.stringify(destinationUrl);
+      const boundTenant = boundSchoolId === 'sch-ibime' || targetTenantId === 'e1000000-0000-0000-0000-000000000001' ? 'ibime' : 'iskool';
 
       const directorProfile = {
-        id: 'usr-dir-jjrosseau',
-        email: tokens.email || 'director@iskool.edu.mx',
-        role: 'director' as const,
-        school_id: 'sch-jjrosseau',
-        tenant_id: 'iskool',
-        first_name: (tokens.name || 'Director').split(' ')[0] || 'Director',
+        id: boundUserId,
+        email: tokens.email || stateVerification.payload.email || '',
+        role: boundRole as any,
+        school_id: boundSchoolId,
+        tenant_id: boundTenant,
+        first_name: (tokens.name || 'Directivo').split(' ')[0] || 'Directivo',
         last_name: (tokens.name || 'Institucional').split(' ').slice(1).join(' ') || 'Institucional',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -139,9 +147,9 @@ export async function GET(req: NextRequest) {
       const workspaceSessionToken = await signSessionToken({
         id: directorProfile.id,
         email: directorProfile.email,
-        role: 'director',
+        role: boundRole,
         school_id: directorProfile.school_id,
-        tenant_id: 'iskool',
+        tenant_id: boundTenant as 'iskool' | 'ibime',
         first_name: directorProfile.first_name,
         last_name: directorProfile.last_name
       });
@@ -199,7 +207,7 @@ export async function GET(req: NextRequest) {
         try {
           window.opener.postMessage(authData, ${safeOrigin});
         } catch (e) {
-          try { window.opener.postMessage(authData, '*'); } catch (e2) {}
+          try { window.opener.postMessage(authData, window.location.origin); } catch (e2) {}
         }
         setTimeout(function() {
           window.close();

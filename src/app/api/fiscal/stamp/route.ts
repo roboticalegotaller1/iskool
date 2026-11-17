@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const body: CfdiStampRequest = await req.json();
+    const body: CfdiStampRequest & { schoolId?: string } = await req.json();
 
     if (!body || !body.emisor || !body.receptor || !body.items || body.items.length === 0) {
       return NextResponse.json({
@@ -33,6 +33,15 @@ export async function POST(req: NextRequest) {
         error: 'Petición de timbrado incompleta. Se requieren emisor, receptor e items.'
       }, { status: 400 });
     }
+
+    const userRole = (auth.user.role || '').toLowerCase();
+    if (userRole !== 'superadmin' && body.schoolId && auth.user.school_id && body.schoolId !== auth.user.school_id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Prohibido: No puedes timbrar comprobantes fiscales para otro plantel.'
+      }, { status: 403 });
+    }
+    body.schoolId = auth.user.school_id || body.schoolId;
 
     const pac = getFiscalPacAdapter();
     const stampResult = await pac.stampInvoice(body);

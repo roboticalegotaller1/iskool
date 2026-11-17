@@ -14,6 +14,9 @@ function getStateSecret(): string {
 export interface OAuthStatePayload {
   flow: 'login' | 'workspace_connect';
   tenantId: string;
+  userId?: string;
+  schoolId?: string;
+  role?: string;
   email?: string;
   redirect?: string;
   nonce?: string;

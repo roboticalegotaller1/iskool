@@ -297,7 +297,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
         name: 'Mago Estudiante',
         role: 'Sage_Cyber',
         damage: 25,
-        skin_texture_id: 'skin_marine'
+        skin_texture_id: 'skin_lucas'
       }
     ],
     server_calculated_total_damage: bossTotalHp - currentBossHp

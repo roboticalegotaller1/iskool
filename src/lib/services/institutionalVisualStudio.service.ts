@@ -129,7 +129,6 @@ function resolveInstitutionalApiKey(): string {
     process.env.AI_API_KEY,
     process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     process.env.NEXT_PUBLIC_MOTOR_IA_API_KEY,
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY,
   ];
 
   for (const val of candidates) {

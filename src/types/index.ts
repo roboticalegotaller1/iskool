@@ -1554,6 +1554,7 @@ export interface CfdiItem {
 export interface CfdiStampRequest {
   invoiceId: string;
   receiptNumber: string;
+  schoolId?: string;
   emisor: {
     rfc: string;
     nombre: string;

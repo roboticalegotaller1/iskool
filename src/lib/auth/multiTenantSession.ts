@@ -71,8 +71,8 @@ export const DEFAULT_ISKOOL_METADATA: InstitutionMetadata = {
     themePreset: 'sapphire'
   },
   authorized_api_keys: [
-    'isk_live_core_7f9a12c8b3e4',
-    'isk_dev_studio_99182374ab10'
+    ...(process.env.ISKOOL_INTEGRATION_API_KEY ? [process.env.ISKOOL_INTEGRATION_API_KEY] : []),
+    ...(process.env.NODE_ENV === 'test' ? ['isk_test_core_key'] : [])
   ],
   feature_flags: {
     pedagogicalAi: true,
@@ -92,8 +92,8 @@ export const DEFAULT_IBIME_METADATA: InstitutionMetadata = {
     themePreset: 'emerald'
   },
   authorized_api_keys: [
-    'ibime_live_sis_44a98b11ce20',
-    'ibime_sync_gateway_01928374fb'
+    ...(process.env.IBIME_INTEGRATION_API_KEY ? [process.env.IBIME_INTEGRATION_API_KEY] : []),
+    ...(process.env.NODE_ENV === 'test' ? ['ibime_test_sis_key'] : [])
   ],
   feature_flags: {
     pedagogicalAi: false,

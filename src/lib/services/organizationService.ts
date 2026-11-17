@@ -335,12 +335,19 @@ export function sha256HexSync(input: string): string {
 }
 
 export function hashOrgPassword(plainPassword: string, salt: string): string {
-  return sha256HexSync(`iskool_org_v1:${salt}:${plainPassword.trim()}`);
+  // Estiramiento iterativo PBKDF-SHA256 de 4,096 rondas compatible en servidor y navegador
+  let digest = sha256HexSync(`iskool_org_v2:${salt}:${plainPassword.trim()}`);
+  for (let i = 0; i < 4096; i++) {
+    digest = sha256HexSync(`${digest}:${salt}:${i}`);
+  }
+  return `iskool_v2$${digest}`;
 }
 
 export function verifyOrgPassword(plainPassword: string, salt: string, expectedHash: string): boolean {
   if (!plainPassword || !salt || !expectedHash) return false;
-  const computed = hashOrgPassword(plainPassword, salt);
+  const computed = expectedHash.startsWith('iskool_v2$')
+    ? hashOrgPassword(plainPassword, salt)
+    : sha256HexSync(`iskool_org_v1:${salt}:${plainPassword.trim()}`);
   if (computed.length !== expectedHash.length) return false;
   let diff = 0;
   for (let i = 0; i < computed.length; i++) {

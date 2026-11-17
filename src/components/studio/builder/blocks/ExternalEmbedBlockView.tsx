@@ -3,6 +3,7 @@
 import React from 'react';
 import { ExternalEmbedBlock } from '@/types/studioBlocks';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
+import { requiresExternalWindowLaunch } from '@/data/simulatorsDirectory';
 import { Globe, ExternalLink, HelpCircle, Sparkles } from 'lucide-react';
 
 interface Props {
@@ -129,15 +130,34 @@ export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
             Vista Previa en Vivo del Simulador:
           </label>
           <div className="relative w-full h-80 rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-750 bg-white dark:bg-zinc-950 shadow-md">
-            <iframe
-              src={embedUrl}
-              title={resourceTitle || 'Simulador Web'}
-              className="w-full h-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-            />
+            {requiresExternalWindowLaunch(embedUrl) ? (
+              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-slate-900 text-white space-y-3">
+                <Globe className="w-8 h-8 text-cyan-400" />
+                <p className="text-xs font-black">{resourceTitle || 'Simulador Externo Interactivo'}</p>
+                <p className="text-[11px] text-slate-300 max-w-md">
+                  Este recurso científico bloquea marcos embebidos de terceros y se abrirá en ventana segura para tus alumnos.
+                </p>
+                <a
+                  href={embedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 text-xs font-black flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Abrir Simulador Oficial</span>
+                </a>
+              </div>
+            ) : (
+              <iframe
+                src={embedUrl}
+                title={resourceTitle || 'Simulador Web'}
+                className="w-full h-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
+            )}
           </div>
         </div>
       )}

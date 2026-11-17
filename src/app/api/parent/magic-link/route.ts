@@ -139,6 +139,8 @@ function writeMagicLinksStore(records: MagicLinkRecord[]): void {
   }
 }
 
+const STAFF_ROLES = new Set(['superadmin', 'admin', 'director', 'owner', 'ceo', 'coordinator', 'teacher', 'billing']);
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token');
@@ -147,53 +149,52 @@ export async function GET(req: NextRequest) {
 
   const records = readMagicLinksStore();
 
+  // Acceso directo por token firmado/secreto específico (sin fallback enumerador por student_id)
   if (token) {
     const found = records.find((r) => r.token === token);
     if (found) {
       return NextResponse.json({ ok: true, record: found });
     }
-    // Si es un token generado al vuelo en cliente que aún no estaba en disco, buscamos el más reciente del alumno
-    if (studentId) {
-      const byStudent = records.find((r) => r.studentId === studentId);
-      if (byStudent) {
-        return NextResponse.json({ ok: true, record: { ...byStudent, token } });
-      }
-    }
-    return NextResponse.json({ ok: false, error: 'Token no encontrado' }, { status: 404 });
+    return NextResponse.json({ ok: false, error: 'Token no encontrado o expirado' }, { status: 404 });
   }
 
-  // Bloquear volcado global sin sesión autenticada cuando no se consulta por token específico
-  if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+  // Consulta administrativa de listado: requiere sesión autenticada de personal autorizado
+  if (!auth.authenticated || !auth.user) {
     return NextResponse.json(
       { ok: false, error: 'Autenticación o token de enlace requerido' },
       { status: 401 }
     );
   }
-
-  // Enmascarar PII telefónica si la consulta general no proviene de sesión autenticada
-  const maskIfUnauth = (list: MagicLinkRecord[]) =>
-    auth.authenticated
-      ? list
-      : list.map((r) => ({
-          ...r,
-          phone: r.phone ? `${r.phone.slice(0, 4)}****${r.phone.slice(-4)}` : '',
-        }));
+  const roleLower = (auth.user.role || '').toLowerCase();
+  if (!STAFF_ROLES.has(roleLower)) {
+    return NextResponse.json(
+      { ok: false, error: 'Permisos insuficientes para listar enlaces familiares.' },
+      { status: 403 }
+    );
+  }
 
   if (studentId) {
     const filtered = records.filter((r) => r.studentId === studentId);
-    return NextResponse.json({ ok: true, records: maskIfUnauth(filtered) });
+    return NextResponse.json({ ok: true, records: filtered });
   }
 
-  return NextResponse.json({ ok: true, records: maskIfUnauth(records) });
+  return NextResponse.json({ ok: true, records });
 }
 
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { ok: false, error: 'Autenticación docente requerida para emitir Magic Link' },
         { status: 401 }
+      );
+    }
+    const roleLower = (auth.user.role || '').toLowerCase();
+    if (!STAFF_ROLES.has(roleLower)) {
+      return NextResponse.json(
+        { ok: false, error: 'Solo docentes o personal autorizado pueden emitir enlaces mágicos.' },
+        { status: 403 }
       );
     }
 
@@ -210,7 +211,8 @@ export async function POST(req: NextRequest) {
         hour12: true,
       }).toUpperCase();
 
-    const token = body.token || `ml_${crypto.randomBytes(16).toString('base64url')}`;
+    // Token criptográfico generado estrictamente en el servidor (mínimo 192 bits de entropía)
+    const token = `ml_${crypto.randomBytes(24).toString('base64url')}`;
     const studentId = String(body.studentId || 's1');
 
     const newRecord: MagicLinkRecord = {
@@ -252,67 +254,35 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { token, status, signedBy, parentReply, studentId } = body;
+    const { token, status, signedBy, parentReply } = body;
 
-    if (!token) {
-      return NextResponse.json({ ok: false, error: 'Token requerido' }, { status: 400 });
+    if (!token || typeof token !== 'string' || token.trim().length < 12) {
+      return NextResponse.json({ ok: false, error: 'Token válido requerido' }, { status: 400 });
     }
 
     const records = readMagicLinksStore();
     let updatedRecord: MagicLinkRecord | null = null;
 
     const updated = records.map((rec) => {
-      if (rec.token === token) {
+      if (rec.token === token.trim()) {
         updatedRecord = {
           ...rec,
           status: status || 'signed',
-          signedAt: status === 'signed' ? new Date().toISOString() : rec.signedAt,
-          signedBy: signedBy || rec.tutorName,
-          parentReply: parentReply !== undefined ? parentReply : rec.parentReply,
+          signedAt: (status || 'signed') === 'signed' ? new Date().toISOString() : rec.signedAt,
+          signedBy: signedBy ? String(signedBy).slice(0, 120) : rec.tutorName,
+          parentReply: parentReply !== undefined ? String(parentReply).slice(0, 500) : rec.parentReply,
         };
         return updatedRecord;
       }
       return rec;
     });
 
-    // Si el token se creó de forma efímera por URL directa y no existía en el archivo, lo registramos firmado
     if (!updatedRecord) {
-      const now = new Date();
-      updatedRecord = {
-        token,
-        studentId: String(studentId || 's1'),
-        studentName: String(body.studentName || 'Alumno Verificado'),
-        groupLabel: '1°A Secundaria',
-        tutorName: String(signedBy || 'Tutor Familiar'),
-        phone: '525548298921',
-        channel: 'whatsapp',
-        incidentType: 'asistencia',
-        incidentLabel: 'Reporte Diario de Asistencia y Libreta Física',
-        customMessage: 'Reporte verificado y firmado digitalmente desde el enlace mágico institucional.',
-        attendanceStatus: 'present',
-        stampPage: 'Pág. 48',
-        isStamped: true,
-        xpAwarded: 0,
-        teacherName: 'Docente Titular ISkool',
-        subjectName: 'Historia & Ciencias',
-        createdAt: now.toISOString(),
-        timeLabel: now.toLocaleTimeString('es-MX', {
-          timeZone: 'America/Mexico_City',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        }).toUpperCase(),
-        status: status || 'signed',
-        signedAt: now.toISOString(),
-        signedBy: String(signedBy || 'Tutor Familiar'),
-        parentReply: parentReply ? String(parentReply) : undefined,
-        magicUrl: `/parent?student_id=${encodeURIComponent(String(studentId || 's1'))}&token=${encodeURIComponent(token)}&auth=magic`,
-      };
-      updated.unshift(updatedRecord);
+      return NextResponse.json({ ok: false, error: 'Enlace mágico no encontrado o revocado' }, { status: 404 });
     }
 
     writeMagicLinksStore(updated);
-    return NextResponse.json({ ok: true, record: updatedRecord, records: updated });
+    return NextResponse.json({ ok: true, record: updatedRecord });
   } catch (error) {
     console.error('[MagicLink API PATCH]', error);
     return NextResponse.json({ ok: false, error: 'Error al actualizar Magic Link' }, { status: 500 });

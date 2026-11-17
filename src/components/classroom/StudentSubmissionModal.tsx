@@ -68,7 +68,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
       groupId,
       dueDate,
       evidenceType,
-      evidenceUrl: evidenceUrl || (evidenceType === 'image' ? 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800' : undefined),
+      evidenceUrl: evidenceUrl || (evidenceType === 'image' ? '/images/books/cover_cuaderno_cronista.webp' : undefined),
       evidenceText: evidenceText.trim(),
       audioRecordingUrl: audioRecorded ? 'audio-blob-recorded' : undefined,
       reflection: {

@@ -232,14 +232,8 @@ export async function POST(req: NextRequest) {
   let outputPath = '';
 
   try {
-    const isSofiaCopilot = req.headers.get('x-iskool-copilot') === 'sofia-ceo';
-    const isSameOriginOrLocal =
-      req.headers.get('sec-fetch-site') === 'same-origin' ||
-      req.headers.get('host')?.includes('localhost') ||
-      req.headers.get('host')?.includes('127.0.0.1');
-
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated && !isSofiaCopilot && !isSameOriginOrLocal) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { error: 'Autenticación requerida para acceder al servicio de reconocimiento fonético' },
         { status: 401 }

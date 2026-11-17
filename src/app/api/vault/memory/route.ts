@@ -96,16 +96,14 @@ async function validateIngestionSecurity(
     }
   }
 
-  // 2. Verificación por Sesión de Usuario (Docente o Coordinador autenticado en iSkool)
+  // 2. Verificación por Sesión de Usuario (Docente o Directivo autenticado)
   const authResult = await validateApiAuth(request);
-  if (authResult.authenticated) {
-    return { authorized: true, user: authResult.user };
-  }
-
-  // Si no hay secreto configurado en desarrollo local, permitir con advertencia en consola
-  if (!configuredSecret && process.env.NODE_ENV !== 'production') {
-    console.warn('[Ingestión Segura]: Sin RAILS_INGESTION_SECRET configurado; admitiendo petición en modo desarrollo.');
-    return { authorized: true };
+  if (authResult.authenticated && authResult.user) {
+    const roleLower = (authResult.user.role || '').toLowerCase();
+    if (['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(roleLower)) {
+      return { authorized: true, user: authResult.user };
+    }
+    return { authorized: false, reason: 'Permisos insuficientes para escribir en la Bóveda Curricular.' };
   }
 
   return { authorized: false, reason: 'No autorizado' };
@@ -219,7 +217,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Memoria institucional persistida exitosamente en la Bóveda Curricular',
         documentId: saveResult.documentId,
-        filePath: saveResult.filePath,
+        filePath: saveResult.repoRelativePath,
         remoteGitSynced: saveResult.remoteGitSynced ?? true,
         remoteGitCommit: saveResult.remoteGitCommit,
         storageSynced: saveResult.storageSynced || false,
@@ -238,10 +236,18 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/vault/memory
- * Consulta y síntesis de memorias institucionales para el planificador docente y Teacher Copilot.
+ * Consulta y síntesis de memorias institucionales para el planificador docente y Copiloto.
  */
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await validateApiAuth(request);
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json(
+        { error: 'Autenticación institucional requerida para consultar memorias curriculares.' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const grade = searchParams.get('grade') || undefined;
     const subject = searchParams.get('subject') || undefined;
@@ -269,7 +275,9 @@ export async function GET(request: NextRequest) {
       count: memories.length,
       memories: memories.map(m => ({
         id: m.id,
-        filePath: m.filePath,
+        filePath: m.filePath?.includes('planeaciones')
+          ? m.filePath.slice(m.filePath.indexOf('planeaciones')).replace(/\\/g, '/')
+          : m.id,
         frontmatter: m.frontmatter,
         sections: m.sections,
         wikiLinks: m.wikiLinks,

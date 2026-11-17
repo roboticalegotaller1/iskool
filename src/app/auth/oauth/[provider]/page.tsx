@@ -40,10 +40,10 @@ export default function ProviderOAuthPage() {
       cardBorder: 'border-slate-200'
     },
     microsoft: {
-      name: 'Microsoft 365',
-      serverDomain: 'iskool.mx · Conector Institucional M365',
-      authTitle: 'Conector Institucional Microsoft 365',
-      authSubtitle: 'Vincular buzón institucional de Office 365 / Outlook a ISkool',
+      name: 'Correo Corporativo Empresarial',
+      serverDomain: 'iskool.mx · Conector Institucional Empresarial',
+      authTitle: 'Conector Institucional Correo Corporativo Empresarial',
+      authSubtitle: 'Vincular buzón institucional de Exchange / Outlook a ISkool',
       logo: <OutlookOfficialLogo size={28} />,
       accentColor: 'sky',
       themeBg: 'bg-slate-50',

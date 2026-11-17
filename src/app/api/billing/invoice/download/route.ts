@@ -5,10 +5,17 @@ import { validateApiAuth } from '@/lib/authValidator';
 
 export async function GET(req: NextRequest) {
   const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-  if (!auth.authenticated) {
+  if (!auth.authenticated || !auth.user) {
     return NextResponse.json(
       { error: 'Autenticación requerida para consultar y descargar comprobantes fiscales' },
       { status: 401 }
+    );
+  }
+  const roleLower = (auth.user.role || '').toLowerCase();
+  if (!['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo', 'parent'].includes(roleLower)) {
+    return NextResponse.json(
+      { error: 'Permisos insuficientes para descargar CFDIs fiscales.' },
+      { status: 403 }
     );
   }
 

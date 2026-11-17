@@ -5581,7 +5581,7 @@ ${schoolName}`
     const providerLabel = providerKey === 'google' 
       ? 'Google IMAP' 
       : providerKey === 'microsoft' 
-      ? 'Outlook / Microsoft 365' 
+      ? 'Correo Corporativo Empresarial / Outlook' 
       : providerKey === 'yahoo' 
       ? 'Yahoo Mail' 
       : providerKey === 'apple' 
@@ -9262,8 +9262,8 @@ Comité de Seguridad y Protección Escolar`
                       },
                       {
                         id: 'microsoft' as const,
-                        name: 'Microsoft 365',
-                        subtitle: 'Outlook / Exchange Online',
+                        name: 'Correo Corporativo Empresarial',
+                        subtitle: 'Outlook / Exchange Corporativo',
                         badge: 'OAuth 2.0 / TLS 1.3',
                         defaults: 'outlook.office365.com:993 · smtp.office365.com:587',
                         logo: <OutlookOfficialLogo size={26} />,
@@ -9394,7 +9394,7 @@ Comité de Seguridad y Protección Escolar`
                                   {selectedProviderDrawerId === 'google'
                                     ? 'Google Workspace / Gmail'
                                     : selectedProviderDrawerId === 'microsoft'
-                                    ? 'Microsoft 365 / Outlook'
+                                    ? 'Correo Corporativo Empresarial / Outlook'
                                     : selectedProviderDrawerId === 'apple'
                                     ? 'Apple School Manager / iCloud'
                                     : selectedProviderDrawerId === 'yahoo'
@@ -9422,7 +9422,7 @@ Comité de Seguridad y Protección Escolar`
                           {(
                             [
                               { id: 'google', label: 'Google' },
-                              { id: 'microsoft', label: 'Microsoft 365' },
+                              { id: 'microsoft', label: 'Correo Corporativo Empresarial' },
                               { id: 'apple', label: 'Apple' },
                               { id: 'yahoo', label: 'Yahoo' },
                               { id: 'zoho', label: 'Zoho' },
@@ -12931,7 +12931,7 @@ Comité de Seguridad y Protección Escolar`
                           },
                           {
                             key: 'backgroundColor' as keyof CustomCeoTheme,
-                            title: 'Color de Fondo General (Canvas)',
+                            title: 'Color de Fondo General (Lienzo)',
                             desc: 'Lienzo de fondo principal de la suite ejecutiva y áreas de lectura de expedientes.',
                             value: customTheme.backgroundColor || '#0A0F1D',
                             swatches: EXECUTIVE_COLOR_PALETTES.backgrounds
@@ -14899,7 +14899,7 @@ Comité de Seguridad y Protección Escolar`
                   type="text"
                   value={editingCalendarEvent.location}
                   onChange={(e) => setEditingCalendarEvent({ ...editingCalendarEvent, location: e.target.value })}
-                  placeholder="ej. Oficina de Dirección General o Enlace Google Meet"
+                  placeholder="ej. Oficina de Dirección General o Enlace de Videollamada Institucional"
                   className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>
@@ -15062,7 +15062,7 @@ Comité de Seguridad y Protección Escolar`
                   type="text"
                   value={newEventLocation}
                   onChange={(e) => setNewEventLocation(e.target.value)}
-                  placeholder="ej. Oficina de Dirección General o Enlace Google Meet"
+                  placeholder="ej. Oficina de Dirección General o Enlace de Videollamada Institucional"
                   className="w-full px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#CBD5E1] text-[#0F172A] font-medium focus:outline-none focus:border-[#2563EB] focus:bg-white transition-colors"
                 />
               </div>

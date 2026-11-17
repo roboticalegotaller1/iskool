@@ -100,6 +100,11 @@ export default function TeacherWritingDashboardPage() {
       tema: genTopic || undefined
     });
     setLastGeneratedPrompt(prompt);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`iskool_teacher_writing_prompt_${genLanguage}`, JSON.stringify(prompt));
+      } catch { /* ignore */ }
+    }
   };
 
   const handleExecuteConsoleCommand = () => {
@@ -175,12 +180,12 @@ export default function TeacherWritingDashboardPage() {
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold px-3.5 py-1.5 rounded-full bg-white border-2 border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Diseño Ejecutivo Nano Banana 2.1 · Claridad Analítica 0% IA
+              Diseño Ejecutivo Institucional · Claridad Analítica 0% IA
             </span>
           </div>
         </div>
 
-        {/* HERO NANO BANANA 2.1 DOCENTE (MODO CLARO GAMIFICADO) */}
+        {/* HERO EJECUTIVO DOCENTE (MODO CLARO GAMIFICADO) */}
         <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/30 border-2 border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
             <img
@@ -235,7 +240,7 @@ export default function TeacherWritingDashboardPage() {
           </div>
         </div>
 
-        {/* NAVEGACIÓN POR PESTAÑAS NANO BANANA 2.1 */}
+        {/* NAVEGACIÓN POR PESTAÑAS DE EDICIÓN EJECUTIVA */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto">
           <button
             type="button"
@@ -298,7 +303,7 @@ export default function TeacherWritingDashboardPage() {
             <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-xs space-y-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-indigo-700 flex items-center gap-2">
                 <Target className="w-4 h-4" />
-                Resumen Ejecutivo Pedagógico (Nano Banana 2.1):
+                Resumen Ejecutivo Pedagógico (Edición Ejecutiva Institucional):
               </h2>
               <div className="space-y-2 border-l-4 border-indigo-500 pl-4 py-1 text-sm text-slate-700 leading-relaxed font-sans">
                 <p>1. {teacherDashboard.resumenEjecutivo3Lineas[0]}</p>
@@ -576,7 +581,7 @@ export default function TeacherWritingDashboardPage() {
                 </div>
               </div>
 
-              {/* TABLA NANO BANANA 2.1 */}
+              {/* TABLA DE EVALUACIÓN ANALÍTICA */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs text-slate-700">
                   <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider border-b border-slate-200">
@@ -702,7 +707,7 @@ export default function TeacherWritingDashboardPage() {
           </div>
         )}
 
-        {/* PESTAÑA 4: CONSOLA DE COMANDOS AUTÓNOMOS (MODO CLARO NANO BANANA 2.1) */}
+        {/* PESTAÑA 4: CONSOLA DE COMANDOS AUTÓNOMOS (MODO CLARO INSTITUCIONAL) */}
         {activeTab === 'consola' && (
           <div className="space-y-6 animate-in fade-in duration-150">
             <div className="p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-xs space-y-4">

@@ -12,6 +12,7 @@ import { getStudentAcademicLevelInfo, StudentAcademicLevelInfo } from '@/lib/aca
 import { broadcastStoreChange, subscribeToStoreSync } from '@/lib/broadcastSync';
 
 let statsChannel: any = null;
+let statsChannelStudentId: string | null = null;
 const inFlightPurchases = new Set<string>();
 
 interface StudentStoreState {
@@ -1712,13 +1713,19 @@ export const useStudentStore = create<StudentStoreState>()(
   },
 
   subscribeToStudentStats: (studentId) => {
-    if (statsChannel) return;
-
     const dbStudentId = mapStudentIdToUuid(studentId);
     if (!isUuid(dbStudentId)) return;
-    
+    if (statsChannel && statsChannelStudentId === dbStudentId) return;
+
+    if (statsChannel) {
+      supabase.removeChannel(statsChannel);
+      statsChannel = null;
+      statsChannelStudentId = null;
+    }
+
+    statsChannelStudentId = dbStudentId;
     statsChannel = supabase
-      .channel('custom-stats-channel')
+      .channel(`custom-stats-channel-${dbStudentId}`)
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
@@ -1751,6 +1758,7 @@ export const useStudentStore = create<StudentStoreState>()(
     if (statsChannel) {
       supabase.removeChannel(statsChannel);
       statsChannel = null;
+      statsChannelStudentId = null;
     }
   },
 
@@ -1872,11 +1880,15 @@ export const useCurrentStudentStats = () => {
   return useMemo(() => {
     const active = stats || STATS_MAP_SEED[activeStudentId] || STATS_MAP_SEED[normalizeStudentId(activeStudentId)];
     if (active) {
-      let petStage = active.pet_stage || 'egg';
+      const stageRank: Record<string, number> = { egg: 0, baby: 1, adult: 2, mystic: 3 };
       const lvl = active.level || 1;
-      if (lvl >= 8) petStage = 'mystic';
-      else if (lvl >= 5) petStage = 'adult';
-      else if (lvl >= 3) petStage = 'baby';
+      const levelDerivedStage: PetEvolutionStage =
+        lvl >= 8 ? 'mystic' : lvl >= 5 ? 'adult' : lvl >= 3 ? 'baby' : 'egg';
+      const existingStage = active.pet_stage || 'egg';
+      const petStage =
+        (stageRank[existingStage] ?? 0) >= (stageRank[levelDerivedStage] ?? 0)
+          ? existingStage
+          : levelDerivedStage;
 
       return {
         ...active,

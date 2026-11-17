@@ -1,10 +1,29 @@
+// @vitest-environment node
 /**
  * @file admissionsPipelineAnalytics.test.ts
  * @description Suite de Pruebas Unitarias e Integración para la Lógica de Negocio,
  * Conectividad Analítica en Vivo y Puente hacia Control Escolar del CRM Unificado (Fase 3).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
+import { signSessionToken } from '@/lib/sessionToken';
+
+let staffToken = '';
+
+vi.mock('next/headers', () => ({
+  cookies: async () => ({
+    get: (name: string) => (name === 'iskool_session' && staffToken ? { value: staffToken } : undefined),
+  }),
+}));
+
+beforeAll(async () => {
+  staffToken = await signSessionToken({
+    id: 'usr-test-dir',
+    email: 'directora.general@ibime.edu.mx',
+    role: 'director',
+    school_id: 'sch-ibime',
+  });
+});
 import { useCrmStore } from '../src/store/useCrmStore';
 import { useSchoolAdminStore } from '../src/store/useSchoolAdminStore';
 import { 

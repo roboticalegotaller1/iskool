@@ -12,13 +12,26 @@ const isUuid = (str?: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 };
 
+const STUDENT_UUID_MAP: Record<string, string> = {
+  'std-pa': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'std-sec': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22',
+  'std-pb': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33',
+  'std-prep': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44',
+  'std-ibime-montes-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b01',
+  'std-ibime-montes-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02',
+  'std-ibime-montes-03': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03',
+  'std-ibime-montes-04': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04',
+  'std-ibime-lagos-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b11',
+  'std-ibime-lagos-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b12',
+  'std-ibime-san-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b21',
+  'std-ibime-san-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b22',
+  'std-ibime-coac-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b31',
+  'std-ibime-coac-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b32',
+};
+
 const mapStudentIdToUuid = (id: string): string => {
   if (isUuid(id)) return id;
-  if (id === 'std-pa') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11';
-  if (id === 'std-sec') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22';
-  if (id === 'std-pb') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33';
-  if (id === 'std-prep') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44';
-  return id;
+  return STUDENT_UUID_MAP[id] || id;
 };
 
 const ensureSubjectExists = async (subjectId: string): Promise<string> => {
@@ -386,8 +399,8 @@ export const useGamificationStore = create<GamificationStoreState>()(
       id: attemptId,
       student_id: activeStudentId,
       quest_id: questId,
-      score: score,
-      is_completed: score >= 60,
+      score: verifiedScore,
+      is_completed: verifiedScore >= 60,
       answers: answers,
       feedback: feedback,
       created_at: new Date().toISOString()
@@ -399,17 +412,20 @@ export const useGamificationStore = create<GamificationStoreState>()(
 
     if (isUuid(dbStudentId) && isUuid(questId)) {
       try {
-        await supabase.from('quest_attempts').insert({
+        const { error: attemptError } = await supabase.from('quest_attempts').insert({
           student_id: dbStudentId,
           quest_id: questId,
-          score: score,
-          is_completed: score >= 60,
+          score: verifiedScore,
+          is_completed: verifiedScore >= 60,
           answers: answers,
           feedback: feedback,
           created_at: new Date().toISOString()
         });
+        if (attemptError) {
+          console.warn('Aviso al persistir intento verificado:', attemptError.message);
+        }
       } catch (err) {
-        console.warn('Aviso al insertar intento en Supabase:', err);
+        console.warn('Aviso al insertar intento en base de datos:', err);
       }
     }
 
@@ -935,7 +951,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
       const errorMsg = err instanceof Error ? err.message : 'Error al guardar el artefacto';
       console.error('Error creating artifact:', err);
       set({ syncError: errorMsg });
-      alert(`Error al sincronizar con Supabase: ${errorMsg}`);
+      alert(`Error al sincronizar con el servidor institucional: ${errorMsg}`);
     }
   },
 
@@ -978,7 +994,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
             console.log(`Badge ${badgeId} already unlocked for student ${studentId}`);
             return;
           }
-          console.warn('Aviso al sincronizar medalla en Supabase:', error.message);
+          console.warn('Aviso al sincronizar medalla en el servidor institucional:', error.message);
         } else if (data?.earned_at) {
           earnedAt = data.earned_at;
         }
@@ -995,7 +1011,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
       }));
 
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Error al guardar en Supabase';
+      const errorMsg = err instanceof Error ? err.message : 'Error al guardar en el servidor institucional';
       console.warn('Aviso al desbloquear medalla:', err);
       set({ syncError: errorMsg });
     }
@@ -1030,7 +1046,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      console.warn('Utilizando misiones locales cacheadas (Aviso Supabase):', errorMsg);
+      console.warn('Utilizando misiones locales cacheadas (Aviso Servidor Institucional):', errorMsg);
     } finally {
       set({ isLoadingMissions: false, isInitialized: true });
     }
@@ -1383,7 +1399,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
         created_at: newQuest.created_at
       }]);
     } catch (dbErr) {
-      console.warn('Nota: Persistencia remota en Supabase completada en modo local:', dbErr);
+      console.warn('Nota: Persistencia remota institucional completada en modo local:', dbErr);
     }
 
     return { success: true, missionId, questId };

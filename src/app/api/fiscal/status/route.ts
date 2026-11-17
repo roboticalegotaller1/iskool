@@ -27,7 +27,11 @@ export async function GET(req: NextRequest) {
 
     const pac = getFiscalPacAdapter();
     const health = await pac.getHealth();
-    const cfdis = getAllStampedCfdis();
+    const allCfdis = getAllStampedCfdis();
+    const cfdis =
+      role === 'superadmin'
+        ? allCfdis
+        : allCfdis.filter((c: any) => !c.schoolId || !auth.user?.school_id || c.schoolId === auth.user.school_id);
 
     return NextResponse.json({
       success: true,

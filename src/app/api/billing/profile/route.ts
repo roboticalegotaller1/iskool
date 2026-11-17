@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { PaymentGatewayService } from '@/lib/paymentGateway';
 import { validateApiAuth } from '@/lib/authValidator';
 import { z } from 'zod';
@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
 
     let data: Record<string, unknown> | null = null;
     if (isUuid(requestedParentId)) {
-      let query = supabase
+      const serviceDb = getServiceSupabaseClient();
+      let query = serviceDb
         .from('billing_profiles')
         .select('*')
         .eq('parent_id', requestedParentId);
@@ -153,18 +154,26 @@ export async function POST(req: NextRequest) {
     };
 
     let persistedData: Record<string, unknown> | null = null;
-    if (isUuid(parent_id) && isUuid(school_id)) {
-      const { data, error } = await supabase
+    const isRealDbConfigured = Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    if (isUuid(parent_id) && isUuid(school_id) && isRealDbConfigured) {
+      const serviceDb = getServiceSupabaseClient();
+      const { data, error } = await serviceDb
         .from('billing_profiles')
         .upsert(profilePayload, { onConflict: 'parent_id,school_id' })
         .select()
         .maybeSingle();
 
       if (error) {
-        console.warn('[BillingProfile API] Advertencia de persistencia:', error.message);
-      } else {
-        persistedData = data;
+        return NextResponse.json(
+          { success: false, error: `Error persistiendo perfil fiscal en base de datos: ${error.message}` },
+          { status: 500 }
+        );
       }
+      persistedData = data;
     }
 
     return NextResponse.json({ 

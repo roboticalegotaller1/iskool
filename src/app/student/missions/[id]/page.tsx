@@ -378,9 +378,9 @@ function MissionPageContent({ params }: MissionPageContentProps) {
     if (!mockFile) {
       if (type === 'image') {
         setMockFile({
-          url: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=400',
+          url: '/images/books/cover_codice_antiguo.webp',
           type: 'image',
-          name: 'boceto_fraccionamiento.png'
+          name: 'boceto_fraccionamiento.webp'
         });
       } else {
         setMockFile({
@@ -860,10 +860,10 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                         <img
                           src={
                             mission.subject_id === 'sub-math'
-                              ? 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=800'
+                              ? '/images/books/cover_tomo_imperial.webp'
                               : mission.subject_id === 'sub-sci'
-                                ? 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800'
-                                : 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800'
+                                ? '/images/books/cover_codice_antiguo.webp'
+                                : '/images/books/cover_grimorio_dorado.webp'
                           }
                           alt="Portada del Reto"
                           className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-500"
@@ -878,15 +878,29 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                         <Video className="h-3.5 w-3.5 text-zinc-500" />
                         Video Tutorial del Reto
                       </span>
-                      <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 aspect-video shadow-lg">
-                        <iframe
-                          className="w-full h-full"
-                          src="https://www.youtube.com/embed/dQw4w9QwXcQ"
-                          title="Guía de Video de la Misión"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
+                      {(selectedQuest.content as any)?.videoUrl ? (
+                        <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 aspect-video shadow-lg">
+                          <iframe
+                            className="w-full h-full"
+                            src={String((selectedQuest.content as any).videoUrl).replace('watch?v=', 'embed/')}
+                            title="Guía de Video de la Misión"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950/90 p-5 flex flex-col justify-center gap-2 aspect-video shadow-lg">
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-cyan-400">
+                            <Video className="h-3.5 w-3.5" /> Cápsula Metodológica Activa
+                          </span>
+                          <p className="text-xs font-bold text-white leading-snug">
+                            {selectedQuest.title}
+                          </p>
+                          <p className="text-[11px] text-zinc-400 leading-relaxed">
+                            Revisa las instrucciones paso a paso de la derecha y utiliza el estudio interactivo para entregar tu evidencia verificada.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -30,6 +30,7 @@ const ISKOOL_PROTECTED_PREFIXES = [
   '/director',
   '/coordinator',
   '/portal-ceo',
+  '/portal/ceo',
   '/parent',
   '/studio',
   '/billing',
@@ -39,7 +40,12 @@ const ISKOOL_PROTECTED_PREFIXES = [
   '/api/mail',
   '/api/fiscal',
   '/api/store',
-  '/api/studio'
+  '/api/studio',
+  '/api/oracle',
+  '/api/billing',
+  '/api/v1/curriculum',
+  '/api/iskool',
+  '/api/realtime'
 ];
 
 // Rutas protegidas de IBIME (Sub-módulos que requieren rol específico)
@@ -198,8 +204,51 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth/google') ||
     pathname.startsWith('/api/auth/callback/google');
 
-  // Excluir el CRM de Admisiones para demostración y evaluación sin fricción (con cabeceras ya purgadas)
-  if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm') || pathname === '/crm' || pathname.startsWith('/crm')) {
+  // Redirección canónica de alias legales públicos hacia rutas reales
+  if (pathname === '/privacy') {
+    const res = NextResponse.redirect(new URL('/privacidad', request.url));
+    applyDefensiveSecurityHeaders(res, false);
+    return res;
+  }
+  if (pathname === '/terms') {
+    const res = NextResponse.redirect(new URL('/terminos', request.url));
+    applyDefensiveSecurityHeaders(res, false);
+    return res;
+  }
+
+  // Protección anti-CSRF en mutaciones HTTP hacia /api/* (excluyendo webhooks externos)
+  const isApiMutation =
+    pathname.startsWith('/api/') &&
+    ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method.toUpperCase()) &&
+    !pathname.startsWith('/api/webhooks/') &&
+    !pathname.startsWith('/api/mail/inbound');
+  const reqHost = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase().split(',')[0].trim();
+  if (isApiMutation) {
+    const originHeader = request.headers.get('origin');
+    const secFetchSite = (request.headers.get('sec-fetch-site') || '').toLowerCase();
+    let csrfBlocked = secFetchSite === 'cross-site';
+    if (!csrfBlocked && originHeader && reqHost) {
+      try {
+        const originHost = new URL(originHeader).host.toLowerCase();
+        if (originHost !== reqHost) {
+          csrfBlocked = true;
+        }
+      } catch {
+        csrfBlocked = true;
+      }
+    }
+    if (csrfBlocked) {
+      const csrfRes = NextResponse.json(
+        { error: 'Solicitud de origen cruzado bloqueada por protección anti-CSRF.', code: 'CSRF_ORIGIN_MISMATCH' },
+        { status: 403 }
+      );
+      applyDefensiveSecurityHeaders(csrfRes, false);
+      return csrfRes;
+    }
+  }
+
+  // Excluir únicamente la vitrina pública /crm (NO /admin/crm) tras limpiar cabeceras spoofed
+  if (pathname === '/crm' || pathname.startsWith('/crm/')) {
     const res = NextResponse.next({ request: { headers: strippedRequestHeaders } });
     applyDefensiveSecurityHeaders(res, false, isOAuthPopupRoute);
     return res;
@@ -229,12 +278,17 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/parent') ||
     pathname.startsWith('/planeaciones') ||
     pathname.startsWith('/portal-ceo') ||
+    pathname.startsWith('/portal/ceo') ||
     pathname.startsWith('/api/admin/organization') ||
     pathname.startsWith('/api/mail') ||
     pathname.startsWith('/studio') ||
     pathname.startsWith('/api/studio') ||
     pathname.startsWith('/coordinator') ||
     pathname.startsWith('/api/billing') ||
+    pathname.startsWith('/api/v1/curriculum') ||
+    pathname.startsWith('/api/fiscal') ||
+    pathname.startsWith('/api/store') ||
+    pathname.startsWith('/api/oracle') ||
     pathname.startsWith('/control-remoto-qr') ||
     pathname.startsWith('/api/languages') ||
     pathname.startsWith('/checkout');
@@ -384,12 +438,7 @@ export async function middleware(request: NextRequest) {
   const userSchoolId = (verifiedUser?.school_id || '').toLowerCase();
   const userEmailLower = (verifiedUser?.email || '').toLowerCase();
   const isDemoAccount = userSchoolId === 'sch-demo-0001' || userEmailLower.startsWith('demo.');
-  const isSuperUser =
-    !isDemoAccount &&
-    (userRole === 'superadmin' ||
-      userRole === 'admin' ||
-      userRole === 'owner' ||
-      userRole === 'ceo');
+  const isSuperUser = !isDemoAccount && userRole === 'superadmin';
 
   // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)
   // Si el usuario autenticado pertenece a un tenant distinto al recurso solicitado
@@ -418,20 +467,23 @@ export async function middleware(request: NextRequest) {
   }
 
   // 5. Control de Acceso Basado en Roles (RBAC)
-  if (userRole === 'student') {
+  if (userRole === 'student' || userRole === 'parent') {
     if (
       pathname.startsWith('/admin') ||
       pathname.startsWith('/teacher') ||
       pathname.startsWith('/director') ||
       pathname.startsWith('/coordinator') ||
       pathname.startsWith('/portal-ceo') ||
+      pathname.startsWith('/portal/ceo') ||
+      pathname.startsWith('/billing') ||
       pathname.startsWith('/superadmin') ||
       pathname.startsWith('/superuser') ||
       pathname.startsWith('/ibime/admin') ||
-      pathname.startsWith('/ibime/coordinacion')
+      pathname.startsWith('/ibime/coordinacion') ||
+      (userRole === 'parent' && pathname.startsWith('/student'))
     ) {
-      const studentLanding = '/student';
-      const res = NextResponse.redirect(new URL(studentLanding, request.url));
+      const targetLanding = userRole === 'parent' ? '/parent' : '/student';
+      const res = NextResponse.redirect(new URL(targetLanding, request.url));
       applyDefensiveSecurityHeaders(res, isAppHost);
       return res;
     }
@@ -444,8 +496,23 @@ export async function middleware(request: NextRequest) {
     return res;
   }
 
-  // Redirección canónica de alias internos de IBIME hacia el portal unificado (evita 404 en subrutas lógicas)
+  // Redirección canónica de rutas lógicas hacia sus destinos oficiales (evita 404 en alias)
   if (!isJsonExpected && !isServerAction) {
+    if (pathname === '/superadmin') {
+      const res = NextResponse.redirect(new URL('/superuser', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/billing') {
+      const res = NextResponse.redirect(new URL('/coordinator/billing', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
+    if (pathname === '/ibime/kardex') {
+      const res = NextResponse.redirect(new URL('/ibime/portal?tab=academico', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
+    }
     if (pathname === '/ibime/director' || pathname === '/ibime/admin') {
       const res = NextResponse.redirect(new URL('/ibime/portal?view=ceo', request.url));
       applyDefensiveSecurityHeaders(res, isAppHost);
@@ -523,7 +590,7 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
         "img-src 'self' data: blob: https:",
         "media-src 'self' data: blob: https:",
         "connect-src 'self' https: wss:",
-        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
+        "frame-src 'self' blob: https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.walter-fendt.de https://www.ophysics.com https://www.falstad.com https://www.myphysicslab.com https://www.physicsclassroom.com https://www.geogebra.org https://www.desmos.com https://graspablemath.com https://visualgo.net https://demonstrations.wolfram.com https://toytheater.com https://www.mathopenref.com https://embed.molview.org https://ptable.com https://chemcollective.org https://www.rcsb.org https://learn.genetics.utah.edu https://stellarium-web.org https://www.solarsystemscope.com https://earth.nullschool.net https://wokwi.com https://makecode.microbit.org https://arcade.makecode.com https://snap.berkeley.edu https://trinket.io https://musiclab.chromeexperiments.com https://www.chronas.org https://www.gapminder.org https://www.beepbox.co",
         "frame-ancestors 'self'",
         "form-action 'self' https://accounts.google.com",
         "worker-src 'self' blob:",

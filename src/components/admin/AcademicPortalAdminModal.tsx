@@ -87,7 +87,7 @@ export function AcademicPortalAdminModal({
 }: AcademicPortalAdminModalProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const { detailedStudents, campusesList, teachersList } = useSchoolAdminStore();
+  const { detailedStudents, campusesList, teachersList, approvedTeacherPlans: storeApprovedPlans, approveTeacherPlan } = useSchoolAdminStore();
   const { portfolioItems, addPortfolioFeedback } = usePortfolioStore();
 
   // Identidad oficial verificada del Administrador / Revisor
@@ -242,7 +242,7 @@ export function AcademicPortalAdminModal({
         subject_id: 'sub-sci',
         title: `Proyecto STEAM: Brazo Robótico Hidráulico Automatizado`,
         description: `Diseño y construcción experimental en ${currentStudent.campus_name || 'Campus Montes'} aplicando el Principio de Pascal y control de presión.`,
-        file_url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=600',
+        file_url: '/images/books/cover_tomo_imperial.webp',
         file_type: 'image',
         status: 'approved',
         self_reflection: 'Aprendí a calcular presión en pascales y optimizar la fuerza de empuje en jeringas acopladas.',
@@ -260,7 +260,7 @@ export function AcademicPortalAdminModal({
         subject_id: 'sub-math',
         title: `Ensayo Bilingüe & Modelación Matemática Aplicada`,
         description: `Argumentación académica en inglés C1 combinada con proyecciones estadísticas de impacto comunitario SEP NEM.`,
-        file_url: 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=600',
+        file_url: '/images/books/cover_diario_republicano.webp',
         file_type: 'image',
         status: 'approved',
         self_reflection: 'Logré estructurar fuentes primarias en dos idiomas y representar hallazgos con funciones lineales.',
@@ -425,7 +425,17 @@ export function AcademicPortalAdminModal({
   const [lessonPlanSupervisorNotes, setLessonPlanSupervisorNotes] = useState<string>('');
   const [approvedTeacherPlans, setApprovedTeacherPlans] = useState<
     Record<string, { approvedAt: string; approver: string; notes: string; folio: string }>
-  >({});
+  >(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('iskool_approved_teacher_plans');
+        if (raw) {
+          return { ...(storeApprovedPlans || {}), ...JSON.parse(raw) };
+        }
+      } catch { /* ignore */ }
+    }
+    return storeApprovedPlans || {};
+  });
 
   useEffect(() => {
     if (currentTeachers.length > 0 && (!selectedMirrorTeacherId || !currentTeachers.some(t => t.id === selectedMirrorTeacherId))) {
@@ -665,15 +675,18 @@ export function AcademicPortalAdminModal({
       (customNotes ?? lessonPlanSupervisorNotes).trim() ||
       `Planeación auditada y aprobada por Dirección General. Cumple al 100% con PDA oficial SEP NEM 2024, secuencia cronometrada (Inicio/Desarrollo/Cierre) y rúbrica analítica.`;
 
+    const approvalEntry = {
+      approvedAt: `Hoy, ${nowStr}`,
+      approver: adminName,
+      notes: finalNotes,
+      folio
+    };
+
     setApprovedTeacherPlans(prev => ({
       ...prev,
-      [teacher.id]: {
-        approvedAt: `Hoy, ${nowStr}`,
-        approver: adminName,
-        notes: finalNotes,
-        folio
-      }
+      [teacher.id]: approvalEntry
     }));
+    approveTeacherPlan(teacher.id, approvalEntry);
 
     setLessonPlanSupervisorNotes('');
     showPortalToast(

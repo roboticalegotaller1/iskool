@@ -44,12 +44,19 @@ function getEscapeRoomReadingText(topic: string, language: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    // 0. Verificación estricta de Autenticación Zero-Trust
+    // 0. Verificación estricta de Autenticación Zero-Trust y Rol Docente/Staff
     const auth = await validateApiAuth(req);
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { error: auth.error || 'No autorizado. Se requiere sesión activa de ISkool para generar actividades en el Estudio.' },
         { status: 401 }
+      );
+    }
+    const studioRole = (auth.user.role || '').toLowerCase();
+    if (!['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(studioRole)) {
+      return NextResponse.json(
+        { error: 'Solo docentes o personal directivo pueden generar actividades en el Estudio.' },
+        { status: 403 }
       );
     }
 

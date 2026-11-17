@@ -323,12 +323,7 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, l
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    const isSameOriginOrLocal = 
-      req.headers.get('sec-fetch-site') === 'same-origin' ||
-      req.headers.get('host')?.includes('localhost') ||
-      req.headers.get('host')?.includes('127.0.0.1');
-
-    if (!auth.authenticated && !isSameOriginOrLocal) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { error: 'Autenticación requerida para acceder al servicio de síntesis de voz' },
         { status: 401 }

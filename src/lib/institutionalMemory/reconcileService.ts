@@ -145,8 +145,15 @@ export class InstitutionalMemoryReconcileService {
       }
 
       try {
+        if (!/^[a-zA-Z0-9._/-]{1,80}$/.test(branch) || branch.includes('..')) {
+          throw new Error('Nombre de rama inválido para reconciliación');
+        }
         const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || 'https://api.github.com';
-        const treeUrl = `${remoteApiHost}/repos/${repo}/git/trees/${branch}?recursive=1`;
+        const safeRepo = repo.replace(/^\/+|\/+$/g, '');
+        if (!/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/.test(safeRepo)) {
+          throw new Error('Identificador de repositorio inválido');
+        }
+        const treeUrl = `${remoteApiHost}/repos/${safeRepo}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
         const treeRes = await fetch(treeUrl, {
           method: 'GET',
           headers: {
@@ -187,15 +194,20 @@ export class InstitutionalMemoryReconcileService {
       // Obtener el contenido del archivo .md (primero en disco local, luego en Cloud Storage)
       let fileContent: string | null = null;
       try {
-        // Intento 1: lectura del sistema de archivos local
-        const localCandidates = [
-          path.join(process.cwd(), 'planeaciones', path.basename(entry.filePath)),
-          path.join(InstitutionalMemoryService.getBaseMemoryDirectory(false), entry.fileName),
-          path.join(InstitutionalMemoryService.getBaseMemoryDirectory(true), entry.fileName)
+        // Intento 1: lectura confinada al sistema de archivos local (anti-path traversal)
+        const safeBaseFilename = path.basename(entry.fileName || entry.filePath || '');
+        if (!safeBaseFilename || safeBaseFilename.includes('..')) {
+          throw new Error(`Nombre de archivo inválido en manifiesto: ${entry.fileName}`);
+        }
+        const localRoots = [
+          path.resolve(process.cwd(), 'planeaciones'),
+          path.resolve(InstitutionalMemoryService.getBaseMemoryDirectory(false)),
+          path.resolve(InstitutionalMemoryService.getBaseMemoryDirectory(true)),
         ];
 
-        for (const candidate of localCandidates) {
-          if (fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
+        for (const rootDir of localRoots) {
+          const candidate = path.resolve(rootDir, safeBaseFilename);
+          if (candidate.startsWith(rootDir + path.sep) && fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
             fileContent = fs.readFileSync(/*turbopackIgnore: true*/ candidate, 'utf8');
             break;
           }

@@ -19,11 +19,25 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para consultar la Bóveda Curricular.' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const listOnly = searchParams.get('list') === 'true';
 
     if (listOnly) {
-      const figures = listAllHistoricalFiguresInVault();
+      const figures = listAllHistoricalFiguresInVault().map((f: any) => {
+        if (f && typeof f === 'object') {
+          const { filePath: _fp, vaultPath: _vp, ...safe } = f;
+          return safe;
+        }
+        return f;
+      });
       return NextResponse.json({ 
         success: true, 
         count: figures.length, 
@@ -82,10 +96,17 @@ export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
     if (!auth.authenticated || !auth.user) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'No autorizado. Se requiere sesión activa para persistir en la Bóveda.' 
+      return NextResponse.json({
+        success: false,
+        error: 'No autorizado. Se requiere sesión activa para persistir en la Bóveda.'
       }, { status: 401 });
+    }
+    const postRole = (auth.user.role || '').toLowerCase();
+    if (!['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(postRole)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Solo docentes o personal directivo pueden guardar nodos históricos en la Bóveda.'
+      }, { status: 403 });
     }
 
     const body = await req.json();

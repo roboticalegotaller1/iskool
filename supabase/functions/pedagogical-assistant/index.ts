@@ -1,6 +1,5 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This code runs in Supabase Edge Functions (Deno runtime).
+// Función Serverless del Asistente Pedagógico IA (ISkool)
+// Runtime Deno aislado con validación obligatoria de cabecera Bearer y Marca Blanca Institucional
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -10,22 +9,34 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Manejo de peticiones preflight CORS
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { message, studentContext, isTeacher, activeQuestContext } = await req.json();
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
+    const expectedServiceToken = Deno.env.get("ASSISTANT_EDGE_TOKEN") || Deno.env.get("SESSION_SECRET") || "";
+    if (!authHeader.toLowerCase().startsWith("bearer ") || authHeader.slice(7).trim().length < 16) {
+      return new Response(
+        JSON.stringify({ error: "No autorizado: se requiere credencial de sesión válida.", success: false }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (expectedServiceToken && authHeader.slice(7).trim() !== expectedServiceToken && !authHeader.includes(".")) {
+      return new Response(
+        JSON.stringify({ error: "Token de acceso inválido.", success: false }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // 1. Obtención segura de clave desde los Secrets de Supabase
-    const apiKey = Deno.env.get("MOTOR_IA_API_KEY") || Deno.env.get("OPENAI_API_KEY");
+    const { message, studentContext } = await req.json();
+    const motorKey = Deno.env.get("MOTOR_IA_API_KEY");
+    const openAiKey = Deno.env.get("OPENAI_API_KEY");
 
-    // 2. Construcción de directiva institucional
     let systemInstruction = `Eres el Asistente Pedagógico IA de ISkool.
 Tu rol es orientar con empatía, rigor formativo y claridad.
 REGLAS OBLIGATORIAS:
-- Prohibido citar marcas comerciales externas (Gemini, Obsidian, Canvas, etc.).
+- Mantener estricto apego a marca blanca institucional.
 - Usa terminología oficial: "Inteligencia Artificial Pedagógica", "Bóveda Curricular", "Lienzo Digital".`;
 
     if (studentContext) {
@@ -37,18 +48,33 @@ REGLAS OBLIGATORIAS:
 
     let reply = "";
 
-    if (apiKey) {
+    if (motorKey) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(motorKey)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemInstruction }] },
+            contents: [{ role: "user", parts: [{ text: String(message || "") }] }],
+            generationConfig: { temperature: 0.7 }
+          }),
+        }
+      );
+      const data = await response.json();
+      reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    } else if (openAiKey) {
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
+          "Authorization": `Bearer ${openAiKey}`,
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemInstruction },
-            { role: "user", content: message },
+            { role: "user", content: String(message || "") },
           ],
           temperature: 0.7,
         }),
@@ -66,7 +92,7 @@ REGLAS OBLIGATORIAS:
     );
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as Error).message, success: false }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

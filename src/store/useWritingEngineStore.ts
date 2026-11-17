@@ -46,6 +46,8 @@ interface WritingEngineState {
   unlockHintLevel: (itemId: string, level: number) => void;
   submitFinalEvaluation: () => FinalEvaluationOutput;
   resetDraft: () => void;
+  syncStudentHistory: (studentId?: string) => void;
+  getHistoryForStudent: (studentId?: string) => FinalEvaluationOutput[];
 
   // Acciones Docente
   setSelectedCohortGroup: (group: string) => void;
@@ -236,13 +238,27 @@ export const useWritingEngineStore = create<WritingEngineState>()(
 
         set(state => ({
           latestEvaluation: evaluation,
-          studentHistory: [evaluation, ...state.studentHistory],
+          studentHistory: [
+            evaluation,
+            ...state.allEvaluations.filter(e => e.studentId === currentStudentId)
+          ],
           allEvaluations: updatedAll,
           teacherDashboard: updatedDashboard,
           isSubmitting: false
         }));
 
         return evaluation;
+      },
+
+      syncStudentHistory: (studentId) => {
+        const targetId = studentId || useStudentStore.getState()?.activeStudentId || 'std-santi';
+        const filtered = get().allEvaluations.filter(e => e.studentId === targetId);
+        set({ studentHistory: filtered, latestEvaluation: filtered[0] || null });
+      },
+
+      getHistoryForStudent: (studentId) => {
+        const targetId = studentId || useStudentStore.getState()?.activeStudentId || 'std-santi';
+        return get().allEvaluations.filter(e => e.studentId === targetId);
       },
 
       resetDraft: () => {

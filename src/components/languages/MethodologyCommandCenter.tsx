@@ -144,7 +144,7 @@ export default function MethodologyCommandCenter({
     // ------------------------------------------------------------------------
     return (
         <div className="space-y-6">
-            {/* Hero Executive Header (Nano Banana 2.1 White/Pearl Mode) */}
+            {/* Hero Executive Header (Motor Articulatorio 60 FPS White/Pearl Mode) */}
             <div className={`rounded-3xl p-6 sm:p-8 border-2 shadow-sm relative overflow-hidden ${
                 isLightMode
                     ? 'bg-gradient-to-br from-white via-indigo-50/40 to-emerald-50/30 text-slate-900 border-slate-200'
@@ -156,7 +156,7 @@ export default function MethodologyCommandCenter({
                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                                 isLightMode ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
                             }`}>
-                                NANO BANANA 2.1 · ARQUITECTURA METODOLÓGICA GLOBAL
+                                MOTOR ARTICULATORIO 60 FPS · ARQUITECTURA METODOLÓGICA INSTITUCIONAL
                             </span>
                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                                 isLightMode ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-indigo-500/20 border-indigo-400/40 text-indigo-200'
@@ -569,7 +569,7 @@ export default function MethodologyCommandCenter({
 
                                     <div className={`p-3.5 rounded-xl border ${isLightMode ? 'bg-indigo-50 border-indigo-200' : 'bg-indigo-950/30 border-indigo-700/40'}`}>
                                         <div className="font-black text-indigo-700 dark:text-indigo-300 text-[10px] uppercase tracking-wider mb-1">
-                                            🚀 Síntesis y Superación en ISkool (Nano Banana 2.1)
+                                            🚀 Síntesis y Superación en ISkool (Motor Articulatorio 60 FPS)
                                         </div>
                                         <p className="leading-relaxed font-semibold">{audit.iskoolSynthesisAndUpgrade}</p>
                                     </div>

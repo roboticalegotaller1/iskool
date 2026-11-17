@@ -10,6 +10,11 @@
 
 import crypto from 'crypto';
 import { supabase } from '../supabaseClient';
+import { getServiceSupabaseClient } from '../supabaseServer';
+
+function getDbClient() {
+  return typeof window === 'undefined' ? getServiceSupabaseClient() : supabase;
+}
 
 export interface CachedAIResponse {
   key: string;
@@ -113,11 +118,12 @@ export class AIGatewayCache {
       };
     }
 
-    // 2. Consulta L2 (Persistent Cache en Supabase) si no está en L1
-    if (supabase) {
+    // 2. Consulta L2 (Persistent Cache en base de datos) si no está en L1
+    const db = getDbClient();
+    if (db) {
       try {
         // Timeout de seguridad de 1200ms para evitar ralentizar la respuesta si la red está fría
-        const queryPromise = supabase
+        const queryPromise = db
           .from('ai_response_cache')
           .select('cache_key, feature, model, output, raw_text, tokens_saved, cached_at')
           .eq('cache_key', key)
@@ -187,20 +193,27 @@ export class AIGatewayCache {
     this.l1Cache.set(key, entry);
     this.statsCounters.writes++;
 
-    // 2. Persistir en L2 (Supabase PostgreSQL) de forma asíncrona no bloqueante
-    if (supabase) {
+    // 2. Persistir en L2 (PostgreSQL) de forma asíncrona no bloqueante
+    const db = getDbClient();
+    if (db) {
       try {
-        await supabase.from('ai_response_cache').upsert({
-          cache_key: key,
-          feature: options?.feature || 'general_academic',
-          school_id: options?.schoolId || null,
-          model: data.model,
-          output: data.output,
-          raw_text: data.raw_text,
-          tokens_saved: data.tokens_saved,
-          cached_at: nowIso,
-          updated_at: nowIso
-        });
+        const { error } = await db.from('ai_response_cache').upsert(
+          {
+            cache_key: key,
+            feature: options?.feature || 'general_academic',
+            school_id: options?.schoolId || null,
+            model: data.model,
+            output: data.output,
+            raw_text: data.raw_text,
+            tokens_saved: data.tokens_saved,
+            cached_at: nowIso,
+            updated_at: nowIso
+          },
+          { onConflict: 'cache_key' }
+        );
+        if (error) {
+          console.warn('[AIGatewayCache] Error al persistir caché L2:', error.message);
+        }
       } catch {
         // Degradar silenciosamente si la tabla aún no existe o hay desconexión
       }
@@ -226,18 +239,28 @@ export class AIGatewayCache {
     this.l1Cache.set(key, entry);
     this.statsCounters.writes++;
 
-    if (supabase) {
-      Promise.resolve(supabase.from('ai_response_cache').upsert({
-        cache_key: key,
-        feature: options?.feature || 'general_academic',
-        school_id: options?.schoolId || null,
-        model: data.model,
-        output: data.output,
-        raw_text: data.raw_text,
-        tokens_saved: data.tokens_saved,
-        cached_at: nowIso,
-        updated_at: nowIso
-      })).then(() => {}).catch(() => {});
+    const db = getDbClient();
+    if (db) {
+      Promise.resolve(
+        db.from('ai_response_cache').upsert(
+          {
+            cache_key: key,
+            feature: options?.feature || 'general_academic',
+            school_id: options?.schoolId || null,
+            model: data.model,
+            output: data.output,
+            raw_text: data.raw_text,
+            tokens_saved: data.tokens_saved,
+            cached_at: nowIso,
+            updated_at: nowIso
+          },
+          { onConflict: 'cache_key' }
+        )
+      )
+        .then(({ error }) => {
+          if (error) console.warn('[AIGatewayCache] Error L2 sync:', error.message);
+        })
+        .catch(() => {});
     }
   }
 

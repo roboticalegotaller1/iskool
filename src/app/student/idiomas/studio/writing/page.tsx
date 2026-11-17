@@ -134,7 +134,7 @@ export default function StudentWritingStudioPage() {
           </div>
         </div>
 
-        {/* HERO BAR GAMIFICADA & SELECTORES DUALES (DISEÑO MODO CLARO NANO BANANA 2.1) */}
+        {/* HERO BAR GAMIFICADA & SELECTORES DUALES (DISEÑO MODO CLARO INSTITUCIONAL) */}
         <div className="p-6 sm:p-8 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-indigo-50/80 via-teal-50/40 to-transparent rounded-full blur-3xl pointer-events-none" />
 
@@ -148,7 +148,7 @@ export default function StudentWritingStudioPage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-200">
-                    Estudio de Expresión Escrita Nano Banana 2.1
+                    Estudio de Expresión Escrita Institucional
                   </span>
                   <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
                     {currentSpec.framework === 'cambridge' ? 'Cambridge Assessment English' : 'France Éducation International'}

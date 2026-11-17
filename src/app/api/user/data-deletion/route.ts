@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 
 export const runtime = 'nodejs';
 
 /**
  * Endpoint oficial de Eliminación de Datos de Usuario (Derecho al Olvido / ARCO).
- * Requisito mandatorio de Google Trust & Safety y certificación CASA Tier 2/3.
+ * Cumplimiento normativo de privacidad, seguridad en la nube y retención institucional.
  */
 export async function GET(req: NextRequest) {
   return NextResponse.json({
@@ -55,18 +56,64 @@ export async function POST(req: NextRequest) {
 
     const userEmail = requestedEmail;
 
-    // 1. Revocar tokens de Google OAuth y purgar de almacenamiento
+    // 1. Revocar credenciales OAuth y purgar de almacenamiento
     await GoogleOAuthService.revokeTokens(userEmail);
 
-    // 2. Generar folio de seguimiento para auditoría de cumplimiento
+    // 2. Ejecución de supresión real multi-tabla mediante cliente administrativo de servidor
+    const purgedTables: string[] = [];
+    try {
+      const db = getServiceSupabaseClient();
+      const { data: matchedProfile } = await db
+        .from('profiles')
+        .select('id')
+        .eq('email', userEmail)
+        .maybeSingle();
+
+      const targetProfileId = matchedProfile?.id;
+      if (targetProfileId) {
+        const cleanups: Array<{ table: string; op: PromiseLike<{ error: any }> }> = [
+          { table: 'student_messages', op: db.from('student_messages').delete().eq('student_id', targetProfileId) },
+          { table: 'student_inventory', op: db.from('student_inventory').delete().eq('student_id', targetProfileId) },
+          { table: 'billing_profiles', op: db.from('billing_profiles').delete().eq('parent_id', targetProfileId) },
+          { table: 'oauth_tokens', op: db.from('oauth_tokens').delete().eq('user_id', targetProfileId) },
+          {
+            table: 'profiles',
+            op: db
+              .from('profiles')
+              .update({
+                first_name: 'Usuario',
+                last_name: 'Suprimido',
+                phone: null,
+                email: `deleted-${Date.now()}-${targetProfileId}@deleted.iskool.mx`,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', targetProfileId)
+          }
+        ];
+
+        for (const item of cleanups) {
+          try {
+            const res = await item.op;
+            if (!res?.error) purgedTables.push(item.table);
+          } catch {
+            // Continuar purga sobre el resto de tablas sin abortar transacción ARCO
+          }
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[Data Deletion] Aviso durante purga multi-tabla en BD:', dbErr);
+    }
+
+    // 3. Generar folio de seguimiento para auditoría de cumplimiento
     const confirmationCode = `DEL-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
     return NextResponse.json({
       success: true,
       confirmation_code: confirmationCode,
       user_email: userEmail,
+      purged_tables: purgedTables,
       status: 'PURGED_AND_QUEUED',
-      message: 'Tokens de acceso revocados inmediatamente ante proveedores y solicitud de supresión de registros procesada.',
+      message: 'Credenciales revocadas inmediatamente y solicitud de supresión de registros procesada.',
       timestamp: new Date().toISOString()
     });
   } catch (error: any) {

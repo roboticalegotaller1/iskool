@@ -5,7 +5,8 @@
  */
 
 import crypto from 'crypto';
-import { supabase } from '@/lib/supabaseClient';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
+import { getSecuritySecret } from '@/lib/security/secretManager';
 import { MagicLink, Invoice } from '@/types';
 
 export interface CreateMagicLinkOptions {
@@ -48,8 +49,14 @@ const getGlobalStore = (): Map<string, MagicLinkInMemoryRecord> => {
 
 export class MagicLinkService {
   private static instance: MagicLinkService;
-  private readonly secretKey: string = process.env.PAYMENT_GATEWAY_SECRET || 'iskool_secure_financial_key_2026';
-  private readonly defaultAppUrl: string = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  private get secretKey(): string {
+    const envSecret = process.env.PAYMENT_GATEWAY_SECRET?.trim();
+    if (envSecret && envSecret.length >= 32) {
+      return envSecret;
+    }
+    return getSecuritySecret('OAUTH_SECRET');
+  }
+  private readonly defaultAppUrl: string = process.env.NEXT_PUBLIC_APP_URL || 'https://iskool.mx';
 
   private constructor() {}
 
@@ -120,9 +127,10 @@ export class MagicLinkService {
     getGlobalStore().set(tokenHash, linkRecord);
     getGlobalStore().set(rawToken, linkRecord);
 
-    // 2. Persistencia en Supabase si está disponible
+    // 2. Persistencia en base de datos con cliente de servicio
     try {
-      await supabase
+      const db = getServiceSupabaseClient();
+      const { error } = await db
         .from('magic_links')
         .insert({
           token_hash: tokenHash,
@@ -133,6 +141,9 @@ export class MagicLinkService {
           is_used: false,
           metadata: options.metadata || {}
         });
+      if (error) {
+        console.warn('[MagicLinkService] Error persistiendo magic_link:', error.message);
+      }
     } catch {
       // Base de datos local o mock
     }
@@ -181,10 +192,11 @@ export class MagicLinkService {
       };
     }
 
-    // 2. Si no está en memoria, consultar en Supabase
+    // 2. Si no está en memoria, consultar en base de datos
     if (!linkData) {
       try {
-        const { data, error } = await supabase
+        const db = getServiceSupabaseClient();
+        const { data, error } = await db
           .from('magic_links')
           .select('*, invoice:invoices(*)')
           .eq('token_hash', tokenHash)
@@ -199,7 +211,7 @@ export class MagicLinkService {
       }
     }
 
-    // 3. Fallback Criptográfico Autofirmado (Stateless HMAC verification)
+    // 3. Fallback Criptográfico Autofirmado (Stateless HMAC verification con comparación constante)
     if (!linkData && cleanToken.includes('_')) {
       try {
         const parts = cleanToken.split('_');
@@ -210,7 +222,12 @@ export class MagicLinkService {
             .update(payloadB64)
             .digest('base64url');
 
-          if (sig === expectedSig) {
+          const sigBuf = Buffer.from(sig);
+          const expBuf = Buffer.from(expectedSig);
+          const signatureMatches =
+            sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf);
+
+          if (signatureMatches) {
             const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
             linkData = {
               id: `mlk-stateless-${Date.now()}`,
@@ -303,9 +320,10 @@ export class MagicLinkService {
       memRecord.is_used = true;
     }
 
-    // 2. Actualizar en base de datos
+    // 2. Actualizar en base de datos con cliente de servicio
     try {
-      const { error } = await supabase
+      const db = getServiceSupabaseClient();
+      const { error } = await db
         .from('magic_links')
         .update({
           is_used: true,

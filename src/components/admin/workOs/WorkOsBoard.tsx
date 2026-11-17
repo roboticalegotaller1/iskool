@@ -203,6 +203,21 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
 
       const savedSlaHours = localStorage.getItem(`workos_ai_sla_hours_${tenantId}`);
       if (savedSlaHours) setSlaEscalateHours(parseInt(savedSlaHours, 10));
+
+      const savedWhitelabel = localStorage.getItem(`workos_ai_whitelabel_${tenantId}`);
+      if (savedWhitelabel !== null) setWhiteLabelShield(savedWhitelabel === 'true');
+
+      const savedExtractDates = localStorage.getItem(`workos_ai_extract_dates_${tenantId}`);
+      if (savedExtractDates !== null) setExtractAgreementsDates(savedExtractDates === 'true');
+
+      const savedSentiment = localStorage.getItem(`workos_ai_sentiment_${tenantId}`);
+      if (savedSentiment !== null) setSentimentDetection(savedSentiment === 'true');
+
+      const savedAutoCeo = localStorage.getItem(`workos_ai_auto_ceo_${tenantId}`);
+      if (savedAutoCeo !== null) setAutoEscalateCeo(savedAutoCeo === 'true');
+
+      const savedNotifySeeds = localStorage.getItem(`workos_ai_notify_seeds_${tenantId}`);
+      if (savedNotifySeeds !== null) setNotifySeedDelegates(savedNotifySeeds === 'true');
     } catch {
       // Ignorar si el storage local está bloqueado
     }

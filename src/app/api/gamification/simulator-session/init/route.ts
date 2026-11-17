@@ -11,9 +11,17 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para iniciar sesión de simulador.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { studentId, simulatorId, difficulty, teacherId } = body;
-    const effectiveStudentId = auth.authenticated && auth.user?.role === 'student' ? auth.user.id : studentId;
+    const isStudent = (auth.user.role || '').toLowerCase() === 'student';
+    const effectiveStudentId = isStudent ? auth.user.id : (studentId || auth.user.id);
 
     if (!effectiveStudentId || !simulatorId) {
       return NextResponse.json(

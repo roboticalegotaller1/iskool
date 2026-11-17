@@ -11,7 +11,8 @@ import {
   normalizeQuestionText,
   analyzeHistoricalQuestion,
   generateCanonicalAnachronismResponse,
-  isAnswerSemanticallyAligned 
+  isAnswerSemanticallyAligned,
+  isCorruptOrGenericPersonaAnswer 
 } from '@/lib/historicalVaultEngine';
 import { 
   HistoricalFigureBlockData, 
@@ -385,10 +386,10 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
         answer = await generateFallbackPersonaAnswer(characterName, question);
       }
 
-      // PASO 3: Guardar en el nodo Markdown de la Bóveda Curricular solo si NO es Demo Sandbox
-      if (!isDemoRequest) {
+      // PASO 3: Guardar en el nodo Markdown de la Bóveda Curricular solo si NO es Demo Sandbox y pasa el canon de 1ª persona
+      if (!isDemoRequest && !isCorruptOrGenericPersonaAnswer(answer, characterName)) {
         appendQaToVaultNode(nodeSlug, question, answer);
-      } else {
+      } else if (isDemoRequest) {
         recordEphemeralVaultItem('historical_qa', {
           actorEmail: auth.user?.email,
           title: characterName,
@@ -428,15 +429,15 @@ async function generateFigureWithAiFallback(
 ): Promise<HistoricalFigureBlockData> {
   const norm = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  // 1. JOSEFA ORTIZ DE DOMÍNGUEZ (Configuración Maestra de Alta Calidad)
+  // 1. JOSEFA ORTIZ DE DOMÍNGUEZ (Configuración Maestra de Alta Calidad - 1ª Persona Estricta)
   if (norm.includes('josefa') || norm.includes('corregidora')) {
     return {
       characterName: 'Josefa Ortiz de Domínguez',
       isGeographicSite: false,
       historicalEra: 'Independencia de México (1810)',
       birthDeathDates: '1768 - 1829',
-      shortBio: 'Conocida como la Heroína de la Independencia y Corregidora de Querétaro, fue pieza clave para alertar a los conspiradores de 1810 e iniciar la gesta libertaria.',
-      detailedContext: 'Nacida en Valladolid (hoy Morelia), Josefa abrazó las causas criollas y la justicia social en la Nueva España. Desde su residencia oficial en Santiago de Querétaro organizó reuniones clandestinas bajo el velo de tertulias literarias. Al ser descubierta la conspiración en septiembre de 1810, encerrada en su habitación por su esposo el Corregidor Miguel Domínguez, logró comunicarse golpeando el piso con sus tacones para alertar al alcaide Ignacio Pérez, quien cabalgó a San Miguel el Grande y Dolores para prevenir a Miguel Hidalgo e Ignacio Allende.',
+      shortBio: 'Fui protagonista decisiva de la Independencia desde Santiago de Querétaro, alertando a los conspiradores en septiembre de 1810 para salvar nuestra causa libertaria.',
+      detailedContext: 'Nací en Valladolid (hoy Morelia) y me eduqué en el Colegio de las Vizcaínas, abrazando las causas criollas y la justicia social en la Nueva España. Desde mi residencia en Santiago de Querétaro organicé reuniones clandestinas bajo el velo de tertulias literarias. Al ser descubierta la conspiración en septiembre de 1810 y quedar encerrada en mi habitación por mi esposo don Miguel Domínguez, logré comunicarme golpeando el piso con mi tacón para alertar al alcaide Ignacio Pérez, quien cabalgó a San Miguel el Grande y Dolores para prevenir a Miguel Hidalgo e Ignacio Allende.',
       avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
       bookSpineStyle: spineStyle || 'diario_republicano',
       voiceId: 'es-MX-DaliaNeural',
@@ -450,41 +451,41 @@ async function generateFigureWithAiFallback(
           id: 'mom-1',
           yearOrPeriod: 'Septiembre 1810',
           title: 'La Conspiración de Querétaro',
-          description: 'En el Palacio de la Corregidora, tertulias literarias secretas donde se planificaba la emancipación nacional con Hidalgo y Allende.',
+          description: 'En el Palacio del Corregimiento organicé tertulias literarias secretas donde planificamos la emancipación nacional junto a Hidalgo y Allende.',
           imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
           locationName: 'Palacio de la Corregidora, Querétaro',
           coordinates: { lat: 20.5930, lng: -100.3920 },
-          narrativeCaption: 'Bajo la apariencia de tertulias literarias, en Querétaro se gestaba el ideario de la soberanía patria.'
+          narrativeCaption: 'Bajo la apariencia de tertulias literarias, gestamos en Querétaro el ideario de la soberanía patria.'
         },
         {
           id: 'mom-2',
           yearOrPeriod: '13-15 Septiembre 1810',
           title: 'El Taconeo y la Alerta Heroica',
-          description: 'Encerrada en su recámara tras el cateo realista, Josefa dio tres golpes firmes con su zapato al techo de la habitación de Ignacio Pérez.',
+          description: 'Encerrada en mi recámara tras el cateo realista, di tres golpes firmes con mi zapato hacia el techo de la habitación inferior de Ignacio Pérez.',
           imageUrl: '/images/history/josefa_taconeo_comic_2.png',
           locationName: 'Casa de la Corregidora, Querétaro',
           coordinates: { lat: 20.5932, lng: -100.3918 },
-          narrativeCaption: 'El sonido del taconeo rompió el silencio de la noche queretana para salvar la causa libertaria.'
+          narrativeCaption: 'El sonido de mi taconeo rompió el silencio de la noche queretana para salvar la causa libertaria.'
         },
         {
           id: 'mom-3',
           yearOrPeriod: 'Noche del 15 de Septiembre 1810',
           title: 'La Cabalgata Nocturna de Ignacio Pérez',
-          description: 'A toda prisa por veredas coloniales, el mensajero Ignacio Pérez entrega la carta sellada a Juan Aldama y luego a Ignacio Allende y Miguel Hidalgo.',
+          description: 'Confié mi mensaje urgente al alcaide Ignacio Pérez, quien cabalgó sin tregua para advertir a Juan Aldama, Ignacio Allende y Miguel Hidalgo.',
           imageUrl: '/images/history/josefa_alerta_comic_3.png',
           locationName: 'Ruta Querétaro - San Miguel de Allende - Dolores',
           coordinates: { lat: 20.9144, lng: -100.7436 },
-          narrativeCaption: 'Ignacio Pérez recibe el mensaje urgente de la Corregidora: la conjura ha sido delatada.'
+          narrativeCaption: 'Ignacio Pérez llevó mi aviso urgente: nuestra conjura había sido delatada.'
         },
         {
           id: 'mom-4',
           yearOrPeriod: 'Madrugada del 16 Septiembre 1810',
           title: 'El Grito Libertario en Dolores',
-          description: 'Advertidos a tiempo por el heroísmo de Josefa, el cura Hidalgo hace sonar la campana parroquial llamando al pueblo a levantarse en armas.',
+          description: 'Advertidos a tiempo gracias a nuestro aviso desde Querétaro, el cura Hidalgo hizo sonar la campana parroquial llamando al pueblo a levantarse en armas.',
           imageUrl: '/images/history/josefa_alerta_dolores_comic_4.png',
           locationName: 'Parroquia de Dolores Hidalgo, Guanajuato',
           coordinates: { lat: 21.1561, lng: -100.9325 },
-          narrativeCaption: '¡Viva la América libre! El eco de Dolores nació de la determinación inquebrantable de Josefa.'
+          narrativeCaption: '¡Viva la América libre! La determinación compartida encendió el llamado de Dolores.'
         }
       ],
       keyLocations: [
@@ -493,7 +494,7 @@ async function generateFigureWithAiFallback(
           name: 'Palacio de Gobierno de Querétaro (Casa de la Corregidora)',
           stateOrCountry: 'Querétaro, México',
           coordinates: { lat: 20.5930, lng: -100.3920 },
-          significance: 'Sede de las tertulias conspiratorias de 1810 y sitio histórico donde Josefa alertó al alcaide Ignacio Pérez.',
+          significance: 'Mi residencia oficial donde celebramos las tertulias conspiratorias de 1810 y desde donde alerté al alcaide Ignacio Pérez.',
           imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
         },
         {
@@ -501,7 +502,7 @@ async function generateFigureWithAiFallback(
           name: 'San Miguel de Allende (San Miguel el Grande)',
           stateOrCountry: 'Guanajuato, México',
           coordinates: { lat: 20.9144, lng: -100.7436 },
-          significance: 'Punto de intersección donde Ignacio Pérez localizó a Juan Aldama en la madrugada del 16 de septiembre.',
+          significance: 'Punto de intersección donde mi mensajero Ignacio Pérez localizó a Juan Aldama en la madrugada del 16 de septiembre.',
           imageUrl: '/images/history/san_miguel_allende.jpg'
         },
         {
@@ -509,7 +510,7 @@ async function generateFigureWithAiFallback(
           name: 'Parroquia de Nuestra Señora de los Dolores',
           stateOrCountry: 'Guanajuato, México',
           coordinates: { lat: 21.1561, lng: -100.9325 },
-          significance: 'Atrio donde el Cura Miguel Hidalgo dio inicio al movimiento de Independencia tras recibir el aviso.',
+          significance: 'Atrio donde don Miguel Hidalgo dio inicio al movimiento de Independencia tras recibir nuestro aviso.',
           imageUrl: '/images/history/parroquia_dolores.jpg'
         },
         {
@@ -517,7 +518,7 @@ async function generateFigureWithAiFallback(
           name: 'Panteón de los Queretanos Ilustres',
           stateOrCountry: 'Querétaro, México',
           coordinates: { lat: 20.5975, lng: -100.3840 },
-          significance: 'Monumento y mausoleo republicano donde reposan los restos de Doña Josefa Ortiz de Domínguez.',
+          significance: 'Monumento y mausoleo republicano donde descansan mis restos junto al pueblo queretano.',
           imageUrl: '/images/history/panteon_queretanos_ilustres.jpg'
         }
       ],
@@ -525,47 +526,47 @@ async function generateFigureWithAiFallback(
         videoUrl: 'https://youtu.be/25cq1V8AsTg',
         durationSeconds: 15,
         title: 'Doña Josefa Ortiz de Domínguez: La Chispa de la Libertad',
-        narratorScript: 'Santiago de Querétaro, septiembre de 1810. Cuando la traición amenazaba con apagar el anhelo de libertad, una mujer valiente desafió al encierro. Con un golpe firme en el piso y una carta en la noche, Josefa encendió el fuego de nuestra independencia.'
+        narratorScript: 'En Santiago de Querétaro, en septiembre de 1810, cuando la delación amenazaba nuestra causa, desafié el encierro en mi alcoba. Con tres golpes firmes en el suelo y un mensaje nocturno enviamos la chispa de nuestra independencia.'
       },
       verificationQuestions: [
         {
           id: 'vq-1',
-          question: '¿Bajo qué pretexto organizaba Doña Josefa las reuniones insurgentes en su residencia?',
+          question: '¿Bajo qué pretexto organicé las reuniones insurgentes en mi residencia de Querétaro?',
           options: ['Bailes de gala virreinales', 'Tertulias literarias y académicas', 'Clases de cocina criolla', 'Subastas de arte religioso'],
           correctIndex: 1,
-          explanation: 'Josefa Ortiz utilizaba las tertulias literarias como fachada intelectual para planear la independencia sin levantar sospechas virreinales.',
+          explanation: 'Utilicé las tertulias literarias como fachada intelectual para planear nuestra independencia sin despertar sospechas virreinales.',
           pdaRelevance: 'Comprensión de estrategias de organización civil y soberanía patria.'
         },
         {
           id: 'vq-2',
-          question: '¿Qué ingeniosa táctica utilizó Josefa al quedar encerrada por su esposo en su recámara?',
-          options: ['Escribió con tinta invisible en la pared', 'Golpeó el piso con su zapato para llamar al alcaide Ignacio Pérez', 'Lanzó una botella con un mensaje por la ventana', 'Encendió una fogata en la azotea'],
+          question: '¿Qué ingeniosa táctica empleé al quedar encerrada en mi recámara por mi esposo?',
+          options: ['Escribí con tinta invisible en la pared', 'Golpeé el piso con mi zapato para llamar al alcaide Ignacio Pérez', 'Lancé una botella con un mensaje por la ventana', 'Encendí una fogata en la azotea'],
           correctIndex: 1,
-          explanation: 'El legendario taconeo en el piso de su habitación alertó a Ignacio Pérez, cuyo cuarto estaba en el piso inferior.',
+          explanation: 'Con el taconeo firme sobre el suelo de mi alcoba logré alertar a Ignacio Pérez, cuya habitación estaba justo abajo.',
           pdaRelevance: 'Resolución de problemas y valentía cívica en momentos de crisis.'
         },
         {
           id: 'vq-3',
-          question: '¿A qué personajes clave debía llegar la alerta enviada desde Querétaro antes del cateo realista?',
+          question: '¿A qué compañeros insurgentes debía llegar mi alerta enviada desde Querétaro antes del cateo realista?',
           options: ['A Benito Juárez y Melchor Ocampo', 'A Ignacio Allende, Juan Aldama y Miguel Hidalgo', 'A Agustín de Iturbide y Vicente Guerrero', 'A Francisco Villa y Emiliano Zapata'],
           correctIndex: 1,
-          explanation: 'La carta de aviso permitió que Allende e Hidalgo adelantaran el levantamiento en la madrugada del 16 de septiembre.',
+          explanation: 'Mi aviso permitió que Allende e Hidalgo adelantaran el levantamiento la madrugada del 16 de septiembre.',
           pdaRelevance: 'Línea de tiempo y personajes de la primera fase insurgente.'
         },
         {
           id: 'vq-4',
-          question: '¿Qué ciudad fue el epicentro de la conspiración de 1810 liderada por los Corregidores?',
+          question: '¿Qué ciudad fue el epicentro de nuestra conspiración de 1810?',
           options: ['Valladolid', 'Santiago de Querétaro', 'Puebla de los Ángeles', 'Guadalajara'],
           correctIndex: 1,
-          explanation: 'Santiago de Querétaro fue el centro neurálgico donde los insurgentes conspiraron bajo la protección de la Corregidora.',
+          explanation: 'Santiago de Querétaro fue el centro neurálgico donde conspiramos por la emancipación nacional.',
           pdaRelevance: 'Geografía histórica y cartografía de la Independencia.'
         },
         {
           id: 'vq-5',
-          question: '¿Por qué la figura de Josefa Ortiz representa un pilar en la equidad cívica y memoria histórica de México?',
-          options: ['Porque financió batallas con ejércitos privados', 'Porque demostró que el compromiso con la justicia y libertad trasciende roles impuestos', 'Porque fue la primera presidenta de la República', 'Porque escribió las Leyes de Reforma'],
+          question: '¿Por qué considero que mi participación representó un pilar en la equidad cívica de México?',
+          options: ['Porque financié batallas con ejércitos privados', 'Porque demostré que el compromiso con la justicia y libertad trasciende roles impuestos', 'Porque fui presidenta de la República', 'Porque redacté las Leyes de Reforma'],
           correctIndex: 1,
-          explanation: 'Josefa demostró un liderazgo moral, político y humano invaluable para el nacimiento de la patria mexicana.',
+          explanation: 'Entregué mi libertad personal y convicción moral para demostrar que todas las personas tienen deber cívico con la patria.',
           pdaRelevance: 'Pensamiento crítico y reconocimiento de heroínas de la patria.'
         }
       ],
@@ -663,61 +664,61 @@ async function generateFigureWithAiFallback(
           name: 'Palacio de Gobierno de Guadalajara',
           stateOrCountry: 'Jalisco, México',
           coordinates: { lat: 20.6770, lng: -103.3470 },
-          significance: 'Sitio donde se redactó el histórico decreto de abolición de la esclavitud.'
+          significance: 'Sitio donde firmé el histórico decreto de abolición de la esclavitud.'
         },
         {
           id: 'l-4',
           name: 'Chihuahua (Calabozo de Hidalgo)',
           stateOrCountry: 'Chihuahua, México',
           coordinates: { lat: 28.6353, lng: -106.0745 },
-          significance: 'Lugar de su prisión y martirio el 30 de julio de 1811.'
+          significance: 'Lugar de mi prisión y martirio el 30 de julio de 1811.'
         }
       ],
       videoClip: {
         videoUrl: 'https://youtu.be/25cq1V8AsTg',
         durationSeconds: 18,
         title: 'Miguel Hidalgo: El Rugido de Dolores',
-        narratorScript: 'Un cura humanista, un repicar de campanas en la madrugada y el despertar de una nación. Miguel Hidalgo convirtió la indignación en esperanza.'
+        narratorScript: 'Fui párroco humanista en Dolores; con el repicar de las campanas la madrugada del 16 de septiembre convoqué al pueblo para transformar la indignación en libertad.'
       },
       verificationQuestions: [
         {
           id: 'vq-1',
-          question: '¿Qué decreto promulgado por Hidalgo en Guadalajara en 1810 cambió la historia de los derechos humanos en América?',
+          question: '¿Qué decreto promulgué en Guadalajara en 1810 cambiando la historia de los derechos humanos en América?',
           options: ['El libre comercio con Europa', 'La abolición total de la esclavitud', 'El cobro obligatorio del diezmo', 'La creación de un tribunal virreinal'],
           correctIndex: 1,
-          explanation: 'Hidalgo abolió la esclavitud y los tributos de castas en Guadalajara el 6 de diciembre de 1810.',
+          explanation: 'Abolí la esclavitud y los tributos de castas en Guadalajara el 6 de diciembre de 1810.',
           pdaRelevance: 'Derechos humanos y justicia social.'
         },
         {
           id: 'vq-2',
-          question: '¿Cuál era el oficio que promovía Hidalgo en Dolores para impulsar la autonomía de los artesanos locales?',
+          question: '¿Qué oficios promoví en Dolores para impulsar la autonomía de los artesanos locales?',
           options: ['Minería de oro', 'Alfarería, cultivo de vid y sericicultura', 'Comercio trasatlántico', 'Armería militar'],
           correctIndex: 1,
-          explanation: 'Hidalgo enseñaba oficios productivos para mejorar el bienestar material y dignidad comunitaria.',
+          explanation: 'Enseñé oficios productivos comunitarios para mejorar el bienestar material y la dignidad de mis feligreses.',
           pdaRelevance: 'Economía solidaria y proyectos comunitarios.'
         },
         {
           id: 'vq-3',
-          question: '¿Qué edificio histórico en Guanajuato fue tomado con la ayuda de Juan José de los Reyes Martínez "El Pípila"?',
+          question: '¿Qué edificio histórico en Guanajuato tomamos con ayuda de Juan José de los Reyes Martínez "El Pípila"?',
           options: ['Castillo de Chapultepec', 'Alhóndiga de Granaditas', 'Palacio de Minería', 'Fuerte de San Juan de Ulúa'],
           correctIndex: 1,
-          explanation: 'El Pípila cubrió su espalda con una losa para quemar la puerta de la Alhóndiga de Granaditas.',
+          explanation: 'El Pípila cubrió su espalda con una losa para incendiar la puerta de la Alhóndiga de Granaditas.',
           pdaRelevance: 'Acontecimientos militares de la Independencia.'
         },
         {
           id: 'vq-4',
-          question: '¿En qué fecha se dio el Grito de Dolores?',
+          question: '¿En qué fecha encabecé el Grito de Dolores?',
           options: ['20 de noviembre de 1910', '16 de septiembre de 1810', '5 de mayo de 1862', '24 de febrero de 1821'],
           correctIndex: 1,
-          explanation: 'La madrugada del 16 de septiembre de 1810 se inició la lucha armada libertaria.',
+          explanation: 'La madrugada del 16 de septiembre de 1810 iniciamos la lucha armada por la libertad.',
           pdaRelevance: 'Cronología y efemérides patrias.'
         },
         {
           id: 'vq-5',
-          question: '¿Por qué se considera a Miguel Hidalgo el "Padre de la Patria"?',
-          options: ['Porque redactó la Constitución de 1917', 'Porque inició el movimiento que dio soberanía y fin al régimen colonial', 'Porque gobernó como presidente durante 30 años', 'Porque fundó la Real Audiencia'],
+          question: '¿Por qué me honra el pueblo al llamarme el "Padre de la Patria"?',
+          options: ['Porque redacté la Constitución de 1917', 'Porque inicié el movimiento que dio soberanía y fin al régimen colonial', 'Porque goberné 30 años', 'Porque fundé la Real Audiencia'],
           correctIndex: 1,
-          explanation: 'Su valentía inició el proceso que culminó con el nacimiento de México como estado soberano.',
+          explanation: 'Convoqué el levantamiento insurgente que abrió el camino para el nacimiento de México como nación soberana.',
           pdaRelevance: 'Identidad y memoria histórica nacional.'
         }
       ],
@@ -731,15 +732,15 @@ async function generateFigureWithAiFallback(
     };
   }
 
-  // 3. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE)
+  // 3. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE - 1ª PERSONA ESTRICTA)
   if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
     return {
       characterName: 'Francisco Villa',
       isGeographicSite: false,
       historicalEra: 'Revolución Mexicana (1910 - 1923)',
       birthDeathDates: '1878 - 1923',
-      shortBio: 'Conocido como El Centauro del Norte, comandó la legendaria División del Norte, el ejército popular más formidable de la Revolución Mexicana.',
-      detailedContext: 'Nacido en La Coyotada, Durango, como José Doroteo Arango Arámbula, Villa se unió al movimiento maderista en 1910 para derrocar la dictadura porfirista. Tras el cuartelazo traidor de Huerta, formó la División del Norte con campesinos, vaqueros y ferrocarrileros, logrando victorias fulgurantes en Torreón, Ciudad Juárez y la Toma de Zacatecas (1914). Como gobernador de Chihuahua abarató los alimentos y fundó decenas de escuelas. Tras retirarse en Canutillo, impulsó la educación agrícola antes de morir asesinado en Parral en 1923.',
+      shortBio: 'Comandé la legendaria División del Norte, el ejército popular más formidable de la Revolución Mexicana, luchando junto a los campesinos y ferrocarrileros por la justicia social.',
+      detailedContext: 'Nací en San Juan del Río, La Coyotada, Durango, bajo el nombre de José Doroteo Arango Arámbula, y me uní en 1910 al llamado maderista para derrocar la dictadura. Tras la traición de Huerta formé la División del Norte logrando victorias en Torreón, Ciudad Juárez y Zacatecas (1914). Como gobernador de Chihuahua abaraté los alimentos y fundé decenas de escuelas; ya retirado en Canutillo impulsé la educación rural hasta ser emboscado en Parral en 1923.',
       avatarImageUrl: '/images/history/francisco_villa_avatar.png',
       bookSpineStyle: spineStyle || 'cuaderno_cronista',
       voiceId: 'es-MX-JorgeNeural',
@@ -753,41 +754,41 @@ async function generateFigureWithAiFallback(
           id: 'v-m1',
           yearOrPeriod: '8-10 Mayo 1911',
           title: 'La Toma de Ciudad Juárez',
-          description: 'Avanzando casa por casa abriendo boquetes en las paredes de adobe, Villa toma la aduana fronteriza forzando la renuncia de Porfirio Díaz.',
+          description: 'Avanzando casa por casa abriendo boquetes en los muros de adobe, tomamos la aduana fronteriza forzando la renuncia de Porfirio Díaz.',
           imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
           locationName: 'Ciudad Juárez, Chihuahua',
           coordinates: { lat: 31.7394, lng: -106.4869 },
-          narrativeCaption: 'El asalto frontal y el corte de vías férreas demostraron la audacia militar de Francisco Villa.'
+          narrativeCaption: 'Nuestro asalto frontal demostró al país que la tiranía no era invencible.'
         },
         {
           id: 'v-m2',
           yearOrPeriod: '23 Junio 1914',
           title: 'La Batalla de Zacatecas y el Cerro de la Bufa',
-          description: 'La División del Norte toma el inexpugnable baluarte del Cerro de la Bufa, aniquilando al ejército federal huertista.',
+          description: 'Con la División del Norte y la artillería del general Felipe Ángeles tomamos el Cerro de la Bufa, aniquilando al ejército huertista.',
           imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
           locationName: 'Cerro de la Bufa, Zacatecas',
           coordinates: { lat: 22.7758, lng: -102.5694 },
-          narrativeCaption: '¡Viva Villa y viva la División del Norte! La caída de Zacatecas destrozó la dictadura.'
+          narrativeCaption: '¡Viva la División del Norte! En Zacatecas quebramos el espinazo de la usurpación.'
         },
         {
           id: 'v-m3',
           yearOrPeriod: 'Diciembre 1914',
           title: 'El Pacto de Xochimilco y la Entrada a la Capital',
-          description: 'Villa y Emiliano Zapata sellan la alianza del Norte y del Sur por la tierra y la justicia, desfilando en la Ciudad de México.',
+          description: 'Don Emiliano Zapata y yo sellamos en Xochimilco la alianza del Norte y del Sur por la tierra y la justicia, entrando juntos a la Ciudad de México.',
           imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
           locationName: 'Xochimilco y Palacio Nacional, Ciudad de México',
           coordinates: { lat: 19.2635, lng: -99.1039 },
-          narrativeCaption: 'La unión histórica de los dos líderes campesinos en defensa del pueblo humilde.'
+          narrativeCaption: 'Las fuerzas campesinas del Norte y del Sur caminamos unidas por el pueblo humilde.'
         },
         {
           id: 'v-m4',
           yearOrPeriod: '9 Marzo 1916',
           title: 'La Incursión en Columbus y la Expedición Punitiva',
-          description: 'Ataque relámpago a la guarnición estadounidense de Columbus y posterior resistencia en la Sierra Madre burlando a Pershing.',
+          description: 'Con nuestros Dorados incursionamos en Columbus y luego recorrimos nuestras sierras natales de Chihuahua burlando a las columnas invasoras.',
           imageUrl: '/images/history/villa_columbus_comic_4.png',
           locationName: 'Columbus, Nuevo México y Sierras de Chihuahua',
           coordinates: { lat: 31.8310, lng: -107.6417 },
-          narrativeCaption: 'A lomo de caballo por las serranías natales, Villa y sus Dorados eludieron a 12,000 soldados invasores.'
+          narrativeCaption: 'En nuestras montañas chihuahuenses defendimos la soberanía de nuestra tierra.'
         }
       ],
       keyLocations: [
@@ -796,7 +797,7 @@ async function generateFigureWithAiFallback(
           name: 'Hacienda de San Juan de Canutillo',
           stateOrCountry: 'Durango, México',
           coordinates: { lat: 26.3768, lng: -105.3789 },
-          significance: 'Hacienda de retiro donde Villa fundó la escuela Felipe Ángeles y una colonia agrícola cooperativa modelo.',
+          significance: 'Hacienda de retiro donde fundé la escuela Felipe Ángeles y nuestra colonia agrícola cooperativa.',
           imageUrl: '/images/history/hacienda_canutillo_villa.jpg'
         },
         {
@@ -804,7 +805,7 @@ async function generateFigureWithAiFallback(
           name: 'Cerro de la Bufa',
           stateOrCountry: 'Zacatecas, México',
           coordinates: { lat: 22.7758, lng: -102.5694 },
-          significance: 'Cresta rocosa y escenario supremo de la batalla decisiva que quebró al régimen militar usurpador.',
+          significance: 'Cresta rocosa donde libramos la batalla decisiva que derrumbó al régimen usurpador.',
           imageUrl: '/images/history/cerro_bufa_zacatecas.jpg'
         },
         {
@@ -812,7 +813,7 @@ async function generateFigureWithAiFallback(
           name: 'Columbus y Parque Estatal Pancho Villa',
           stateOrCountry: 'Nuevo México, EE.UU.',
           coordinates: { lat: 31.8310, lng: -107.6417 },
-          significance: 'Poblado fronterizo de la histórica incursión nocturna del 9 de marzo de 1916.',
+          significance: 'Poblado fronterizo escenario de la incursión nocturna del 9 de marzo de 1916.',
           imageUrl: '/images/history/columbus_nuevo_mexico.jpg'
         },
         {
@@ -820,7 +821,7 @@ async function generateFigureWithAiFallback(
           name: 'Palacio Nacional (Salón Presidencial de 1914)',
           stateOrCountry: 'Ciudad de México',
           coordinates: { lat: 19.4326, lng: -99.1313 },
-          significance: 'Recinto histórico donde Villa y Zapata entraron triunfantes al frente del ejército campesino.',
+          significance: 'Recinto al que entramos triunfantes junto a Emiliano Zapata en diciembre de 1914.',
           imageUrl: '/images/history/palacio_nacional_villa_zapata.jpg'
         }
       ],
@@ -828,47 +829,47 @@ async function generateFigureWithAiFallback(
         videoUrl: 'https://youtu.be/25cq1V8AsTg',
         durationSeconds: 18,
         title: 'Francisco Villa: El Viento y la Carga del Centauro del Norte',
-        narratorScript: 'De las serranías de Durango a la vanguardia de Zacatecas, Francisco Villa encabezó la caballería más temida de América. Con su División del Norte y su amor por las escuelas campesinas, demostró que la dignidad popular no tiene precio.'
+        narratorScript: 'Desde las sierras de Durango hasta Zacatecas conduje a mis muchachos de la División del Norte y fundé escuelas rurales porque la educación es el arma verdadera del pueblo.'
       },
       verificationQuestions: [
         {
           id: 'v-vq1',
-          question: '¿Cuál fue el nombre del legendario cuerpo militar comandado por Francisco Villa?',
+          question: '¿Cómo se llamó el legendario cuerpo militar popular que comandé en la Revolución Mexicana?',
           options: ['El Ejército Trigarante', 'La División del Norte', 'La Legión de Honor', 'Los Rurales de la Frontera'],
           correctIndex: 1,
-          explanation: 'La División del Norte fue la fuerza militar popular más poderosa y disciplinada de la Revolución Mexicana.',
+          explanation: 'Comandé la División del Norte, fuerza armada popular integrada por campesinos, mineros, vaqueros y ferrocarrileros.',
           pdaRelevance: 'Procesos revolucionarios y justicia social en el México del siglo XX.'
         },
         {
           id: 'v-vq2',
-          question: '¿Qué batalla épica de junio de 1914 librada por la División del Norte causó la caída de Victoriano Huerta?',
+          question: '¿Qué batalla decisiva de junio de 1914 causó la caída de Victoriano Huerta?',
           options: ['La Batalla de Puebla', 'La Batalla de Zacatecas (Toma del Cerro de la Bufa)', 'La Batalla de San Jacinto', 'La Batalla de Angostura'],
           correctIndex: 1,
-          explanation: 'La Toma de Zacatecas forzó la renuncia y huida del usurpador Huerta semanas después.',
+          explanation: 'Nuestra victoria en la Toma de Zacatecas forzó la renuncia del usurpador Huerta.',
           pdaRelevance: 'Transformaciones políticas y caída del régimen autoritario en 1914.'
         },
         {
           id: 'v-vq3',
-          question: '¿Qué histórico acuerdo de unidad sellaron Francisco Villa y Emiliano Zapata en diciembre de 1914?',
+          question: '¿Qué histórico acuerdo sellamos Emiliano Zapata y yo en diciembre de 1914?',
           options: ['El Plan de Iguala', 'El Pacto de Xochimilco', 'Los Tratados de Teoloyucan', 'El Plan de San Luis'],
           correctIndex: 1,
-          explanation: 'En Xochimilco, las fuerzas campesinas del Norte y del Sur unieron sus demandas por la tierra y la justicia social.',
+          explanation: 'En Xochimilco unimos las causas agrarias del Norte y del Sur en favor del pueblo.',
           pdaRelevance: 'Movimientos campesinos y alianzas populares en la historia nacional.'
         },
         {
           id: 'v-vq4',
-          question: 'Durante su retiro en la Hacienda de Canutillo, ¿qué institución fundó Villa prioritariamente para la comunidad?',
+          question: 'Durante mi retiro en la Hacienda de Canutillo, ¿qué institución establecí prioritariamente para la comunidad?',
           options: ['Un cuartel militar de élite', 'La Escuela Primaria Felipe Ángeles para niños y veteranos', 'Una fábrica de cerveza', 'Una prisión regional'],
           correctIndex: 1,
-          explanation: 'Villa priorizó la educación fundando la escuela Felipe Ángeles y pagando a maestros calificados.',
+          explanation: 'Construí la escuela Felipe Ángeles y contraté maestros porque deseaba ver educados a todos los hijos de los campesinos.',
           pdaRelevance: 'Valoración del derecho a la educación pública como motor de transformación social.'
         },
         {
           id: 'v-vq5',
-          question: '¿Por qué la incursión de Villa en Columbus (1916) es un suceso militar único en el siglo XX?',
-          options: ['Porque concluyó con la compra de armas de aviación', 'Porque fue la única incursión militar en territorio continental de EE.UU. en el siglo XX', 'Porque desató un canje diplomático de prisioneros', 'Porque Villa firmó un armisticio en Washington'],
+          question: '¿Por qué mi incursión en Columbus (1916) quedó marcada como un episodio singular?',
+          options: ['Porque concluyó con la compra de aviones', 'Porque provocó la Expedición Punitiva que no logró capturarme en la Sierra Madre', 'Porque desató un canje en Washington', 'Porque firmé un armisticio marítimo'],
           correctIndex: 1,
-          explanation: 'El ataque a Columbus provocó la fallida Expedición Punitiva del general Pershing que no logró capturar a Villa.',
+          explanation: 'Nuestros jinetes burlaron durante meses en las sierras de Chihuahua a miles de soldados invasores.',
           pdaRelevance: 'Soberanía nacional y relaciones internacionales.'
         }
       ],
@@ -1748,7 +1749,7 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // =========================================================================
   if (isAllende) {
     if (intent === 'CLOTHING') {
-      return `Como capitán del Regimiento de Dragones de la Reina en San Miguel el Grande, vestía con orgullo militar mi uniforme de gala: casaca roja y azul con charreteras bordadas en hilo de oro, pantalón blanco ajustado, botas altas de jinete y mi espada de acero toledano.`;
+      return `En mis años de servicio como oficial del Regimiento de Dragones de la Reina en San Miguel el Grande, vestía con orgullo militar mi uniforme de gala: casaca roja y azul con charreteras bordadas en hilo de oro, pantalón blanco ajustado, botas altas de jinete y mi espada de acero toledano.`;
     }
     if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('fusilamiento') || normQ.includes('chihuahua')) {
       return `Fui pasado por las armas y fusilado por la espalda como reo de alta traición el 26 de junio de 1811 en Chihuahua, junto a Juan Aldama y Mariano Jiménez, tras ser traicionados en Acatita de Baján. Mi cabeza fue expuesta durante una década en una jaula de hierro en la esquina de la Alhóndiga de Granaditas como escarmiento virreinal, mas la dignidad con que ofrendé mi vida por la independencia jamás pudo ser mancillada.`;

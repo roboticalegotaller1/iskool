@@ -503,13 +503,22 @@ export class InstitutionalMemoryService {
       fs.mkdirSync(cycleDir, { recursive: true });
     }
 
-    // 4. Generación del nombre de archivo
+    // 4. Generación segura y confinada del nombre de archivo (anti-path traversal)
     const safeTopic = sanitizeSafeFilename(input.topic);
     const safeSubject = sanitizeSafeFilename(input.subject);
     const safeCohort = sanitizeSafeFilename(input.group_cohort);
-    const filename = input.customFilename || 
-      `Memoria_${input.academic_cycle}_G${input.grade}_${safeSubject}_${safeTopic}_${safeCohort}.md`;
-    const fullPath = path.join(cycleDir, filename);
+    const rawCustomBase = input.customFilename
+      ? sanitizeSafeFilename(path.basename(input.customFilename, '.md'))
+      : '';
+    const filename = rawCustomBase
+      ? `${rawCustomBase}.md`
+      : `Memoria_${sanitizeSafeFilename(input.academic_cycle)}_G${input.grade}_${safeSubject}_${safeTopic}_${safeCohort}.md`;
+
+    const resolvedCycleDir = path.resolve(cycleDir);
+    const fullPath = path.resolve(resolvedCycleDir, filename);
+    if (!fullPath.startsWith(resolvedCycleDir + path.sep)) {
+      throw new Error('Ruta de archivo de memoria fuera de los límites institucionales.');
+    }
 
     // 5. Construcción del archivo completo con Frontmatter YAML nativo
     const fileContent = this.serializeMemoryFile(frontmatterToValidate, input);
@@ -611,36 +620,39 @@ export class InstitutionalMemoryService {
     fm: InstitutionalMemoryFrontmatter,
     input: CreateInstitutionalMemoryInput
   ): string {
+    const q = (val: string | number | null | undefined): string =>
+      JSON.stringify(String(val ?? '').replace(/[\r\n]+/g, ' ').trim());
+
     const yamlLines = [
       '---',
-      `type: ${fm.type}`,
-      `memory_version: "${fm.memory_version}"`,
-      `institution_id: "${fm.institution_id}"`,
-      `campus: "${fm.campus || 'Campus Central'}"`,
-      `academic_cycle: "${fm.academic_cycle}"`,
-      fm.phase_nem ? `phase_nem: "${fm.phase_nem}"` : null,
-      `grade: ${typeof fm.grade === 'number' ? fm.grade : `"${fm.grade}"`}`,
-      `subject: "${fm.subject}"`,
-      `topic: "${fm.topic}"`,
-      fm.activity_source ? `activity_source: "${fm.activity_source}"` : null,
-      `created_by_teacher_ref: "${fm.created_by_teacher_ref}"`,
-      `author_display_name: "${fm.author_display_name}"`,
-      `adaptation_of: ${fm.adaptation_of ? `"${fm.adaptation_of}"` : 'null'}`,
-      `group_cohort: "${fm.group_cohort}"`,
+      `type: ${q(fm.type)}`,
+      `memory_version: ${q(fm.memory_version)}`,
+      `institution_id: ${q(fm.institution_id)}`,
+      `campus: ${q(fm.campus || 'Campus Central')}`,
+      `academic_cycle: ${q(fm.academic_cycle)}`,
+      fm.phase_nem ? `phase_nem: ${q(fm.phase_nem)}` : null,
+      `grade: ${typeof fm.grade === 'number' ? fm.grade : q(fm.grade)}`,
+      `subject: ${q(fm.subject)}`,
+      `topic: ${q(fm.topic)}`,
+      fm.activity_source ? `activity_source: ${q(fm.activity_source)}` : null,
+      `created_by_teacher_ref: ${q(fm.created_by_teacher_ref)}`,
+      `author_display_name: ${q(fm.author_display_name)}`,
+      `adaptation_of: ${fm.adaptation_of ? q(fm.adaptation_of) : 'null'}`,
+      `group_cohort: ${q(fm.group_cohort)}`,
       'metrics:',
-      `  students_evaluated_count: ${fm.metrics.students_evaluated_count}`,
-      `  mastery_rate: ${fm.metrics.mastery_rate}`,
+      `  students_evaluated_count: ${Number(fm.metrics.students_evaluated_count) || 0}`,
+      `  mastery_rate: ${Number(fm.metrics.mastery_rate) || 0}`,
       '  comprehension_friction_points:',
       ...(fm.metrics.comprehension_friction_points && fm.metrics.comprehension_friction_points.length > 0
-        ? fm.metrics.comprehension_friction_points.map(p => `    - "${p}"`)
+        ? fm.metrics.comprehension_friction_points.map(p => `    - ${q(p)}`)
         : ['    - "ninguna_detectada"']),
       'provenance:',
-      `  rails_activity_id: ${fm.provenance.rails_activity_id}`,
-      fm.provenance.rails_assessment_batch_id ? `  rails_assessment_batch_id: ${fm.provenance.rails_assessment_batch_id}` : null,
-      `  captured_at: "${fm.provenance.captured_at}"`,
-      `  ingestion_agent: "${fm.provenance.ingestion_agent}"`,
+      `  rails_activity_id: ${q(fm.provenance.rails_activity_id)}`,
+      fm.provenance.rails_assessment_batch_id ? `  rails_assessment_batch_id: ${q(fm.provenance.rails_assessment_batch_id)}` : null,
+      `  captured_at: ${q(fm.provenance.captured_at)}`,
+      `  ingestion_agent: ${q(fm.provenance.ingestion_agent)}`,
       'tags:',
-      ...(fm.tags || []).map(t => `  - ${t}`),
+      ...(fm.tags || []).map(t => `  - ${q(t)}`),
       '---',
       ''
     ].filter(Boolean).join('\n');

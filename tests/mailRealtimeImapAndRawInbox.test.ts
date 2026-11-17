@@ -1,8 +1,21 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment node
+import { describe, it, expect, beforeAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { decodeMimeHeader, decodeQuotedPrintable, cleanEmailBody } from '../src/lib/services/imapClientService';
 import { GET as getRawInbox, POST as postRawInbox } from '../src/app/api/mail/raw-inbox/route';
 import { POST as postSyncInbox } from '../src/app/api/mail/sync-inbox/route';
+import { signSessionToken } from '@/lib/sessionToken';
+
+let adminSessionToken = '';
+
+beforeAll(async () => {
+  adminSessionToken = await signSessionToken({
+    id: 'usr-test-superadmin',
+    email: 'admin@iskool.edu.mx',
+    role: 'superadmin',
+    school_id: 'sch-ibime',
+  });
+});
 
 describe('⚡ SINCRONIZACIÓN REAL DE CORREO IMAP Y BANDEJA EN TIEMPO REAL', () => {
   it('1. Debe decodificar asuntos RFC 2047 en Base64 (UTF-8) correctamente', () => {
@@ -36,7 +49,10 @@ describe('⚡ SINCRONIZACIÓN REAL DE CORREO IMAP Y BANDEJA EN TIEMPO REAL', () 
   it('4. POST /api/mail/raw-inbox con inyección de correo debe reflejarlo de inmediato en el buzón', async () => {
     const req = new NextRequest('http://localhost:3000/api/mail/raw-inbox', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: `iskool_session=${adminSessionToken}`,
+      },
       body: JSON.stringify({
         tenantId: 'sch-ibime',
         email: 'israell35mac@gmail.com',
@@ -65,7 +81,10 @@ describe('⚡ SINCRONIZACIÓN REAL DE CORREO IMAP Y BANDEJA EN TIEMPO REAL', () 
   it('5. POST /api/mail/raw-inbox sin contraseña válida debe ser honesto y requerir Contraseña de Aplicación', async () => {
     const req = new NextRequest('http://localhost:3000/api/mail/raw-inbox', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: `iskool_session=${adminSessionToken}`,
+      },
       body: JSON.stringify({
         tenantId: 'sch-ibime',
         email: 'israell35mac@gmail.com',
@@ -84,7 +103,10 @@ describe('⚡ SINCRONIZACIÓN REAL DE CORREO IMAP Y BANDEJA EN TIEMPO REAL', () 
   it('6. POST /api/mail/sync-inbox debe clasificar el correo en Bandeja Inteligente con cuadrante CEO', async () => {
     const req = new NextRequest('http://localhost:3000/api/mail/sync-inbox', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: `iskool_session=${adminSessionToken}`,
+      },
       body: JSON.stringify({
         tenantId: 'sch-ibime',
         email: 'israell35mac@gmail.com',

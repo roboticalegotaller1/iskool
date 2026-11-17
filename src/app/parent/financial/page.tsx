@@ -6,7 +6,7 @@
  * Facturación Automática SAT (CFDI 4.0) • Descarga de XML y PDF
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { 
@@ -38,6 +38,7 @@ import { PaymentGatewayService } from '@/lib/paymentGateway';
 import { validateRfc, validateCurp } from '@/lib/fiscal/fiscalValidation';
 import { useAuth } from '@/context/AuthContext';
 import { useCurrentStudentProfile } from '@/store/useStudentStore';
+import { useSchoolAdminStore, getSchoolBillingRecords, getSchoolStudents, resolveEffectiveSchoolId } from '@/store/useSchoolAdminStore';
 
 interface ChargeItem {
   id: string;
@@ -69,6 +70,17 @@ interface PaymentRecord {
 export default function ParentFinancialStatementPage() {
   const { user, loading } = useAuth();
   const currentStudent = useCurrentStudentProfile();
+  const billingRecords = useSchoolAdminStore(state => state.billingRecords);
+  const storeStudents = useSchoolAdminStore(state => state.detailedStudents);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const effectiveSchoolId = useMemo(
+    () => resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau'),
+    [user, activeSchoolId]
+  );
+  const schoolStudents = useMemo(
+    () => getSchoolStudents(storeStudents, effectiveSchoolId),
+    [storeStudents, effectiveSchoolId]
+  );
   const [activeTab, setActiveTab] = useState<'pending' | 'history' | 'tax'>('pending');
   const [selectedStudent, setSelectedStudent] = useState<string>('all');
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -152,74 +164,125 @@ export default function ParentFinancialStatementPage() {
     ? `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'Mateo López Mendoza'
     : 'Mateo López Mendoza';
 
-  // Datos estructurados de cargos pendientes
-  const pendingCharges: ChargeItem[] = [
-    {
-      id: 'inv-001',
-      invoiceNumber: 'COL-2026-00452',
-      concept: 'Colegiatura de Septiembre 2026',
-      studentName: activeStudentDisplayName,
-      studentGrade: 'Ciclo Escolar Vigente — Grupo A',
-      category: 'Colegiatura',
-      dueDate: '10 de Septiembre de 2026',
-      subtotal: 3600.00,
-      discount: 150.00, // Descuento pronto pago
-      surcharge: 0.00,
-      total: 3450.00,
-      status: 'pending'
-    },
-    {
-      id: 'inv-002',
-      invoiceNumber: 'COL-2026-00489',
-      concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
-      studentName: activeStudentDisplayName,
-      studentGrade: 'Ciclo Escolar Vigente — Grupo A',
-      category: 'Extraescolar',
-      dueDate: '15 de Septiembre de 2026',
-      subtotal: 800.00,
-      discount: 0.00,
-      surcharge: 0.00,
-      total: 800.00,
-      status: 'pending'
-    }
-  ];
+  const schoolScopedBilling = useMemo(
+    () => getSchoolBillingRecords(billingRecords, effectiveSchoolId, schoolStudents),
+    [billingRecords, effectiveSchoolId, schoolStudents]
+  );
 
-  // Historial de pagos liquidados con timbrado SAT
-  const paymentHistory: PaymentRecord[] = [
-    {
-      id: 'pay-001',
-      receiptNumber: 'REC-2026-08102',
-      concept: 'Inscripción Anual Ciclo 2026-2027',
-      studentName: activeStudentDisplayName,
-      amount: 4500.00,
-      paymentMethod: 'Tarjeta de Crédito (Visa ***4012)',
-      paidAt: '12 de Agosto de 2026, 11:24 hrs',
-      cfdiUuid: '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D',
-      status: 'succeeded'
-    },
-    {
-      id: 'pay-002',
-      receiptNumber: 'REC-2026-08103',
-      concept: 'Paquete de Libros y Materiales Digitales',
-      studentName: activeStudentDisplayName,
-      amount: 2250.00,
-      paymentMethod: 'Transferencia SPEI',
-      paidAt: '12 de Agosto de 2026, 11:30 hrs',
-      cfdiUuid: '9F8E7D6C-5B4A-3F2E-1D0C-B9A8F7E6D5C4',
-      status: 'succeeded'
-    },
-    {
-      id: 'pay-003',
-      receiptNumber: 'REC-2026-07011',
-      concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
-      studentName: activeStudentDisplayName,
-      amount: 3600.00,
-      paymentMethod: 'Tarjeta de Débito (Mastercard ***8831)',
-      paidAt: '05 de Agosto de 2026, 09:15 hrs',
-      cfdiUuid: '1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D',
-      status: 'succeeded'
+  const studentBillingRows = useMemo(() => {
+    const normalizedStudentName = activeStudentDisplayName.toLowerCase();
+    return schoolScopedBilling.filter(rec => {
+      if (currentStudent?.id && rec.studentId === currentStudent.id) return true;
+      if (rec.studentName && rec.studentName.toLowerCase() === normalizedStudentName) return true;
+      return false;
+    });
+  }, [schoolScopedBilling, currentStudent?.id, activeStudentDisplayName]);
+
+  // Datos estructurados de cargos pendientes (sincronizados con Control de Cobranza)
+  const pendingCharges: ChargeItem[] = useMemo(() => {
+    if (studentBillingRows.length > 0) {
+      return studentBillingRows
+        .filter(r => r.status !== 'paid')
+        .map(r => ({
+          id: r.id,
+          invoiceNumber: r.invoiceNumber,
+          concept: r.concept,
+          studentName: r.studentName || activeStudentDisplayName,
+          studentGrade: `${r.grade || ''} ${r.level || ''} — Grupo ${r.group || 'A'}`.trim(),
+          category: r.concept.toLowerCase().includes('inscrip') ? 'Inscripción' : r.concept.toLowerCase().includes('taller') ? 'Extraescolar' : 'Colegiatura',
+          dueDate: r.dueDate,
+          subtotal: r.baseAmount ?? r.amount,
+          discount: r.discountAmount ?? 0,
+          surcharge: 0.00,
+          total: r.amount,
+          status: r.status
+        }));
     }
-  ];
+    return [
+      {
+        id: 'inv-001',
+        invoiceNumber: 'COL-2026-00452',
+        concept: 'Colegiatura de Septiembre 2026',
+        studentName: activeStudentDisplayName,
+        studentGrade: 'Ciclo Escolar Vigente — Grupo A',
+        category: 'Colegiatura',
+        dueDate: '10 de Septiembre de 2026',
+        subtotal: 3600.00,
+        discount: 150.00, // Descuento pronto pago
+        surcharge: 0.00,
+        total: 3450.00,
+        status: 'pending'
+      },
+      {
+        id: 'inv-002',
+        invoiceNumber: 'COL-2026-00489',
+        concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
+        studentName: activeStudentDisplayName,
+        studentGrade: 'Ciclo Escolar Vigente — Grupo A',
+        category: 'Extraescolar',
+        dueDate: '15 de Septiembre de 2026',
+        subtotal: 800.00,
+        discount: 0.00,
+        surcharge: 0.00,
+        total: 800.00,
+        status: 'pending'
+      }
+    ];
+  }, [studentBillingRows, activeStudentDisplayName]);
+
+  // Historial de pagos liquidados con timbrado SAT (sincronizado con Cobranza y Pasarela)
+  const paymentHistory: PaymentRecord[] = useMemo(() => {
+    if (studentBillingRows.length > 0) {
+      return studentBillingRows
+        .filter(r => r.status === 'paid')
+        .map(r => ({
+          id: r.id,
+          receiptNumber: `REC-${r.invoiceNumber.replace(/[^0-9]/g, '').slice(-8) || '20260001'}`,
+          concept: r.concept,
+          studentName: r.studentName || activeStudentDisplayName,
+          amount: r.amount,
+          paymentMethod: 'Conciliado en Sistema Institucional',
+          paidAt: r.paidAt || 'Ciclo Escolar 2026-2027',
+          cfdiUuid: r.autoInvoice ? `CFDI-${r.id.toUpperCase()}-40` : undefined,
+          status: 'succeeded' as const
+        }));
+    }
+    return [
+      {
+        id: 'pay-001',
+        receiptNumber: 'REC-2026-08102',
+        concept: 'Inscripción Anual Ciclo 2026-2027',
+        studentName: activeStudentDisplayName,
+        amount: 4500.00,
+        paymentMethod: 'Tarjeta de Crédito (Visa ***4012)',
+        paidAt: '12 de Agosto de 2026, 11:24 hrs',
+        cfdiUuid: '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D',
+        status: 'succeeded'
+      },
+      {
+        id: 'pay-002',
+        receiptNumber: 'REC-2026-08103',
+        concept: 'Paquete de Libros y Materiales Digitales',
+        studentName: activeStudentDisplayName,
+        amount: 2250.00,
+        paymentMethod: 'Transferencia SPEI',
+        paidAt: '12 de Agosto de 2026, 11:30 hrs',
+        cfdiUuid: '9F8E7D6C-5B4A-3F2E-1D0C-B9A8F7E6D5C4',
+        status: 'succeeded'
+      },
+      {
+        id: 'pay-003',
+        receiptNumber: 'REC-2026-07011',
+        concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
+        studentName: activeStudentDisplayName,
+        amount: 3600.00,
+        paymentMethod: 'Tarjeta de Débito (Mastercard ***8831)',
+        paidAt: '05 de Agosto de 2026, 09:15 hrs',
+        cfdiUuid: '1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D',
+        status: 'succeeded'
+      }
+    ];
+  }, [studentBillingRows, activeStudentDisplayName]);
 
   const totalPending = pendingCharges.reduce((acc, c) => acc + c.total, 0);
   const totalPaid = paymentHistory.reduce((acc, p) => acc + p.amount, 0);
@@ -309,7 +372,7 @@ export default function ParentFinancialStatementPage() {
           </button>
 
           <Link
-            href={`/checkout/all?amount=${totalPending}&concept=Liquidaci%C3%B3n%20Total%20de%20Colegiaturas&student=Mateo%20y%20Sof%C3%ADa%20L%C3%B3pez`}
+            href={`/checkout/all?amount=${totalPending}&concept=${encodeURIComponent('Liquidación Total de Colegiaturas')}&student=${encodeURIComponent(activeStudentDisplayName)}&studentId=${encodeURIComponent(currentStudent?.id || '')}`}
             className="inline-flex items-center gap-2 bg-blue-700 hover:bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-xs shadow-sm"
           >
             <CreditCard className="w-4 h-4" />
@@ -330,7 +393,9 @@ export default function ParentFinancialStatementPage() {
             </div>
           </div>
           <div className="text-2xl font-bold text-slate-900 font-mono">${totalPending.toFixed(2)} <span className="text-xs font-sans text-slate-500 font-normal">MXN</span></div>
-          <div className="text-xs text-amber-700 font-medium mt-1">2 cargos por vencer en septiembre</div>
+          <div className="text-xs text-amber-700 font-medium mt-1">
+            {pendingCharges.length > 0 ? `${pendingCharges.length} cargo(s) pendiente(s)` : 'Sin adeudos pendientes'}
+          </div>
         </div>
 
         {/* Próximo Vencimiento */}
@@ -341,8 +406,8 @@ export default function ParentFinancialStatementPage() {
               <Calendar className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-lg font-bold text-slate-900">10 Septiembre 2026</div>
-          <div className="text-xs text-slate-500 mt-1">Colegiatura Septiembre 2026</div>
+          <div className="text-lg font-bold text-slate-900">{pendingCharges[0]?.dueDate || 'Al corriente'}</div>
+          <div className="text-xs text-slate-500 mt-1">{pendingCharges[0]?.concept || 'Sin cargos próximos'}</div>
         </div>
 
         {/* Total Pagado en el Ciclo */}
@@ -354,7 +419,7 @@ export default function ParentFinancialStatementPage() {
             </div>
           </div>
           <div className="text-2xl font-bold text-slate-900 font-mono">${totalPaid.toFixed(2)} <span className="text-xs font-sans text-slate-500 font-normal">MXN</span></div>
-          <div className="text-xs text-emerald-700 font-medium mt-1">3 comprobantes timbrados</div>
+          <div className="text-xs text-emerald-700 font-medium mt-1">{paymentHistory.length} comprobante(s) registrado(s)</div>
         </div>
 
         {/* Facturación Electrónica Automática */}
@@ -486,7 +551,7 @@ export default function ParentFinancialStatementPage() {
               <div className="flex items-center gap-4">
                 <span className="text-slate-700 font-semibold text-sm">Total por Liquidar: <span className="text-slate-900 font-mono font-bold text-base">${totalPending.toFixed(2)} MXN</span></span>
                 <Link
-                  href={`/checkout/all?amount=${totalPending}&concept=Liquidaci%C3%B3n%20Total%20de%20Colegiaturas&student=Mateo%20y%20Sof%C3%ADa%20L%C3%B3pez`}
+                  href={`/checkout/all?amount=${totalPending}&concept=${encodeURIComponent('Liquidación Total de Colegiaturas')}&student=${encodeURIComponent(activeStudentDisplayName)}&studentId=${encodeURIComponent(currentStudent?.id || '')}`}
                   className="bg-blue-700 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-xs transition-colors shadow-sm"
                 >
                   Pagar Todo el Saldo

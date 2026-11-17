@@ -472,14 +472,14 @@ export default function QuestCardModal() {
       fileInputRef.current.click();
     }
     const mockUrls = {
-      image: '/files/mock_reflection.png',
-      audio: '/files/mock_audio.mp3'
+      image: '/brand/iskool-icono.png',
+      audio: 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA'
     };
     if (!mockFile) {
       setMockFile({
         type,
         url: mockUrls[type],
-        name: type === 'image' ? 'evidencia_foto.png' : 'evidencia_lectura.mp3'
+        name: type === 'image' ? 'evidencia_foto.webp' : 'evidencia_lectura.wav'
       });
     }
   };

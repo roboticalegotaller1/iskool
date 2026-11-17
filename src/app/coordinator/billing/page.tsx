@@ -283,15 +283,24 @@ export default function CoordinatorBillingDashboardPage() {
         year: 'numeric'
       });
 
-      // 1. Actualizar en Zustand Store
+      // 1. Actualizar en Zustand Store (honrando monto manual y opción de facturación)
+      const effectiveAmount = manualAmount > 0 ? manualAmount : manualPaymentRecord.amount;
       recordBillingPayment(manualPaymentRecord.id, {
         method: manualMethod,
         reference: receiptNum,
-        notes: manualNotes
+        notes: manualNotes,
+        amount: effectiveAmount,
+        autoInvoice: manualAutoInvoice
       });
 
       setIsProcessingManualPayment(false);
-      const paidRecord = { ...manualPaymentRecord, status: 'paid' as const, paidAt: formattedDate };
+      const paidRecord: FamilyBillingRecord = {
+        ...manualPaymentRecord,
+        amount: effectiveAmount,
+        autoInvoice: manualAutoInvoice,
+        status: 'paid' as const,
+        paidAt: formattedDate
+      };
       setManualPaymentRecord(null);
 
       // 2. Abrir comprobante oficial
@@ -307,7 +316,59 @@ export default function CoordinatorBillingDashboardPage() {
         notes: manualNotes
       });
 
-      showToast(`Pago de $${manualAmount.toFixed(2)} registrado exitosamente. Folio: ${receiptNum}`);
+      if (manualAutoInvoice) {
+        const storedCfg = typeof window !== 'undefined' ? localStorage.getItem(`iskool_fiscal_school_config_${effectiveSchoolId}`) : null;
+        let emisorCfg: any = null;
+        try { if (storedCfg) emisorCfg = JSON.parse(storedCfg); } catch { /* ignore */ }
+        fetch('/api/fiscal/stamp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            invoiceId: manualPaymentRecord.id,
+            receiptNumber: receiptNum,
+            schoolId: effectiveSchoolId,
+            emisor: {
+              rfc: emisorCfg?.rfcEmisor || 'UPJ980115XX1',
+              nombre: emisorCfg?.razonSocial || 'Institución Educativa ISkool',
+              regimenFiscal: emisorCfg?.regimenFiscal || '603',
+              codigoPostal: emisorCfg?.codigoPostal || '06700'
+            },
+            receptor: {
+              rfc: 'XAXX010101000',
+              nombre: (manualPaymentRecord.parentName || 'PÚBLICO EN GENERAL').toUpperCase(),
+              regimenFiscalReceptor: '616',
+              domicilioFiscalReceptor: emisorCfg?.codigoPostal || '06700',
+              usoCFDI: 'S01',
+              email: manualPaymentRecord.parentEmail
+            },
+            items: [{
+              claveProdServ: '86121500',
+              noIdentificacion: receiptNum,
+              cantidad: 1,
+              claveUnidad: 'E48',
+              unidad: 'Servicio',
+              descripcion: manualPaymentRecord.concept,
+              valorUnitario: effectiveAmount,
+              importe: effectiveAmount,
+              objetoImp: '01'
+            }],
+            formaPago: manualMethod === 'cash' ? '01' : manualMethod === 'spei' ? '03' : manualMethod === 'terminal_card' ? '04' : '02',
+            metodoPago: 'PUE',
+            subtotal: effectiveAmount,
+            total: effectiveAmount,
+            moneda: 'MXN'
+          })
+        })
+          .then(async (res) => {
+            const json = await res.json().catch(() => null);
+            if (res.ok && json?.success) {
+              showToast(`Pago de $${effectiveAmount.toFixed(2)} conciliado y CFDI 4.0 timbrado (${receiptNum}).`);
+            }
+          })
+          .catch(() => { /* timbre en segundo plano */ });
+      }
+
+      showToast(`Pago de $${effectiveAmount.toFixed(2)} registrado exitosamente. Folio: ${receiptNum}`);
     }, 500);
   };
 

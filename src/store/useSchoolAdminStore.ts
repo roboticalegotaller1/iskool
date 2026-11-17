@@ -591,6 +591,7 @@ interface SchoolAdminStoreState {
   staffPayroll: StaffPayrollRecord[];
   schoolGovernance: Record<string, SchoolGovernanceSettings>;
   directorLimits: Record<string, DirectorLimitsSettings>;
+  approvedTeacherPlans: Record<string, { approvedAt: string; approver: string; notes: string; folio: string }>;
   syncError: string | null;
 
   // Multi-School Actions
@@ -616,7 +617,7 @@ interface SchoolAdminStoreState {
   // Financial and Tuition Actions
   updateTuitionPricing: (levelId: string, data: Partial<TuitionPricing>) => void;
   assignScholarship: (studentId: string, scholarship: { percentage: number; type?: string; notes?: string }) => void;
-  recordBillingPayment: (recordId: string, paymentData?: { method?: string; reference?: string; notes?: string }) => void;
+  recordBillingPayment: (recordId: string, paymentData?: { method?: string; reference?: string; notes?: string; amount?: number; autoInvoice?: boolean }) => void;
   createManualBillingCharge: (charge: Omit<FamilyBillingRecord, 'id' | 'invoiceNumber'>) => FamilyBillingRecord;
 
   // Staff Payroll Actions (Finanzas & Nóminas del Dueño)
@@ -684,6 +685,7 @@ interface SchoolAdminStoreState {
   updateDirectorLimits: (schoolId: string, limits: Partial<DirectorLimitsSettings>) => void;
   addRestrictedTopic: (schoolId: string, topic: Omit<RestrictedTopicItem, 'id' | 'restrictedAt'>) => void;
   removeRestrictedTopic: (schoolId: string, topicId: string) => void;
+  approveTeacherPlan: (teacherId: string, record: { approvedAt: string; approver: string; notes: string; folio: string }) => void;
   
   resetSchoolAdminStore: () => void;
   reconcileSeedsWithStore: () => void;
@@ -793,6 +795,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           maxScholarshipDiscountPercent: 50
         }
       },
+      approvedTeacherPlans: {},
       syncError: null,
 
       syncUserSchool: (user) => {
@@ -1159,9 +1162,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       recordBillingPayment: (recordId, paymentData) => {
         set((state) => {
           const updatedRecords = (state.billingRecords || []).map(rec => {
-            if (rec.id === recordId) {
+            if (rec.id === recordId || rec.invoiceNumber === recordId) {
+              const nextAmount = (typeof paymentData?.amount === 'number' && Number.isFinite(paymentData.amount) && paymentData.amount > 0)
+                ? paymentData.amount
+                : rec.amount;
               return {
                 ...rec,
+                amount: nextAmount,
+                autoInvoice: paymentData?.autoInvoice !== undefined ? paymentData.autoInvoice : rec.autoInvoice,
                 status: 'paid' as const,
                 paidAt: formatCdmxDate(new Date())
               };
@@ -1282,13 +1290,20 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
               is_configured: settings.isConfigured
             };
 
-            await supabase
+            const targetSchoolId = getActiveSchoolIdFromState(get());
+            const { error: settingsError } = await supabase
               .from('school_settings')
-              .upsert({
-                id: '00000000-0000-0000-0000-000000000000',
-                ...dbSettings,
-                updated_at: new Date().toISOString()
-              });
+              .upsert(
+                {
+                  school_id: targetSchoolId,
+                  ...dbSettings,
+                  updated_at: new Date().toISOString()
+                },
+                { onConflict: 'school_id' }
+              );
+            if (settingsError) {
+              console.warn('Aviso al persistir school_settings:', settingsError.message);
+            }
           } catch (err) {
             console.warn('Silent local fallback for school settings save:', err);
           }
@@ -2383,6 +2398,21 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         });
       },
 
+      approveTeacherPlan: (teacherId, record) => {
+        set((state) => ({
+          approvedTeacherPlans: {
+            ...(state.approvedTeacherPlans || {}),
+            [teacherId]: record
+          }
+        }));
+        if (typeof window !== 'undefined') {
+          try {
+            const next = { ...(get().approvedTeacherPlans || {}), [teacherId]: record };
+            localStorage.setItem('iskool_approved_teacher_plans', JSON.stringify(next));
+          } catch { /* ignore */ }
+        }
+      },
+
       resetSchoolAdminStore: () => {
         set({
           institutionsList: INSTITUTIONS_SEED,
@@ -2912,7 +2942,8 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         staffUsers: state.staffUsers,
         staffPayroll: state.staffPayroll,
         schoolGovernance: state.schoolGovernance,
-        directorLimits: state.directorLimits
+        directorLimits: state.directorLimits,
+        approvedTeacherPlans: state.approvedTeacherPlans
       })
     }
   )

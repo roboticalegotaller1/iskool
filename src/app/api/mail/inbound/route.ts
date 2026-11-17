@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { validateApiAuth } from '@/lib/authValidator';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { HermeticEmailBrainService, InboundEmailDTO, HermeticAuthSession } from '@/lib/services/hermetic-email-brain.service';
 import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge } from '@/utils/timeZoneUtils';
 
 export const runtime = 'nodejs';
+
+const EXECUTIVE_MAIL_ROLES = new Set(['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator']);
+
+function isValidInboundWebhookSecret(req: NextRequest): boolean {
+  const configured = process.env.INBOUND_WEBHOOK_SECRET?.trim();
+  const supplied = (req.headers.get('x-inbound-webhook-secret') || '').trim();
+  if (!configured || !supplied || configured.length !== supplied.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(configured), Buffer.from(supplied));
+}
 
 /**
  * ============================================================================
@@ -13,6 +24,20 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   try {
+    const authResult = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    const hasWebhookSecret = isValidInboundWebhookSecret(req);
+    const hasStaffAuth =
+      authResult.authenticated &&
+      authResult.user &&
+      EXECUTIVE_MAIL_ROLES.has((authResult.user.role || '').toLowerCase());
+
+    if (!hasStaffAuth && !hasWebhookSecret) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación ejecutiva o firma webhook requerida para ingesta de correo.' },
+        { status: authResult.authenticated ? 403 : 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       sender_name,
@@ -157,19 +182,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-import { validateApiAuth } from '@/lib/authValidator';
-
 export async function GET(req: NextRequest) {
   const authResult = await validateApiAuth(req, { allowSuperAdminBypass: true });
-  if (!authResult.authenticated) {
+  if (!authResult.authenticated || !authResult.user) {
     return NextResponse.json(
       { success: false, error: 'Autenticación requerida para consultar la cola de correos.' },
       { status: 401 }
     );
   }
+  if (!EXECUTIVE_MAIL_ROLES.has((authResult.user.role || '').toLowerCase())) {
+    return NextResponse.json(
+      { success: false, error: 'Permisos insuficientes para consultar correos entrantes.' },
+      { status: 403 }
+    );
+  }
 
   const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get('tenantId') || 'sch-test-case';
+  const tenantId = searchParams.get('tenantId') || authResult.user.school_id || 'sch-test-case';
   const email = searchParams.get('email') || undefined;
 
   const pending = InboundMailSpoolService.getPendingEmails(tenantId, email);

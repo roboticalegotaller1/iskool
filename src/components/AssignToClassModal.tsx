@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { useGamificationStore } from '@/store/useGamificationStore';
+import { useSchoolAdminStore, getSchoolGroups } from '@/store/useSchoolAdminStore';
 
 interface AssignToClassModalProps {
   activity: CommunityActivity | null;
@@ -25,7 +26,7 @@ interface AssignToClassModalProps {
   onSuccess: (groupName: string) => void;
 }
 
-const AVAILABLE_GROUPS = [
+const DEFAULT_AVAILABLE_GROUPS = [
   { id: 'grp-pa-a', name: '4º Primaria - Grupo A', grade: '4º Primaria', subjectId: 'sub-math', subject: 'Matemáticas / Saberes Científicos' },
   { id: 'grp-sec-a', name: '2º Secundaria - Grupo A', grade: '2º Secundaria', subjectId: 'sub-sci', subject: 'Ciencias & Tecnología' },
   { id: 'grp-pb-a', name: '1º Primaria - Grupo A', grade: '1º Primaria', subjectId: 'sub-span', subject: 'Lenguajes & Comprensión' },
@@ -38,7 +39,23 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
   onClose,
   onSuccess
 }) => {
-  const [selectedGroupId, setSelectedGroupId] = useState<string>(AVAILABLE_GROUPS[0].id);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const storeGroupsList = useSchoolAdminStore(state => state.groupsList);
+  const storeCampusesList = useSchoolAdminStore(state => state.campusesList);
+
+  const AVAILABLE_GROUPS = React.useMemo(() => {
+    const schoolGroups = getSchoolGroups(storeGroupsList || [], activeSchoolId, storeCampusesList || []);
+    if (schoolGroups.length === 0) return DEFAULT_AVAILABLE_GROUPS;
+    return schoolGroups.map((g) => ({
+      id: g.id,
+      name: `${g.grade || ''} ${g.name || ''}`.trim() || 'Grupo Escolar',
+      grade: g.grade || 'General',
+      subjectId: 'sub-sci',
+      subject: 'Currículum Institucional NEM'
+    }));
+  }, [storeGroupsList, storeCampusesList, activeSchoolId]);
+
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(AVAILABLE_GROUPS[0]?.id || DEFAULT_AVAILABLE_GROUPS[0].id);
   const [xpReward, setXpReward] = useState<number>(100);
   const [coinsReward, setCoinsReward] = useState<number>(25);
   const [isSubmitting, setIsSubmitting] = useState(false);

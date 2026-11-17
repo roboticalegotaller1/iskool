@@ -1932,6 +1932,49 @@ export default function CrmAdmissionsStudio({
 
   const handleConvertLeadToEnrolled = (lead: CrmLead) => {
     store.changeLeadStage(lead.id, 'enrolled');
+
+    const adminStore = useSchoolAdminStore.getState();
+    const candidates = getLeadCandidates(store.candidates, lead.id);
+    const parentFullName = `${lead.tutor_first_name} ${lead.tutor_last_name}`.trim();
+    const schoolIdForLead = lead.school_id || activeSchoolId || 'sch-test-case';
+
+    if (candidates.length > 0) {
+      candidates.forEach((cand) => {
+        const lastNames = (cand.last_name || lead.tutor_last_name || '').trim().split(/\s+/);
+        adminStore.registerStudent({
+          first_name: cand.first_name || 'Estudiante',
+          last_name_1: lastNames[0] || lead.tutor_last_name_1 || 'Apellido',
+          last_name_2: lastNames.slice(1).join(' ') || lead.tutor_last_name_2 || '',
+          birth_date: '2014-05-15',
+          status: 'activo',
+          level: (cand.target_level as 'primaria' | 'secundaria' | 'preparatoria') || 'primaria',
+          grade: cand.target_grade || '1º',
+          campus_id: lead.campus_id,
+          campus_name: lead.campus_name || 'Plantel Central',
+          school_id: schoolIdForLead,
+          tutor_name: parentFullName,
+          emergency_contact_name: parentFullName,
+          emergency_contact_phone: lead.tutor_phone || '55-0000-0000'
+        });
+      });
+    } else {
+      adminStore.registerStudent({
+        first_name: lead.tutor_first_name || 'Nuevo',
+        last_name_1: lead.tutor_last_name_1 || lead.tutor_last_name || 'Estudiante',
+        last_name_2: lead.tutor_last_name_2 || '',
+        birth_date: '2014-05-15',
+        status: 'activo',
+        level: 'primaria',
+        grade: '1º',
+        campus_id: lead.campus_id,
+        campus_name: lead.campus_name || 'Plantel Central',
+        school_id: schoolIdForLead,
+        tutor_name: parentFullName,
+        emergency_contact_name: parentFullName,
+        emergency_contact_phone: lead.tutor_phone || '55-0000-0000'
+      });
+    }
+
     store.addActivity({
       lead_id: lead.id,
       activity_type: 'enrollment_completed',
@@ -1941,7 +1984,7 @@ export default function CrmAdmissionsStudio({
       is_overdue: false,
       created_by_name: 'Dirección de Admisiones',
     });
-    showToast('🎉 ¡Expediente de Alumno formalizado en ISkool con éxito!');
+    showToast('🎉 ¡Expediente de Alumno formalizado e inscrito en Control Escolar con éxito!');
   };
 
   // ============================================================

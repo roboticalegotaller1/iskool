@@ -5,8 +5,11 @@ import { validateApiAuth } from '@/lib/authValidator';
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para acceder al Copiloto Pedagógico.' }, { status: 401 });
+    }
+    if (!['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo'].includes((auth.user.role || '').toLowerCase())) {
+      return NextResponse.json({ error: 'Solo docentes y directivos pueden invocar el Copiloto Pedagógico.' }, { status: 403 });
     }
 
     const body = await req.json();

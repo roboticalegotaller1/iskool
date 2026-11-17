@@ -247,7 +247,8 @@ function syncGraphToServerAndAdminStore(
         id: payId,
         employee_id: row.userId,
         employee_name: row.fullName,
-        role_title:
+        role: row.category === 'profesor' ? 'teacher' : 'admin',
+        position_title:
           row.category === 'profesor'
             ? `Profesor (${row.weeklyHours}h/sem · ${row.subjectsCount || 1} mat.)`
             : row.roleTitle,
@@ -264,10 +265,11 @@ function syncGraphToServerAndAdminStore(
         base_salary: row.monthlyRecurringTotalMxn,
         bonuses: 0,
         deductions: 0,
-        net_pay: row.monthlyRecurringTotalMxn,
-        payment_frequency: 'mensual' as const,
+        net_salary: row.monthlyRecurringTotalMxn,
+        payment_period: 'Recurrente Organización',
+        period_type: 'mensual' as const,
+        payment_method: 'SPEI / Transferencia Bancaria',
         status: 'pendiente' as const,
-        period: 'Recurrente Organización',
       };
       const pIdx = cleanedPayroll.findIndex((p) => p.id === payId);
       if (pIdx >= 0) {
@@ -284,18 +286,30 @@ function syncGraphToServerAndAdminStore(
     const schoolGroup = (adminState.groupsList || []).find((g) => g.school_id === schoolId);
     const defaultSchoolGroupId = schoolGroup?.id || `grp-org-${schoolId}`;
 
-    const mappedOrgSchedules = (graph.timetablePlacements || []).map((pl) => ({
-      id: `sched-org-${schoolId}-${pl.id}`,
-      school_id: schoolId,
-      group_id: defaultSchoolGroupId,
-      subject_id: `subj-org-${schoolId}-${pl.subjectName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
-      subject_name: pl.subjectName,
-      teacher_id: `usr-org-${pl.teacherNodeId}`,
-      day_of_week: pl.day.toLowerCase() as any,
-      start_time: pl.startTime,
-      end_time: pl.endTime,
-      classroom: pl.campusId,
-    }));
+    const dayNormalizeMap: Record<string, 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes'> = {
+      lunes: 'Lunes',
+      martes: 'Martes',
+      miercoles: 'Miércoles',
+      miércoles: 'Miércoles',
+      jueves: 'Jueves',
+      viernes: 'Viernes',
+    };
+
+    const mappedOrgSchedules = (graph.timetablePlacements || []).map((pl) => {
+      const normalizedDay = dayNormalizeMap[(pl.day || '').toLowerCase()] || 'Lunes';
+      const subjectSlug = pl.subjectName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      return {
+        id: `sched-org-${schoolId}-${pl.id}`,
+        school_id: schoolId,
+        groupId: defaultSchoolGroupId,
+        subjectId: `subj-org-${schoolId}-${subjectSlug}`,
+        subjectName: pl.subjectName,
+        teacherId: `usr-org-${pl.teacherNodeId}`,
+        dayOfWeek: normalizedDay,
+        timeSlot: `${pl.startTime} - ${pl.endTime}`,
+        classroom: pl.campusId,
+      };
+    });
 
     useSchoolAdminStore.setState({
       staffUsers: existingStaff,

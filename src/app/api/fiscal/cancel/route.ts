@@ -35,6 +35,20 @@ export async function POST(req: NextRequest) {
     }
 
     const pac = getFiscalPacAdapter();
+    const { getAllStampedCfdis } = await import('@/lib/fiscal/pacAdapter');
+    const stored = getAllStampedCfdis().find((c: any) => c.uuid === body.uuid);
+    if (
+      (auth.user.role || '').toLowerCase() !== 'superadmin' &&
+      stored &&
+      (stored as any).schoolId &&
+      auth.user.school_id &&
+      (stored as any).schoolId !== auth.user.school_id
+    ) {
+      return NextResponse.json({
+        success: false,
+        error: 'Prohibido: Este comprobante pertenece a otra institución.'
+      }, { status: 403 });
+    }
     const cancelResult = await pac.cancelInvoice(body);
 
     if (!cancelResult.success) {

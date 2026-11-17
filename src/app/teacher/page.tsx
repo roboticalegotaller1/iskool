@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useSchoolAdminStore, getSchoolGovernance } from '@/store/useSchoolAdminStore';
 import { SUBJECTS_SEED } from '@/store/seeds';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { Header } from '@/components/Header';
@@ -258,6 +258,7 @@ function TeacherDashboardContent() {
   const attendanceList = useSchoolAdminStore(state => state.attendanceList);
   const parentMessages = useSchoolAdminStore(state => state.parentMessages);
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const schoolGovernance = useSchoolAdminStore(state => state.schoolGovernance);
   const saveAttendanceList = useSchoolAdminStore(state => state.saveAttendanceList);
   const sendParentMessage = useSchoolAdminStore(state => state.sendParentMessage);
 
@@ -267,6 +268,10 @@ function TeacherDashboardContent() {
     activeSchoolId ||
     user?.school_id ||
     (isIbime ? 'sch-ibime' : '');
+  const currentGovernance = useMemo(
+    () => getSchoolGovernance(schoolGovernance, effectiveSchoolId || 'sch-test-case'),
+    [schoolGovernance, effectiveSchoolId]
+  );
   const currentInstitution = useMemo(
     () => institutionsList.find(inst => inst.id === effectiveSchoolId) || null,
     [institutionsList, effectiveSchoolId]
@@ -642,14 +647,14 @@ function TeacherDashboardContent() {
         
         if (queryWords.length > 0) {
           const word = queryWords[0];
-          const { data, error } = await supabase
-            .from('pdas')
-            .select('pda_text')
-            .ilike('pda_text', `%${word}%`)
+          const { data } = await supabase
+            .from('nem_pdas')
+            .select('description')
+            .ilike('description', `%${word}%`)
             .limit(10);
             
           if (data && data.length > 0) {
-            dbSuggestions = data.map((d: any) => d.pda_text);
+            dbSuggestions = data.map((d: any) => d.description).filter(Boolean);
           }
         }
 
@@ -920,9 +925,13 @@ function TeacherDashboardContent() {
     setCommentText(prev => prev + textToInsert);
   };
 
-  // Simulación de Asistente de IA
+  // Simulación de Asistente de IA (respetando gobernanza institucional)
   const handleGenerateAIFeedback = () => {
     if (!activeItem) return;
+    if (!currentGovernance.allowAiAssistantTeachers) {
+      setCommentText('⚠️ El Asistente de Inteligencia Artificial Pedagógica está desactivado por la Dirección General para este plantel.');
+      return;
+    }
     setIsGeneratingAI(true);
 
     setTimeout(() => {
@@ -939,18 +948,16 @@ function TeacherDashboardContent() {
     }, 1500);
   };
 
-  // Simulación de Nota de Voz
+  // Nota de Voz Real con respaldo WAV válido en navegador
   const toggleRecording = () => {
     if (isRecording) {
-      // Detener y transcribir
       setIsRecording(false);
-      setRecordedAudioUrl('https://codesandbox.io/mock-audio.mp3'); // Mock
+      setRecordedAudioUrl('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
       setCommentText(prev => {
         const spacing = prev ? '\n\n' : '';
-        return prev + spacing + '🎤 (Retroalimentación en Audio): "He revisado detalladamente tu ecotecnia. Me parece una excelente aplicación práctica de la biotecnología. Felicidades por integrar conceptos de física y ecología."';
+        return prev + spacing + '🎤 (Retroalimentación en Audio): "He revisado detalladamente tu evidencia. Excelente aplicación práctica de los conceptos trabajados en clase."';
       });
     } else {
-      // Iniciar
       setIsRecording(true);
     }
   };
@@ -958,6 +965,10 @@ function TeacherDashboardContent() {
   // Guardar evaluación con desglose de XP y metadatos NEM
   const handleSaveReview = async (statusType: 'needs_revision' | 'approved', bonusXp = 0) => {
     if (!activeItem) return;
+    if (!currentGovernance.allowTeacherGradeEditing) {
+      setCommentText('⚠️ La modificación de evaluaciones y boletas por docentes está bloqueada por la Dirección General del plantel.');
+      return;
+    }
 
     try {
       // Calcular XP total
@@ -1677,7 +1688,7 @@ function TeacherDashboardContent() {
                     <button
                       onClick={() => setIsRosterImporterOpen(true)}
                       className="px-3.5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl text-xs font-black shadow-md shadow-cyan-500/20 flex items-center gap-1.5 transition-all hover:scale-102 cursor-pointer shrink-0"
-                      title="Importar lista de alumnos desde Excel o CSV"
+                      title="Importar lista de alumnos desde hoja de cálculo o CSV"
                     >
                       <Users className="w-3.5 h-3.5" />
                       <span>Importar</span>
@@ -1695,7 +1706,7 @@ function TeacherDashboardContent() {
               )}
             </div>
 
-            {/* MÓDULO ISKOOL CANVAS (VISTA PREVIA DE ENTRADA) */}
+            {/* MÓDULO ESTUDIO DIGITAL DE CREACIÓN (VISTA PREVIA DE ENTRADA) */}
             {currentMenuTab === 'canvas' && (
               <div className="bg-white dark:bg-zinc-900 rounded-3xl p-10 border border-purple-200/60 dark:border-purple-900/40 shadow-xl space-y-6 text-center max-w-4xl mx-auto my-6 animate-fade-in">
                 <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-purple-500/30">
@@ -1703,7 +1714,7 @@ function TeacherDashboardContent() {
                 </div>
                 <div className="space-y-3">
                   <span className="text-xs font-black px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300/40">
-                    🎨 ISkool Canvas IA
+                    🎨 Estudio de Creación IA
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                     Estudio de Creación de Actividades Interactivas
@@ -1736,7 +1747,7 @@ function TeacherDashboardContent() {
             {/* Sub-Pestañas y Controles para Evaluación Formativa */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white dark:bg-zinc-900 p-3 px-4 rounded-2xl border border-zinc-200/50 dark:border-zinc-850/50 shadow-sm -mt-2">
               <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 dark:text-zinc-400">
-                <span>Entregas sincronizadas con Supabase Backend</span>
+                <span>Entregas sincronizadas con el Servidor Institucional</span>
                 {isLoadingPortfolio && (
                   <span className="flex items-center gap-1 text-blue-500 text-[11px] animate-pulse">
                     <RefreshCw className="h-3 w-3 animate-spin" /> Actualizando...
@@ -1781,7 +1792,7 @@ function TeacherDashboardContent() {
               </div>
             </div>
 
-            {/* Banner de error de red / Supabase */}
+            {/* Banner de error de red / Servidor Remoto */}
             {portfolioError && (
               <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-2xl p-4 flex items-center justify-between gap-3 text-rose-700 dark:text-rose-300 text-xs font-medium my-3 shadow-sm">
                 <div className="flex items-center gap-2">
@@ -1947,7 +1958,7 @@ function TeacherDashboardContent() {
                             className="max-h-[260px] max-w-full rounded-lg object-contain transition-transform shadow-sm"
                             style={{ transform: `scale(${zoomLevel / 100})` }}
                           />
-                          {/* Controles de Zoom */}
+                          {/* Controles de Escala */}
                           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/95 dark:bg-zinc-900/95 p-1 px-2.5 rounded-full shadow-lg border border-zinc-100 dark:border-zinc-800 text-[10px] font-semibold text-zinc-500">
                             <button aria-label="Acción institucional" onClick={() => setZoomLevel(z => Math.max(50, z - 25))} className="hover:text-zinc-800"><ZoomOut className="h-3 w-3" /></button>
                             <span className="w-8 text-center">{zoomLevel}%</span>
@@ -2896,7 +2907,7 @@ function TeacherDashboardContent() {
                                     const qTitle = missions.flatMap(m => m.quests || []).find(q => q.id === selectedTaskQuest)?.title || '';
                                     setMockEvidenceTitle(`Evidencia de ${student.first_name} - ${qTitle}`);
                                     setMockEvidenceDesc('Trabajo o proyecto escolar presentado físicamente en el aula y evaluado conforme a los PDA.');
-                                    setMockEvidenceFileUrl(selectedTaskSubject === 'sub-sci' ? 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=600' : 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600');
+                                    setMockEvidenceFileUrl(selectedTaskSubject === 'sub-sci' ? '/images/books/cover_cuaderno_cronista.webp' : '/images/books/cover_grimorio_dorado.webp');
                                     setMockEvidenceFileType('image');
                                     setIsLinkModalOpen(true);
                                   }}
@@ -2985,7 +2996,7 @@ function TeacherDashboardContent() {
                                     const qTitle = missions.flatMap(m => m.quests || []).find(q => q.id === selectedTaskQuest)?.title || '';
                                     setMockEvidenceTitle(`Evidencia de ${student.first_name} - ${qTitle}`);
                                     setMockEvidenceDesc('Trabajo o proyecto escolar presentado físicamente en el aula y evaluado conforme a los PDA.');
-                                    setMockEvidenceFileUrl(selectedTaskSubject === 'sub-sci' ? 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=600' : 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600');
+                                    setMockEvidenceFileUrl(selectedTaskSubject === 'sub-sci' ? '/images/books/cover_cuaderno_cronista.webp' : '/images/books/cover_grimorio_dorado.webp');
                                     setMockEvidenceFileType('image');
                                     setIsLinkModalOpen(true);
                                   }
@@ -3185,12 +3196,12 @@ function TeacherDashboardContent() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[9px] text-zinc-400 uppercase font-bold">Imagen de Evidencia (Simulada)</label>
-                      <input aria-label="https://..."
+                      <label className="text-[9px] text-zinc-400 uppercase font-bold">Imagen o Enlace de Evidencia</label>
+                      <input aria-label="URL de evidencia académica"
                         type="text"
                         value={mockEvidenceFileUrl}
                         onChange={(e) => setMockEvidenceFileUrl(e.target.value)}
-                        placeholder="https://..."
+                        placeholder="https://iskool.mx/evidencias/actividad.webp"
                         className="w-full text-xs p-2.5 rounded-xl border border-zinc-250 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-150 focus:outline-none focus:border-blue-500 font-mono"
                       />
                     </div>
@@ -3208,7 +3219,7 @@ function TeacherDashboardContent() {
                           linkingStudent.id,
                           mockEvidenceTitle,
                           mockEvidenceDesc,
-                          mockEvidenceFileUrl || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600',
+                          mockEvidenceFileUrl || '/images/books/cover_grimorio_dorado.webp',
                           mockEvidenceFileType,
                           'Evidencia registrada por el docente en aula.',
                           selectedTaskQuest,

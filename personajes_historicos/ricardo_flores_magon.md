@@ -282,18 +282,18 @@ A: Porque señalé con lucidez implacable las causas profundas de la opresión p
 *Retroalimentación*: "¡Tierra y Libertad!" fue la consigna anarquista adoptada por el PLM en 1910 y abrazada por los ejércitos agraristas de Morelos.
 *PDA NEM 2024*: Examina la influencia del ideario libertario y comunista en las consignas y movimientos de la Revolución Mexicana.
 
-### 4. ¿Bajo qué ordenamiento penal estadounidense fue condenado a 20 años de prisión en 1918 por su oposición a la Gran Guerra?
+### 4. ¿Bajo qué ordenamiento penal estadounidense fui condenado a 20 años de prisión en 1918 por mi oposición a la Gran Guerra?
 - [ ] Ley Seca
 - [x] Acta de Espionaje de 1917 (Espionage Act)
 - [ ] Ley de Sedición Smith
 - [ ] Doctrina Monroe
-*Retroalimentación*: Fue procesado y sentenciado por el gobierno estadounidense bajo el Acta de Espionaje por publicar un manifiesto pacifista contrario a la Primera Guerra Mundial.
+*Retroalimentación*: Fui procesado y sentenciado por el gobierno estadounidense bajo el Acta de Espionaje por publicar un manifiesto pacifista contrario a la Primera Guerra Mundial.
 *PDA NEM 2024*: Investiga la persecución trasnacional de activistas obreros y disidentes políticos a principios del siglo XX.
 
-### 5. ¿En qué penitenciaría federal estadounidense falleció Ricardo Flores Magón el 21 de noviembre de 1922?
+### 5. ¿En qué penitenciaría federal estadounidense fallecí el 21 de noviembre de 1922?
 - [ ] Prisión de Alcatraz
 - [ ] Prisión de Sing Sing
 - [x] Penitenciaría Federal de Leavenworth (Kansas)
 - [ ] Prisión de San Quintín
-*Retroalimentación*: Murió en su celda de Leavenworth, Kansas, tras rechazar reiteradamente solicitar el indulto al gobierno de los Estados Unidos.
+*Retroalimentación*: Fallecí en mi celda de Leavenworth, Kansas, tras rechazar reiteradamente solicitar el indulto al gobierno de los Estados Unidos.
 *PDA NEM 2024*: Valora la integridad ética y la trascendencia cívica del sacrificio de los precursores revolucionarios en el exilio.

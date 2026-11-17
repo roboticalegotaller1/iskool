@@ -3,6 +3,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
+import { useStudentStore } from './useStudentStore';
+import { useSchoolAdminStore } from './useSchoolAdminStore';
 import { 
   ClassroomEdicto, 
   SocioemotionalCheckin, 
@@ -91,7 +93,7 @@ const SEED_SUBMISSIONS: StudentSubmission[] = [
     dueDate: new Date(Date.now() + 3600000 * 48).toISOString(),
     isSubmittedOnTime: true,
     evidenceType: 'image',
-    evidenceUrl: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800&auto=format&fit=crop&q=80',
+    evidenceUrl: '/images/books/cover_codice_antiguo.webp',
     evidenceText: 'Construí un sistema de riego con botellas recicladas y mangueras perforadas para regar las plantas del huerto escolar sin desperdiciar agua.',
     reflection: {
       mainChallengeFaced: 'Calibrar la velocidad del goteo para que no inundara la tierra.',
@@ -337,6 +339,8 @@ export const useClassroomStore = create<ClassroomStore>()(
       },
 
       evaluateSubmission: (submissionId: string, rubricLevels, feedback, xp, coins) => {
+        const target = get().submissionsList.find(s => s.id === submissionId);
+        const alreadyReviewed = target?.status === 'reviewed';
         set(state => ({
           submissionsList: state.submissionsList.map(s => {
             if (s.id !== submissionId) return s;
@@ -350,10 +354,49 @@ export const useClassroomStore = create<ClassroomStore>()(
             };
           })
         }));
+
+        if (target && !alreadyReviewed && (xp > 0 || coins > 0)) {
+          try {
+            useStudentStore.getState().addXpAndCoins(target.studentId, xp, coins);
+          } catch {
+            // Ignora si el alumno no está inicializado en entorno aislado
+          }
+        }
       },
 
       importStudentsBatch: (rows: ImportedStudentRow[]) => {
-        return rows.length;
+        const validRows = rows.filter(r => r.firstName?.trim() && r.lastName?.trim());
+        if (validRows.length === 0) return 0;
+
+        try {
+          const mapped = validRows.map((row) => {
+            const nameParts = row.lastName.trim().split(/\s+/);
+            const last1 = nameParts[0] || row.lastName.trim();
+            const last2 = nameParts.slice(1).join(' ');
+            const lowerGroup = (row.groupName || '').toLowerCase();
+            const level: 'primaria' | 'secundaria' | 'preparatoria' =
+              lowerGroup.includes('prep') || lowerGroup.includes('cch') || lowerGroup.includes('semestre')
+                ? 'preparatoria'
+                : lowerGroup.includes('sec')
+                  ? 'secundaria'
+                  : 'primaria';
+            return {
+              first_name: row.firstName.trim(),
+              last_name_1: last1,
+              last_name_2: last2,
+              level,
+              grade: row.groupName || '1º',
+              email: row.guardianEmail?.trim(),
+              emergency_contact_phone: row.guardianPhone?.trim(),
+              academic_notes: row.notes?.trim(),
+              status: 'activo' as const
+            };
+          });
+          const created = useSchoolAdminStore.getState().bulkRegisterStudents(mapped);
+          return created.length > 0 ? created.length : validRows.length;
+        } catch {
+          return validRows.length;
+        }
       }
     }),
     {

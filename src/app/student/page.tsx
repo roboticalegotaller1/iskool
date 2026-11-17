@@ -13,7 +13,7 @@ import {
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useSchoolAdminStore, getSchoolGovernance, resolveEffectiveSchoolId } from '@/store/useSchoolAdminStore';
 import { BADGES_SEED } from '@/store/seeds';
 import { AnimeAvatarSprite } from '@/components/AnimeAvatarSprite';
 import SagaMap from '@/components/SagaMap';
@@ -116,6 +116,13 @@ export default function StudentDashboard() {
 
   const edictosList = useClassroomStore(state => state.edictosList);
   const recordSocioemotionalCheckin = useClassroomStore(state => state.recordSocioemotionalCheckin);
+  const schoolGovernance = useSchoolAdminStore(state => state.schoolGovernance);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const studentSchoolId = resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+  const currentGovernance = useMemo(
+    () => getSchoolGovernance(schoolGovernance, studentSchoolId),
+    [schoolGovernance, studentSchoolId]
+  );
 
   const [studentMoodFeedback, setStudentMoodFeedback] = useState<string | null>(null);
   const [isHatchingModalOpen, setIsHatchingModalOpen] = useState(false);
@@ -378,7 +385,10 @@ export default function StudentDashboard() {
     ];
 
     let templateType = 'trivia';
-    if (activePlayingQuest.type === 'reading' || activePlayingQuest.type === 'timed_reading') {
+    const hasStudioBlocks = Array.isArray(content?.blocks) && content.blocks.length > 0;
+    if (hasStudioBlocks) {
+      templateType = (activePlayingQuest as any).template_type || 'studio_flow';
+    } else if (activePlayingQuest.type === 'reading' || activePlayingQuest.type === 'timed_reading') {
       templateType = 'escape_room';
     } else if (activePlayingQuest.type === 'logic_math' as any) {
       templateType = 'logic_math';
@@ -386,12 +396,17 @@ export default function StudentDashboard() {
       templateType = (activePlayingQuest as any).template_type;
     }
 
-    const activity: CanvasActivityJSON = {
+    const activity: CanvasActivityJSON & Record<string, any> = {
       title: activePlayingQuest.title,
       description: activePlayingQuest.description,
       questions: fallbackQuestions,
       readingText: content?.readingText,
-      task_type: templateType
+      task_type: templateType,
+      blocks: hasStudioBlocks ? content.blocks : undefined,
+      connections: Array.isArray(content?.connections) ? content.connections : undefined,
+      startNodeId: content?.startNodeId ?? null,
+      metadata: content?.metadata,
+      flowConfig: content?.flowConfig
     };
 
     return { activity, templateType };
@@ -631,13 +646,15 @@ export default function StudentDashboard() {
                     <span>Mascota</span>
                   </button>
 
-                  <Link
-                    href="/student/shop"
-                    className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Tienda</span>
-                  </Link>
+                  {currentGovernance.allowStudentGamification && (
+                    <Link
+                      href="/student/shop"
+                      className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Tienda</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

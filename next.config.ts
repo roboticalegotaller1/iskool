@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     '/api/ai/historical-figure': ['./personajes_historicos/**/*'],
     '/api/vault/historical-figures': ['./personajes_historicos/**/*'],
     '/api/(mail|portal/ceo)/**/*': ['./Correo/**/*'],
-    '/api/(vault|obsidian|v1/curriculum|iskool|ai/planning|ai/assistant)/**/*': [
+    '/api/(vault|v1/curriculum|iskool|ai/planning|ai/assistant)/**/*': [
       './planeaciones/**/*',
       './knowledge/**/*'
     ],
@@ -132,7 +132,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https:",
               "media-src 'self' data: blob: https:",
               "connect-src 'self' https: wss:",
-              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
+              "frame-src 'self' blob: https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.walter-fendt.de https://www.ophysics.com https://www.falstad.com https://www.myphysicslab.com https://www.physicsclassroom.com https://www.geogebra.org https://www.desmos.com https://graspablemath.com https://visualgo.net https://demonstrations.wolfram.com https://toytheater.com https://www.mathopenref.com https://embed.molview.org https://ptable.com https://chemcollective.org https://www.rcsb.org https://learn.genetics.utah.edu https://stellarium-web.org https://www.solarsystemscope.com https://earth.nullschool.net https://wokwi.com https://makecode.microbit.org https://arcade.makecode.com https://snap.berkeley.edu https://trinket.io https://musiclab.chromeexperiments.com https://www.chronas.org https://www.gapminder.org https://www.beepbox.co",
               "frame-ancestors 'self'",
               "form-action 'self' https://accounts.google.com",
               "worker-src 'self' blob:",

@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 
 export interface CampaignQuest {
   title: string;
@@ -30,8 +32,17 @@ interface PlanningStoreState {
   setCampaigns: (campaigns: AnaliticoCampaign[]) => void;
 }
 
-export const usePlanningStore = create<PlanningStoreState>((set) => ({
-  campaigns: [],
-  addCampaign: (campaign) => set((state) => ({ campaigns: [...state.campaigns, campaign] })),
-  setCampaigns: (campaigns) => set({ campaigns }),
-}));
+export const usePlanningStore = create<PlanningStoreState>()(
+  persist(
+    (set) => ({
+      campaigns: [],
+      addCampaign: (campaign) => set((state) => ({ campaigns: [...state.campaigns, campaign] })),
+      setCampaigns: (campaigns) => set({ campaigns }),
+    }),
+    {
+      name: 'iskool_planning_store_v1',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
+      partialize: (state) => ({ campaigns: state.campaigns }),
+    }
+  )
+);

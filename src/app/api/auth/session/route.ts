@@ -148,8 +148,8 @@ export async function POST(req: NextRequest) {
           authUser = {
             id: u.id,
             email: u.email,
-            role: dbRole || u.user_metadata?.role || u.app_metadata?.role || 'student',
-            school_id: dbSchoolId || u.user_metadata?.school_id,
+            role: dbRole || u.app_metadata?.role || 'student',
+            school_id: dbSchoolId || u.app_metadata?.school_id,
             first_name: dbFirstName || u.user_metadata?.first_name || '',
             last_name: dbLastName || u.user_metadata?.last_name || ''
           };
@@ -172,11 +172,9 @@ export async function POST(req: NextRequest) {
         identifierClean === 'demo-ceo-01';
 
       if (isCanonicalDemoPersonaId) {
-        const hasSeedToken = typeof token === 'string' && token.startsWith('seed-session-');
         const isCredentialValid =
           !suppliedPass ||
-          VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) ||
-          hasSeedToken;
+          VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass);
         if (isCredentialValid) {
           const canonicalDemo = resolveCanonicalDemoUser(identifierClean);
           if (canonicalDemo) {
@@ -247,7 +245,6 @@ export async function POST(req: NextRequest) {
       }
 
       if (!authUser) {
-        const hasSeedToken = typeof token === 'string' && token.startsWith('seed-session-');
         const canonicalDemo = identifier ? resolveCanonicalDemoUser(identifier) : null;
         const isPrivilegedRole = Boolean(
           canonicalDemo &&
@@ -257,9 +254,10 @@ export async function POST(req: NextRequest) {
             canonicalDemo.id.startsWith('usr-superadmin') ||
             canonicalDemo.id === 'usr-admin-1')
         );
+        const envSuperPass = process.env.SUPERADMIN_PASSWORD?.trim();
         const isCredentialValid = isPrivilegedRole
-          ? (VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) || hasSeedToken)
-          : (!suppliedPass || VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass) || hasSeedToken);
+          ? Boolean(suppliedPass && ((envSuperPass && suppliedPass === envSuperPass) || VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass)))
+          : (!suppliedPass || VALID_SERVER_INSTITUTIONAL_PASSWORDS.has(suppliedPass));
 
         if (canonicalDemo && isCredentialValid) {
           // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor

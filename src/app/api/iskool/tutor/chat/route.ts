@@ -12,7 +12,7 @@ import { validateApiAuth } from '@/lib/authValidator';
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { error: 'Autenticación requerida para acceder al Tutor Pedagógico Institucional' },
         { status: 401 }
@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { sessionId, studentId, grade = 'high_school_1', message } = body;
+    if ((auth.user.role || '').toLowerCase() === 'student' && studentId && studentId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'No autorizado para interactuar en nombre de otro estudiante.' },
+        { status: 403 }
+      );
+    }
 
     // 1. Validación de parámetros requeridos
     if (!message || typeof message !== 'string') {

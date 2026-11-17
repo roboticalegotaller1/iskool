@@ -1824,7 +1824,7 @@ export default function ExecutiveAnalyticsStudio({
 
           <button
             onClick={handleExportCSV}
-            title="Exportar datos a formato CSV/Excel" aria-label="Exportar datos a formato CSV/Excel"
+            title="Exportar datos a formato CSV / Hoja de Cálculo" aria-label="Exportar datos a formato CSV / Hoja de Cálculo"
             className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer shadow-xs"
           >
             <Download className="h-3.5 w-3.5 text-slate-500" />

@@ -172,24 +172,37 @@ export default function CoordinatorFiscalPage() {
   });
 
   useEffect(() => {
-    if (currentInstitution) {
-      const isIbime = currentInstitution.id === 'sch-ibime';
-      setSchoolConfig(prev => ({
-        ...prev,
-        razonSocial: isIbime ? 'Instituto Bilingüe IBIME S.C.' : (currentInstitution.name || prev.razonSocial),
-        rfcEmisor: isIbime 
-          ? 'IBI040818K24'
-          : (currentInstitution.id === 'sch-test-case' 
-            ? 'CPB260901XX4' 
-            : (currentInstitution.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1')),
-        codigoPostal: isIbime ? '55050' : prev.codigoPostal,
-        rvoePreescolar: isIbime ? 'SEP-RVOE-15PPR3322G-PRE' : prev.rvoePreescolar,
-        rvoePrimaria: isIbime ? 'SEP-RVOE-15PPR3322G-PRI' : prev.rvoePrimaria,
-        rvoeSecundaria: isIbime ? 'SEP-RVOE-15PPR3322G-SEC' : prev.rvoeSecundaria,
-        rvoeBachillerato: isIbime ? 'UNAM-CCH-INC-7998' : prev.rvoeBachillerato
-      }));
+    const isIbime = currentInstitution?.id === 'sch-ibime';
+    const baseConfig = currentInstitution
+      ? {
+          razonSocial: isIbime ? 'Instituto Bilingüe IBIME S.C.' : (currentInstitution.name || 'UP Juan Jacobo Rosseau'),
+          rfcEmisor: isIbime
+            ? 'IBI040818K24'
+            : (currentInstitution.id === 'sch-test-case'
+              ? 'CPB260901XX4'
+              : (currentInstitution.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1')),
+          codigoPostal: isIbime ? '55050' : '06700',
+          rvoePreescolar: isIbime ? 'SEP-RVOE-15PPR3322G-PRE' : 'SEP-RVOE-2022-PRE-012',
+          rvoePrimaria: isIbime ? 'SEP-RVOE-15PPR3322G-PRI' : 'SEP-RVOE-2023-PRI-045',
+          rvoeSecundaria: isIbime ? 'SEP-RVOE-15PPR3322G-SEC' : 'SEP-RVOE-2024-SEC-098',
+          rvoeBachillerato: isIbime ? 'UNAM-CCH-INC-7998' : 'SEP-RVOE-2025-BAC-110'
+        }
+      : {};
+
+    let savedOverride: Record<string, any> = {};
+    if (typeof window !== 'undefined') {
+      try {
+        const rawSaved = localStorage.getItem(`iskool_fiscal_school_config_${effectiveSchoolId}`);
+        if (rawSaved) savedOverride = JSON.parse(rawSaved);
+      } catch { /* ignore */ }
     }
-  }, [currentInstitution]);
+
+    setSchoolConfig(prev => ({
+      ...prev,
+      ...baseConfig,
+      ...savedOverride
+    }));
+  }, [currentInstitution, effectiveSchoolId]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -1012,7 +1025,22 @@ export default function CoordinatorFiscalPage() {
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => showToast('Configuración fiscal y credenciales guardadas correctamente.')}
+                  onClick={() => {
+                    try {
+                      if (typeof window !== 'undefined') {
+                        localStorage.setItem(`iskool_fiscal_school_config_${effectiveSchoolId}`, JSON.stringify(schoolConfig));
+                      }
+                      const adminState = useSchoolAdminStore.getState();
+                      adminState.saveSchoolSettings({
+                        ...adminState.schoolSettings,
+                        name: schoolConfig.razonSocial || adminState.schoolSettings.name
+                      });
+                      setPacStatus(prev => ({ ...prev, environment: schoolConfig.pacEnvironment }));
+                      showToast('Configuración fiscal y credenciales persistidas para este plantel.');
+                    } catch {
+                      showToast('Configuración fiscal actualizada en sesión.');
+                    }
+                  }}
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors shadow-sm"
                 >
                   Guardar Configuración Fiscal

@@ -6,9 +6,33 @@ export interface SimulatorItem {
   categoryLabel: string;
   description: string;
   embedUrl: string;
+  embedMode?: 'iframe' | 'external-window';
   pedagogicalTip: string;
   recommendedGrades: string;
   tags: string[];
+}
+
+export const EXTERNAL_WINDOW_SIMULATOR_ORIGINS = [
+  'www.labxchange.org',
+  'mathigon.org',
+  'pubchem.ncbi.nlm.nih.gov',
+  'human.biodigital.com',
+  'www.tinkercad.com',
+  'scratch.mit.edu',
+  'circuitverse.org',
+  'illuminations.nctm.org',
+  'eyes.nasa.gov',
+  'www.geoguessr.com',
+  'teachablemachine.withgoogle.com',
+] as const;
+
+export function requiresExternalWindowLaunch(url: string): boolean {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return EXTERNAL_WINDOW_SIMULATOR_ORIGINS.some((originHost) => hostname === originHost || hostname.endsWith(`.${originHost}`));
+  } catch {
+    return false;
+  }
 }
 
 export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
@@ -129,6 +153,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Física y Mecánica',
     description: 'Laboratorio virtual para medir la aceleración de la gravedad g = 9.8 m/s² eliminando la resistencia del aire.',
     embedUrl: 'https://www.labxchange.org/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Compara la caída simultánea de una pluma y una bola de metal en el vacío.',
     recommendedGrades: 'Secundaria y Preparatoria',
     tags: ['Caída Libre', 'Gravedad', 'Experimento de Galileo']
@@ -167,6 +192,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Matemáticas y Geometría',
     description: 'Mural interactivo con bloques algebraicos, fracciones circulares, mosaicos poligonales y ruletas de probabilidad.',
     embedUrl: 'https://mathigon.org/polypad',
+    embedMode: 'external-window',
     pedagogicalTip: 'Ideal para visualizar fracciones equivalentes y área de polígonos irregulares en primaria y secundaria.',
     recommendedGrades: 'Primaria y Secundaria',
     tags: ['Fracciones', 'Mosaicos', 'Geometría', 'Probabilidad']
@@ -215,6 +241,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Matemáticas y Geometría',
     description: 'Modelos visuales de barras y sectores circulares para suma, resta y multiplicación de números racionales.',
     embedUrl: 'https://illuminations.nctm.org/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Compara números mixtos y fracciones impropias visualmente.',
     recommendedGrades: 'Primaria y Secundaria',
     tags: ['Fracciones', 'Aritmética', 'Racionales']
@@ -249,9 +276,9 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     organization: 'GeoGebra Community',
     category: 'math',
     categoryLabel: 'Matemáticas y Geometría',
-    description: 'Rompecabezas geométrico de áreas cuadradas que demuestra que a² + b² = c².',
-    embedUrl: 'https://www.geogebra.org/m/e8d5qzgk',
-    pedagogicalTip: 'Los alumnos reordenan las piezas de los cuadrados pequeños para llenar exactamente el cuadrado de la hipotenusa.',
+    description: 'Lienzo geométrico interactivo para demostrar que a² + b² = c² mediante áreas cuadradas y triángulos rectángulos.',
+    embedUrl: 'https://www.geogebra.org/classic#geometry',
+    pedagogicalTip: 'Los alumnos construyen cuadrados sobre los catetos e hipotenusa para verificar a² + b² = c².',
     recommendedGrades: 'Secundaria',
     tags: ['Teorema de Pitágoras', 'Áreas', 'Triángulos Rectángulos']
   },
@@ -263,9 +290,9 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     organization: 'MolView Project (Herman Bergwerf)',
     category: 'chemistry',
     categoryLabel: 'Química y Moléculas',
-    description: 'Dibuja estructuras de Lewis en 2D y el motor las convierte instantáneamente en modelos tridimensionales interactivos.',
-    embedUrl: 'https://molview.org/',
-    pedagogicalTip: 'Pide a los alumnos construir la molécula del agua (H₂O) y medir el ángulo de enlace de 104.5°.',
+    description: 'Visor molecular tridimensional interactivo para explorar enlaces, ángulos y geometría espacial de compuestos.',
+    embedUrl: 'https://embed.molview.org/v1/?mode=balls&cid=962',
+    pedagogicalTip: 'Pide a los alumnos rotar la molécula del agua (H₂O) y observar el ángulo de enlace de 104.5°.',
     recommendedGrades: 'Secundaria y Preparatoria',
     tags: ['Moléculas 3D', 'Estructuras de Lewis', 'Geometría Molecular']
   },
@@ -300,22 +327,22 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     category: 'chemistry',
     categoryLabel: 'Química y Moléculas',
     description: 'Maneja matraces, buretas, pipetas y reactivos químicos con cálculo de pH en tiempo real.',
-    embedUrl: 'http://chemcollective.org/vlabs',
+    embedUrl: 'https://chemcollective.org/vlabs',
     pedagogicalTip: 'Realiza una titulación ácido fuerte - base fuerte y observa la curva de neutralización.',
     recommendedGrades: 'Preparatoria',
     tags: ['Titulaciones', 'Ácido-Base', 'pH', 'Laboratorio Virtual']
   },
   {
     id: 'rsc-periodic-table',
-    name: 'Royal Society of Chemistry: Tabla Interactiva',
-    organization: 'Royal Society of Chemistry (RSC)',
+    name: 'PhET: Constructor de Átomos y Tabla Periódica',
+    organization: 'University of Colorado Boulder',
     category: 'chemistry',
     categoryLabel: 'Química y Moléculas',
-    description: 'Historia de los descubrimientos, usos en la vida real, abundancia en la corteza terrestre y toxicidad.',
-    embedUrl: 'https://www.rsc.org/periodic-table',
-    pedagogicalTip: 'Asigna a cada alumno un elemento químico para investigar su aplicación en la tecnología moderna.',
+    description: 'Construye átomos con protones, neutrones y electrones para descubrir su número atómico, masa e identidad química.',
+    embedUrl: 'https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_es.html',
+    pedagogicalTip: 'Asigna a cada alumno un elemento de la tabla periódica para armar su isótopo estable y su ion.',
     recommendedGrades: 'Secundaria y Preparatoria',
-    tags: ['Historia de Elementos', 'Química Aplicada', 'Sostenibilidad']
+    tags: ['Estructura Atómica', 'Tabla Periódica', 'Isótopos', 'Iones']
   },
   {
     id: 'pubchem-3d',
@@ -325,6 +352,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Química y Moléculas',
     description: 'Visualizador de más de 100 millones de compuestos orgánicos e inorgánicos con propiedades farmacológicas.',
     embedUrl: 'https://pubchem.ncbi.nlm.nih.gov/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Busca la molécula de la cafeína o la aspirina y rota su conformación en el espacio.',
     recommendedGrades: 'Preparatoria',
     tags: ['Farmacología', 'Química Orgánica', 'Compuestos']
@@ -363,6 +391,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Biología y Salud',
     description: 'Exploración interactiva por capas de los sistemas muscular, esquelético, cardiovascular y respiratorio.',
     embedUrl: 'https://human.biodigital.com/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Aísla el corazón humano para observar la sístole y diástole con flujo sanguíneo en 3D.',
     recommendedGrades: 'Primaria, Secundaria y Prepa',
     tags: ['Anatomía', 'Cuerpo Humano', 'Corazón', 'Salud']
@@ -405,15 +434,15 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
   },
   {
     id: 'hhmi-biointeractive',
-    name: 'HHMI BioInteractive: Selección Natural y Evolución',
-    organization: 'Howard Hughes Medical Institute',
+    name: 'PhET Biology: Expresión Genética y Síntesis Celular',
+    organization: 'University of Colorado Boulder',
     category: 'biology',
     categoryLabel: 'Biología y Salud',
-    description: 'Simulaciones poblacionales de mutaciones, camuflaje y supervivencia del más apto con pinzones y ratones de bolsillo.',
-    embedUrl: 'https://www.biointeractive.org/',
-    pedagogicalTip: 'Modifica el color del terreno de claro a oscuro y observa el cambio en las frecuencias alélicas tras 50 generaciones.',
+    description: 'Simula la transcripción genética, traducción en ribosomas y producción de proteínas celulares en tiempo real.',
+    embedUrl: 'https://phet.colorado.edu/sims/html/gene-expression-essentials/latest/gene-expression-essentials_es.html',
+    pedagogicalTip: 'Modifica las concentraciones de factores de transcripción y observa cómo cambia la expresión proteica.',
     recommendedGrades: 'Secundaria y Preparatoria',
-    tags: ['Evolución', 'Selección Natural', 'Genética de Poblaciones']
+    tags: ['Genética', 'Transcripción ADN', 'Biología Celular']
   },
   {
     id: 'earth-nullschool',
@@ -435,6 +464,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Astronomía y Tierra',
     description: 'Trayectorias de sondas espaciales de la NASA (Voyager, James Webb, Perseverance en Marte) en tiempo real.',
     embedUrl: 'https://eyes.nasa.gov/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Sigue el viaje de la sonda New Horizons al pasar cerca de Plutón.',
     recommendedGrades: 'Secundaria y Preparatoria',
     tags: ['NASA', 'Exploración Espacial', 'Marte', 'Satélites']
@@ -461,6 +491,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Robótica y Código',
     description: 'Conecta servomotores, sensores ultrasónicos, LEDs y programa placas Arduino UNO con bloques o código C++.',
     embedUrl: 'https://www.tinkercad.com/circuits',
+    embedMode: 'external-window',
     pedagogicalTip: 'Programa un semáforo inteligente con temporizadores sin requerir comprar componentes físicos.',
     recommendedGrades: 'Primaria Alta, Secundaria y Prepa',
     tags: ['Arduino', 'Robótica', 'Sensores', 'Microcontroladores']
@@ -479,8 +510,8 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
   },
   {
     id: 'makecode-microbit',
-    name: 'Microsoft MakeCode: Micro:bit Virtual',
-    organization: 'Microsoft / Micro:bit Foundation',
+    name: 'Laboratorio de Bloques: Micro:bit Virtual',
+    organization: 'Fundación Micro:bit',
     category: 'robotics',
     categoryLabel: 'Robótica y Código',
     description: 'Entorno de bloques y simulador de la matriz de 25 LEDs, brújula, acelerómetro y pines GPIO de Micro:bit.',
@@ -491,8 +522,8 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
   },
   {
     id: 'makecode-arcade',
-    name: 'Microsoft MakeCode Arcade: Videojuegos Retro',
-    organization: 'Microsoft Education',
+    name: 'Laboratorio Arcade: Videojuegos Retro',
+    organization: 'Consorcio Educativo STEM',
     category: 'robotics',
     categoryLabel: 'Robótica y Código',
     description: 'Crea videojuegos de plataformas, laberintos y físicas 2D con sprites retro pixel art.',
@@ -509,6 +540,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Robótica y Código',
     description: 'Incrusta proyectos interactivos, simuladores y juegos creados por la comunidad educativa de Scratch.',
     embedUrl: 'https://scratch.mit.edu/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Integra proyectos de ciencias creados por tus propios alumnos directamente en la lección de ISkool.',
     recommendedGrades: 'Primaria y Secundaria',
     tags: ['Scratch', 'MIT', 'Animación', 'Creatividad Digital']
@@ -521,6 +553,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Robótica y Código',
     description: 'Diseña circuitos lógicos con compuertas AND, OR, NOT, multiplexores, sumadores y displays de 7 segmentos.',
     embedUrl: 'https://circuitverse.org/simulator',
+    embedMode: 'external-window',
     pedagogicalTip: 'Demuestra cómo se construye un sumador binario de 4 bits a partir de compuertas básicas.',
     recommendedGrades: 'Preparatoria',
     tags: ['Compuertas Lógicas', 'Álgebra Booleana', 'Binario', 'Electrónica']
@@ -565,13 +598,13 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
   },
   {
     id: 'geacron-history-atlas',
-    name: 'GeaCron: Atlas Histórico Mundial Interactivo',
-    organization: 'GeaCron Historical Data',
+    name: 'Chronas: Atlas Histórico Mundial Interactivo',
+    organization: 'Chronas Open History Project',
     category: 'humanities',
     categoryLabel: 'Artes y Geografía',
-    description: 'Mapa geopolítico interactivo que muestra las fronteras de todos los imperios y naciones año por año desde 3000 a.C.',
-    embedUrl: 'http://geacron.com/home-es/',
-    pedagogicalTip: 'Ingresa el año 1810 para ver la extensión del Virreinato de la Nueva España y el Imperio Napoleónico.',
+    description: 'Mapa geopolítico interactivo que muestra las fronteras de todos los imperios y civilizaciones año por año a través de la historia.',
+    embedUrl: 'https://www.chronas.org/',
+    pedagogicalTip: 'Ingresa el año 1810 para explorar el mapa histórico de la Nueva España y los eventos mundiales simultáneos.',
     recommendedGrades: 'Secundaria y Preparatoria',
     tags: ['Historia Universal', 'Fronteras', 'Mapas Históricos', 'Geopolítica']
   },
@@ -583,6 +616,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Artes y Geografía',
     description: 'Retos interactivos para localizar estados de México, capitales de América, cordilleras y ríos del mundo.',
     embedUrl: 'https://www.geoguessr.com/seterra/es',
+    embedMode: 'external-window',
     pedagogicalTip: 'Aplica una prueba rápida de 3 minutos para ubicar las 32 entidades federativas de México.',
     recommendedGrades: 'Primaria y Secundaria',
     tags: ['Geografía', 'Estados de México', 'Capitales', 'Mapas']
@@ -619,6 +653,7 @@ export const SIMULATORS_DIRECTORY: SimulatorItem[] = [
     categoryLabel: 'Artes y Geografía',
     description: 'Entrena modelos de visión por computadora y reconocimiento de audio directamente en el navegador sin programar.',
     embedUrl: 'https://teachablemachine.withgoogle.com/',
+    embedMode: 'external-window',
     pedagogicalTip: 'Crea un clasificador que reconozca si un alumno está levantando la mano derecha o izquierda.',
     recommendedGrades: 'Secundaria y Preparatoria',
     tags: ['Inteligencia Artificial', 'Machine Learning', 'Visión por Computadora']

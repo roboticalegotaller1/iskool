@@ -16,8 +16,10 @@ import {
   Lock,
   Loader2
 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { isAllowedSimulatorOrigin } from '@/lib/gameSecurityOrigins';
+import { requiresExternalWindowLaunch } from '@/data/simulatorsDirectory';
 
 interface SimulatorIframePlayerProps {
   activity: CanvasActivityJSON;
@@ -410,20 +412,52 @@ export const SimulatorIframePlayer: React.FC<SimulatorIframePlayerProps> = ({
         </div>
       )}
 
-      {/* Contenedor Iframe con Atributo Sandbox Estricto */}
+      {/* Contenedor Iframe o Lanzador Seguro para Sitios con Restricción de Marco */}
       <div className="relative flex-1 w-full bg-black min-h-0">
-        <iframe
-          key={iframeKey}
-          ref={iframeRef}
-          src={embedUrl}
-          title={title}
-          onLoad={sendHandshakeToIframe}
-          className="w-full h-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-        />
+        {requiresExternalWindowLaunch(embedUrl) ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950/60 space-y-5">
+            <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-300">
+              <ExternalLink className="w-8 h-8" />
+            </div>
+            <div className="max-w-lg space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                Laboratorio Oficial en Ventana Dedicada
+              </span>
+              <h3 className="text-xl font-black text-white">{title}</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Por política de seguridad del proveedor científico ({new URL(embedUrl).hostname}), este laboratorio se ejecuta en una ventana externa sincronizada mientras ISkool registra tu tiempo de práctica.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={embedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  interactionCountRef.current += 5;
+                  setIsHandshakeReady(true);
+                }}
+                className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/25 transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Abrir Simulador Oficial</span>
+              </a>
+            </div>
+          </div>
+        ) : (
+          <iframe
+            key={iframeKey}
+            ref={iframeRef}
+            src={embedUrl}
+            title={title}
+            onLoad={sendHandshakeToIframe}
+            className="w-full h-full border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allow="fullscreen; accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          />
+        )}
 
         {/* Modal de Finalización con Recompensas Otorgadas */}
         {isCompleted && (

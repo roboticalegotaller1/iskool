@@ -25,6 +25,7 @@ export interface PacProviderAdapter {
 
 interface StoredCfdi {
   uuid: string;
+  schoolId?: string;
   request: CfdiStampRequest;
   response: CfdiStampResponse;
   statusSat: 'Vigente' | 'Cancelado';
@@ -102,10 +103,13 @@ export class SandboxPacAdapter implements PacProviderAdapter {
     const noCertificadoEmisor = '30001000000500003416';
     const rfcProvCertif = 'PAC080721NN7';
 
-    // Generar sellos digitales simulados de alta fidelidad
+    // Generar sellos digitales con llaves configuradas o derivadas de servidor (Zero-Trust)
+    const { getSecuritySecret } = await import('@/lib/security/secretManager');
+    const emisorSealKey = process.env.CFDI_EMISOR_SEAL_KEY || `${getSecuritySecret('TOKEN_ENCRYPTION_SECRET')}::cfd-emisor`;
+    const satSealKey = process.env.CFDI_PAC_SEAL_KEY || `${getSecuritySecret('TOKEN_ENCRYPTION_SECRET')}::sat-pac`;
     const payloadForSeal = `${request.emisor.rfc}|${request.receptor.rfc}|${request.total}|${uuid}|${fechaTimbrado}`;
-    const selloCfd = crypto.createHmac('sha256', 'cfd_secret_key_emisor').update(payloadForSeal).digest('base64');
-    const selloSat = crypto.createHmac('sha256', 'sat_secret_key_pac').update(payloadForSeal + selloCfd).digest('base64');
+    const selloCfd = crypto.createHmac('sha256', emisorSealKey).update(payloadForSeal).digest('base64');
+    const selloSat = crypto.createHmac('sha256', satSealKey).update(payloadForSeal + selloCfd).digest('base64');
     const cadenaOriginalSat = `||1.1|${uuid}|${fechaTimbrado}|${rfcProvCertif}|${selloCfd}|${noCertificadoSat}||`;
 
     // 4. Construir XML Canónico con timbrado
@@ -144,6 +148,7 @@ export class SandboxPacAdapter implements PacProviderAdapter {
     // 5. Registrar en el almacén fiscal para auditoría y cancelaciones
     getFiscalStore().set(uuid, {
       uuid,
+      schoolId: (request as any).schoolId,
       request,
       response,
       statusSat: 'Vigente',

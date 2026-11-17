@@ -11,16 +11,25 @@ import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ success: false, error: 'Autenticación requerida para consultar asuntos delegados.' }, { status: 401 });
     }
-    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+    const roleLower = (auth.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator'].includes(roleLower)) {
       return NextResponse.json({ success: false, error: 'Permisos insuficientes para acceder a la bóveda de correo.' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId') || 'IBIME';
-    const matters = getDelegatedMattersFromCorreoVault(tenantId);
+    const requestedTenant = searchParams.get('tenantId') || auth.user.school_id || 'IBIME';
+    if (
+      roleLower !== 'superadmin' &&
+      auth.user.school_id &&
+      requestedTenant !== auth.user.school_id &&
+      !(auth.user.school_id === 'sch-ibime' && requestedTenant.toUpperCase() === 'IBIME')
+    ) {
+      return NextResponse.json({ success: false, error: 'Acceso denegado: aislamiento multi-colegio.' }, { status: 403 });
+    }
+    const matters = getDelegatedMattersFromCorreoVault(requestedTenant);
     return NextResponse.json({ success: true, count: matters.length, matters });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -30,15 +39,24 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ success: false, error: 'Autenticación requerida para delegar asuntos.' }, { status: 401 });
     }
-    if (['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+    const postRoleLower = (auth.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator'].includes(postRoleLower)) {
       return NextResponse.json({ success: false, error: 'Permisos insuficientes para delegar asuntos ejecutivos.' }, { status: 403 });
     }
 
     const body = await req.json();
-    const { tenantId = 'IBIME', matter } = body as { tenantId: string; matter: CorreoDelegatedMatter };
+    const { tenantId = auth.user.school_id || 'IBIME', matter } = body as { tenantId: string; matter: CorreoDelegatedMatter };
+    if (
+      postRoleLower !== 'superadmin' &&
+      auth.user.school_id &&
+      tenantId !== auth.user.school_id &&
+      !(auth.user.school_id === 'sch-ibime' && tenantId.toUpperCase() === 'IBIME')
+    ) {
+      return NextResponse.json({ success: false, error: 'Acceso denegado: no puedes escribir asuntos en otro colegio.' }, { status: 403 });
+    }
 
     if (!matter || !matter.id) {
       return NextResponse.json({ success: false, error: 'Faltan datos del asunto a delegar' }, { status: 400 });

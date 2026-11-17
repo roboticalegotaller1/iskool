@@ -292,29 +292,29 @@ A: A las generaciones del porvenir les encargo custodiar la República y el pact
 **Retroalimentación**: Victoria arrojó su espada exclamando "¡Va mi espada en prenda, voy por ella!" y cruzó a nado bajo fuego para liderar el ataque insurgente.
 **PDA**: Reconocimiento de héroes de la Independencia y sus gestas bélicas.
 
-### 3. ¿Qué último reducto colonial español capituló en 1825 bajo el mandato de Guadalupe Victoria?
+### 3. ¿Qué último reducto colonial español capituló en 1825 bajo mi mandato?
 - [ ] El Castillo de Chapultepec
 - [x] La Fortaleza de San Juan de Ulúa
 - [ ] El Convento de Churubusco
 - [ ] El Fuerte de San Carlos en Perote
 
-**Retroalimentación**: El cerco naval de la marina mexicana forzó la capitulación española en San Juan de Ulúa el 18 de noviembre de 1825.
+**Retroalimentación**: El cerco naval de nuestra marina mexicana forzó la capitulación española en San Juan de Ulúa el 18 de noviembre de 1825.
 **PDA**: Consumación militar de la independencia y defensa de la soberanía.
 
-### 4. ¿Qué institución de resguardo patrimonial y cultural fue fundada por decreto de Guadalupe Victoria en 1825?
+### 4. ¿Qué institución de resguardo patrimonial y cultural fundé por decreto en 1825?
 - [ ] El Instituto Nacional de Bellas Artes
 - [x] El Museo Nacional Mexicano
 - [ ] El Archivo General de Notarías
 - [ ] La Biblioteca Central de la UNAM
 
-**Retroalimentación**: En marzo de 1825 Victoria fundó el Museo Nacional Mexicano, génesis del actual Museo Nacional de Antropología y de Historia.
+**Retroalimentación**: En marzo de 1825 fundé el Museo Nacional Mexicano, génesis del actual Museo Nacional de Antropología y de Historia.
 **PDA**: Conservación del patrimonio histórico y cultural fundacional de la nación.
 
-### 5. ¿Cuál fue un logro institucional inédito de la presidencia de Guadalupe Victoria en comparación con sus sucesores?
+### 5. ¿Cuál fue un logro institucional inédito de mi presidencia en comparación con mis sucesores?
 - [ ] Promulgar las Leyes de Reforma
 - [x] Concluir íntegro su periodo constitucional de cuatro años
 - [ ] Nacionalizar los ferrocarriles
 - [ ] Fundar la Escuela Nacional Preparatoria
 
-**Retroalimentación**: Victoria fue el único mandatario de las primeras décadas que logró concluir su mandato constitucional de 1824 a 1829 en paz.
+**Retroalimentación**: Fui el único mandatario de las primeras décadas que logró concluir su mandato constitucional de 1824 a 1829 en paz.
 **PDA**: Continuidad constitucional y gobernabilidad republicana temprana.

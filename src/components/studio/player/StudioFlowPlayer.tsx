@@ -2211,8 +2211,11 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        if (!languagePracticeInput.trim()) {
+                          setLanguagePracticeFeedback('⚠️ Escribe primero tu frase de práctica o transcripción antes de evaluarla.');
+                          return;
+                        }
                         playSound('correct');
-                        setLanguagePracticeInput(phrase);
                         setLanguagePracticeFeedback('✓ Fonética verificada: 96% de precisión articulatoria y prosodia natural (Nivel CENNI / CEFR).');
                       }}
                       className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shrink-0 cursor-pointer"
@@ -2223,16 +2226,22 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 </div>
 
                 {languagePracticeFeedback && (
-                  <div className="p-3 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold flex items-center justify-between">
+                  <div className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-between ${languagePracticeFeedback.startsWith('⚠️') ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-900 border-emerald-300'}`}>
                     <span>{languagePracticeFeedback}</span>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${languagePracticeFeedback.startsWith('⚠️') ? 'text-amber-600' : 'text-emerald-600'}`} />
                   </div>
                 )}
 
                 <div className="flex justify-end pt-1">
                   <button
                     type="button"
-                    onClick={() => handleNextStep(45)}
+                    onClick={() => {
+                      if (!languagePracticeInput.trim()) {
+                        setLanguagePracticeFeedback('⚠️ Completa primero tu respuesta oral o escrita para finalizar la práctica.');
+                        return;
+                      }
+                      handleNextStep(45);
+                    }}
                     className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
                   >
                     <span>Completar Práctica Fonética (+45 XP)</span>
@@ -2411,8 +2420,9 @@ export const StudioFlowPlayer: React.FC<Props> = ({
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
+                  disabled={!socraticMessages.some(m => m.role === 'student')}
                   onClick={() => handleNextStep(50)}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
                 >
                   <span>Completar Tutoría Socrática y Continuar (+50 XP)</span>
                   <ArrowRight className="w-4 h-4" />
@@ -2460,11 +2470,13 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 {!roleplayCompleted ? (
                   <button
                     type="button"
+                    disabled={!roleplayResponse.trim()}
                     onClick={() => {
+                      if (!roleplayResponse.trim()) return;
                       playSound('victory');
                       setRoleplayCompleted(true);
                     }}
-                    className="px-5 py-2.5 rounded-2xl bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-black text-xs cursor-pointer"
+                    className="px-5 py-2.5 rounded-2xl bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs cursor-pointer"
                   >
                     Evaluar Intervención de Roleplay
                   </button>

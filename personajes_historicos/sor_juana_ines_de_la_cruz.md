@@ -310,11 +310,11 @@ A: A las niñas y jóvenes de México y del mundo les digo: lean, piensen y cues
 **Retroalimentación**: "Primero sueño" es una silva barroca de 975 versos que relata el viaje del alma en busca del conocimiento universal.
 **PDA**: Análisis de textos literarios novohispanos del Siglo de Oro.
 
-### 5. ¿De qué causa falleció Sor Juana Inés de la Cruz el 17 de abril de 1695 en su celda conventual?
+### 5. ¿De qué causa fallecí el 17 de abril de 1695 en mi celda conventual?
 - [ ] De muerte natural por avanzada edad
-- [x] Contagiada de tifus epidémico al cuidar a sus hermanas religiosas enfermas
+- [x] Contagiada de tifus epidémico al cuidar a mis hermanas religiosas enfermas
 - [ ] En un naufragio hacia Europa
 - [ ] Por un castigo inquisitorial
 
-**Retroalimentación**: Sor Juana falleció en la enfermería conventual víctima de la peste tras brindar atención médica a las monjas contagiadas.
+**Retroalimentación**: Fallecí en la enfermería conventual víctima de la peste tras brindar atención médica a mis hermanas religiosas contagiadas.
 **PDA**: Epidemias históricas en la Nueva España y vocación humanista de servicio.

@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FormattedDate } from '@/components/FormattedDate';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
   Building2, 
   Lock, 
@@ -52,24 +53,44 @@ export default function CheckoutPage(props: CheckoutPageProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [copiedClabe, setCopiedClabe] = useState(false);
 
+  const billingRecords = useSchoolAdminStore((s) => s.billingRecords);
+  const institutionsList = useSchoolAdminStore((s) => s.institutionsList);
+  const activeSchoolId = useSchoolAdminStore((s) => s.activeSchoolId);
+  const schoolSettings = useSchoolAdminStore((s) => s.schoolSettings);
+  const matchedRecord = billingRecords.find(
+    (r) =>
+      r.id === resolvedParams.sessionId ||
+      (resolvedSearchParams.invoiceNumber && r.invoiceNumber === decodeURIComponent(resolvedSearchParams.invoiceNumber))
+  );
+  const activeInstitution = institutionsList.find(
+    (inst) => inst.id === (matchedRecord?.school_id || activeSchoolId)
+  );
+
   // Parámetros dinámicos inyectados desde el Magic Link o sesión
-  const amount = Number(resolvedSearchParams.amount) || 3450.00;
-  const concept = resolvedSearchParams.concept ? decodeURIComponent(resolvedSearchParams.concept) : 'Colegiatura de Septiembre 2026';
-  const studentName = resolvedSearchParams.student ? decodeURIComponent(resolvedSearchParams.student) : 'Mateo López Mendoza';
-  const parentName = resolvedSearchParams.parent ? decodeURIComponent(resolvedSearchParams.parent) : 'Israel López Ángeles';
-  const invoiceNumber = resolvedSearchParams.invoiceNumber ? decodeURIComponent(resolvedSearchParams.invoiceNumber) : (resolvedParams.sessionId?.startsWith('COL-') ? resolvedParams.sessionId : 'COL-2026-00452');
-  const dueDate = resolvedSearchParams.dueDate ? decodeURIComponent(resolvedSearchParams.dueDate) : '10 de Septiembre de 2026';
+  const amount = Number(resolvedSearchParams.amount) || matchedRecord?.amount || 3450.00;
+  const concept = resolvedSearchParams.concept ? decodeURIComponent(resolvedSearchParams.concept) : (matchedRecord?.concept || 'Colegiatura de Septiembre 2026');
+  const studentName = resolvedSearchParams.student ? decodeURIComponent(resolvedSearchParams.student) : (matchedRecord?.studentName || 'Mateo López Mendoza');
+  const parentName = resolvedSearchParams.parent ? decodeURIComponent(resolvedSearchParams.parent) : (matchedRecord?.parentName || 'Israel López Ángeles');
+  const invoiceNumber = resolvedSearchParams.invoiceNumber ? decodeURIComponent(resolvedSearchParams.invoiceNumber) : (matchedRecord?.invoiceNumber || (resolvedParams.sessionId?.startsWith('COL-') ? resolvedParams.sessionId : 'COL-2026-00452'));
+  const dueDate = resolvedSearchParams.dueDate ? decodeURIComponent(resolvedSearchParams.dueDate) : (matchedRecord?.dueDate || '10 de Septiembre de 2026');
+
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [cardHolder, setCardHolder] = useState(parentName);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [paidReceiptNumber, setPaidReceiptNumber] = useState('REC-2026-098234');
 
   // Datos estructurados del cargo institucional
   const invoiceData = {
     invoiceNumber,
     concept,
-    schoolName: 'Colegio Anglo Mexicano',
+    schoolName: activeInstitution?.name || schoolSettings?.name || 'Institución Educativa ISkool',
     studentName,
-    studentGrade: '3º de Secundaria — Grupo A',
+    studentGrade: matchedRecord ? `${matchedRecord.grade} ${matchedRecord.level} — Grupo ${matchedRecord.group}` : '3º de Secundaria — Grupo A',
     parentName,
-    subtotal: amount,
-    discount: 0.00,
+    subtotal: matchedRecord?.baseAmount ?? amount,
+    discount: matchedRecord?.discountAmount ?? 0.00,
     surcharge: 0.00,
     total: amount,
     dueDate,
@@ -78,12 +99,72 @@ export default function CheckoutPage(props: CheckoutPageProps) {
     storeReference: '9845 2301 9842 1094'
   };
 
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+    setCardNumber(digits.replace(/(.{4})/g, '$1 ').trim());
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setCardExpiry(digits.length >= 3 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits);
+  };
+
   const handlePay = () => {
+    setFormError(null);
+    if (selectedMethod === 'card') {
+      const cleanNum = cardNumber.replace(/\s/g, '');
+      if (cleanNum.length < 15) {
+        setFormError('Ingrese un número de tarjeta válido (15 o 16 dígitos).');
+        return;
+      }
+      if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+        setFormError('Ingrese una fecha de vencimiento válida (MM/AA).');
+        return;
+      }
+      if (cardCvv.length < 3) {
+        setFormError('Ingrese el código de seguridad CVV (3 o 4 dígitos).');
+        return;
+      }
+      if (cardHolder.trim().length < 3) {
+        setFormError('Ingrese el nombre completo del titular.');
+        return;
+      }
+    }
+
     setIsProcessing(true);
     setTimeout(() => {
+      const receipt = `REC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+      setPaidReceiptNumber(receipt);
+      const adminStore = useSchoolAdminStore.getState();
+
+      if (resolvedParams.sessionId === 'all') {
+        const studentIdParam = resolvedSearchParams.studentId ? decodeURIComponent(resolvedSearchParams.studentId) : '';
+        const lowerStudent = studentName.toLowerCase();
+        adminStore.billingRecords
+          .filter((r) =>
+            r.status !== 'paid' &&
+            ((studentIdParam && r.studentId === studentIdParam) ||
+              (r.studentName && r.studentName.toLowerCase() === lowerStudent))
+          )
+          .forEach((r) => {
+            adminStore.recordBillingPayment(r.id, {
+              method: selectedMethod,
+              reference: receipt,
+              amount: r.amount
+            });
+          });
+      } else {
+        const targetId = matchedRecord?.id || invoiceNumber || resolvedParams.sessionId;
+        adminStore.recordBillingPayment(targetId, {
+          method: selectedMethod,
+          reference: receipt,
+          amount: invoiceData.total
+        });
+      }
+
       setIsProcessing(false);
       setIsSuccess(true);
-    }, 1800);
+    }, 800);
   };
 
   const handleCopyClabe = () => {
@@ -124,7 +205,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
             <div className="bg-slate-950 rounded-xl p-5 border border-slate-800 text-xs text-slate-300 space-y-3 mb-6">
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-500">Folio de Recibo:</span>
-                <span className="font-mono font-semibold text-white">REC-2026-098234</span>
+                <span className="font-mono font-semibold text-white">{paidReceiptNumber}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-500">Fecha y Hora:</span>
@@ -150,7 +231,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
 
             <div className="space-y-3">
               <a
-                href={`/api/billing/invoice/pdf?receipt_id=REC-2026-098234&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}&payment_method=${encodeURIComponent(selectedMethod === 'card' ? 'Tarjeta Bancaria' : selectedMethod === 'spei' ? 'Transferencia SPEI' : 'Tienda de Conveniencia')}`}
+                href={`/api/billing/invoice/pdf?receipt_id=${encodeURIComponent(paidReceiptNumber)}&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}&payment_method=${encodeURIComponent(selectedMethod === 'card' ? 'Tarjeta Bancaria' : selectedMethod === 'spei' ? 'Transferencia SPEI' : 'Tienda de Conveniencia')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm shadow-lg shadow-blue-600/20 text-center"
@@ -161,7 +242,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
 
               <div className="grid grid-cols-2 gap-2">
                 <a
-                  href={`/api/billing/invoice/download?receipt_id=REC-2026-098234&format=xml&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}`}
+                  href={`/api/billing/invoice/download?receipt_id=${encodeURIComponent(paidReceiptNumber)}&format=xml&uuid=4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D&amount=${invoiceData.total}&concept=${encodeURIComponent(invoiceData.concept)}&student=${encodeURIComponent(invoiceData.studentName)}&tax_name=${encodeURIComponent(invoiceData.parentName)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-medium py-2.5 px-3 rounded-xl transition-colors text-xs border border-slate-700"
@@ -277,7 +358,9 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                     <label className="block text-slate-300 font-medium mb-1.5">Número de Tarjeta</label>
                     <input
                       type="text"
-                      placeholder="4000 1234 5678 9010" aria-label="4000 1234 5678 9010"
+                      placeholder="4000 1234 5678 9010" aria-label="Número de Tarjeta"
+                      value={cardNumber}
+                      onChange={handleCardNumberChange}
                       maxLength={19}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                     />
@@ -287,7 +370,9 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                       <label className="block text-slate-300 font-medium mb-1.5">Vencimiento (MM/AA)</label>
                       <input
                         type="text"
-                        placeholder="12/28" aria-label="12/28"
+                        placeholder="12/28" aria-label="Vencimiento MM/AA"
+                        value={cardExpiry}
+                        onChange={handleExpiryChange}
                         maxLength={5}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                       />
@@ -296,7 +381,9 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                       <label className="block text-slate-300 font-medium mb-1.5">Código de Seguridad (CVV)</label>
                       <input
                         type="password"
-                        placeholder="•••" aria-label="•••"
+                        placeholder="•••" aria-label="Código de Seguridad CVV"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
                         maxLength={4}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                       />
@@ -304,9 +391,10 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                   </div>
                   <div>
                     <label className="block text-slate-300 font-medium mb-1.5">Nombre del Titular</label>
-                    <input aria-label="Campo de texto de formulario"
+                    <input aria-label="Nombre del Titular"
                       type="text"
-                      defaultValue={invoiceData.parentName}
+                      value={cardHolder}
+                      onChange={(e) => setCardHolder(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                     />
                   </div>
@@ -351,7 +439,13 @@ export default function CheckoutPage(props: CheckoutPageProps) {
               )}
 
               {/* Botón de Acción */}
-              <div className="mt-6 pt-4 border-t border-slate-800">
+              <div className="mt-6 pt-4 border-t border-slate-800 space-y-3">
+                {formError && (
+                  <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-200 text-xs font-medium flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <span>{formError}</span>
+                  </div>
+                )}
                 <button
                   onClick={handlePay}
                   disabled={isProcessing}

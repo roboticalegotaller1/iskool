@@ -1,11 +1,27 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment node
+import { describe, it, expect, beforeAll } from 'vitest';
 import { POST } from '@/app/api/mail/test-connection/route';
+import { signSessionToken } from '@/lib/sessionToken';
 import { NextRequest } from 'next/server';
+
+let adminSessionToken = '';
+
+beforeAll(async () => {
+  adminSessionToken = await signSessionToken({
+    id: 'usr-test-superadmin',
+    email: 'admin@iskool.edu.mx',
+    role: 'superadmin',
+    school_id: 'sch-ibime',
+  });
+});
 
 function createMockRequest(body: any): NextRequest {
   return new NextRequest('http://localhost:3000/api/mail/test-connection', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      cookie: `iskool_session=${adminSessionToken}`,
+    },
     body: JSON.stringify(body)
   });
 }

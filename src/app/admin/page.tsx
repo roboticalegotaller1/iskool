@@ -1168,9 +1168,19 @@ export default function SuperUserAdminPage() {
   const handleWorkshopImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+        showToast('⚠️ Por seguridad e integridad visual, utiliza imágenes rasterizadas (PNG/JPG/WebP).');
+        e.target.value = '';
+        return;
+      }
       const processed = file.type.startsWith('image/')
         ? await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 }).catch(() => file)
         : file;
+      if (processed.size > 400 * 1024) {
+        showToast('⚠️ La imagen comprimida supera el límite institucional de 400 KB.');
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewWorkshopForm(prev => ({ ...prev, image_url: reader.result as string }));
@@ -1179,28 +1189,39 @@ export default function SuperUserAdminPage() {
     }
   };
 
-  // Manejo de Subida de Temario / Programa PDF
+  // Manejo de Subida de Temario / Programa PDF (con tope seguro de almacenamiento Regla 3)
   const handleWorkshopSyllabusUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewWorkshopForm(prev => ({
-          ...prev,
-          syllabus_url: reader.result as string,
-          syllabus_filename: file.name
-        }));
-        showToast(`📄 Temario cargado: ${file.name}`);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const MAX_SYLLABUS_BYTES = 512 * 1024;
+    if (!isPdf) {
+      showToast('⚠️ El temario debe adjuntarse en formato PDF válido.');
+      e.target.value = '';
+      return;
     }
+    if (file.size > MAX_SYLLABUS_BYTES) {
+      showToast('⚠️ El temario PDF no debe exceder 512 KB para almacenamiento seguro.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewWorkshopForm(prev => ({
+        ...prev,
+        syllabus_url: reader.result as string,
+        syllabus_filename: file.name
+      }));
+      showToast(`📄 Temario cargado: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Manejo de Creación de Nuevo Taller Académico
   const handleCreateWorkshop = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWorkshopForm.name.trim()) {
-      alert('Por favor ingresa el nombre del taller.');
+      showToast('⚠️ Por favor ingresa el nombre del taller.');
       return;
     }
 
@@ -1321,7 +1342,7 @@ export default function SuperUserAdminPage() {
     setShowAddSubjectModal(false);
   };
 
-  // Parseo de Texto / Pegado de Excel para Carga Masiva
+  // Parseo de Texto / Pegado de Hoja de Cálculo para Carga Masiva
   const parseBulkText = (text: string) => {
     const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
     const parsed: Array<Partial<DetailedStudent>> = [];
@@ -1363,7 +1384,7 @@ export default function SuperUserAdminPage() {
     setBulkPreviewList(parsed);
   };
 
-  // Manejo de archivo Excel / CSV
+  // Manejo de archivo de Hoja de Cálculo / CSV
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1377,7 +1398,7 @@ export default function SuperUserAdminPage() {
       } else {
         const MAX_XLSX_BYTES = 5 * 1024 * 1024;
         if (file.size > MAX_XLSX_BYTES) {
-          alert('El archivo Excel supera el límite máximo seguro de 5 MB.');
+          showToast('⚠️ El archivo de hoja de cálculo supera el límite máximo seguro de 5 MB.');
           return;
         }
         try {
@@ -3166,7 +3187,7 @@ export default function SuperUserAdminPage() {
               <div>
                 <h4 className="text-sm font-bold text-slate-900">¿Deseas dar de alta nuevos alumnos para este ciclo?</h4>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  Puedes registrar alumnos de forma individual o usar la herramienta de carga rápida mediante archivo Excel.
+                  Puedes registrar alumnos de forma individual o usar la herramienta de carga rápida mediante archivo de hoja de cálculo.
                 </p>
               </div>
               <div className="flex items-center gap-2.5">
@@ -3180,7 +3201,7 @@ export default function SuperUserAdminPage() {
                   onClick={() => setShowBulkUploadModal(true)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 transition-all cursor-pointer hover:scale-102"
                 >
-                  <UploadCloud className="h-4 w-4" /> Carga Rápida (Excel / Lista)
+                  <UploadCloud className="h-4 w-4" /> Carga Rápida (Hoja de Cálculo / Lista)
                 </button>
               </div>
             </div>
@@ -3403,7 +3424,7 @@ export default function SuperUserAdminPage() {
                   onClick={() => setShowBulkUploadModal(true)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg transition-all cursor-pointer hover:scale-102"
                 >
-                  <UploadCloud className="h-4 w-4" /> {isCorporate ? 'Importar Colaboradores (Excel)' : 'Carga Rápida (Excel)'}
+                  <UploadCloud className="h-4 w-4" /> {isCorporate ? 'Importar Colaboradores (Hoja de Cálculo)' : 'Carga Rápida (Hoja de Cálculo)'}
                 </button>
               </div>
             </div>
@@ -4816,7 +4837,7 @@ export default function SuperUserAdminPage() {
                 <li>Capacidad de cambio directo de contraseñas por el Super Usuario en tiempo real.</li>
                 <li>Bloqueo y cancelación instantánea de credenciales para docentes y estudiantes.</li>
                 <li>Los profesores registrados disponen únicamente de acceso al panel docente (`/teacher`).</li>
-                <li>Sincronización en segundo plano con la base de datos central en Supabase.</li>
+                <li>Sincronización en segundo plano con la Bóveda Central de Datos Institucional.</li>
               </ul>
             </div>
           </div>
@@ -5908,16 +5929,16 @@ export default function SuperUserAdminPage() {
         </div>
       )}
 
-      {/* MODAL 2: CARGA RÁPIDA (EXCEL / CSV / PEGAR LISTA) */}
+      {/* MODAL 2: CARGA RÁPIDA (HOJA DE CÁLCULO / CSV / PEGAR LISTA) */}
       {showBulkUploadModal && (
         <div className="fixed inset-0 z-[60] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="w-full max-w-2xl bg-slate-900 border border-white/10 rounded-3xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
-                  <UploadCloud className="h-5 w-5 text-indigo-400" /> Carga Rápida de Alumnos (Excel / CSV)
+                  <UploadCloud className="h-5 w-5 text-indigo-400" /> Carga Rápida de Alumnos (Hoja de Cálculo / CSV)
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Sube tu archivo de Excel o pega la lista de alumnos directamente.</p>
+                <p className="text-xs text-slate-400 mt-0.5">Sube tu archivo de hoja de cálculo o pega la lista de alumnos directamente.</p>
               </div>
               <button onClick={() => setShowBulkUploadModal(false)} className="text-slate-400 hover:text-white text-xs font-bold cursor-pointer">✕ Cerrar</button>
             </div>
@@ -5938,14 +5959,14 @@ export default function SuperUserAdminPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md cursor-pointer transition-all"
                 >
-                  📁 Seleccionar Archivo Excel (.xlsx / .csv)
+                  📁 Seleccionar Archivo de Hoja de Cálculo (.xlsx / .csv)
                 </button>
                 <p className="text-[11px] text-slate-500">O arrastra y suelta tu archivo aquí</p>
               </div>
 
               {/* Opción 2: Pegado de Texto */}
               <div>
-                <label className="text-xs font-bold text-slate-400 block mb-1">O pega el texto copiado de Excel:</label>
+                <label className="text-xs font-bold text-slate-400 block mb-1">O pega el texto copiado de tu Hoja de Cálculo:</label>
                 <textarea aria-label="Ejemplo:&#10;Mateo, Ortiz, Medina, Primaria Torres, 4º&#10;Valentina, Hernández, Silva, Primaria Jardines, 1º&#10;Diego, Jiménez, Ríos, Secundaria Torres, 2º"
                   rows={4}
                   value={bulkTextInput}

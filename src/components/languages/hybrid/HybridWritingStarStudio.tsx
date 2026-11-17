@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { LanguageCode } from '@/store/useLanguagesStore';
 import {
   WRITING_STUDIO_RECIPES,
@@ -32,6 +33,10 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
   onPlayAudio,
   onTriggerToast,
 }) => {
+  const pathname = usePathname() || '';
+  const writingConsoleHref = pathname.startsWith('/student')
+    ? '/student/idiomas/writing'
+    : '/teacher/idiomas/writing';
   const recipesForLang = useMemo(() => {
     const exact = WRITING_STUDIO_RECIPES.filter((r) => r.language === language);
     return exact.length > 0 ? exact : WRITING_STUDIO_RECIPES;
@@ -80,17 +85,44 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
   );
 
   useEffect(() => {
-    setDraftText(activeRecipe.sampleDraft);
-    if (activeRecipe.language === 'fr') {
-      setTeacherFeedback(
-        `¡Excelente redacción en francés (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Muy buen uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y precisión léxica.`
-      );
-    } else {
-      setTeacherFeedback(
-        `¡Excelente trabajo (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Gran uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y vocabulario del nivel ${activeRecipe.level}.`
-      );
+    let hydrated = false;
+    if (typeof window !== 'undefined') {
+      try {
+        const savedEval = localStorage.getItem(`iskool_hybrid_writing_eval_${language}_${activeRecipe.id}`);
+        if (savedEval) {
+          const parsed = JSON.parse(savedEval);
+          if (typeof parsed.draftText === 'string') setDraftText(parsed.draftText);
+          if (parsed.stars) setStars(parsed.stars);
+          if (typeof parsed.teacherFeedback === 'string') setTeacherFeedback(parsed.teacherFeedback);
+          if (parsed.checkedItems) setCheckedItems(parsed.checkedItems);
+          hydrated = true;
+        }
+        const savedTeacherPrompt = localStorage.getItem(`iskool_teacher_writing_prompt_${language}`);
+        if (!hydrated && savedTeacherPrompt) {
+          const parsedPrompt = JSON.parse(savedTeacherPrompt);
+          if (parsedPrompt?.consigna_alumno) {
+            setDraftText(`# Consigna Docente: ${parsedPrompt.consigna_alumno}\n\n${activeRecipe.sampleDraft}`);
+          }
+        }
+      } catch {
+        // Fallback a valores base de receta
+      }
     }
-  }, [activeRecipe]);
+    if (!hydrated) {
+      if (!localStorage?.getItem(`iskool_teacher_writing_prompt_${language}`)) {
+        setDraftText(activeRecipe.sampleDraft);
+      }
+      if (activeRecipe.language === 'fr') {
+        setTeacherFeedback(
+          `¡Excelente redacción en francés (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Muy buen uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y precisión léxica.`
+        );
+      } else {
+        setTeacherFeedback(
+          `¡Excelente trabajo (${activeRecipe.cenniBand}), ${activeRecipe.sampleStudentName.split(' ')[0]}! Gran uso de conectores (${activeRecipe.positiveConnectors.join(', ')}) y vocabulario del nivel ${activeRecipe.level}.`
+        );
+      }
+    }
+  }, [activeRecipe, language]);
 
   const totalScore = useMemo(() => {
     const sum = stars.content + stars.communicative + stars.organization + stars.grammar; // max 20
@@ -128,8 +160,27 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
   };
 
   const handleSaveEvaluation = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(
+          `iskool_hybrid_writing_eval_${language}_${activeRecipe.id}`,
+          JSON.stringify({
+            recipeId: activeRecipe.id,
+            language,
+            stars,
+            totalScore,
+            teacherFeedback,
+            draftText,
+            checkedItems,
+            updatedAt: new Date().toISOString()
+          })
+        );
+      } catch {
+        // Ignorar cuota de almacenamiento local
+      }
+    }
     onTriggerToast(
-      `✓ Calificación (${totalScore}/100 · ${activeRecipe.cenniBand}) y retroalimentación guardadas en 1 clic`
+      `✓ Calificación (${totalScore}/100 · ${activeRecipe.cenniBand}) y retroalimentación guardadas en sesión.`
     );
   };
 
@@ -324,7 +375,7 @@ export const HybridWritingStarStudio: React.FC<Props> = ({
           </div>
 
           <Link
-            href="/teacher/idiomas/writing"
+            href={writingConsoleHref}
             className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold flex items-center gap-1.5 border border-slate-200"
           >
             <span>Consola Avanzada</span>

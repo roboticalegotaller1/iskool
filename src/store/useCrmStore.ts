@@ -7,6 +7,8 @@
  *   Sigue el patrón de useSchoolAdminStore: estado plano + funciones selectoras puras.
  */
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import type {
   CrmLead, CrmLeadCandidate, CrmActivity, CrmDocument,
   CrmEvent, CrmEventAttendee, PipelineType, CrmStageKey,
@@ -114,11 +116,11 @@ function nowISO(): string {
 // SELECTORES PUROS (Aislamiento por school_id)
 // ============================================================
 
-/** Filtra leads por school_id (con fallback a leads demo si no hay registros específicos) */
+/** Filtra leads estrictamente por school_id (cero fugas entre planteles) */
 export function getSchoolLeads(leads: CrmLead[], schoolId: string | null): CrmLead[] {
   if (!schoolId) return leads;
-  const filtered = leads.filter(l => l.school_id === schoolId);
-  return filtered.length > 0 ? filtered : leads;
+  const normalizedSchoolId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+  return leads.filter(l => l.school_id === normalizedSchoolId);
 }
 
 /** Filtra leads por pipeline_type */
@@ -323,7 +325,9 @@ export function getLeadWithDetails(
 // STORE
 // ============================================================
 
-export const useCrmStore = create<CrmStoreState>()((set, get) => ({
+export const useCrmStore = create<CrmStoreState>()(
+  persist(
+    (set, get) => ({
   // --- Datos (inicializados con seeds) ---
   leads: CRM_LEADS_SEED,
   candidates: CRM_CANDIDATES_SEED,
@@ -679,7 +683,22 @@ export const useCrmStore = create<CrmStoreState>()((set, get) => ({
     filterPriority: null,
     filterSourceChannel: null,
   }),
-}));
+    }),
+    {
+      name: 'iskool_crm_store_v1',
+      storage: createJSONStorage(() => createSafeLocalStorage()),
+      partialize: (state) => ({
+        leads: state.leads,
+        candidates: state.candidates,
+        activities: state.activities,
+        documents: state.documents,
+        events: state.events,
+        eventAttendees: state.eventAttendees,
+        activePipeline: state.activePipeline,
+      }),
+    }
+  )
+);
 
 /** Selector combinado: aplica todos los filtros activos y devuelve leads filtrados */
 export function getFilteredLeads(state: CrmStoreState, schoolId: string | null): CrmLead[] {

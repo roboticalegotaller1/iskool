@@ -1,5 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { validateApiAuth } from '@/lib/authValidator';
+
+const REMOTE_STAFF_ROLES = new Set(['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo']);
+
+function generateRandomPin(): string {
+  return String(crypto.randomInt(100000, 1000000));
+}
+
+function timingSafePinEqual(a: string, b: string): boolean {
+  if (!a || !b || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 export interface PocketRemoteCommand {
   id: string;
@@ -111,7 +123,7 @@ function getOrCreateSession(
   teacherEmail = 'docente@iskool.edu.mx',
   teacherName = 'Docente Titular',
   campusName = 'Campus Central',
-  pin = '482915'
+  pin?: string
 ): TeacherRemoteSessionState {
   const key = teacherId.trim().toLowerCase() || 'default-teacher';
   let existing = sessionsMap.get(key);
@@ -121,7 +133,7 @@ function getOrCreateSession(
       teacherEmail,
       teacherName,
       campusName,
-      pin,
+      pin: pin || generateRandomPin(),
       connectedDevices: [],
       commands: [],
       updatedAt: Date.now(),
@@ -138,8 +150,18 @@ export async function GET(req: NextRequest) {
   const since = Number(searchParams.get('since') || '0');
 
   const auth = await validateApiAuth(req);
-  const session = getOrCreateSession(teacherId);
-  const isAuthorizedForPin = auth.authenticated || (providedPin && providedPin === session.pin);
+  const isStaff = Boolean(auth.authenticated && auth.user && REMOTE_STAFF_ROLES.has((auth.user.role || '').toLowerCase()));
+  const existingSession = sessionsMap.get(teacherId);
+
+  if (!isStaff && (!existingSession || !timingSafePinEqual(providedPin, existingSession.pin))) {
+    return NextResponse.json(
+      { ok: false, error: 'PIN de vinculación QR o sesión docente requerida para consultar el control remoto.' },
+      { status: auth.authenticated ? 403 : 401 }
+    );
+  }
+
+  const session = existingSession || getOrCreateSession(teacherId);
+  const isAuthorizedForPin = isStaff || timingSafePinEqual(providedPin, session.pin);
 
   // Filtrar comandos recientes posteriores a `since` sin exponer PIN
   const recentCommands = session.commands
@@ -164,6 +186,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
+    const isStaff = Boolean(auth.authenticated && auth.user && REMOTE_STAFF_ROLES.has((auth.user.role || '').toLowerCase()));
     const body = await req.json();
     const teacherId = String(body.teacherId || 'default-teacher').trim().toLowerCase();
     const teacherEmail = String(body.teacherEmail || 'docente@iskool.edu.mx');
@@ -172,9 +195,16 @@ export async function POST(req: NextRequest) {
     const pin = String(body.pin || '').trim();
     const actionType = body.type as PocketRemoteCommand['type'];
 
+    if (actionType === 'SYNC_LESSON_STATE' && !isStaff) {
+      return NextResponse.json(
+        { ok: false, error: 'Autenticación docente requerida para sincronizar el estado de la clase.' },
+        { status: auth.authenticated ? 403 : 401 }
+      );
+    }
+
     const existingSession = sessionsMap.get(teacherId);
-    if (!auth.authenticated && actionType !== 'SYNC_LESSON_STATE') {
-      if (!pin || (existingSession?.pin && pin !== existingSession.pin)) {
+    if (!isStaff) {
+      if (!existingSession || !timingSafePinEqual(pin, existingSession.pin)) {
         return NextResponse.json(
           { ok: false, error: 'PIN de vinculación QR requerido o inválido para esta sesión docente.' },
           { status: 403 }
@@ -182,11 +212,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const session = getOrCreateSession(teacherId, teacherEmail, teacherName, campusName, pin || '482915');
+    const session = getOrCreateSession(teacherId, teacherEmail, teacherName, campusName, pin || undefined);
     session.teacherEmail = teacherEmail || session.teacherEmail;
     session.teacherName = teacherName || session.teacherName;
     session.campusName = campusName || session.campusName;
-    if (actionType === 'SYNC_LESSON_STATE' && pin) {
+    if (actionType === 'SYNC_LESSON_STATE' && pin && isStaff) {
       session.pin = pin;
     }
     session.updatedAt = Date.now();

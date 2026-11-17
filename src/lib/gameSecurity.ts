@@ -9,9 +9,19 @@
  */
 
 import * as crypto from 'crypto';
+import { getSecuritySecret } from '@/lib/security/secretManager';
 
-// Clave secreta para la firma de tokens de juego (fallback seguro institucional)
-const GAME_SECURITY_SECRET = process.env.GAME_SECURITY_SECRET || 'iskool-ultra-nano-banana-sec-key-2026-auth-engine';
+// Clave secreta derivada por propósito para la firma de tokens de juego (Zero-Trust)
+function getGameSecuritySecret(): string {
+  const envKey = process.env.GAME_SECURITY_SECRET?.trim();
+  if (envKey && envKey.length >= 32) {
+    return envKey;
+  }
+  return crypto
+    .createHmac('sha256', getSecuritySecret('SESSION_SECRET'))
+    .update('iskool-game-telemetry-hmac-v2')
+    .digest('hex');
+}
 
 // Tiempo de vida de la sesión (TTL): 30 minutos máximo
 export const GAME_SESSION_TTL_MS = 30 * 60 * 1000;
@@ -142,7 +152,7 @@ export function generateGameSessionToken(params: {
   const payloadJson = JSON.stringify(payload);
   const payloadB64 = toBase64Url(payloadJson);
 
-  const hmac = crypto.createHmac('sha256', GAME_SECURITY_SECRET);
+  const hmac = crypto.createHmac('sha256', getGameSecuritySecret());
   hmac.update(payloadB64);
   const signatureB64 = toBase64Url(hmac.digest());
 
@@ -179,7 +189,7 @@ export function validateGameSessionToken(token: string): {
 
   try {
     // 1. Verificación de firma HMAC con timingSafeEqual
-    const hmac = crypto.createHmac('sha256', GAME_SECURITY_SECRET);
+    const hmac = crypto.createHmac('sha256', getGameSecuritySecret());
     hmac.update(payloadB64);
     const expectedSigBuf = hmac.digest();
     const receivedSigBuf = fromBase64Url(signatureB64);

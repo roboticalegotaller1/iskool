@@ -41,6 +41,7 @@ import {
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useCrmStore } from '@/store/useCrmStore';
 import { 
   HOLDING_CASHFLOW_12M_SEED, 
   CAMPUS_BENCHMARK_SEED, 
@@ -126,6 +127,11 @@ export default function ExecutiveBiCommandCenter({
   const [selectedCampusDetail, setSelectedCampusDetail] = useState<CampusBenchmarkRecord | null>(null);
   const [activeAgingTrancheFilter, setActiveAgingTrancheFilter] = useState<'all' | '0-30' | '31-60' | '60+'>('all');
   const [hoveredCashflowIndex, setHoveredCashflowIndex] = useState<number | null>(null);
+  const [biToastMessage, setBiToastMessage] = useState<string | null>(null);
+  const showBiToast = (msg: string) => {
+    setBiToastMessage(msg);
+    setTimeout(() => setBiToastMessage((prev) => (prev === msg ? null : prev)), 4000);
+  };
 
   // Objeto de sede seleccionada si aplica filtro
   const selectedCampusObj = useMemo(() => {
@@ -922,7 +928,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
           {/* Exportar CSV */}
           <button
             onClick={handleExportCSV}
-            title="Descargar matriz en formato CSV/Excel"
+            title="Descargar matriz en formato CSV / Hoja de Cálculo"
             className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-95"
           >
             <Download className="h-3.5 w-3.5 text-emerald-400" />
@@ -2287,7 +2293,21 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </button>
               <button
                 onClick={() => {
-                  alert(`Convenio generado para ${selectedDebtorForDrawer.studentName}. Se envió notificación al tutor.`);
+                  const debtor = selectedDebtorForDrawer;
+                  if (typeof window !== 'undefined') {
+                    try {
+                      localStorage.setItem(
+                        `iskool_bi_convenio_${debtor.id}`,
+                        JSON.stringify({
+                          debtorId: debtor.id,
+                          studentName: debtor.studentName,
+                          amount: debtor.amount,
+                          createdAt: new Date().toISOString()
+                        })
+                      );
+                    } catch { /* ignore */ }
+                  }
+                  showBiToast(`✓ Convenio generado para ${debtor.studentName}. Notificación preparada para el tutor.`);
                   setSelectedDebtorForDrawer(null);
                 }}
                 className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-black text-white transition cursor-pointer shadow-lg shadow-indigo-600/30"
@@ -2384,7 +2404,17 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </button>
               <button
                 onClick={() => {
-                  alert(`Aspirante ${selectedLeadForDrawer.studentName} avanzado a la siguiente etapa de Admisiones.`);
+                  const leadDrawer = selectedLeadForDrawer;
+                  const crmState = useCrmStore.getState();
+                  const matchedCrmLead = crmState.leads.find(
+                    (l) =>
+                      l.id === leadDrawer.id ||
+                      `${l.tutor_first_name} ${l.tutor_last_name}`.toLowerCase() === (leadDrawer.tutorName || '').toLowerCase()
+                  );
+                  if (matchedCrmLead) {
+                    crmState.advanceLeadStage(matchedCrmLead.id);
+                  }
+                  showBiToast(`✓ Aspirante ${leadDrawer.studentName} avanzado a la siguiente etapa de Admisiones.`);
                   setSelectedLeadForDrawer(null);
                 }}
                 className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white transition cursor-pointer shadow-lg shadow-emerald-600/30"
@@ -2394,6 +2424,76 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
             </div>
 
           </div>
+        </div>
+      )}
+
+      {selectedCampusDetail && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 text-white shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
+                  Auditoría Ejecutiva de Plantel
+                </span>
+                <h3 className="text-lg font-black mt-0.5">{selectedCampusDetail.campusName}</h3>
+                <p className="text-xs text-slate-400">{selectedCampusDetail.location}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedCampusDetail(null)}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+                aria-label="Cerrar detalle de sede"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-slate-400">Matrícula / Capacidad</div>
+                <div className="font-mono font-black text-base text-white mt-0.5">
+                  {selectedCampusDetail.currentEnrollment} / {selectedCampusDetail.capacityTotal} ({selectedCampusDetail.occupancyRate}%)
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-slate-400">Ingreso Mensual</div>
+                <div className="font-mono font-black text-base text-emerald-400 mt-0.5">
+                  {formatMXN(selectedCampusDetail.monthlyRevenue)}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-slate-400">Margen EBITDA</div>
+                <div className="font-mono font-black text-base text-cyan-400 mt-0.5">
+                  {selectedCampusDetail.ebitdaMarginPct}%
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                <div className="text-slate-400">Retención / Docentes</div>
+                <div className="font-mono font-black text-base text-indigo-300 mt-0.5">
+                  {selectedCampusDetail.studentRetentionPct}% · {selectedCampusDetail.facultyCount} prof.
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedCampusFilter(selectedCampusDetail.campusId);
+                  setSelectedCampusDetail(null);
+                  showBiToast(`✓ Tablero filtrado por ${selectedCampusDetail.shortName}.`);
+                }}
+                className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-black text-slate-950 cursor-pointer"
+              >
+                Filtrar BI por este Campus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {biToastMessage && (
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 border border-emerald-500/50 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{biToastMessage}</span>
         </div>
       )}
 

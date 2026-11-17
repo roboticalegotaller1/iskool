@@ -40,6 +40,7 @@ export const ExecutiveInboxView: React.FC<ExecutiveInboxProps> = ({
   const { theme } = useBrandTheme();
   const [filter, setFilter] = useState<'ALL' | 'DIRECCION' | 'DELEGAR' | 'RESOLVER' | 'VIGILAR'>('DIRECCION');
   const [showBrandModal, setShowBrandModal] = useState<boolean>(false);
+  const [selectedPattern, setSelectedPattern] = useState<{ title: string; description: string } | null>(null);
 
   const stats = {
     resolver: matters.filter(m => m.destination === 'RESOLVER').length * 4 + 12,
@@ -94,7 +95,11 @@ export const ExecutiveInboxView: React.FC<ExecutiveInboxProps> = ({
               <h2 className="text-lg font-bold mt-0.5">{patterns[0].title}</h2>
               <p className="mt-1 text-sm text-indigo-100 max-w-4xl">{patterns[0].description}</p>
             </div>
-            <button className="shrink-0 rounded-xl bg-white px-4 py-2 text-xs font-bold text-slate-900 shadow hover:bg-slate-100 transition">
+            <button
+              type="button"
+              onClick={() => setSelectedPattern(patterns[0])}
+              className="shrink-0 rounded-xl bg-white px-4 py-2 text-xs font-bold text-slate-900 shadow hover:bg-slate-100 transition cursor-pointer"
+            >
               Ver Patrón
             </button>
           </div>
@@ -202,6 +207,41 @@ export const ExecutiveInboxView: React.FC<ExecutiveInboxProps> = ({
       </section>
 
       <BrandCustomizerModal isOpen={showBrandModal} onClose={() => setShowBrandModal(false)} />
+
+      {selectedPattern && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600">
+                  Patrón Proactivo Detectado
+                </span>
+                <h3 className="text-lg font-bold text-slate-900 mt-0.5">{selectedPattern.title}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPattern(null)}
+                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-600 cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 leading-relaxed">{selectedPattern.description}</p>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPattern(null);
+                  onOpenCatchup();
+                }}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer"
+              >
+                Abrir Resumen Ejecutivo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

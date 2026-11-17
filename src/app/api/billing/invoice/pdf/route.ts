@@ -1,11 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { escapeHtml } from '@/lib/security/htmlEscape';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * Representación Impresa Oficial de Factura Fiscal SAT (CFDI 4.0)
  * GET /api/billing/invoice/pdf
  */
 export async function GET(req: NextRequest) {
+  const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+  if (!auth.authenticated || !auth.user) {
+    return NextResponse.json(
+      { error: 'Autenticación requerida para emitir la representación impresa CFDI 4.0.' },
+      { status: 401 }
+    );
+  }
+  const roleLower = (auth.user.role || '').toLowerCase();
+  if (!['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo', 'parent'].includes(roleLower)) {
+    return NextResponse.json(
+      { error: 'Permisos insuficientes para descargar comprobantes fiscales.' },
+      { status: 403 }
+    );
+  }
+
   const rawReceiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
   const rawUuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
   const rawRfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
@@ -39,11 +55,10 @@ export async function GET(req: NextRequest) {
   );
 
   const tenantParam = req.nextUrl.searchParams.get('tenant') || '';
-  const cookieTenant = req.cookies.get('tenant-id')?.value || '';
-  const referer = req.headers.get('referer') || '';
-  const isIbime = tenantParam.toLowerCase().includes('ibime') || 
-                  cookieTenant.toLowerCase().includes('ibime') || 
-                  referer.toLowerCase().includes('ibime');
+  const isIbime =
+    auth.user.tenant_id === 'ibime' ||
+    auth.user.school_id === 'sch-ibime' ||
+    (roleLower === 'superadmin' && tenantParam.toLowerCase().includes('ibime'));
 
   const schoolName = isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ISKOOL MÉXICO';
   const schoolSub = isIbime ? 'Educación Bilingüe de Excelencia • CCT: 15PPR3322G • https://ibime.edu.mx' : 'Institución Educativa de Excelencia • CCT: 09PPR1849Z';

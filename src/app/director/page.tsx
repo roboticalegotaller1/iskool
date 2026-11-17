@@ -392,7 +392,7 @@ export default function DirectorPortalPage() {
   const handleAddRestrictedTopicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRestrictedTopic.topicTitle.trim()) {
-      alert('Por favor ingresa el título de la temática.');
+      showToast('⚠️ Por favor ingresa el título de la temática.');
       return;
     }
 

@@ -31,19 +31,20 @@ import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { isEmailResolvedServer } from '@/app/api/mail/raw-inbox/route';
 import { validateApiAuth } from '@/lib/authValidator';
-import { validateMailTarget } from '@/lib/security/ssrfValidator';
+import { validateMailTargetAsync } from '@/lib/security/ssrfValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para sincronizar buzones institucionales.' },
         { status: 401 }
       );
     }
-    if (auth.authenticated && ['student', 'parent'].includes((auth.user?.role || '').toLowerCase())) {
+    const roleLower = (auth.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator'].includes(roleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para sincronizar buzones institucionales.' },
         { status: 403 }
@@ -54,7 +55,19 @@ export async function POST(req: NextRequest) {
     const { email, host, port, protocol, password, tenantId, institutionName, schoolSlug, manualEmail } = payload;
 
     if (
-      auth.authenticated &&
+      roleLower !== 'superadmin' &&
+      auth.user.school_id &&
+      tenantId &&
+      tenantId !== auth.user.school_id &&
+      tenantId !== auth.user.institution_metadata?.tenant_uuid
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: no puedes sincronizar otro plantel.' },
+        { status: 403 }
+      );
+    }
+
+    if (
       isDemoSandboxContext({
         email: auth.user?.email,
         schoolId: auth.user?.school_id,
@@ -73,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (host && port) {
-      const targetCheck = validateMailTarget(host, Number(port));
+      const targetCheck = await validateMailTargetAsync(host, Number(port));
       if (!targetCheck.valid) {
         return NextResponse.json(
           { success: false, error: targetCheck.reason || 'Servidor de correo no autorizado.' },

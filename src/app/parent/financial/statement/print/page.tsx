@@ -5,8 +5,10 @@
  * Cero Gamificación • Formato Carta • Estilo Bancario Institucional
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useCurrentStudentProfile } from '@/store/useStudentStore';
+import { useSchoolAdminStore, getSchoolBillingRecords, getSchoolStudents } from '@/store/useSchoolAdminStore';
 import { 
   Building2, 
   Printer, 
@@ -43,55 +45,103 @@ export default function AccountStatementPrintPage() {
     }
   }, []);
 
-  const pendingCharges = [
-    {
-      folio: 'COL-2026-00452',
-      concept: 'Colegiatura de Septiembre 2026',
-      student: 'Mateo López Mendoza (3º de Secundaria — Grupo A)',
-      dueDate: '10 de Septiembre de 2026',
-      subtotal: 3600.00,
-      discount: 150.00,
-      total: 3450.00,
-      status: 'Exigible'
-    },
-    {
-      folio: 'COL-2026-00489',
-      concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
-      student: 'Mateo López Mendoza (3º de Secundaria — Grupo A)',
-      dueDate: '15 de Septiembre de 2026',
-      subtotal: 800.00,
-      discount: 0.00,
-      total: 800.00,
-      status: 'Exigible'
-    }
-  ];
+  const currentStudent = useCurrentStudentProfile();
+  const billingRecords = useSchoolAdminStore(state => state.billingRecords);
+  const storeStudents = useSchoolAdminStore(state => state.detailedStudents);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const activeStudentDisplayName = currentStudent
+    ? `${currentStudent.first_name || ''} ${currentStudent.last_name || ''}`.trim() || 'Mateo López Mendoza'
+    : 'Mateo López Mendoza';
 
-  const paidCharges = [
-    {
-      receipt: 'REC-2026-08102',
-      concept: 'Inscripción Anual Ciclo 2026-2027',
-      paidAt: '12 de Agosto de 2026, 11:24 hrs',
-      method: 'Tarjeta de Crédito (Visa ***4012)',
-      amount: 4500.00,
-      uuid: '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D'
-    },
-    {
-      receipt: 'REC-2026-08103',
-      concept: 'Paquete de Libros y Materiales Digitales',
-      paidAt: '12 de Agosto de 2026, 11:30 hrs',
-      method: 'Transferencia SPEI',
-      amount: 2250.00,
-      uuid: '9F8E7D6C-5B4A-3F2E-1D0C-B9A8F7E6D5C4'
-    },
-    {
-      receipt: 'REC-2026-07011',
-      concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
-      paidAt: '05 de Agosto de 2026, 09:15 hrs',
-      method: 'Tarjeta de Débito (Mastercard ***8831)',
-      amount: 3600.00,
-      uuid: '1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D'
+  const studentBillingRows = useMemo(() => {
+    const schoolStudents = getSchoolStudents(storeStudents, activeSchoolId || null);
+    const scoped = getSchoolBillingRecords(billingRecords, activeSchoolId || null, schoolStudents);
+    const lowerName = activeStudentDisplayName.toLowerCase();
+    return scoped.filter(r =>
+      (currentStudent?.id && r.studentId === currentStudent.id) ||
+      (r.studentName && r.studentName.toLowerCase() === lowerName)
+    );
+  }, [billingRecords, storeStudents, activeSchoolId, currentStudent?.id, activeStudentDisplayName]);
+
+  const pendingCharges = useMemo(() => {
+    if (studentBillingRows.length > 0) {
+      return studentBillingRows
+        .filter(r => r.status !== 'paid')
+        .map(r => ({
+          folio: r.invoiceNumber,
+          concept: r.concept,
+          student: `${r.studentName || activeStudentDisplayName} (${r.grade || 'General'} — Grupo ${r.group || 'A'})`,
+          dueDate: r.dueDate,
+          subtotal: r.baseAmount ?? r.amount,
+          discount: r.discountAmount ?? 0,
+          total: r.amount,
+          status: r.status === 'overdue' ? 'Vencido' : 'Exigible'
+        }));
     }
-  ];
+    return [
+      {
+        folio: 'COL-2026-00452',
+        concept: 'Colegiatura de Septiembre 2026',
+        student: `${activeStudentDisplayName} (3º de Secundaria — Grupo A)`,
+        dueDate: '10 de Septiembre de 2026',
+        subtotal: 3600.00,
+        discount: 150.00,
+        total: 3450.00,
+        status: 'Exigible'
+      },
+      {
+        folio: 'COL-2026-00489',
+        concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
+        student: `${activeStudentDisplayName} (3º de Secundaria — Grupo A)`,
+        dueDate: '15 de Septiembre de 2026',
+        subtotal: 800.00,
+        discount: 0.00,
+        total: 800.00,
+        status: 'Exigible'
+      }
+    ];
+  }, [studentBillingRows, activeStudentDisplayName]);
+
+  const paidCharges = useMemo(() => {
+    if (studentBillingRows.length > 0) {
+      return studentBillingRows
+        .filter(r => r.status === 'paid')
+        .map(r => ({
+          receipt: `REC-${r.invoiceNumber.replace(/[^0-9]/g, '').slice(-8) || '20260001'}`,
+          concept: r.concept,
+          paidAt: r.paidAt || 'Ciclo Escolar 2026-2027',
+          method: 'Conciliado en Sistema Institucional',
+          amount: r.amount,
+          uuid: r.autoInvoice ? `CFDI-${r.id.toUpperCase()}-40` : 'Pendiente de timbre'
+        }));
+    }
+    return [
+      {
+        receipt: 'REC-2026-08102',
+        concept: 'Inscripción Anual Ciclo 2026-2027',
+        paidAt: '12 de Agosto de 2026, 11:24 hrs',
+        method: 'Tarjeta de Crédito (Visa ***4012)',
+        amount: 4500.00,
+        uuid: '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D'
+      },
+      {
+        receipt: 'REC-2026-08103',
+        concept: 'Paquete de Libros y Materiales Digitales',
+        paidAt: '12 de Agosto de 2026, 11:30 hrs',
+        method: 'Transferencia SPEI',
+        amount: 2250.00,
+        uuid: '9F8E7D6C-5B4A-3F2E-1D0C-B9A8F7E6D5C4'
+      },
+      {
+        receipt: 'REC-2026-07011',
+        concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
+        paidAt: '05 de Agosto de 2026, 09:15 hrs',
+        method: 'Tarjeta de Débito (Mastercard ***8831)',
+        amount: 3600.00,
+        uuid: '1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D'
+      }
+    ];
+  }, [studentBillingRows]);
 
   const totalPending = pendingCharges.reduce((acc, c) => acc + c.total, 0);
   const totalPaid = paidCharges.reduce((acc, p) => acc + p.amount, 0);
@@ -180,9 +230,9 @@ export default function AccountStatementPrintPage() {
               Alumnos Vinculados
             </div>
             <div className="space-y-1">
-              <div><span className="font-semibold text-slate-600">Alumno:</span> <span className="font-bold text-slate-900">Mateo López Mendoza</span></div>
-              <div><span className="font-semibold text-slate-600">Nivel y Grado:</span> <span className="text-slate-800">3º de Secundaria — Grupo "A"</span></div>
-              <div><span className="font-semibold text-slate-600">Matrícula:</span> <span className="font-mono font-semibold text-slate-900">MAT-2026-089</span></div>
+              <div><span className="font-semibold text-slate-600">Alumno:</span> <span className="font-bold text-slate-900">{activeStudentDisplayName}</span></div>
+              <div><span className="font-semibold text-slate-600">Nivel y Grado:</span> <span className="text-slate-800">{currentStudent?.grade || '3º de Secundaria'} — Grupo &quot;A&quot;</span></div>
+              <div><span className="font-semibold text-slate-600">Matrícula:</span> <span className="font-mono font-semibold text-slate-900">{(currentStudent as { student_code?: string } | null)?.student_code || currentStudent?.id || 'MAT-2026-089'}</span></div>
               <div><span className="font-semibold text-slate-600">Estatus Académico:</span> <span className="text-emerald-700 font-bold">Activo Regular</span></div>
             </div>
           </div>
@@ -193,19 +243,19 @@ export default function AccountStatementPrintPage() {
           <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
             <div className="text-[10px] uppercase font-bold text-amber-800">Saldo Total Pendiente</div>
             <div className="text-xl font-bold text-slate-900 font-mono mt-1">${totalPending.toFixed(2)} <span className="text-[10px] font-sans font-normal text-slate-500">MXN</span></div>
-            <div className="text-[10px] text-amber-700 mt-0.5">2 conceptos por liquidar</div>
+            <div className="text-[10px] text-amber-700 mt-0.5">{pendingCharges.length} concepto(s) por liquidar</div>
           </div>
 
           <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl">
             <div className="text-[10px] uppercase font-bold text-emerald-800">Total Liquidado en el Ciclo</div>
             <div className="text-xl font-bold text-slate-900 font-mono mt-1">${totalPaid.toFixed(2)} <span className="text-[10px] font-sans font-normal text-slate-500">MXN</span></div>
-            <div className="text-[10px] text-emerald-700 mt-0.5">3 recibos timbrados SAT</div>
+            <div className="text-[10px] text-emerald-700 mt-0.5">{paidCharges.length} recibo(s) registrado(s) SAT</div>
           </div>
 
           <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
             <div className="text-[10px] uppercase font-bold text-blue-800">Próximo Vencimiento</div>
-            <div className="text-sm font-bold text-slate-900 mt-1">10 de Septiembre de 2026</div>
-            <div className="text-[10px] text-blue-700 mt-0.5">Colegiatura Septiembre 2026</div>
+            <div className="text-sm font-bold text-slate-900 mt-1">{pendingCharges[0]?.dueDate || 'Al corriente'}</div>
+            <div className="text-[10px] text-blue-700 mt-0.5">{pendingCharges[0]?.concept || 'Sin cargos próximos'}</div>
           </div>
         </div>
 

@@ -503,12 +503,28 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Validación de Sesión y Autenticación Institucional
-    const auth = await validateApiAuth(request);
-    if (!auth.authenticated) {
+    // 1. Validación de Sesión y Autenticación Institucional (soporta x-test-* exclusivamente en Vitest NODE_ENV==='test')
+    const testRole = process.env.NODE_ENV === 'test' ? request.headers.get('x-test-role') : null;
+    const testEmail = process.env.NODE_ENV === 'test' ? request.headers.get('x-test-email') : null;
+    const testSchool = process.env.NODE_ENV === 'test' ? request.headers.get('x-test-school') : null;
+    const auth = testRole && testEmail
+      ? {
+          authenticated: true,
+          user: { id: 'test-user', email: testEmail, role: testRole, school_id: testSchool || undefined, tenant_id: 'iskool' as const }
+        }
+      : await validateApiAuth(request);
+
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
         { success: false, error: auth.error || 'No autorizado. Se requiere sesión activa de ISkool.' },
         { status: 401 }
+      );
+    }
+    const postRole = (auth.user.role || '').toLowerCase();
+    if (!['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(postRole)) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos docentes o directivos requeridos para escribir planeaciones en Bóveda.' },
+        { status: 403 }
       );
     }
 
@@ -654,10 +670,12 @@ ${planning.materiales || ''}
     const gitSyncStatus = 'persisted_locally';
     const gitMessage = 'Persistido en Bóveda Curricular Institucional';
 
+    const relativeVaultPath = path.relative(planningsDir, filePath).replace(/\\/g, '/');
+
     return NextResponse.json({
       success: true,
       filename,
-      vaultPath: filePath,
+      vaultPath: relativeVaultPath,
       levelFolder,
       gradeFolder,
       subjectFolder,

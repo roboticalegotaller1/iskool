@@ -3,9 +3,35 @@ import { REGION, SITE } from '@/content/landing/site'
 import { buildDemoMessage, buildDemoSubject } from '@/lib/landing/contactLinks'
 import { isHoneypotFilled, parseDemoRequest, validateDemoRequest } from '@/lib/landing/demoForm'
 
+const demoAttemptTracker = new Map<string, { count: number; resetAtMs: number }>()
+
+function checkDemoRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = demoAttemptTracker.get(ip)
+  if (!entry || entry.resetAtMs <= now) {
+    demoAttemptTracker.set(ip, { count: 1, resetAtMs: now + 10 * 60_000 })
+    return true
+  }
+  entry.count += 1
+  return entry.count <= 10
+}
+
 // Recibe la solicitud de demostración y la entrega al buzón de contacto.
 // Las credenciales del servidor de correo viven en variables de entorno del hosting, nunca en el código.
 export async function POST(request: Request) {
+  const clientIp = (
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    '127.0.0.1'
+  ).split(',')[0].trim()
+
+  if (!checkDemoRateLimit(clientIp)) {
+    return Response.json(
+      { ok: false, error: 'Demasiadas solicitudes. Intente nuevamente en unos minutos.' },
+      { status: 429 }
+    )
+  }
+
   let body: unknown
   const contentType = (request.headers.get('content-type') || '').toLowerCase()
   try {

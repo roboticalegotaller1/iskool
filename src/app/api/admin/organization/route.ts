@@ -16,18 +16,31 @@ const demoOrgGraphCache = new Map<string, SchoolOrganizationGraph>();
 
 export const dynamic = 'force-dynamic';
 
+const EXECUTIVE_ORG_ROLES = new Set(['superadmin', 'director', 'admin', 'owner', 'ceo']);
+
+function sanitizeOrgGraphForApi(graph: SchoolOrganizationGraph): SchoolOrganizationGraph {
+  return {
+    ...graph,
+    nodes: (graph.nodes || []).map((node) => {
+      const { passwordHash: _ph, passwordSalt: _ps, tempPasswordPreview: _tp, ...safeNode } = node as any;
+      return safeNode;
+    }),
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated) {
       return NextResponse.json(
         { success: false, error: 'Autenticación institucional requerida.' },
         { status: 401 }
       );
     }
-    if (auth.user?.role === 'student' || auth.user?.role === 'parent') {
+    const roleLower = (auth.user?.role || '').toLowerCase();
+    if (!EXECUTIVE_ORG_ROLES.has(roleLower)) {
       return NextResponse.json(
-        { success: false, error: 'Permisos insuficientes para consultar el organigrama.' },
+        { success: false, error: 'Permisos directivos requeridos para consultar el organigrama.' },
         { status: 403 }
       );
     }
@@ -61,7 +74,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      graph,
+      graph: sanitizeOrgGraphForApi(graph),
       payroll,
       delegates,
     });
@@ -76,15 +89,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req);
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    if (!auth.authenticated) {
       return NextResponse.json(
         { success: false, error: 'Autenticación institucional requerida.' },
         { status: 401 }
       );
     }
-    if (auth.user?.role === 'student' || auth.user?.role === 'parent') {
+    const roleLower = (auth.user?.role || '').toLowerCase();
+    if (!EXECUTIVE_ORG_ROLES.has(roleLower)) {
       return NextResponse.json(
-        { success: false, error: 'Permisos insuficientes para modificar el organigrama.' },
+        { success: false, error: 'Permisos directivos requeridos para modificar el organigrama.' },
         { status: 403 }
       );
     }
@@ -134,7 +148,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         demoSandbox: true,
-        graph: ephemeralGraph,
+        graph: sanitizeOrgGraphForApi(ephemeralGraph),
         payroll: calculateConsolidatedPayrollSummary(ephemeralGraph),
         delegates: buildDynamicSlaDelegatesFromGraph(ephemeralGraph),
       });
@@ -159,7 +173,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      graph: saved,
+      graph: sanitizeOrgGraphForApi(saved),
       payroll,
       delegates,
     });

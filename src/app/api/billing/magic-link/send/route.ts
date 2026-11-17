@@ -39,17 +39,31 @@ export async function POST(req: NextRequest) {
       schoolName 
     } = body;
 
-    const host = req.headers.get('host') || 'localhost:3000';
-    const protocol = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-    const origin = `${protocol}://${host}`;
+    const resolvedSchoolId = auth.user.role === 'superadmin'
+      ? (schoolId || auth.user.school_id || 'sch-001')
+      : (auth.user.school_id || 'sch-001');
 
-    // 1. Generar token criptográfico seguro y URL unívoca con baseUrl dinámico
+    if (auth.user.role !== 'superadmin' && schoolId && auth.user.school_id && schoolId !== auth.user.school_id) {
+      return NextResponse.json({
+        success: false,
+        error: 'Acceso denegado: no puedes emitir enlaces de cobro para otro colegio.'
+      }, { status: 403 });
+    }
+
+    // URL canónica sin lectura manipulable de cabecera Host
+    const canonicalOrigin = (
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://iskool.mx')
+    ).replace(/\/$/, '');
+
+    // 1. Generar token criptográfico seguro y URL unívoca con origen canónico
     const linkResult = await magicLinkService.createMagicLink({
       invoiceId: invoiceId || 'inv-001',
       parentId: parentId || 'usr-parent-001',
-      schoolId: schoolId || 'sch-001',
+      schoolId: resolvedSchoolId,
       hoursValid: 48,
-      baseUrl: origin,
+      baseUrl: canonicalOrigin,
       metadata: { 
         requestedBy: 'coordinator', 
         timestamp: new Date().toISOString(),

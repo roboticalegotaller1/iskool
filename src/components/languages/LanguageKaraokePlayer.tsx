@@ -971,7 +971,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
         errorDetail = 'El navegador o sistema no concedió el permiso de micrófono. Haz clic en el icono del candado o de permisos en la barra de direcciones superior de tu navegador y activa "Micrófono: Permitir", luego pulsa Reintentar. En iPhone o iPad, verifica que Safari tenga acceso al micrófono en Ajustes > Safari > Micrófono.';
       } else if (lastError.name === 'NotReadableError' || lastError.name === 'TrackStartError') {
-        errorDetail = 'El micrófono está en uso exclusivo por otra aplicación en segundo plano (ej. Zoom, Microsoft Teams, Google Meet o grabadora del sistema). Cierra esa aplicación y pulsa Reintentar.';
+        errorDetail = 'El micrófono está en uso exclusivo por otra aplicación en segundo plano (ej. otra sala de videoconferencia o grabadora del sistema). Cierra esa aplicación y pulsa Reintentar.';
       } else if (lastError.name === 'NotFoundError' || lastError.name === 'DevicesNotFoundError') {
         errorDetail = 'No se detectó ningún micrófono físico conectado al dispositivo o auricular.';
       } else if (lastError.name === 'OverconstrainedError') {

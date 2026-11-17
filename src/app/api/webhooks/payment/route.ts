@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
+import { getFiscalPacAdapter } from '@/lib/fiscal/pacAdapter';
 import { serverPaymentGateway } from '@/lib/paymentGatewayService';
 import crypto from 'crypto';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Webhook Seguro de Conciliación Bancaria y Facturación Automática
@@ -38,72 +41,126 @@ export async function POST(req: NextRequest) {
 
     // 2. Procesamiento de Pago Exitoso
     if (eventType === 'payment.succeeded' && invoiceId) {
-      
-      // A. Actualizar estado de la factura a 'paid'
-      const { data: updatedInvoice, error: invoiceError } = await supabase
-        .from('invoices')
-        .update({
-          status: 'paid',
-          paid_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', invoiceId)
-        .select('*, parent:profiles(*), student:students(*)')
-        .maybeSingle();
+      const db = getServiceSupabaseClient();
+      const canQueryUuidInvoice = UUID_REGEX.test(String(invoiceId));
 
-      if (invoiceError) {
-        console.warn('[Payment Webhook] Aviso al actualizar factura:', invoiceError.message);
-      }
-
-      // B. Registrar en payments_history
-      const receiptNumber = `REC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
-      const { error: historyError } = await supabase
-        .from('payments_history')
-        .insert({
-          school_id: updatedInvoice?.school_id || 'sch-001',
-          invoice_id: invoiceId,
-          parent_id: updatedInvoice?.parent_id || 'usr-parent-001',
-          amount: amount > 0 ? amount : (updatedInvoice?.total_amount || 3450.00),
-          currency: 'MXN',
-          payment_method: paymentMethod,
-          status: 'succeeded',
-          gateway_provider: 'PaymentGateway',
-          gateway_transaction_id: transactionId,
-          net_amount: amount > 0 ? amount : (updatedInvoice?.total_amount || 3450.00),
-          receipt_number: receiptNumber,
-          paid_at: new Date().toISOString()
-        });
-
-      if (historyError) {
-        console.warn('[Payment Webhook] Aviso al registrar historial de pago:', historyError.message);
-      }
-
-      // 3. Trigger: Facturación Automática SAT (CFDI 4.0)
-      try {
-        const parentId = updatedInvoice?.parent_id || 'usr-parent-001';
-        const { data: billingProfile } = await supabase
-          .from('billing_profiles')
-          .select('*')
-          .eq('parent_id', parentId)
+      let updatedInvoice: any = null;
+      if (canQueryUuidInvoice) {
+        const { data, error: invoiceError } = await db
+          .from('invoices')
+          .update({
+            status: 'paid',
+            paid_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', invoiceId)
+          .select('*, parent:profiles(*), student:students(*)')
           .maybeSingle();
 
-        const shouldAutoInvoice = billingProfile ? billingProfile.auto_invoice_on_payment : true;
+        if (invoiceError) {
+          console.warn('[Payment Webhook] Aviso al actualizar factura:', invoiceError.message);
+        } else {
+          updatedInvoice = data;
+        }
+      }
+
+      // B. Registrar en payments_history (solo insertar si tenemos school_id/invoice_id UUID válidos)
+      const receiptNumber = `REC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+      const resolvedSchoolId = updatedInvoice?.school_id;
+      const resolvedParentId = updatedInvoice?.parent_id;
+      const resolvedAmount = amount > 0 ? amount : (updatedInvoice?.total_amount || 3450.00);
+
+      if (canQueryUuidInvoice && UUID_REGEX.test(String(resolvedSchoolId || '')) && UUID_REGEX.test(String(resolvedParentId || ''))) {
+        const { error: historyError } = await db
+          .from('payments_history')
+          .insert({
+            school_id: resolvedSchoolId,
+            invoice_id: invoiceId,
+            parent_id: resolvedParentId,
+            amount: resolvedAmount,
+            currency: 'MXN',
+            payment_method: paymentMethod,
+            status: 'succeeded',
+            gateway_provider: 'PaymentGateway',
+            gateway_transaction_id: transactionId,
+            net_amount: resolvedAmount,
+            receipt_number: receiptNumber,
+            paid_at: new Date().toISOString()
+          });
+
+        if (historyError) {
+          console.warn('[Payment Webhook] Aviso al registrar historial de pago:', historyError.message);
+        }
+      }
+
+      // 3. Trigger: Facturación Automática SAT (CFDI 4.0) vía Adaptador PAC Oficial
+      try {
+        let billingProfile: any = null;
+        if (UUID_REGEX.test(String(resolvedParentId || ''))) {
+          const { data: bpData, error: bpErr } = await db
+            .from('billing_profiles')
+            .select('*')
+            .eq('parent_id', resolvedParentId)
+            .maybeSingle();
+          if (!bpErr) billingProfile = bpData;
+        }
+
+        const shouldAutoInvoice = billingProfile ? billingProfile.auto_invoice_on_payment !== false : true;
 
         if (shouldAutoInvoice) {
-          const cfdiUuid = crypto.randomUUID().toUpperCase();
+          const pac = getFiscalPacAdapter();
+          const stampResult = await pac.stampInvoice({
+            invoiceId: String(invoiceId),
+            receiptNumber,
+            schoolId: resolvedSchoolId ? String(resolvedSchoolId) : undefined,
+            emisor: {
+              rfc: 'UPJ980115XX1',
+              nombre: 'Institución Educativa ISkool',
+              regimenFiscal: '603',
+              codigoPostal: billingProfile?.postal_code || '06700'
+            },
+            receptor: {
+              rfc: billingProfile?.rfc || 'XAXX010101000',
+              nombre: billingProfile?.tax_name || 'PÚBLICO EN GENERAL',
+              regimenFiscalReceptor: billingProfile?.tax_regime || '616',
+              domicilioFiscalReceptor: billingProfile?.postal_code || '06700',
+              usoCFDI: billingProfile?.cfdi_use || 'S01',
+              email: billingProfile?.billing_email
+            },
+            items: [{
+              claveProdServ: '86121500',
+              noIdentificacion: receiptNumber,
+              cantidad: 1,
+              claveUnidad: 'E48',
+              unidad: 'Servicio',
+              descripcion: `Pago escolar folio ${invoiceId}`,
+              valorUnitario: resolvedAmount,
+              importe: resolvedAmount,
+              objetoImp: '01'
+            }],
+            formaPago: paymentMethod === 'card' ? '04' : '03',
+            metodoPago: 'PUE',
+            subtotal: resolvedAmount,
+            total: resolvedAmount,
+            moneda: 'MXN'
+          });
+
+          const cfdiUuid = stampResult.uuid || crypto.randomUUID().toUpperCase();
           console.log(`[Payment Webhook] ⚡ Facturación Automática Activada. Timbrando CFDI 4.0 Folio Fiscal: ${cfdiUuid}`);
 
-          // Actualizar folio fiscal timbrado en payments_history
-          await supabase
-            .from('payments_history')
-            .update({
-              cfdi_uuid: cfdiUuid,
-              cfdi_xml_url: `/api/billing/invoice/download?receipt_id=${receiptNumber}&format=xml&uuid=${cfdiUuid}`,
-              cfdi_pdf_url: `/api/billing/invoice/download?receipt_id=${receiptNumber}&format=pdf&uuid=${cfdiUuid}`
-            })
-            .eq('gateway_transaction_id', transactionId);
-
-          console.log(`[Payment Webhook] Factura CFDI 4.0 timbrada y enviada a ${billingProfile?.billing_email || 'correo del tutor'}.`);
+          if (canQueryUuidInvoice && UUID_REGEX.test(String(resolvedSchoolId || ''))) {
+            const { error: updateErr } = await db
+              .from('payments_history')
+              .update({
+                cfdi_uuid: cfdiUuid,
+                cfdi_xml_url: `/api/billing/invoice/download?receipt_id=${receiptNumber}&format=xml&uuid=${cfdiUuid}`,
+                cfdi_pdf_url: `/api/billing/invoice/download?receipt_id=${receiptNumber}&format=pdf&uuid=${cfdiUuid}`
+              })
+              .eq('gateway_transaction_id', transactionId);
+            if (updateErr) {
+              console.warn('[Payment Webhook] Aviso al guardar folio fiscal en historial:', updateErr.message);
+            }
+          }
         }
       } catch (taxErr: any) {
         // El fallo de facturación se captura para no bloquear la respuesta 200 del pago

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabaseClient';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { DEFAULT_ARTIFACTS_SEED } from '@/store/seeds';
 import { validateApiAuth } from '@/lib/authValidator';
 
@@ -15,13 +15,26 @@ const isUuid = (str?: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 };
 
+const STUDENT_UUID_MAP: Record<string, string> = {
+  'std-pa': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11',
+  'std-sec': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22',
+  'std-pb': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33',
+  'std-prep': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44',
+  'std-ibime-montes-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b01',
+  'std-ibime-montes-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02',
+  'std-ibime-montes-03': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03',
+  'std-ibime-montes-04': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04',
+  'std-ibime-lagos-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b11',
+  'std-ibime-lagos-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b12',
+  'std-ibime-san-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b21',
+  'std-ibime-san-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b22',
+  'std-ibime-coac-01': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b31',
+  'std-ibime-coac-02': 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b32',
+};
+
 const mapStudentIdToUuid = (id: string): string => {
   if (isUuid(id)) return id;
-  if (id === 'std-pa') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a11';
-  if (id === 'std-sec') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22';
-  if (id === 'std-pb') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a33';
-  if (id === 'std-prep') return 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a44';
-  return id;
+  return STUDENT_UUID_MAP[id] || id;
 };
 
 /**
@@ -75,10 +88,12 @@ export async function POST(req: NextRequest) {
 
       const dbStudentId = mapStudentIdToUuid(studentId);
 
+      const db = getServiceSupabaseClient();
+
       // 2. Intentar transacción atómica a través de la función RPC con bloqueo FOR UPDATE
       if (isUuid(dbStudentId)) {
         try {
-          const rpcPromise = supabase.rpc('purchase_artifact', {
+          const rpcPromise = db.rpc('purchase_artifact', {
             p_student_id: dbStudentId,
             p_artifact_id: artifactId
           });
@@ -140,20 +155,20 @@ export async function POST(req: NextRequest) {
 
       if (isUuid(dbStudentId)) {
         try {
-          const { data: stats } = await supabase
+          const { data: stats, error: statsErr } = await db
             .from('student_stats')
             .select('coins')
             .eq('student_id', dbStudentId)
             .maybeSingle();
 
-          if (stats && stats.coins !== undefined) currentCoins = stats.coins;
+          if (!statsErr && stats && stats.coins !== undefined) currentCoins = stats.coins;
 
-          const { data: inv } = await supabase
+          const { data: inv, error: invErr } = await db
             .from('student_inventory')
             .select('artifact_id')
             .eq('student_id', dbStudentId);
 
-          if (inv) inv.forEach((item: any) => studentInventory.add(item.artifact_id));
+          if (!invErr && inv) inv.forEach((item: any) => studentInventory.add(item.artifact_id));
         } catch {
           // Continuar con valores en memoria
         }
@@ -182,16 +197,18 @@ export async function POST(req: NextRequest) {
 
       if (isUuid(dbStudentId)) {
         try {
-          await supabase
+          const { error: updErr } = await db
             .from('student_stats')
             .update({ coins: newCoins, updated_at: new Date().toISOString() })
             .eq('student_id', dbStudentId);
+          if (updErr) console.warn('Aviso actualizando saldo en BD:', updErr.message);
 
-          await supabase
+          const { error: insErr } = await db
             .from('student_inventory')
             .insert({ student_id: dbStudentId, artifact_id: artifactId, acquired_at: new Date().toISOString() });
+          if (insErr) console.warn('Aviso insertando inventario en BD:', insErr.message);
         } catch (dbWriteErr) {
-          console.warn('Aviso escribiendo compra a Supabase:', dbWriteErr);
+          console.warn('Aviso escribiendo compra en BD:', dbWriteErr);
         }
       }
 

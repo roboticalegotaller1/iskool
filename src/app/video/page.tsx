@@ -64,7 +64,7 @@ export default function VideoQrLandingPage() {
   const [formYoutubeUrl, setFormYoutubeUrl] = useState<string>(config.youtubeUrl);
   const [formTitle, setFormTitle] = useState<string>(config.title);
   const [formSubtitle, setFormSubtitle] = useState<string>(config.subtitle);
-  const [formAdminKey, setFormAdminKey] = useState<string>("ISKOOL2026");
+  const [formAdminKey, setFormAdminKey] = useState<string>("");
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveFeedback, setSaveFeedback] = useState<{
     type: "success" | "error";

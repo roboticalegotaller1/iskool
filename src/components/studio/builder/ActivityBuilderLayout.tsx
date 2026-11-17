@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
+import { useSchoolAdminStore, getSchoolGroups } from '@/store/useSchoolAdminStore';
 import { SidebarToolbar } from './SidebarToolbar';
 import { WorkspaceArea } from './WorkspaceArea';
 import { StudioFlowPlayer } from '../player/StudioFlowPlayer';
@@ -517,7 +518,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
           title: 'Cápsula Explicativa: Fracciones en la Vida Diaria',
           position: { x: 80, y: 160 },
           data: {
-            videoUrl: 'https://www.youtube.com/watch?v=c9c_xFU8BQW',
+            videoUrl: 'https://www.youtube.com/watch?v=r0U0AlLVqpk',
             videoTitle: 'Introducción a las Fracciones',
             startAtSeconds: 0,
             mustWatchEntirely: false
@@ -830,10 +831,24 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
               }}
               className="bg-transparent font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
             >
-              <option value="1°A Secundaria • Historia (08:00-08:50)">1°A Secundaria • Historia (08:00-08:50)</option>
-              <option value="2°B Secundaria • Historia de México (09:00-09:50)">2°B Secundaria • Historia de México (09:00-09:50)</option>
-              <option value="5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)">5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)</option>
-              <option value="3°A Secundaria • Formación Cívica y Ética (11:30-12:20)">3°A Secundaria • Formación Cívica y Ética (11:30-12:20)</option>
+              {(() => {
+                const adminState = useSchoolAdminStore.getState();
+                const schoolGroups = getSchoolGroups(adminState.groupsList, adminState.activeSchoolId, adminState.campusesList);
+                const opts = schoolGroups.length > 0
+                  ? schoolGroups.map((g) => {
+                      const label = `${g.grade || ''} ${g.name || ''}`.trim();
+                      return { value: label, label };
+                    })
+                  : [
+                      { value: '1°A Secundaria • Historia (08:00-08:50)', label: '1°A Secundaria • Historia (08:00-08:50)' },
+                      { value: '2°B Secundaria • Historia de México (09:00-09:50)', label: '2°B Secundaria • Historia de México (09:00-09:50)' },
+                      { value: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)', label: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)' },
+                      { value: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)', label: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)' }
+                    ];
+                return opts.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ));
+              })()}
             </select>
           </div>
 

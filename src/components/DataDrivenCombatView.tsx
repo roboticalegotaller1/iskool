@@ -159,19 +159,26 @@ export default function DataDrivenCombatView({
     let active = true;
     let cleanupMouse: (() => void) | null = null;
 
-    const attackerSkinUrls = payload.attackers.map(
-      a => `/images/rpg/${(a.skin_texture_id || 'skin_marine').replace('skin_', '')}_sprite.png`
-    );
-    const assetsToLoad = [
+    const AVAILABLE_ATTACKER_SPRITES = new Set(['elena', 'lucas', 'santi']);
+    const resolveAttackerSkinUrl = (skinTextureId?: string) => {
+      const clean = (skinTextureId || 'skin_lucas').replace(/^skin_/, '').toLowerCase();
+      const safeName = AVAILABLE_ATTACKER_SPRITES.has(clean) ? clean : 'lucas';
+      return `/images/rpg/${safeName}_sprite.png`;
+    };
+    const attackerSkinUrls = Array.from(new Set(payload.attackers.map(a => resolveAttackerSkinUrl(a.skin_texture_id))));
+    const coreAssets = [
       '/images/rpg/combat_bg.png',
       '/images/rpg/boss_sprite.png',
       '/images/rpg/ui/Dragonhpbar.png',
       '/images/rpg/ui/DragonHpBar2.png',
       '/images/rpg/ui/DragonHpBar3.png',
       ...attackerSkinUrls,
+    ];
+    const optionalDragonUrls = Array.from(new Set([
       ...Object.values(DRAGON_ENEMIES_MAP).map(def => def.textureUrl),
       ...Object.values(DRAGON_ENEMIES_MAP).filter(def => def.sparkTextureUrl).map(def => def.sparkTextureUrl!)
-    ];
+    ]));
+    const assetsToLoad = [...coreAssets, ...optionalDragonUrls];
 
     async function initPixi() {
       if (!containerRef.current) return;
@@ -184,7 +191,9 @@ export default function DataDrivenCombatView({
       const attackerTextures: Map<string, Texture> = new Map();
 
       try {
-        await Assets.load(assetsToLoad);
+        await Assets.load(coreAssets);
+        // Cargar dragones opcionales individualmente sin abortar si alguno falla
+        await Promise.allSettled(optionalDragonUrls.map((u) => Assets.load(u)));
 
         bgTex = Assets.get('/images/rpg/combat_bg.png');
         bossTex = Assets.get('/images/rpg/boss_sprite.png');
@@ -199,7 +208,7 @@ export default function DataDrivenCombatView({
         sparksDragonTex = activeDragonDef.sparkTextureUrl ? (Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
 
         for (const attacker of payload.attackers) {
-          const skinUrl = `/images/rpg/${(attacker.skin_texture_id || 'skin_marine').replace('skin_', '')}_sprite.png`;
+          const skinUrl = resolveAttackerSkinUrl(attacker.skin_texture_id);
           const tex = Assets.get(skinUrl) || bossTex;
           attackerTextures.set(attacker.student_id, tex);
         }

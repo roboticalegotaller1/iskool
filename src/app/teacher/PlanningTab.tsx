@@ -10,7 +10,7 @@ import {
   Clock, Layers, Target, BookMarked, CheckSquare, Calendar, Bookmark, FolderCheck
 } from 'lucide-react';
 import { UserProfile, Subject, ClassSchedule, Group, Quest } from '@/types';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useSchoolAdminStore, getSchoolGovernance } from '@/store/useSchoolAdminStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { usePlanningStore } from '@/store/usePlanningStore';
 import { supabase } from '@/lib/supabaseClient';
@@ -774,13 +774,13 @@ export function PlanningTab({
           const word = queryWords[0];
           try {
             const { data } = await supabase
-              .from('pdas')
-              .select('pda_text')
-              .ilike('pda_text', `%${word}%`)
+              .from('nem_pdas')
+              .select('description')
+              .ilike('description', `%${word}%`)
               .limit(5);
               
             if (data && data.length > 0) {
-              dbSuggestions = data.map((d: any) => d.pda_text).filter(Boolean);
+              dbSuggestions = data.map((d: any) => d.description).filter(Boolean);
             }
           } catch (e) {
             // Ignorar fallas de conexión a Supabase
@@ -849,7 +849,12 @@ export function PlanningTab({
 
   // --- Estados y Consultas de Libros Digitales Escolares (0 Tokens) ---
   const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const schoolGovernance = useSchoolAdminStore(state => state.schoolGovernance);
   const effectiveSchoolId = currentTeacher?.school_id || activeSchoolId || 'sch-jjrosseau';
+  const currentGovernance = useMemo(
+    () => getSchoolGovernance(schoolGovernance, effectiveSchoolId),
+    [schoolGovernance, effectiveSchoolId]
+  );
   const findBookCitation = useSchoolBooksStore(state => state.findBookCitationForPlanning);
 
   const [notebookModalBook, setNotebookModalBook] = useState<SchoolDigitalBook | null>(null);
@@ -1042,6 +1047,10 @@ export function PlanningTab({
 
   // --- Generador Didáctico de Planeación ---
   const handleGenerate = async () => {
+    if (!currentGovernance.allowAiAssistantTeachers) {
+      alert('El Asistente de Inteligencia Artificial Pedagógica está desactivado por la Dirección General del plantel.');
+      return;
+    }
     if (!inputText.trim() && !uploadedFile) {
       alert("Por favor introduce una idea, palabra clave o sube una fotografía o documento.");
       return;

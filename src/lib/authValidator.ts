@@ -42,7 +42,7 @@ export async function validateApiAuth(
         // Verificación de aislamiento hermético cross-tenant
         const userTenant = verifiedPayload.tenant_id || 'iskool';
         if (options?.expectedTenant && userTenant !== options.expectedTenant) {
-          const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin' || verifiedPayload.role === 'director' || verifiedPayload.role === 'owner' || verifiedPayload.role === 'ceo';
+          const isSuperUser = verifiedPayload.role === 'superadmin';
           if (!options.allowSuperAdminBypass || !isSuperUser) {
             return {
               authenticated: false,
@@ -68,18 +68,30 @@ export async function validateApiAuth(
     }
 
     // 1.1 Verificación de Cookie de Sesión Hermética de Laboratorio ('laboratorio_session')
-    const labSessionCookie = request.cookies.get('laboratorio_session')?.value;
+    // Acotada estrictamente al contexto del Laboratorio CEO, Correo Ejecutivo y Work OS
+    const requestPathname = request.nextUrl?.pathname || '';
+    const isLabScopedRoute =
+      requestPathname === '' ||
+      requestPathname.startsWith('/api/auth/laboratorio-session') ||
+      requestPathname.startsWith('/api/portal/ceo') ||
+      requestPathname.startsWith('/api/mail') ||
+      requestPathname.startsWith('/api/admin/workos');
+    const labSessionCookie = isLabScopedRoute ? request.cookies.get('laboratorio_session')?.value : undefined;
     if (labSessionCookie) {
       try {
         const { verifyLaboratorioSession } = await import('@/app/api/auth/laboratorio-session/route');
         const labSession = await verifyLaboratorioSession(labSessionCookie);
         if (labSession) {
+          const labSchoolId = labSession.is_isolated_sandbox
+            ? labSession.tenant_id
+            : (labSession.tenant_id === 'e1000000-0000-0000-0000-000000000001' ? 'sch-ibime' : 'sch-demo-0001');
           return {
             authenticated: true,
             user: {
               id: labSession.user_id,
               email: labSession.email,
               role: labSession.role,
+              school_id: labSchoolId,
               tenant_id: (labSession.tenant_id?.includes('ibime') || labSession.tenant_id === 'e1000000-0000-0000-0000-000000000001') ? 'ibime' : 'iskool',
               institution_metadata: {
                 tenant_uuid: labSession.tenant_id,
@@ -103,7 +115,7 @@ export async function validateApiAuth(
         if (verifiedPayload) {
           const userTenant = verifiedPayload.tenant_id || 'iskool';
           if (options?.expectedTenant && userTenant !== options.expectedTenant) {
-            const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin' || verifiedPayload.role === 'director' || verifiedPayload.role === 'owner' || verifiedPayload.role === 'ceo';
+            const isSuperUser = verifiedPayload.role === 'superadmin';
             if (!options.allowSuperAdminBypass || !isSuperUser) {
               return {
                 authenticated: false,
@@ -136,8 +148,8 @@ export async function validateApiAuth(
               user: {
                 id: data.user.id,
                 email: data.user.email,
-                role: data.user.user_metadata?.role || data.user.role || 'authenticated',
-                school_id: data.user.user_metadata?.school_id
+                role: data.user.app_metadata?.role || 'student',
+                school_id: data.user.app_metadata?.school_id
               }
             };
           }
@@ -147,7 +159,7 @@ export async function validateApiAuth(
       }
     }
 
-    // 3. Verificación de cookies estándar de Supabase Auth
+    // 3. Verificación de cookies estándar de autenticación institucional
     const sbTokenCookie = request.cookies.get('sb-access-token')?.value || request.cookies.get('supabase-auth-token')?.value;
     if (sbTokenCookie) {
       try {
@@ -158,8 +170,8 @@ export async function validateApiAuth(
             user: {
               id: data.user.id,
               email: data.user.email,
-              role: data.user.user_metadata?.role || 'authenticated',
-              school_id: data.user.user_metadata?.school_id
+              role: data.user.app_metadata?.role || 'student',
+              school_id: data.user.app_metadata?.school_id
             }
           };
         }

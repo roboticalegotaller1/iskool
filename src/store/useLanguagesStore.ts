@@ -843,7 +843,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-101',
     studentName: 'Mateo Hernández',
     studentAvatar:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      '/images/students/mateo.png',
     lessonId: 'lesson-en-coffee',
     lessonTitle: 'Ordering at a Café & Pleasantries',
     language: 'en',
@@ -862,7 +862,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-102',
     studentName: 'Sofía Valenzuela',
     studentAvatar:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+      '/images/students/elena.png',
     lessonId: 'lesson-en-coffee',
     lessonTitle: 'Ordering at a Café & Pleasantries',
     language: 'en',
@@ -894,7 +894,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-103',
     studentName: 'Camila Regina Villaseñor',
     studentAvatar:
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80',
+      '/images/students/santi.png',
     lessonId: 'lesson-fr-paris',
     lessonTitle: 'Une Conversation Douce à la Brasserie de Paris',
     language: 'fr',
@@ -931,7 +931,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-104',
     studentName: 'Diego Emiliano Santillán',
     studentAvatar:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+      '/images/students/lucas.png',
     lessonId: 'lesson-fr-college-a1',
     lessonTitle: 'Mon Emploi du Temps au Collège & le Laboratoire',
     language: 'fr',

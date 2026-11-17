@@ -1683,7 +1683,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
       ? enlaceMessage.trim()
       : `Estimado(a) ${tutorInfo.tutorName}: Se comparte el reporte de asistencia (${attLabel}) y auditoría de libreta física (${stampLabel}) de ${fullName}.`;
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://iskool.edu.mx';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://iskool.mx';
     const token = `ml_${targetStudent.id}_${Date.now().toString(36)}`;
     const relativeMagicUrl = `/parent?student_id=${encodeURIComponent(targetStudent.id)}&token=${encodeURIComponent(token)}&auth=magic`;
     const magicLinkUrl = `${origin}${relativeMagicUrl}`;
@@ -5277,7 +5277,7 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
         const modalStampPage = modalStamp?.page || todayStampPage;
         const modalPageNumber = modalStampPage.includes(' - ') ? modalStampPage.split(' - ')[0] : modalStampPage;
         
-        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://iskool.edu.mx';
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://iskool.mx';
         const generatedToken = `ml_${magicLinkModalStudent.id}_${Date.now().toString(36)}`;
         const fullMagicUrl = `${origin}/parent?student_id=${encodeURIComponent(magicLinkModalStudent.id)}&token=${generatedToken}&auth=magic`;
 

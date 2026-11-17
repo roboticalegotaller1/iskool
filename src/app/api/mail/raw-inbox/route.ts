@@ -607,18 +607,41 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const tenantId = body.tenantId || 'sch-default';
+    // 1. Verificación Zero-Trust de autenticación y RBAC ejecutivo ANTES de cualquier mutación
+    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+        { status: 401 }
+      );
+    }
+    const roleLower = (authResult.user.role || '').toLowerCase();
+    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator', 'teacher'].includes(roleLower)) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos insuficientes para operar en el buzón ejecutivo.' },
+        { status: 403 }
+      );
+    }
 
-    // Acción directa de resolución de expediente por el CEO o modificación administrativa requiere sesión autenticada
+    const body = await request.json().catch(() => ({}));
+    const tenantId = String(body.tenantId || authResult.user.school_id || 'sch-default');
+
+    // Aislamiento de tenant por escuela (excepto superadmin)
+    if (
+      roleLower !== 'superadmin' &&
+      authResult.user.school_id &&
+      tenantId !== 'sch-default' &&
+      tenantId !== authResult.user.school_id &&
+      tenantId !== authResult.user.institution_metadata?.tenant_uuid
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
+        { status: 403 }
+      );
+    }
+
+    // Acción directa de resolución de expediente por Dirección General
     if (body.action === 'mark_resolved' || body.action === 'resolve_matter') {
-      const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
-      if (!authResult.authenticated) {
-        return NextResponse.json(
-          { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
-          { status: 401 }
-        );
-      }
       const emailId = body.emailId || '';
       const subject = body.subject || '';
       markEmailAsResolvedServer(tenantId, emailId, subject);
@@ -632,13 +655,6 @@ export async function POST(request: NextRequest) {
 
     // Acción directa de eliminación de correos de la bandeja por Dirección General
     if (body.action === 'delete_emails' || body.action === 'delete_email') {
-      const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
-      if (!authResult.authenticated) {
-        return NextResponse.json(
-          { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
-          { status: 401 }
-        );
-      }
       const ids: string[] = Array.isArray(body.ids) ? body.ids : (body.id ? [body.id] : (body.emailId ? [body.emailId] : []));
       for (const id of ids) {
         markEmailAsDeletedServer(tenantId, id);
@@ -650,29 +666,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Para sincronizar o inyectar buzón, se requiere o sesión autenticada o credenciales directas de cuenta (email)
-    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
-    if (authResult.authenticated && ['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
-      return NextResponse.json(
-        { success: false, error: 'Permisos insuficientes para operar en el buzón ejecutivo.' },
-        { status: 403 }
-      );
-    }
-    if (!authResult.authenticated && !body.email && !body.injectEmail) {
-      return NextResponse.json(
-        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
-        { status: 401 }
-      );
-    }
-    let rawEmail = (body.email || '').trim();
+    let rawEmail = (body.email || authResult.user.email || '').trim();
     if (!rawEmail || rawEmail === 'DISCONNECTED') {
-      rawEmail = 'roboticalegotaller1@gmail.com';
+      rawEmail = '';
     }
-    // Mapeo canónico: En IBIME la cuenta Google Workspace oficial de la Dirección General / Patricia Sandoval es roboticalegotaller1@gmail.com
-    const email =
-      rawEmail.includes('directora.general') || rawEmail.includes('patricia') || rawEmail.includes('ibime.edu.mx')
-        ? 'roboticalegotaller1@gmail.com'
-        : rawEmail;
+    // Mapeo canónico por tenant si está configurado
+    const email = rawEmail;
 
     const password = body.password || '';
     const host = body.host || 'imap.gmail.com';

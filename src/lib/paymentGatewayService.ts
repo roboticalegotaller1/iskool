@@ -123,7 +123,7 @@ export class StandardPaymentGatewayService extends BasePaymentGatewayService {
     const transactionId = `txn_${crypto.randomBytes(12).toString('hex')}`;
     const paymentReference = `PAY-${request.invoiceNumber}-${Date.now().toString().slice(-4)}`;
     const expiresAt = request.dueDate || new Date(Date.now() + 72 * 3600 * 1000).toISOString();
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://iskool.edu.mx';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://iskool.mx';
     const checkoutUrl = `${appUrl}/checkout/${transactionId}?ref=${encodeURIComponent(paymentReference)}`;
 
     // En un entorno de producción real, aquí se ejecuta el fetch HTTPS autenticado con la API del proveedor
@@ -146,6 +146,13 @@ export class StandardPaymentGatewayService extends BasePaymentGatewayService {
     });
     */
 
+    const clabe17 = '710969' + Array.from({ length: 11 }, () => crypto.randomInt(0, 10)).join('');
+    const weights = [3, 7, 1, 3, 7, 1, 3, 7, 1, 3, 7, 1, 3, 7, 1, 3, 7];
+    const weightedSum = clabe17
+      .split('')
+      .reduce((acc, digit, idx) => acc + ((Number(digit) * weights[idx]) % 10), 0);
+    const controlDigit = (10 - (weightedSum % 10)) % 10;
+
     return {
       id: transactionId,
       status: 'pending',
@@ -153,7 +160,7 @@ export class StandardPaymentGatewayService extends BasePaymentGatewayService {
       currency: request.currency,
       checkoutUrl,
       paymentReference,
-      speiClabe: '710969' + crypto.randomBytes(6).toString('hex').slice(0, 12), // CLABE estandarizada para SPEI
+      speiClabe: `${clabe17}${controlDigit}`, // CLABE SPEI numérica válida de 18 dígitos con dígito verificador
       createdAt: new Date().toISOString(),
       expiresAt
     };

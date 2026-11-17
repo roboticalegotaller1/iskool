@@ -6,8 +6,30 @@
  * Maneja mutaciones seguras del lado del servidor, asignación de sedes y puentes a Control Escolar.
  */
 
+import { cookies } from 'next/headers';
+import { verifySessionToken } from '@/lib/sessionToken';
+import { verifyMultiTenantToken } from '@/lib/auth/multiTenantSession';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { CrmStageKey, PipelineType, LeadPriority, SourceChannelKey } from '@/types/crm';
 import { IBIME_CAMPUS_CAPACITY_TARGETS, normalizeCampusKey } from '@/services/admissionsPipelineService';
+
+const STAFF_CRM_ROLES = new Set(['superadmin', 'admin', 'director', 'coordinator', 'owner', 'ceo', 'billing']);
+
+async function requireAdmissionsStaffSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('iskool_session')?.value || cookieStore.get('ibime_session')?.value;
+  if (!token) {
+    return { authorized: false as const, error: 'Autenticación institucional requerida.' };
+  }
+  const verified = (await verifyMultiTenantToken(token)) || (await verifySessionToken(token));
+  if (!verified || !verified.role) {
+    return { authorized: false as const, error: 'Sesión inválida o expirada.' };
+  }
+  if (!STAFF_CRM_ROLES.has(verified.role.toLowerCase())) {
+    return { authorized: false as const, error: 'Permisos insuficientes para operar Admisiones.' };
+  }
+  return { authorized: true as const, user: verified };
+}
 
 export interface CreateAdmissionsLeadInput {
   school_id: string;
@@ -42,6 +64,10 @@ export async function createAdmissionsLeadAction(
   input: CreateAdmissionsLeadInput
 ): Promise<ActionResponse<{ leadId: string; candidateId?: string }>> {
   try {
+    const auth = await requireAdmissionsStaffSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
     if (!input.tutor_first_name || !input.tutor_last_name_1) {
       return { success: false, error: 'El nombre y primer apellido del tutor son obligatorios (Norma SEP).' };
     }
@@ -52,6 +78,34 @@ export async function createAdmissionsLeadAction(
 
     if (input.candidate_first_name) {
       candidateId = `cand-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+    }
+
+    const hasRealDb = Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    if (hasRealDb) {
+      try {
+        const db = getServiceSupabaseClient();
+        await db.from('crm_leads').insert({
+          id: leadId,
+          school_id: auth.user.school_id || input.school_id,
+          campus_id: normCampus,
+          pipeline_type: input.pipeline_type || 'K12_GENERAL',
+          current_stage: 'nuevo_prospecto',
+          tutor_first_name: input.tutor_first_name,
+          tutor_last_name_1: input.tutor_last_name_1,
+          tutor_last_name_2: input.tutor_last_name_2,
+          tutor_phone: input.tutor_phone,
+          tutor_email: input.tutor_email,
+          source_channel: input.source_channel || 'organico',
+          priority: input.priority || 'media',
+          target_academic_year: input.target_academic_year || '2026-2027',
+        });
+      } catch (dbErr) {
+        console.warn('[AdmissionsAction] Aviso persistiendo crm_leads:', dbErr);
+      }
     }
 
     return {
@@ -75,8 +129,33 @@ export async function updateLeadStageAction(
   auditNote?: string
 ): Promise<ActionResponse<{ leadId: string; stage: CrmStageKey }>> {
   try {
+    const auth = await requireAdmissionsStaffSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
     if (!leadId || !newStage) {
       return { success: false, error: 'Identificador y etapa requeridos.' };
+    }
+
+    const hasRealDb = Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+    if (hasRealDb) {
+      try {
+        const db = getServiceSupabaseClient();
+        let query = db
+          .from('crm_leads')
+          .update({ current_stage: newStage, updated_at: new Date().toISOString() })
+          .eq('id', leadId);
+        if (auth.user.role !== 'superadmin' && auth.user.school_id) {
+          query = query.eq('school_id', auth.user.school_id);
+        }
+        await query;
+      } catch (dbErr) {
+        console.warn('[AdmissionsAction] Aviso actualizando etapa CRM:', dbErr);
+      }
     }
 
     return {
@@ -92,13 +171,17 @@ export async function updateLeadStageAction(
 }
 
 /**
- * Obtiene el reporte analítico estático/base para renderizado SSR o API.
+ * Obtiene el reporte analítico de admisiones autenticado.
  */
 export async function getConsolidatedPipelineAnalyticsAction(
   campusId: string = 'all',
   academicYear: string = '2026-2027'
 ): Promise<ActionResponse<any>> {
   try {
+    const auth = await requireAdmissionsStaffSession();
+    if (!auth.authorized) {
+      return { success: false, error: auth.error };
+    }
     const normKey = normalizeCampusKey(campusId);
     const target = IBIME_CAMPUS_CAPACITY_TARGETS[normKey] || IBIME_CAMPUS_CAPACITY_TARGETS['all'];
 

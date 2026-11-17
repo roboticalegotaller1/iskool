@@ -12,8 +12,11 @@ import { validateApiAuth } from '@/lib/authValidator';
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para acceder a la radiografía de grupo.' }, { status: 401 });
+    }
+    if (!['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo'].includes((auth.user.role || '').toLowerCase())) {
+      return NextResponse.json({ error: 'Permisos insuficientes para consultar analítica de grupo.' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);

@@ -1440,7 +1440,13 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
   if (!figure.qaCache) figure.qaCache = [];
   
   const cleanAnswer = answer.trim();
-  if (!cleanAnswer || !isAnswerSemanticallyAligned(question, cleanAnswer, figure.characterName)) return;
+  if (
+    !cleanAnswer ||
+    isCorruptOrGenericPersonaAnswer(cleanAnswer, figure.characterName) ||
+    !isAnswerSemanticallyAligned(question, cleanAnswer, figure.characterName)
+  ) {
+    return;
+  }
 
   const normTarget = normalizeQuestionText(question);
   const existingIdx = figure.qaCache.findIndex(i => normalizeQuestionText(i.question) === normTarget);

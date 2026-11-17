@@ -446,8 +446,9 @@ Redacta el texto completo directamente, sin rodeos ni explicaciones previas.`;
     for (const m of candidateModels) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
-        const fetchPromise = fetch(url, {
+        const res = await fetch(url, {
           method: 'POST',
+          signal: AbortSignal.timeout(3500),
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [
@@ -462,12 +463,6 @@ Redacta el texto completo directamente, sin rodeos ni explicaciones previas.`;
             }
           })
         });
-
-        const timeoutPromise = new Promise<Response>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout conectando con Motor de IA')), 14000)
-        );
-
-        const res = await Promise.race([fetchPromise, timeoutPromise]);
 
         if (res.ok) {
           const data = await res.json();

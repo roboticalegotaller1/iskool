@@ -7,6 +7,7 @@
 
 import { AICostLedgerEntry, SchoolAIBudgetEntity, BudgetStatus, AIFeatureType } from './types';
 import { supabase } from '../supabaseClient';
+import { getServiceSupabaseClient } from '../supabaseServer';
 
 export class AIGatewayCostLedger {
   private static ledgers: AICostLedgerEntry[] = [];
@@ -18,10 +19,11 @@ export class AIGatewayCostLedger {
   static async recordUsage(entry: AICostLedgerEntry): Promise<void> {
     this.ledgers.push(entry);
 
-    // 1. Persistencia opcional en Supabase
+    // 1. Persistencia opcional en base de datos con cliente de servicio
     try {
-      if (supabase) {
-        await supabase.from('ai_cost_ledgers').insert({
+      const db = typeof window === 'undefined' ? getServiceSupabaseClient() : supabase;
+      if (db) {
+        const { error } = await db.from('ai_cost_ledgers').insert({
           id: entry.id,
           school_id: entry.school_id,
           user_id: entry.user_id,
@@ -38,6 +40,9 @@ export class AIGatewayCostLedger {
           error_message: entry.error_message,
           created_at: entry.created_at
         });
+        if (error) {
+          console.warn('[AIGatewayCostLedger] Aviso al registrar uso en BD:', error.message);
+        }
       }
     } catch {
       // Degradar a memoria

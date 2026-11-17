@@ -104,11 +104,14 @@ export async function POST(req: NextRequest) {
         // Blindaje contra DNS Rebinding: Resolver IP y validar que no pertenezca a redes privadas/internas
         if (safetyCheck.parsed?.hostname) {
           try {
-            const lookup = await dns.lookup(safetyCheck.parsed.hostname);
-            if (isPrivateOrReservedIp(lookup.address)) {
+            const lookups = await dns.lookup(safetyCheck.parsed.hostname, { all: true });
+            const blockedIp = lookups.find((entry) => isPrivateOrReservedIp(entry.address));
+            if (blockedIp || lookups.length === 0) {
               results[url] = {
                 isValid: false,
-                error: `Bloqueado por política anti-SSRF: Dirección IP resuelta (${lookup.address}) es privada o reservada`,
+                error: blockedIp
+                  ? `Bloqueado por política anti-SSRF: Dirección IP resuelta (${blockedIp.address}) es privada o reservada`
+                  : 'Sin registros DNS válidos',
                 checkedAt: now
               };
               return;

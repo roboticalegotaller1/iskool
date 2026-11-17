@@ -135,12 +135,20 @@ export async function validateMailTargetAsync(
   }
 
   try {
-    const lookup = await dns.lookup(cleanHost);
-    if (isPrivateOrReservedIp(lookup.address)) {
+    const lookups = await dns.lookup(cleanHost, { all: true });
+    if (!lookups || lookups.length === 0) {
       return {
         valid: false,
-        reason: `Bloqueado por política anti-SSRF: La dirección IP resuelta (${lookup.address}) para el host "${cleanHost}" pertenece a una red interna o reservada.`
+        reason: `No se resolvieron direcciones IP para "${cleanHost}".`
       };
+    }
+    for (const entry of lookups) {
+      if (isPrivateOrReservedIp(entry.address)) {
+        return {
+          valid: false,
+          reason: `Bloqueado por política anti-SSRF: La dirección IP resuelta (${entry.address}) para el host "${cleanHost}" pertenece a una red interna o reservada.`
+        };
+      }
     }
   } catch (err: any) {
     return {

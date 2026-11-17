@@ -1,5 +1,5 @@
 // ============================================================================
-// ISKOOL GLOBAL LANGUAGE METHODOLOGY ENGINE (NANO BANANA 2.1 EDITION)
+// ISKOOL GLOBAL LANGUAGE METHODOLOGY ENGINE (MOTOR ARTICULATORIO 60 FPS EDITION)
 // Neuro-Communicative & Action-Oriented CEFR Continuous Model (Modelo Continuo 5E)
 // Synthesizing Global Benchmarks: Cambridge One, The Anglo, Berlitz,
 // Quick Learning, Alliance Française (DELF/DALF), and British Council / CEFR 2020.
@@ -165,7 +165,7 @@ export const INTERNATIONAL_BENCHMARK_AUDITS: InternationalInstitutionAudit[] = [
             'Riesgo de mecanicismo si no se conecta con mediación escrita y pensamiento crítico histórico/científico.',
         ],
         iskoolSynthesisAndUpgrade:
-            'ISkool eleva la fonética acústica al estándar Nano Banana 2.1: cada avatar ejecuta articulación mandibular y labial anatómica a 60 FPS sincronizada con el Karaoke Fonético DSP, midiendo al milisegundo precisión de fonemas, ritmo y prosodia.',
+            'ISkool eleva la fonética acústica al estándar Motor Articulatorio 60 FPS: cada avatar ejecuta articulación mandibular y labial anatómica a 60 FPS sincronizada con el Karaoke Fonético DSP, midiendo al milisegundo precisión de fonemas, ritmo y prosodia.',
         mappedISkoolToolId: 'reports',
         mappedISkoolToolName: 'Karaoke Fonético DSP & Bitácora Acústica de Pronunciación',
         accentColor: '#7c3aed',
@@ -231,7 +231,7 @@ export const CONTINUOUS_METHODOLOGY_STAGES: ContinuousMethodologyStage[] = [
         pedagogicalPillar: 'Inspirado en Quick Learning + Escala de Control Fonológico CEFR 2020',
         benchmarkOrigins: ['Quick Learning', 'CEFR Phonological Control'],
         neuroCognitiveMechanism:
-            'Activa el bucle fonológico (corteza auditiva superior y área de Broca) emparejando la onda acústica nativa con la cinemática mandibular/labial a 60 FPS (Nano Banana 2.1) antes de exponer al alumno a la grafía.',
+            'Activa el bucle fonológico (corteza auditiva superior y área de Broca) emparejando la onda acústica nativa con la cinemática mandibular/labial a 60 FPS (Motor Articulatorio 60 FPS) antes de exponer al alumno a la grafía.',
         primaryToolTab: 'hardware',
         primaryToolLabel: 'Diagnóstico Acústico & Modelado Articulatorio 60 FPS',
         durationMinutesPerSession: 8,
@@ -975,7 +975,7 @@ export const LANGUAGE_PROGRAM_ARCHITECTURES = {
         ],
         theoreticalPillars: [
             {
-                title: '1. Hipótesis de Codificación Fonético-Articulatoria a 60 FPS (Quick Learning + Nano Banana 2.1)',
+                title: '1. Hipótesis de Codificación Fonético-Articulatoria a 60 FPS (Quick Learning + Motor Articulatorio 60 FPS)',
                 description:
                     'El cerebro hispanohablante tiende a filtrar los 12 fonemas vocálicos del inglés a través de las 5 vocales del español. Al sincronizar el motor mandibular/labial a 60 FPS con el evaluador de espectrograma DSP, el estudiante acopla percepción visual (efecto McGurk positivo) y producción neuromuscular antes de sufrir interferencia ortográfica.',
             },

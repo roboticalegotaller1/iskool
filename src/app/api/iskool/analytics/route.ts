@@ -5,8 +5,11 @@ import { validateApiAuth } from '@/lib/authValidator';
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para acceder a métricas analíticas.' }, { status: 401 });
+    }
+    if (!['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo'].includes((auth.user.role || '').toLowerCase())) {
+      return NextResponse.json({ error: 'Permisos insuficientes para consultar analítica institucional.' }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
