@@ -766,10 +766,13 @@ export default function StudentDashboard() {
                       recordSocioemotionalCheckin({
                         studentId: activeStudentId || 'std-current',
                         studentName: avatar?.avatar_name || 'Estudiante',
-                        groupId: 'grp-4a',
+                        groupId: activeStudentId?.startsWith('std-demo-') ? 'grp-demo-pri-5a' : 'grp-4a',
                         date: new Date().toISOString().split('T')[0],
                         mood: item.mood
                       });
+                      if (activeStudentId) {
+                        void addXpAndCoins(activeStudentId, 10, 0);
+                      }
                       setStudentMoodFeedback(`¡Ánimo ${item.icon}! +10 XP registrado`);
                       setTimeout(() => setStudentMoodFeedback(null), 4000);
                     }}

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { playUniversalIskoolVoice } from '@/lib/historicalVoiceEngine';
 import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import {
   CheckCircle2,
   Volume2,
@@ -29,12 +30,22 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
   gradeLabel,
   studentId,
 }) => {
-  const [isSigned, setIsSigned] = useState<boolean>(false);
+  const [localSigned, setLocalSigned] = useState<boolean>(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [selectedLangHighlight, setSelectedLangHighlight] = useState<'fr' | 'en'>('fr');
   const lastStampAndXpAt = useDemoInteractionStore((s) => s.lastStampAndXpAt);
   const valentinaBonusXp = useDemoInteractionStore((s) => s.valentinaBonusXp);
+  const lastParentSignedAt = useDemoInteractionStore((s) => s.lastParentSignedAt);
   const recordParentSignature = useDemoInteractionStore((s) => s.recordParentSignature);
+  const billingRecords = useSchoolAdminStore((s) => s.billingRecords);
+
+  const isSigned = localSigned || Boolean(lastParentSignedAt && studentId.startsWith('std-demo-'));
+
+  const activeBillingRecord = React.useMemo(() => {
+    return (billingRecords || []).find((b) => b.studentId === studentId) || null;
+  }, [billingRecords, studentId]);
+  const billingAmount = activeBillingRecord?.amount ?? 4500;
+  const isBillingPaid = activeBillingRecord ? activeBillingRecord.status === 'paid' : true;
 
   const handlePlayChildHighlight = () => {
     setIsPlayingAudio(true);
@@ -68,8 +79,9 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
   };
 
   const handleSignAcknowledgement = async () => {
-    setIsSigned(true);
+    setLocalSigned(true);
     recordParentSignature({ studentId, studentName, familyName });
+    if (studentId.startsWith('std-demo-')) return;
     try {
       await fetch('/api/parent/magic-link', {
         method: 'PATCH',
@@ -89,8 +101,8 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
   const pdfInvoiceUrl = `/api/billing/invoice/pdf?student=${encodeURIComponent(
     studentName
   )}&level=${encodeURIComponent(gradeLabel)}&concept=${encodeURIComponent(
-    'Colegiatura Mensual Ciclo Escolar Activo'
-  )}&amount=4500`;
+    activeBillingRecord?.concept || 'Colegiatura Mensual Ciclo Escolar Activo'
+  )}&amount=${billingAmount}`;
 
   return (
     <section
@@ -251,7 +263,13 @@ export const ParentFiveSecondSummaryCard: React.FC<ParentFiveSecondSummaryCardPr
                 </h3>
               </div>
               <div className="text-xs text-slate-600">
-                Mes Actual: <span className="font-extrabold text-emerald-700">Pagado • Recibo Oficial Timbrado (Complemento IEDU)</span>
+                Mes Actual ($
+                {billingAmount.toLocaleString('es-MX')} MXN):{' '}
+                <span className={`font-extrabold ${isBillingPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {isBillingPaid
+                    ? 'Pagado • Recibo Oficial Timbrado (Complemento IEDU)'
+                    : 'Vigente • Listo para Pago SPEI / Tarjeta (Complemento IEDU)'}
+                </span>
               </div>
             </div>
 

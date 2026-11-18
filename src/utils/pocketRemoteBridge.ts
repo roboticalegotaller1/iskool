@@ -174,6 +174,19 @@ export async function dispatchPocketRemoteCommand(params: {
     }
   }
 
+  if (typeof window !== 'undefined') {
+    try {
+      const rawSession = sessionStorage.getItem('iskool_active_session_v2');
+      if (rawSession) {
+        const parsedSession = JSON.parse(rawSession);
+        const role = String(parsedSession?.role || '').toLowerCase();
+        if (role === 'student' || role === 'parent' || role === 'tutor') {
+          return cmd;
+        }
+      }
+    } catch {}
+  }
+
   try {
     await fetch('/api/languages/pocket-remote', {
       method: 'POST',
@@ -255,6 +268,19 @@ export async function syncActiveLessonToPocketServer(params: {
     } catch {
       // Ignorar errores de BroadcastChannel
     }
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const rawSession = sessionStorage.getItem('iskool_active_session_v2');
+      if (rawSession) {
+        const parsedSession = JSON.parse(rawSession);
+        const role = String(parsedSession?.role || '').toLowerCase();
+        if (role === 'student' || role === 'parent' || role === 'tutor') {
+          return;
+        }
+      }
+    } catch {}
   }
 
   try {

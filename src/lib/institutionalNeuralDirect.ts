@@ -1,5 +1,13 @@
 import WebSocket from 'ws';
 import crypto from 'node:crypto';
+import https from 'node:https';
+
+const KEEP_ALIVE_IPV4_AGENT = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 12,
+  family: 4,
+});
 
 /**
  * Cliente Directo de Síntesis Neuronal Institucional (0 Tokens).
@@ -403,6 +411,9 @@ function synthesizeSingleTurnWs(
     const url = `${WSS_URL}&ConnectionId=${connId}&Sec-MS-GEC=${secMsGec}&Sec-MS-GEC-Version=${SEC_MS_GEC_VERSION}`;
 
     const ws = new WebSocket(url, {
+      agent: KEEP_ALIVE_IPV4_AGENT,
+      family: 4,
+      handshakeTimeout: Math.min(2500, timeoutMs),
       headers: {
         Pragma: 'no-cache',
         'Cache-Control': 'no-cache',
@@ -528,7 +539,7 @@ export async function synthesizeDirectInstitutionalNeural(options: {
   const voiceId = enforceAntiCastilianVoice(options.voice || 'es-MX-DaliaNeural');
   const rate = sanitizeRateString(options.rate);
   const pitch = sanitizePitchString(options.pitch);
-  const timeoutMs = options.timeoutMs ?? 5500;
+  const timeoutMs = options.timeoutMs ?? 3500;
   const cleanText = prepareCleanSpokenText(options.text);
 
   if (!cleanText || cleanText.length < 1) {
@@ -553,7 +564,7 @@ export async function synthesizeDirectInstitutionalNeural(options: {
       );
       turnBuffers.push(buf);
     } catch (firstErr: any) {
-      // Reintento único automático ajustando reloj (403) o con bitrate estándar 48kbps
+      // Reintento único inmediato ajustando reloj (403) o con bitrate estándar 48kbps
       const fallbackFmt = firstErr?.statusCode === 403
         ? primaryFormat
         : 'audio-24khz-48kbitrate-mono-mp3';
@@ -563,7 +574,7 @@ export async function synthesizeDirectInstitutionalNeural(options: {
         rate,
         pitch,
         fallbackFmt,
-        timeoutMs
+        Math.min(3000, timeoutMs)
       );
       turnBuffers.push(retryBuf);
     }

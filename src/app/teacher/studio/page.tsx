@@ -6,6 +6,10 @@ import { Header } from '@/components/Header';
 import { Loader } from '@/components/Loader';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { generateGamifiedProject } from '@/services/pedagogicalProjectEngine';
+import {
+  MEXICAN_INDEPENDENCE_BLOCKS,
+  MEXICAN_INDEPENDENCE_METADATA,
+} from '@/data/mexicanIndependenceStudioFlow';
 
 const ActivityBuilderLayout = dynamic(
   () => import('@/components/studio/builder/ActivityBuilderLayout').then((mod) => mod.ActivityBuilderLayout),
@@ -56,6 +60,16 @@ function TeacherStudioContent() {
 
   const handleApplyQuickRecipe = async (recipeType: 'rpg' | 'escape' | 'history') => {
     if (recipeType === 'history') {
+      loadPresetBlocks(MEXICAN_INDEPENDENCE_BLOCKS, MEXICAN_INDEPENDENCE_METADATA);
+      const histConnections = MEXICAN_INDEPENDENCE_BLOCKS.slice(0, -1).map((blk, i) => ({
+        id: `conn-hist-${i}`,
+        sourceNodeId: blk.id,
+        targetNodeId: MEXICAN_INDEPENDENCE_BLOCKS[i + 1].id,
+      }));
+      useActivityBuilderStore.setState({
+        connections: histConnections,
+        startNodeId: MEXICAN_INDEPENDENCE_BLOCKS[0]?.id || null,
+      });
       setActiveTab('builder');
       return;
     }
@@ -89,10 +103,6 @@ function TeacherStudioContent() {
 
     try {
       setGenerationStep('Analizando contenidos curriculares y PDA oficial (NEM 2024)...');
-      await new Promise(r => setTimeout(r, 400));
-
-      setGenerationStep('Estructurando narrativa inmersiva y personaje guía de la aventura...');
-      await new Promise(r => setTimeout(r, 400));
 
       // 1. Intentar llamar al endpoint de API o ejecutar el motor de proyectos
       let projectResult;
@@ -116,7 +126,6 @@ function TeacherStudioContent() {
       }
 
       setGenerationStep('Generando reactivos con distractores plausibles y acertijos de escape room...');
-      await new Promise(r => setTimeout(r, 400));
 
       if (!projectResult || !projectResult.blocks || projectResult.blocks.length === 0) {
         projectResult = await generateGamifiedProject({
@@ -128,7 +137,6 @@ function TeacherStudioContent() {
       }
 
       setGenerationStep('Configurando encuentro de combate RPG, jefe temático y cofre legendario...');
-      await new Promise(r => setTimeout(r, 400));
 
       // Cargar en el estado del lienzo con posiciones y conexiones
       loadPresetBlocks(projectResult.blocks, projectResult.metadata);
@@ -142,7 +150,6 @@ function TeacherStudioContent() {
       }
 
       setGenerationStep('¡Proyecto gamificado estructurado con éxito!');
-      await new Promise(r => setTimeout(r, 300));
 
       setActiveTab('builder');
     } catch (err) {
@@ -161,6 +168,7 @@ function TeacherStudioContent() {
         {/* Barra Superior de Conmutación Rápida del Estudio iSkool */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-900 text-white px-4 sm:px-6 py-3 rounded-2xl shadow-md border border-slate-800">
           <div className="flex items-center gap-2.5 flex-wrap">
+            {!isEmbedded && <BackButton fallbackUrl="/teacher" variant="header" />}
             <span className="px-2.5 py-1 rounded-xl bg-indigo-600 text-white font-black text-xs">
               Estudio iSkool
             </span>
@@ -169,7 +177,7 @@ function TeacherStudioContent() {
             </span>
           </div>
 
-          <div className="inline-flex items-center p-1 rounded-xl bg-slate-800 border border-slate-700 self-stretch sm:self-auto">
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-800 border border-slate-700 self-stretch sm:self-auto flex-wrap gap-1">
             <button
               type="button"
               onClick={() => setActiveTab('recipes')}
@@ -193,6 +201,18 @@ function TeacherStudioContent() {
             >
               <Layers className="w-3.5 h-3.5 text-emerald-500" />
               <span>Lienzo Avanzado de Nodos</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('ai_assistant')}
+              className={`flex-1 sm:flex-initial px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                activeTab === 'ai_assistant'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              <Wand2 className="w-3.5 h-3.5 text-purple-400" />
+              <span>Asistente Pedagógico IA</span>
             </button>
           </div>
         </div>

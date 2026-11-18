@@ -448,9 +448,6 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     setIsGeneratingAiModal(true);
     try {
       setAiModalGenStep('Analizando contenidos y PDA curricular oficial...');
-      await new Promise(r => setTimeout(r, 350));
-      setAiModalGenStep('Estructurando narrativa épica y desafíos interactivos...');
-      await new Promise(r => setTimeout(r, 350));
 
       let projectResult;
       try {
@@ -478,7 +475,6 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
       }
 
       setAiModalGenStep('Configurando encuentro RPG, combate y cofre legendario...');
-      await new Promise(r => setTimeout(r, 350));
 
       loadPresetBlocks(projectResult.blocks, projectResult.metadata);
       if (projectResult.connections && projectResult.connections.length > 0) {

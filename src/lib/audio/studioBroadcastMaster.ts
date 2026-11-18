@@ -29,6 +29,52 @@ export interface StudioBroadcastChain {
   cleanup: () => void;
 }
 
+export interface ActiveFormantLevels {
+  rms: number;
+  open: number;
+  spread: number;
+  rounded: number;
+  alveolar: boolean;
+  bilabial: boolean;
+  audioGraphActive: boolean;
+}
+
+const ZERO_FORMANT_LEVELS: ActiveFormantLevels = {
+  rms: 0,
+  open: 0,
+  spread: 0,
+  rounded: 0,
+  alveolar: false,
+  bilabial: false,
+  audioGraphActive: false,
+};
+
+export function resetActiveVoiceFormantLevels(): void {
+  if (typeof window === 'undefined') return;
+  const w = window as unknown as {
+    __iskoolActiveFormantLevels?: ActiveFormantLevels;
+    __iskoolVoiceAudiblySpeaking?: boolean;
+  };
+  w.__iskoolActiveFormantLevels = { ...ZERO_FORMANT_LEVELS };
+  w.__iskoolVoiceAudiblySpeaking = false;
+}
+
+function bandAverageNormalized(
+  freqData: Uint8Array,
+  binHz: number,
+  lowHz: number,
+  highHz: number
+): number {
+  const startBin = Math.max(1, Math.floor(lowHz / binHz));
+  const endBin = Math.min(freqData.length - 1, Math.ceil(highHz / binHz));
+  if (endBin < startBin) return 0;
+  let sum = 0;
+  for (let i = startBin; i <= endBin; i++) {
+    sum += freqData[i];
+  }
+  return sum / ((endBin - startBin + 1) * 255);
+}
+
 const processedAudioElements = new WeakMap<HTMLAudioElement, StudioBroadcastChain>();
 let sharedBroadcastAudioContext: AudioContext | null = null;
 let gestureListenersInstalled = false;
@@ -192,7 +238,7 @@ export function attachStudioBroadcastMaster(
 
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.82;
+    analyser.smoothingTimeConstant = 0.68;
 
     source.connect(highPass);
     highPass.connect(chestWarmth);
@@ -205,7 +251,95 @@ export function attachStudioBroadcastMaster(
     makeupGain.connect(analyser);
     analyser.connect(ctx.destination);
 
+    // Puente Acústico de Formantes en Tiempo Real a 60 FPS para Lip-Sync Anatómico
+    const freqBins = new Uint8Array(analyser.frequencyBinCount);
+    const timeDomain = new Uint8Array(analyser.fftSize);
+    const binHz = (ctx.sampleRate || 48000) / analyser.fftSize;
+    let rafId: number | null = null;
+    let prevRms = 0;
+    let disposed = false;
+
+    const sampleFormantsLoop = () => {
+      if (disposed) return;
+      if (audio.paused || audio.ended) {
+        rafId = null;
+        resetActiveVoiceFormantLevels();
+        return;
+      }
+
+      analyser.getByteTimeDomainData(timeDomain);
+      let sumSq = 0;
+      for (let i = 0; i < timeDomain.length; i++) {
+        const centered = (timeDomain[i] - 128) / 128;
+        sumSq += centered * centered;
+      }
+      const rms = Math.sqrt(sumSq / timeDomain.length);
+
+      analyser.getByteFrequencyData(freqBins);
+      // F1 (300–950 Hz): apertura mandibular vocálica (/a/, /e/, /o/)
+      const f1Open = bandAverageNormalized(freqBins, binHz, 300, 950);
+      // F2 (1650–3300 Hz): extensión comisural / sonrisa palatal (/i/, /e/)
+      const f2Spread = bandAverageNormalized(freqBins, binHz, 1650, 3300);
+      // Redondeo labial grave (150–420 Hz): vocales posteriores redondeadas (/o/, /u/)
+      const lowRound = bandAverageNormalized(freqBins, binHz, 150, 420);
+      // Fricativas/oclusivas alveolares (3800–7600 Hz): elevación lingual (/s/, /t/, /d/, /n/, /l/)
+      const highAlveolar = bandAverageNormalized(freqBins, binHz, 3800, 7600);
+
+      // Detección transitoria de cierre bilabial (/m/, /b/, /p/): caída súbita de envolvente con resonancia grave
+      const suddenDip = prevRms > 0.045 && rms < prevRms * 0.48 && lowRound > f2Spread * 1.15;
+      prevRms = rms * 0.65 + prevRms * 0.35;
+
+      const normalizedOpen =
+        rms < 0.012
+          ? 0
+          : Math.min(1, Math.max(0, (rms - 0.012) * 4.4 * 0.55 + Math.max(0, f1Open - 0.08) * 1.75 * 0.45));
+
+      const w = window as unknown as {
+        __iskoolActiveFormantLevels?: ActiveFormantLevels;
+        __iskoolVoiceAudiblySpeaking?: boolean;
+      };
+      w.__iskoolVoiceAudiblySpeaking = true;
+      w.__iskoolActiveFormantLevels = {
+        rms,
+        open: normalizedOpen,
+        spread: Math.min(1, f2Spread * 1.65),
+        rounded: Math.min(1, lowRound * 1.45),
+        alveolar: highAlveolar > 0.22 && highAlveolar > f1Open * 0.72,
+        bilabial: suddenDip,
+        audioGraphActive: true,
+      };
+
+      rafId = window.requestAnimationFrame(sampleFormantsLoop);
+    };
+
+    const startSampling = () => {
+      if (disposed || rafId !== null) return;
+      rafId = window.requestAnimationFrame(sampleFormantsLoop);
+    };
+
+    const stopSampling = () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      resetActiveVoiceFormantLevels();
+    };
+
+    audio.addEventListener('play', startSampling);
+    audio.addEventListener('playing', startSampling);
+    audio.addEventListener('pause', stopSampling);
+    audio.addEventListener('ended', stopSampling);
+    if (!audio.paused && !audio.ended) {
+      startSampling();
+    }
+
     const cleanup = () => {
+      disposed = true;
+      stopSampling();
+      audio.removeEventListener('play', startSampling);
+      audio.removeEventListener('playing', startSampling);
+      audio.removeEventListener('pause', stopSampling);
+      audio.removeEventListener('ended', stopSampling);
       processedAudioElements.delete(audio);
       try {
         source.disconnect();

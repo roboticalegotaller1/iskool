@@ -92,29 +92,31 @@ describe('🎭 AVATAR 3D EN VIVO (60 FPS) — PARPADEO ANATÓMICO Y COMPENDIO DE
 
   it('4. Calibración anatómica sub-píxel de ojos y boca para mentores y los 7 personajes históricos 3D', () => {
     const claireCfg = getHistoricalMouthConfig('claire');
-    expect(claireCfg.leftEyeX).toBe(442);
-    expect(claireCfg.leftEyeY).toBe(278);
-    expect(claireCfg.rightEyeX).toBe(576);
-    expect(claireCfg.rightEyeY).toBe(263);
+    expect(claireCfg.leftEyeX).toBe(448);
+    expect(claireCfg.leftEyeY).toBe(281);
+    expect(claireCfg.rightEyeX).toBe(572);
+    expect(claireCfg.rightEyeY).toBe(266);
     expect(claireCfg.eyeRx).toBe(48);
     expect(claireCfg.eyeRy).toBe(39);
+    expect(claireCfg.lowerLipTopY).toBe(394.5);
 
     const arthurCfg = getHistoricalMouthConfig('arthur');
-    expect(arthurCfg.leftEyeX).toBe(419);
-    expect(arthurCfg.leftEyeY).toBe(204);
-    expect(arthurCfg.rightEyeX).toBe(490);
-    expect(arthurCfg.rightEyeY).toBe(208);
+    expect(arthurCfg.leftEyeX).toBe(408);
+    expect(arthurCfg.leftEyeY).toBe(207);
+    expect(arthurCfg.rightEyeX).toBe(486);
+    expect(arthurCfg.rightEyeY).toBe(209);
     expect(arthurCfg.eyeRx).toBe(34);
     expect(arthurCfg.eyeRy).toBe(27);
+    expect(arthurCfg.lowerLipTopY).toBe(307.5);
 
     const expectedHistoricalEyes: Array<[string, number, number, number, number, number, number]> = [
-      ['ada_lovelace', 461, 292, 573, 294, 38, 28],
-      ['shakespeare', 471, 227, 550, 228, 28, 22],
-      ['abraham_lincoln', 482, 189, 549, 186, 22, 15],
-      ['marie_curie', 485, 204, 535, 202, 20, 15],
-      ['napoleon', 476, 218, 536, 218, 20, 14],
-      ['victor_hugo', 450, 313, 566, 314, 30, 18],
-      ['jeanne_darc', 438, 314, 570, 315, 40, 27],
+      ['ada_lovelace', 461, 293, 568, 294, 38, 28],
+      ['shakespeare', 471, 229, 548, 230, 28, 22],
+      ['abraham_lincoln', 474, 197, 550, 196, 22, 15],
+      ['marie_curie', 482, 206, 538, 204, 20, 15],
+      ['napoleon', 476, 230, 540, 229, 20, 14],
+      ['victor_hugo', 451, 315, 565, 316, 30, 18],
+      ['jeanne_darc', 454, 319, 564, 319, 40, 27],
     ];
 
     for (const [id, lx, ly, rx, ry, erx, ery] of expectedHistoricalEyes) {
@@ -125,6 +127,10 @@ describe('🎭 AVATAR 3D EN VIVO (60 FPS) — PARPADEO ANATÓMICO Y COMPENDIO DE
       expect(cfg.rightEyeY, `${id}.rightEyeY`).toBe(ry);
       expect(cfg.eyeRx, `${id}.eyeRx`).toBe(erx);
       expect(cfg.eyeRy, `${id}.eyeRy`).toBe(ery);
+      expect(cfg.lowerLipTopY, `${id}.lowerLipTopY`).toBeDefined();
+      expect(cfg.lowerLipTopY!, `${id}.lowerLipTopY >= teethBottomY`).toBeGreaterThanOrEqual(
+        cfg.teethBottomY ?? cfg.cy
+      );
     }
   });
 

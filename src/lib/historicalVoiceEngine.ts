@@ -6,7 +6,12 @@
 
 import { normalizeMexicanSpanishText } from './audio/lexicalNormalizer';
 import { applyPhoneticSubstitutions } from './audio/phoneticDictionary';
-import { attachStudioBroadcastMaster, unlockSharedBroadcastAudioContext, StudioBroadcastChain } from './audio/studioBroadcastMaster';
+import {
+  attachStudioBroadcastMaster,
+  unlockSharedBroadcastAudioContext,
+  resetActiveVoiceFormantLevels,
+  StudioBroadcastChain,
+} from './audio/studioBroadcastMaster';
 import {
   getLanguagePipeline,
   resolveTargetLocale,
@@ -1007,6 +1012,7 @@ export interface UniversalVoicePlayOptions {
   text: string;
   characterName?: string;
   historicalAge?: number;
+  birthDeathDates?: string;
   variantIndex?: number;
   role?: 'character' | 'narrator' | 'pedagogical' | 'mentor' | 'language_tutor';
   narratorMode?: NarratorMode;
@@ -1025,8 +1031,145 @@ export interface UniversalAudioController {
   isPlaying: () => boolean;
 }
 
-// Caché en memoria para URLs de audio ya sintetizadas (latencia 0 ms en repeticiones)
+// Caché en memoria para URLs de audio ya sintetizadas (latencia 0 ms en repeticiones y pre-calentamiento)
 const universalAudioBlobCache = new Map<string, string>();
+const inFlightUniversalVoicePromises = new Map<string, Promise<string>>();
+const MAX_UNIVERSAL_AUDIO_BLOB_CACHE = 160;
+let activePrefetchCount = 0;
+
+function storeUniversalAudioBlob(cacheKey: string, audioUrl: string): void {
+  if (universalAudioBlobCache.has(cacheKey)) return;
+  if (universalAudioBlobCache.size >= MAX_UNIVERSAL_AUDIO_BLOB_CACHE) {
+    const oldestKey = universalAudioBlobCache.keys().next().value;
+    if (oldestKey) {
+      const oldestUrl = universalAudioBlobCache.get(oldestKey);
+      universalAudioBlobCache.delete(oldestKey);
+      if (oldestUrl) {
+        try {
+          URL.revokeObjectURL(oldestUrl);
+        } catch {}
+      }
+    }
+  }
+  universalAudioBlobCache.set(cacheKey, audioUrl);
+}
+
+function buildUniversalVoiceCacheSpec(options: UniversalVoicePlayOptions) {
+  const {
+    text,
+    characterName,
+    historicalAge,
+    birthDeathDates,
+    variantIndex = 0,
+    role = characterName ? 'character' : 'pedagogical',
+    narratorMode = 'wisdom_guide',
+    voiceId,
+    language,
+    gender,
+    rate = 1.0,
+    pitch = 1.0,
+  } = options;
+
+  const cleanText = (text || '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[\[(.*?)\]\]/g, '$1')
+    .replace(/[*_#`~>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const effectiveGender = gender || (characterName ? getPersonaGender(characterName) : 'female');
+  const rawLang = (language || '').toLowerCase();
+  const effectiveLang: 'es' | 'en' | 'fr' = rawLang.startsWith('fr')
+    ? 'fr'
+    : rawLang.startsWith('en')
+    ? 'en'
+    : voiceId?.startsWith('fr-')
+    ? 'fr'
+    : voiceId?.startsWith('en-')
+    ? 'en'
+    : 'es';
+
+  const cacheKey = `v6_studio_human_conv::${voiceId || characterName || role}::${variantIndex ?? 0}::${historicalAge ?? ''}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
+
+  return {
+    cleanText,
+    characterName,
+    historicalAge,
+    birthDeathDates,
+    variantIndex,
+    role,
+    narratorMode,
+    voiceId,
+    effectiveGender,
+    effectiveLang,
+    rate,
+    pitch,
+    cacheKey,
+  };
+}
+
+/**
+ * Pre-sintetiza en segundo plano el audio neuronal de un diálogo o saludo en la caché Blob
+ * del navegador y del servidor para que al pulsar "Escuchar Diálogo" u "Oír" la reproducción
+ * sea instantánea (<15 ms) sin esperas perceptibles.
+ */
+export function prefetchUniversalIskoolVoice(
+  optionsOrText: UniversalVoicePlayOptions | string,
+  extraOptions?: Omit<UniversalVoicePlayOptions, 'text'>
+): Promise<string | null> {
+  if (typeof window === 'undefined') return Promise.resolve(null);
+  const options: UniversalVoicePlayOptions =
+    typeof optionsOrText === 'string'
+      ? { text: optionsOrText, ...(extraOptions || {}) }
+      : optionsOrText;
+  const spec = buildUniversalVoiceCacheSpec(options);
+  if (!spec.cleanText) return Promise.resolve(null);
+
+  const cached = universalAudioBlobCache.get(spec.cacheKey);
+  if (cached) return Promise.resolve(cached);
+
+  const existingPromise = inFlightUniversalVoicePromises.get(spec.cacheKey);
+  if (existingPromise) return existingPromise.catch(() => null);
+
+  if (activePrefetchCount >= 3) {
+    return Promise.resolve(null);
+  }
+
+  activePrefetchCount++;
+  const promise = fetch('/api/ai/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      text: spec.cleanText,
+      characterName: spec.characterName,
+      historicalAge: spec.historicalAge,
+      birthDeathDates: spec.birthDeathDates,
+      variantIndex: spec.variantIndex,
+      role: spec.role,
+      narratorMode: spec.narratorMode,
+      voice: spec.voiceId,
+      language: spec.effectiveLang,
+      rate: spec.rate,
+      pitch: spec.pitch,
+    }),
+  })
+    .then(async (res) => {
+      if (!res.ok) throw new Error(`Prefetch TTS HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      storeUniversalAudioBlob(spec.cacheKey, url);
+      return url;
+    })
+    .finally(() => {
+      activePrefetchCount = Math.max(0, activePrefetchCount - 1);
+      inFlightUniversalVoicePromises.delete(spec.cacheKey);
+    });
+
+  inFlightUniversalVoicePromises.set(spec.cacheKey, promise);
+  return promise.catch(() => null);
+}
+
 let globalActiveAudioElement: HTMLAudioElement | null = null;
 let globalActiveBroadcastChain: StudioBroadcastChain | null = null;
 let globalActiveUtterance: SpeechSynthesisUtterance | null = null;
@@ -1066,6 +1209,8 @@ export function stopAllIskoolAudio(): void {
     } catch {}
     globalActiveBroadcastChain = null;
   }
+
+  resetActiveVoiceFormantLevels();
 
   if ('speechSynthesis' in window) {
     try {
@@ -1130,6 +1275,7 @@ export async function playUniversalIskoolVoice(
   };
 
   const notifyEndOnce = () => {
+    resetActiveVoiceFormantLevels();
     if (!hasNotifiedEnd) {
       hasNotifiedEnd = true;
       isCurrentlyPlaying = false;
@@ -1167,13 +1313,8 @@ export async function playUniversalIskoolVoice(
     notifyEndOnce();
   };
 
-  // Limpieza inicial de texto y markdown
-  const cleanText = text
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    .replace(/\[\[(.*?)\]\]/g, '$1')
-    .replace(/[*_#`~>]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const spec = buildUniversalVoiceCacheSpec(options);
+  const { cleanText, effectiveGender, effectiveLang, cacheKey } = spec;
 
   if (!cleanText) {
     notifyEndOnce();
@@ -1184,63 +1325,61 @@ export async function playUniversalIskoolVoice(
   // desde el primer clic y bloquee dobles clics mientras se sintetiza el audio.
   notifyStartOnce();
 
-  const effectiveGender = gender || (characterName ? getPersonaGender(characterName) : 'female');
-  const rawLang = (language || '').toLowerCase();
-  const effectiveLang: 'es' | 'en' | 'fr' = rawLang.startsWith('fr')
-    ? 'fr'
-    : rawLang.startsWith('en')
-    ? 'en'
-    : voiceId?.startsWith('fr-')
-    ? 'fr'
-    : voiceId?.startsWith('en-')
-    ? 'en'
-    : 'es';
-  const cacheKey = `v6_studio_human_conv::${voiceId || characterName || role}::${variantIndex ?? 0}::${historicalAge ?? ''}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
+  const wFlag = window as unknown as { __iskoolVoiceSynthesisPending?: boolean };
 
-  // Intentar primero con el motor neural de alta fidelidad
+  // Intentar primero con el motor neural de alta fidelidad (conectando con prefetch en vuelo si existe)
   try {
     let audioUrl = universalAudioBlobCache.get(cacheKey);
 
     if (!audioUrl) {
-      const response = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        signal: abortController.signal,
-        body: JSON.stringify({
-          text: cleanText,
-          characterName,
-          historicalAge,
-          variantIndex,
-          role,
-          narratorMode,
-          voice: voiceId,
-          language: effectiveLang,
-          rate,
-          pitch
-        })
-      });
+      wFlag.__iskoolVoiceSynthesisPending = true;
+      try {
+        const pendingPrefetch = inFlightUniversalVoicePromises.get(cacheKey);
+        if (pendingPrefetch) {
+          audioUrl = await pendingPrefetch;
+        } else {
+          const fetchPromise = fetch('/api/ai/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            signal: abortController.signal,
+            body: JSON.stringify({
+              text: cleanText,
+              characterName,
+              historicalAge,
+              birthDeathDates: spec.birthDeathDates,
+              variantIndex,
+              role,
+              narratorMode,
+              voice: voiceId,
+              language: effectiveLang,
+              rate,
+              pitch,
+            }),
+          }).then(async (response) => {
+            if (!response.ok) {
+              throw new Error(`TTS server HTTP ${response.status}`);
+            }
+            const blob = await response.blob();
+            const createdUrl = URL.createObjectURL(blob);
+            storeUniversalAudioBlob(cacheKey, createdUrl);
+            return createdUrl;
+          });
 
-      if (!response.ok) {
-        throw new Error(`TTS server HTTP ${response.status}`);
+          inFlightUniversalVoicePromises.set(cacheKey, fetchPromise);
+          try {
+            audioUrl = await fetchPromise;
+          } finally {
+            inFlightUniversalVoicePromises.delete(cacheKey);
+          }
+        }
+      } finally {
+        wFlag.__iskoolVoiceSynthesisPending = false;
       }
 
-      const blob = await response.blob();
       if (isStopped || mySeq !== globalPlaybackSeq) {
         return controller;
       }
-      audioUrl = URL.createObjectURL(blob);
-      if (universalAudioBlobCache.size >= 100) {
-        const oldestKey = universalAudioBlobCache.keys().next().value;
-        if (oldestKey) {
-          const oldestUrl = universalAudioBlobCache.get(oldestKey);
-          universalAudioBlobCache.delete(oldestKey);
-          if (oldestUrl) {
-            try { URL.revokeObjectURL(oldestUrl); } catch {}
-          }
-        }
-      }
-      universalAudioBlobCache.set(cacheKey, audioUrl);
     }
 
     if (isStopped || mySeq !== globalPlaybackSeq) return controller;
@@ -1262,6 +1401,9 @@ export async function playUniversalIskoolVoice(
       if (isStopped || mySeq !== globalPlaybackSeq) {
         audio.pause();
         return;
+      }
+      if (typeof window !== 'undefined') {
+        (window as unknown as { __iskoolVoiceAudiblySpeaking?: boolean }).__iskoolVoiceAudiblySpeaking = true;
       }
       notifyStartOnce();
     };
@@ -1464,6 +1606,9 @@ export async function playUniversalIskoolVoice(
           window.speechSynthesis.cancel();
           return;
         }
+        if (typeof window !== 'undefined') {
+          (window as unknown as { __iskoolVoiceAudiblySpeaking?: boolean }).__iskoolVoiceAudiblySpeaking = true;
+        }
         notifyStartOnce();
       };
 
@@ -1499,24 +1644,27 @@ export async function playUniversalIskoolVoice(
 // =============================================================================
 
 export interface CharacterAnatomicalMouth {
-  x1: number;         // Comisura izquierda en espacio 1024
+  x1: number;               // Comisura izquierda en espacio 1024
   y1: number;
-  cx: number;         // Centro anatómico en espacio 1024
+  cx: number;               // Centro anatómico en espacio 1024
   cy: number;
-  x2: number;         // Comisura derecha en espacio 1024
+  x2: number;               // Comisura derecha en espacio 1024
   y2: number;
-  chinY?: number;     // Borde inferior del mentón/mandíbula en espacio 1024
-  eyeY?: number;      // Altura de párpados en espacio 1024
-  leftEyeX?: number;  // Centro ojo izquierdo en espacio 1024
-  leftEyeY?: number;  // Altura específica ojo izquierdo en espacio 1024 (soporta inclinación natural de cabeza)
-  rightEyeX?: number; // Centro ojo derecho en espacio 1024
-  rightEyeY?: number; // Altura específica ojo derecho en espacio 1024 (soporta inclinación natural de cabeza)
-  eyeRadius?: number; // Radio ocular en espacio 1024
-  eyeRx?: number;     // Semieje horizontal ocular en espacio 1024
-  eyeRy?: number;     // Semieje vertical ocular en espacio 1024
-  baseOpen?: number;  // Apertura labial base en el render original (0 = cerrado, 0.35 = sonrisa abierta)
+  upperLipBottomY?: number; // Borde inferior del bermellón labial superior en cx (espacio 1024)
+  teethBottomY?: number;    // Borde inferior de dientes superiores en cx cuando baseOpen > 0 (espacio 1024)
+  lowerLipTopY?: number;    // Borde superior exacto del bermellón labial inferior en cx (espacio 1024)
+  chinY?: number;           // Borde inferior del mentón/mandíbula (antes del cuello/encaje) en espacio 1024
+  eyeY?: number;            // Altura de pupilas/párpados en espacio 1024
+  leftEyeX?: number;        // Centro ojo izquierdo en espacio 1024
+  leftEyeY?: number;        // Altura específica ojo izquierdo en espacio 1024 (soporta inclinación natural de cabeza)
+  rightEyeX?: number;       // Centro ojo derecho en espacio 1024
+  rightEyeY?: number;       // Altura específica ojo derecho en espacio 1024 (soporta inclinación natural de cabeza)
+  eyeRadius?: number;       // Radio ocular en espacio 1024
+  eyeRx?: number;           // Semieje horizontal ocular en espacio 1024
+  eyeRy?: number;           // Semieje vertical ocular en espacio 1024
+  baseOpen?: number;        // Apertura labial base en el render canónico (0 = cerrado, 0.34 = sonrisa con dientes)
   bustCrop?: { focusX: number; focusY: number; zoom: number }; // Encuadre inteligente para retratos de cuerpo medio
-  maxOpening: number; // Apertura vertical máxima en px
+  maxOpening: number;       // Apertura vertical máxima en px
   cavityDarkColor: string;
   cavityMidColor: string;
   cavityRimColor: string;
@@ -1533,17 +1681,19 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('napoleon') || norm.includes('bonaparte')) {
     if (is2DPortrait) {
       return {
-        x1: 468, y1: 380, cx: 498, cy: 380, x2: 528, y2: 380,
-        chinY: 428, eyeY: 282, leftEyeX: 454, rightEyeX: 542, eyeRadius: 18, baseOpen: 0,
+        x1: 452, y1: 366, cx: 486, cy: 366, x2: 520, y2: 366,
+        chinY: 416, eyeY: 264, leftEyeX: 440, leftEyeY: 264, rightEyeX: 534, rightEyeY: 264, eyeRadius: 18, baseOpen: 0,
         maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
         lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
       };
     }
     return {
-      x1: 478, y1: 278, cx: 506, cy: 279, x2: 536, y2: 278,
-      chinY: 322, eyeY: 218, leftEyeX: 476, leftEyeY: 218, rightEyeX: 536, rightEyeY: 218,
+      x1: 480, y1: 280, cx: 515, cy: 282, x2: 550, y2: 279,
+      upperLipBottomY: 281, teethBottomY: 285, lowerLipTopY: 287,
+      chinY: 324, eyeY: 230, leftEyeX: 476, leftEyeY: 230, rightEyeX: 540, rightEyeY: 229,
       eyeRadius: 18, eyeRx: 20, eyeRy: 14, baseOpen: 0.18,
-      maxOpening: 14, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
+      bustCrop: { focusX: 512, focusY: 320, zoom: 1.38 },
+      maxOpening: 15, cavityDarkColor: '#180407', cavityMidColor: '#330a10', cavityRimColor: '#58141d',
       lowerLipRimColor: 'rgba(185, 88, 82, 0.92)', teethColor: '#eee3d6'
     };
   }
@@ -1552,17 +1702,19 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('shakespeare')) {
     if (is2DPortrait) {
       return {
-        x1: 446, y1: 478, cx: 480, cy: 478, x2: 514, y2: 478,
-        chinY: 554, eyeY: 342, leftEyeX: 438, rightEyeX: 534, eyeRadius: 20, baseOpen: 0,
+        x1: 422, y1: 478, cx: 462, cy: 478, x2: 502, y2: 478,
+        chinY: 545, eyeY: 342, leftEyeX: 400, leftEyeY: 342, rightEyeX: 516, rightEyeY: 342, eyeRadius: 20, baseOpen: 0,
         maxOpening: 14, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
         lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
       };
     }
     return {
-      x1: 472, y1: 316, cx: 508, cy: 319, x2: 544, y2: 316,
-      chinY: 384, eyeY: 227, leftEyeX: 471, leftEyeY: 227, rightEyeX: 550, rightEyeY: 228,
-      eyeRadius: 24, eyeRx: 28, eyeRy: 22, baseOpen: 0.32,
-      maxOpening: 15, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
+      x1: 470, y1: 314, cx: 508, cy: 317, x2: 544, y2: 314,
+      upperLipBottomY: 314, teethBottomY: 320, lowerLipTopY: 325.5,
+      chinY: 378, eyeY: 229, leftEyeX: 471, leftEyeY: 229, rightEyeX: 548, rightEyeY: 230,
+      eyeRadius: 24, eyeRx: 28, eyeRy: 22, baseOpen: 0.30,
+      bustCrop: { focusX: 508, focusY: 340, zoom: 1.24 },
+      maxOpening: 16, cavityDarkColor: '#140507', cavityMidColor: '#2e0d11', cavityRimColor: '#4e171e',
       lowerLipRimColor: 'rgba(180, 85, 78, 0.92)', teethColor: '#f0e5d8', mustacheCover: true
     };
   }
@@ -1571,17 +1723,19 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('lincoln') || norm.includes('abraham')) {
     if (is2DPortrait) {
       return {
-        x1: 476, y1: 462, cx: 518, cy: 462, x2: 560, y2: 462,
-        chinY: 575, eyeY: 320, leftEyeX: 462, rightEyeX: 570, eyeRadius: 20, baseOpen: 0,
+        x1: 454, y1: 472, cx: 500, cy: 472, x2: 546, y2: 472,
+        chinY: 565, eyeY: 348, leftEyeX: 444, leftEyeY: 348, rightEyeX: 554, rightEyeY: 348, eyeRadius: 20, baseOpen: 0,
         maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
         lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
       };
     }
     return {
-      x1: 480, y1: 266, cx: 512, cy: 266, x2: 544, y2: 266,
-      chinY: 320, eyeY: 188, leftEyeX: 482, leftEyeY: 189, rightEyeX: 549, rightEyeY: 186,
+      x1: 470, y1: 265, cx: 510, cy: 266, x2: 552, y2: 265,
+      upperLipBottomY: 266, teethBottomY: 266, lowerLipTopY: 267.5,
+      chinY: 326, eyeY: 197, leftEyeX: 474, leftEyeY: 197, rightEyeX: 550, rightEyeY: 196,
       eyeRadius: 19, eyeRx: 22, eyeRy: 15, baseOpen: 0,
-      maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
+      bustCrop: { focusX: 510, focusY: 300, zoom: 1.32 },
+      maxOpening: 15, cavityDarkColor: '#120406', cavityMidColor: '#2b0b0e', cavityRimColor: '#4a1419',
       lowerLipRimColor: 'rgba(170, 80, 75, 0.90)', teethColor: '#ebe0d2'
     };
   }
@@ -1590,17 +1744,18 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('lovelace') || /\bada\b/.test(norm)) {
     if (is2DPortrait) {
       return {
-        x1: 504, y1: 344, cx: 530, cy: 344, x2: 556, y2: 344,
-        chinY: 392, eyeY: 248, leftEyeX: 484, rightEyeX: 570, eyeRadius: 18, baseOpen: 0,
+        x1: 474, y1: 356, cx: 500, cy: 356, x2: 528, y2: 356,
+        chinY: 404, eyeY: 266, leftEyeX: 458, leftEyeY: 266, rightEyeX: 548, rightEyeY: 266, eyeRadius: 18, baseOpen: 0,
         maxOpening: 14, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
         lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
       };
     }
     return {
-      x1: 474, y1: 389, cx: 516, cy: 392, x2: 558, y2: 389,
-      chinY: 442, eyeY: 293, leftEyeX: 461, leftEyeY: 292, rightEyeX: 573, rightEyeY: 294,
-      eyeRadius: 33, eyeRx: 38, eyeRy: 28, baseOpen: 0.35,
-      maxOpening: 16, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
+      x1: 472, y1: 379, cx: 512, cy: 388, x2: 552, y2: 379,
+      upperLipBottomY: 388, teethBottomY: 394, lowerLipTopY: 398.5,
+      chinY: 438, eyeY: 293, leftEyeX: 461, leftEyeY: 293, rightEyeX: 568, rightEyeY: 294,
+      eyeRadius: 33, eyeRx: 38, eyeRy: 28, baseOpen: 0.32,
+      maxOpening: 16.5, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
       lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
     };
   }
@@ -1609,17 +1764,19 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('curie') || /\bmarie\b/.test(norm)) {
     if (is2DPortrait) {
       return {
-        x1: 472, y1: 460, cx: 504, cy: 460, x2: 536, y2: 460,
-        chinY: 522, eyeY: 332, leftEyeX: 454, rightEyeX: 558, eyeRadius: 18, baseOpen: 0,
+        x1: 468, y1: 468, cx: 504, cy: 468, x2: 540, y2: 468,
+        chinY: 522, eyeY: 356, leftEyeX: 452, leftEyeY: 356, rightEyeX: 554, rightEyeY: 356, eyeRadius: 18, baseOpen: 0,
         maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
         lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
       };
     }
     return {
-      x1: 486, y1: 246, cx: 511, cy: 246, x2: 536, y2: 246,
-      chinY: 282, eyeY: 203, leftEyeX: 485, leftEyeY: 204, rightEyeX: 535, rightEyeY: 202,
-      eyeRadius: 18, eyeRx: 20, eyeRy: 15, baseOpen: 0.28,
-      maxOpening: 13, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
+      x1: 483, y1: 245, cx: 515, cy: 248, x2: 546, y2: 245,
+      upperLipBottomY: 248, teethBottomY: 250.5, lowerLipTopY: 253,
+      chinY: 280, eyeY: 205, leftEyeX: 482, leftEyeY: 206, rightEyeX: 538, rightEyeY: 204,
+      eyeRadius: 18, eyeRx: 20, eyeRy: 15, baseOpen: 0.24,
+      bustCrop: { focusX: 513, focusY: 280, zoom: 1.48 },
+      maxOpening: 14, cavityDarkColor: '#1c050a', cavityMidColor: '#3a0e16', cavityRimColor: '#601924',
       lowerLipRimColor: 'rgba(195, 92, 100, 0.92)', teethColor: '#f6efe6'
     };
   }
@@ -1628,17 +1785,18 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('victor hugo') || norm.includes('victor_hugo') || /(?:^|[\s_-])hugo(?:$|[\s_-])/.test(norm)) {
     if (is2DPortrait) {
       return {
-        x1: 484, y1: 402, cx: 520, cy: 402, x2: 556, y2: 402,
-        chinY: 486, eyeY: 292, leftEyeX: 468, rightEyeX: 572, eyeRadius: 18, baseOpen: 0,
+        x1: 474, y1: 416, cx: 510, cy: 416, x2: 546, y2: 416,
+        chinY: 488, eyeY: 314, leftEyeX: 456, leftEyeY: 314, rightEyeX: 556, rightEyeY: 314, eyeRadius: 18, baseOpen: 0,
         maxOpening: 13, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
         lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
       };
     }
     return {
-      x1: 471, y1: 458, cx: 508, cy: 459, x2: 545, y2: 458,
-      chinY: 568, eyeY: 314, leftEyeX: 450, leftEyeY: 313, rightEyeX: 566, rightEyeY: 314,
+      x1: 462, y1: 458, cx: 508, cy: 459, x2: 554, y2: 458,
+      upperLipBottomY: 458, teethBottomY: 458, lowerLipTopY: 460,
+      chinY: 560, eyeY: 315, leftEyeX: 451, leftEyeY: 315, rightEyeX: 565, rightEyeY: 316,
       eyeRadius: 25, eyeRx: 30, eyeRy: 18, baseOpen: 0,
-      maxOpening: 15, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
+      maxOpening: 16, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
       lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
     };
   }
@@ -1647,17 +1805,18 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('jeanne') || norm.includes('darc') || norm.includes("d'arc") || norm.includes('juana de arco')) {
     if (is2DPortrait) {
       return {
-        x1: 488, y1: 390, cx: 516, cy: 390, x2: 544, y2: 390,
-        chinY: 438, eyeY: 286, leftEyeX: 464, rightEyeX: 568, eyeRadius: 18, baseOpen: 0,
+        x1: 482, y1: 394, cx: 510, cy: 394, x2: 538, y2: 394,
+        chinY: 440, eyeY: 294, leftEyeX: 458, leftEyeY: 294, rightEyeX: 562, rightEyeY: 294, eyeRadius: 18, baseOpen: 0,
         maxOpening: 13, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
         lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
       };
     }
     return {
-      x1: 463, y1: 440, cx: 506, cy: 441, x2: 549, y2: 440,
-      chinY: 496, eyeY: 315, leftEyeX: 438, leftEyeY: 314, rightEyeX: 570, rightEyeY: 315,
+      x1: 464, y1: 440, cx: 510, cy: 442, x2: 556, y2: 440,
+      upperLipBottomY: 442, teethBottomY: 442, lowerLipTopY: 443.5,
+      chinY: 496, eyeY: 319, leftEyeX: 454, leftEyeY: 319, rightEyeX: 564, rightEyeY: 319,
       eyeRadius: 33, eyeRx: 40, eyeRy: 27, baseOpen: 0,
-      maxOpening: 15, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
+      maxOpening: 16, cavityDarkColor: '#120305', cavityMidColor: '#2a060b', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(185, 90, 90, 0.92)', teethColor: '#f2ebe0'
     };
   }
@@ -1665,10 +1824,11 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
   if (norm.includes('mentor female') || norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
     return {
-      x1: 462, y1: 374, cx: 514, cy: 376, x2: 564, y2: 365,
-      chinY: 434, eyeY: 271, leftEyeX: 442, leftEyeY: 278, rightEyeX: 576, rightEyeY: 263,
-      eyeRadius: 40, eyeRx: 48, eyeRy: 39, baseOpen: 0.36,
-      maxOpening: 16, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',
+      x1: 468, y1: 375, cx: 512, cy: 380, x2: 548, y2: 373,
+      upperLipBottomY: 380, teethBottomY: 388, lowerLipTopY: 394.5,
+      chinY: 432, eyeY: 274, leftEyeX: 448, leftEyeY: 281, rightEyeX: 572, rightEyeY: 266,
+      eyeRadius: 40, eyeRx: 48, eyeRy: 39, baseOpen: 0.34,
+      maxOpening: 17, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',
       lowerLipRimColor: 'rgba(215, 92, 105, 0.94)', teethColor: '#fff7f0'
     };
   }
@@ -1676,25 +1836,26 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 9. MENTOR MASCULINO 3D (/images/languages/3d/mentor_male_3d_v2.webp)
   if (norm.includes('mentor male') || norm.includes('mentor_male') || norm.includes('arthur') || norm.includes('henri')) {
     return {
-      x1: 404, y1: 296, cx: 450, cy: 298, x2: 496, y2: 296,
-      chinY: 365, eyeY: 206, leftEyeX: 419, leftEyeY: 204, rightEyeX: 490, rightEyeY: 208,
+      x1: 400, y1: 293, cx: 448, cy: 298, x2: 496, y2: 294,
+      upperLipBottomY: 296, teethBottomY: 304, lowerLipTopY: 307.5,
+      chinY: 362, eyeY: 208, leftEyeX: 408, leftEyeY: 207, rightEyeX: 486, rightEyeY: 209,
       eyeRadius: 28, eyeRx: 34, eyeRy: 27, baseOpen: 0.28,
-      maxOpening: 14, cavityDarkColor: '#160406', cavityMidColor: '#300a0e', cavityRimColor: '#521319',
+      maxOpening: 15.5, cavityDarkColor: '#160406', cavityMidColor: '#300a0e', cavityRimColor: '#521319',
       lowerLipRimColor: 'rgba(178, 82, 75, 0.90)', teethColor: '#eee4d6', mustacheCover: true
     };
   }
 
   // =========================================================================
-  // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS (CALIBRACIÓN SUB-PÍXEL VERIFICADA)
+  // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS (CALIBRACIÓN SUB-PÍXEL X-RAY VERIFICADA)
   // =========================================================================
 
   // 10. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png) — PRIORIDAD ALTA ANTES DE APELLIDO DOMÍNGUEZ
   if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
     return {
-      x1: 460, y1: 368, cx: 492, cy: 368, x2: 524, y2: 368,
-      chinY: 424, eyeY: 264, leftEyeX: 450, rightEyeX: 536, eyeRadius: 18, baseOpen: 0,
-      bustCrop: { focusX: 492, focusY: 340, zoom: 1.35 },
-      maxOpening: 16.5, cavityDarkColor: '#120204', cavityMidColor: '#2e070c', cavityRimColor: '#521119',
+      x1: 446, y1: 368, cx: 484, cy: 368, x2: 522, y2: 368,
+      chinY: 424, eyeY: 263, leftEyeX: 438, leftEyeY: 263, rightEyeX: 528, rightEyeY: 263, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 486, focusY: 340, zoom: 1.35 },
+      maxOpening: 16, cavityDarkColor: '#120204', cavityMidColor: '#2e070c', cavityRimColor: '#521119',
       lowerLipRimColor: 'rgba(172, 68, 72, 0.94)', teethColor: '#f6f0e6'
     };
   }
@@ -1702,8 +1863,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 10.B EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
   if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
     return {
-      x1: 518, y1: 567, cx: 568, cy: 567, x2: 618, y2: 567,
-      chinY: 648, eyeY: 431, leftEyeX: 514, leftEyeY: 429, rightEyeX: 629, rightEyeY: 433, eyeRadius: 22, baseOpen: 0,
+      x1: 520, y1: 567, cx: 568, cy: 567, x2: 616, y2: 567,
+      chinY: 648, eyeY: 438, leftEyeX: 500, leftEyeY: 436, rightEyeX: 618, rightEyeY: 440, eyeRadius: 22, baseOpen: 0,
       maxOpening: 16, cavityDarkColor: '#0e0204', cavityMidColor: '#26050a', cavityRimColor: '#440d14',
       lowerLipRimColor: 'rgba(152, 62, 54, 0.92)', teethColor: '#ede4d6', mustacheCover: true
     };
@@ -1712,9 +1873,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.png)
   if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
     return {
-      x1: 468, y1: 328, cx: 506, cy: 328, x2: 546, y2: 328,
-      chinY: 382, eyeY: 236, leftEyeX: 460, rightEyeX: 554, eyeRadius: 18, baseOpen: 0,
-      bustCrop: { focusX: 506, focusY: 310, zoom: 1.24 },
+      x1: 462, y1: 332, cx: 503, cy: 332, x2: 544, y2: 332,
+      chinY: 382, eyeY: 242, leftEyeX: 454, leftEyeY: 242, rightEyeX: 548, rightEyeY: 241, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 503, focusY: 310, zoom: 1.24 },
       maxOpening: 15.5, cavityDarkColor: '#160406', cavityMidColor: '#320a10', cavityRimColor: '#52131a',
       lowerLipRimColor: 'rgba(168, 76, 70, 0.90)', teethColor: '#eee4d8'
     };
@@ -1723,10 +1884,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
-      x1: 475, y1: 367, cx: 497, cy: 367, x2: 519, y2: 367,
-      chinY: 406, eyeY: 301, leftEyeX: 465, leftEyeY: 304, rightEyeX: 528, rightEyeY: 298, eyeRadius: 14, eyeRx: 15, eyeRy: 11, baseOpen: 0,
-      bustCrop: { focusX: 497, focusY: 342, zoom: 1.38 },
-      maxOpening: 14.5, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
+      x1: 500, y1: 369, cx: 522, cy: 369, x2: 544, y2: 369,
+      chinY: 404, eyeY: 304, leftEyeX: 491, leftEyeY: 304, rightEyeX: 554, rightEyeY: 304, eyeRadius: 14, eyeRx: 15, eyeRy: 11, baseOpen: 0,
+      bustCrop: { focusX: 522, focusY: 342, zoom: 1.38 },
+      maxOpening: 14, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
       lowerLipRimColor: 'rgba(202, 88, 98, 0.94)', teethColor: '#fff5ec'
     };
   }
@@ -1734,9 +1895,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
-      x1: 484, y1: 282, cx: 513, cy: 282, x2: 542, y2: 282,
-      chinY: 334, eyeY: 205, leftEyeX: 472, leftEyeY: 205, rightEyeX: 552, rightEyeY: 205, eyeRadius: 16, baseOpen: 0,
-      bustCrop: { focusX: 514, focusY: 270, zoom: 1.30 },
+      x1: 484, y1: 282, cx: 512, cy: 282, x2: 540, y2: 282,
+      chinY: 334, eyeY: 208, leftEyeX: 474, leftEyeY: 208, rightEyeX: 550, rightEyeY: 208, eyeRadius: 16, baseOpen: 0,
+      bustCrop: { focusX: 512, focusY: 270, zoom: 1.30 },
       maxOpening: 15, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
       lowerLipRimColor: 'rgba(160, 70, 65, 0.90)', teethColor: '#ede4d6'
     };
@@ -1745,8 +1906,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 14. CUAUHTÉMOC (/images/history/cuauhtemoc_avatar.png)
   if (norm.includes('cuauhtemoc') || norm.includes('cuauhtemotzin') || norm.includes('tlatoani') || norm.includes('joven abuelo')) {
     return {
-      x1: 478, y1: 450, cx: 512, cy: 450, x2: 546, y2: 450,
-      chinY: 508, eyeY: 341, leftEyeX: 472, leftEyeY: 342, rightEyeX: 556, rightEyeY: 340, eyeRadius: 18, baseOpen: 0,
+      x1: 476, y1: 452, cx: 512, cy: 452, x2: 548, y2: 452,
+      chinY: 508, eyeY: 343, leftEyeX: 468, leftEyeY: 344, rightEyeX: 556, rightEyeY: 342, eyeRadius: 18, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140305', cavityMidColor: '#30080e', cavityRimColor: '#501117',
       lowerLipRimColor: 'rgba(172, 78, 68, 0.92)', teethColor: '#f2eae0'
     };
@@ -1755,8 +1916,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 15. IGNACIO ALLENDE (/images/history/ignacio_allende_avatar.png)
   if (norm.includes('allende') || norm.includes('ignacio allende') || norm.includes('san miguel')) {
     return {
-      x1: 476, y1: 324, cx: 504, cy: 324, x2: 532, y2: 324,
-      chinY: 382, eyeY: 239, leftEyeX: 464, leftEyeY: 237, rightEyeX: 540, rightEyeY: 240, eyeRadius: 16, baseOpen: 0,
+      x1: 468, y1: 327, cx: 496, cy: 327, x2: 524, y2: 327,
+      chinY: 382, eyeY: 241, leftEyeX: 454, leftEyeY: 240, rightEyeX: 532, rightEyeY: 242, eyeRadius: 16, baseOpen: 0,
       maxOpening: 13, cavityDarkColor: '#140407', cavityMidColor: '#2e0910', cavityRimColor: '#4c1219',
       lowerLipRimColor: 'rgba(175, 78, 75, 0.90)', teethColor: '#f0e6da', mustacheCover: true
     };
@@ -1765,9 +1926,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 16. CARMEN SERDÁN ALATRISTE (/images/history/carmen_serdan_avatar.png)
   if (norm.includes('carmen serdan') || (norm.includes('serdan') && (norm.includes('carmen') || norm.includes('alatriste')))) {
     return {
-      x1: 501, y1: 241, cx: 519, cy: 241, x2: 537, y2: 241,
-      chinY: 268, eyeY: 175, leftEyeX: 495, leftEyeY: 174, rightEyeX: 544, rightEyeY: 175, eyeRadius: 12, baseOpen: 0,
-      bustCrop: { focusX: 522, focusY: 220, zoom: 1.55 },
+      x1: 508, y1: 237, cx: 524, cy: 237, x2: 538, y2: 237,
+      chinY: 258, eyeY: 175, leftEyeX: 496, leftEyeY: 174, rightEyeX: 544, rightEyeY: 175, eyeRadius: 12, baseOpen: 0,
+      bustCrop: { focusX: 524, focusY: 215, zoom: 1.55 },
       maxOpening: 11, cavityDarkColor: '#1a0408', cavityMidColor: '#380a14', cavityRimColor: '#5e1420',
       lowerLipRimColor: 'rgba(195, 84, 92, 0.92)', teethColor: '#fdf3ea'
     };
@@ -1776,9 +1937,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 17. AQUILES SERDÁN (/images/history/aquiles_serdan_avatar.png)
   if (norm.includes('aquiles serdan') || norm.includes('aquiles')) {
     return {
-      x1: 488, y1: 240, cx: 511, cy: 240, x2: 534, y2: 240,
-      chinY: 282, eyeY: 176, leftEyeX: 478, rightEyeX: 542, eyeRadius: 14, baseOpen: 0,
-      bustCrop: { focusX: 511, focusY: 235, zoom: 1.35 },
+      x1: 486, y1: 243, cx: 508, cy: 243, x2: 532, y2: 243,
+      chinY: 282, eyeY: 180, leftEyeX: 476, leftEyeY: 180, rightEyeX: 540, rightEyeY: 181, eyeRadius: 14, baseOpen: 0,
+      bustCrop: { focusX: 508, focusY: 235, zoom: 1.35 },
       maxOpening: 12, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
       lowerLipRimColor: 'rgba(165, 72, 68, 0.90)', teethColor: '#ede4d8', mustacheCover: true
     };
@@ -1787,8 +1948,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 18. FRANCISCO I. MADERO (/images/history/madero_avatar.png)
   if (norm.includes('madero') || norm.includes('francisco i madero') || norm.includes('apostol')) {
     return {
-      x1: 477, y1: 332, cx: 511, cy: 332, x2: 545, y2: 332,
-      chinY: 425, eyeY: 244, leftEyeX: 463, leftEyeY: 244, rightEyeX: 556, rightEyeY: 244, eyeRadius: 18, baseOpen: 0,
+      x1: 510, y1: 338, cx: 538, cy: 338, x2: 566, y2: 338,
+      chinY: 388, eyeY: 266, leftEyeX: 498, leftEyeY: 267, rightEyeX: 573, rightEyeY: 265, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#28080d', cavityRimColor: '#461016',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d8', mustacheCover: true
     };
@@ -1797,8 +1958,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 19. LÁZARO CÁRDENAS DEL RÍO (/images/history/lazaro_cardenas_avatar.png)
   if (norm.includes('cardenas') || norm.includes('lazaro') || norm.includes('expropiacion')) {
     return {
-      x1: 484, y1: 360, cx: 518, cy: 360, x2: 552, y2: 360,
-      chinY: 452, eyeY: 258, leftEyeX: 466, rightEyeX: 562, eyeRadius: 18, baseOpen: 0,
+      x1: 512, y1: 364, cx: 544, cy: 364, x2: 572, y2: 363,
+      chinY: 410, eyeY: 280, leftEyeX: 494, leftEyeY: 281, rightEyeX: 574, rightEyeY: 278, eyeRadius: 18, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
       lowerLipRimColor: 'rgba(170, 76, 72, 0.90)', teethColor: '#eee5d8'
     };
@@ -1807,9 +1968,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 20. PLUTARCO ELÍAS CALLES (/images/history/plutarco_elias_calles_avatar.png)
   if (norm.includes('calles') || norm.includes('plutarco')) {
     return {
-      x1: 484, y1: 258, cx: 511, cy: 258, x2: 538, y2: 258,
-      chinY: 306, eyeY: 186, leftEyeX: 476, rightEyeX: 546, eyeRadius: 14, baseOpen: 0,
-      bustCrop: { focusX: 511, focusY: 250, zoom: 1.32 },
+      x1: 486, y1: 273, cx: 512, cy: 273, x2: 538, y2: 273,
+      chinY: 314, eyeY: 204, leftEyeX: 480, leftEyeY: 204, rightEyeX: 544, rightEyeY: 204, eyeRadius: 14, baseOpen: 0,
+      bustCrop: { focusX: 512, focusY: 258, zoom: 1.32 },
       maxOpening: 12, cavityDarkColor: '#100305', cavityMidColor: '#26070b', cavityRimColor: '#420e14',
       lowerLipRimColor: 'rgba(158, 68, 62, 0.90)', teethColor: '#ece2d4', mustacheCover: true
     };
@@ -1818,8 +1979,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 21. RICARDO FLORES MAGÓN (/images/history/ricardo_flores_magon_avatar.png)
   if (norm.includes('magon') || norm.includes('flores magon') || norm.includes('regeneracion')) {
     return {
-      x1: 506, y1: 366, cx: 536, cy: 366, x2: 566, y2: 366,
-      chinY: 428, eyeY: 273, leftEyeX: 494, leftEyeY: 274, rightEyeX: 576, rightEyeY: 272, eyeRadius: 18, baseOpen: 0,
+      x1: 504, y1: 368, cx: 536, cy: 368, x2: 568, y2: 368,
+      chinY: 428, eyeY: 275, leftEyeX: 492, leftEyeY: 276, rightEyeX: 574, rightEyeY: 274, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#120406', cavityMidColor: '#2a090e', cavityRimColor: '#481218',
       lowerLipRimColor: 'rgba(162, 72, 68, 0.90)', teethColor: '#eee4d6'
     };
@@ -1828,8 +1989,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.png)
   if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !/\bvictor\b/.test(norm))) {
     return {
-      x1: 490, y1: 267, cx: 513, cy: 267, x2: 536, y2: 267,
-      chinY: 304, eyeY: 210, leftEyeX: 472, leftEyeY: 211, rightEyeX: 552, rightEyeY: 208, eyeRadius: 15, eyeRx: 17, eyeRy: 12, baseOpen: 0,
+      x1: 490, y1: 268, cx: 513, cy: 268, x2: 536, y2: 268,
+      chinY: 304, eyeY: 210, leftEyeX: 480, leftEyeY: 211, rightEyeX: 544, rightEyeY: 210, eyeRadius: 15, eyeRx: 17, eyeRy: 12, baseOpen: 0,
       bustCrop: { focusX: 512, focusY: 260, zoom: 1.25 },
       maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede4d6'
@@ -1839,9 +2000,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 23. ANDRÉS QUINTANA ROO (/images/history/andres_quintana_roo_avatar.png)
   if (norm.includes('quintana roo') || norm.includes('andres quintana')) {
     return {
-      x1: 528, y1: 367, cx: 556, cy: 367, x2: 584, y2: 367,
-      chinY: 422, eyeY: 269, leftEyeX: 504, leftEyeY: 268, rightEyeX: 586, rightEyeY: 270, eyeRadius: 17, eyeRx: 19, eyeRy: 14, baseOpen: 0,
-      bustCrop: { focusX: 556, focusY: 330, zoom: 1.28 },
+      x1: 544, y1: 374, cx: 571, cy: 374, x2: 598, y2: 373,
+      chinY: 415, eyeY: 306, leftEyeX: 538, leftEyeY: 307, rightEyeX: 599, rightEyeY: 304, eyeRadius: 17, eyeRx: 19, eyeRy: 14, baseOpen: 0,
+      bustCrop: { focusX: 568, focusY: 345, zoom: 1.28 },
       maxOpening: 14, cavityDarkColor: '#140407', cavityMidColor: '#2c090f', cavityRimColor: '#4a1218',
       lowerLipRimColor: 'rgba(168, 76, 72, 0.90)', teethColor: '#ede5d8'
     };
@@ -1850,9 +2011,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.png)
   if (norm.includes('belisario')) {
     return {
-      x1: 484, y1: 292, cx: 511, cy: 292, x2: 538, y2: 292,
-      chinY: 348, eyeY: 217, leftEyeX: 482, leftEyeY: 218, rightEyeX: 546, rightEyeY: 215, eyeRadius: 15, baseOpen: 0,
-      bustCrop: { focusX: 511, focusY: 280, zoom: 1.22 },
+      x1: 482, y1: 294, cx: 510, cy: 294, x2: 538, y2: 294,
+      chinY: 348, eyeY: 218, leftEyeX: 472, leftEyeY: 218, rightEyeX: 544, rightEyeY: 218, eyeRadius: 15, baseOpen: 0,
+      bustCrop: { focusX: 510, focusY: 280, zoom: 1.22 },
       maxOpening: 13, cavityDarkColor: '#100305', cavityMidColor: '#26070b', cavityRimColor: '#420e14',
       lowerLipRimColor: 'rgba(156, 68, 62, 0.90)', teethColor: '#eae1d2', mustacheCover: true
     };
@@ -1861,8 +2022,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 25. GENERAL FELIPE ÁNGELES (/images/history/felipe_angeles_avatar.png)
   if (norm.includes('angeles') || norm.includes('felipe angeles')) {
     return {
-      x1: 470, y1: 301, cx: 496, cy: 301, x2: 522, y2: 301,
-      chinY: 356, eyeY: 231, leftEyeX: 469, leftEyeY: 234, rightEyeX: 527, rightEyeY: 228, eyeRadius: 15, baseOpen: 0,
+      x1: 468, y1: 302, cx: 496, cy: 302, x2: 524, y2: 302,
+      chinY: 356, eyeY: 232, leftEyeX: 462, leftEyeY: 233, rightEyeX: 526, rightEyeY: 230, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 496, focusY: 290, zoom: 1.22 },
       maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
       lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8', mustacheCover: true
@@ -1872,8 +2033,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 26. GUSTAVO DÍAZ ORDAZ (/images/history/gustavo_diaz_ordaz_avatar.png)
   if (norm.includes('diaz ordaz') || norm.includes('ordaz')) {
     return {
-      x1: 474, y1: 473, cx: 514, cy: 473, x2: 554, y2: 473,
-      chinY: 544, eyeY: 360, leftEyeX: 468, leftEyeY: 360, rightEyeX: 560, rightEyeY: 360, eyeRadius: 19, baseOpen: 0,
+      x1: 472, y1: 475, cx: 504, cy: 475, x2: 536, y2: 475,
+      chinY: 530, eyeY: 396, leftEyeX: 468, leftEyeY: 396, rightEyeX: 538, rightEyeY: 396, eyeRadius: 19, baseOpen: 0,
       maxOpening: 15, cavityDarkColor: '#140407', cavityMidColor: '#2e0a10', cavityRimColor: '#4c131a',
       lowerLipRimColor: 'rgba(164, 74, 70, 0.90)', teethColor: '#eee5d8'
     };
@@ -1882,8 +2043,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 27. JOSÉ GUADALUPE POSADA (/images/history/jose_guadalupe_posada_avatar.png)
   if (norm.includes('posada') || norm.includes('guadalupe posada')) {
     return {
-      x1: 552, y1: 315, cx: 584, cy: 315, x2: 616, y2: 315,
-      chinY: 386, eyeY: 242, leftEyeX: 550, leftEyeY: 250, rightEyeX: 622, rightEyeY: 235, eyeRadius: 18, baseOpen: 0,
+      x1: 548, y1: 318, cx: 580, cy: 318, x2: 612, y2: 316,
+      chinY: 386, eyeY: 244, leftEyeX: 536, leftEyeY: 248, rightEyeX: 614, rightEyeY: 240, eyeRadius: 18, baseOpen: 0,
       maxOpening: 14, cavityDarkColor: '#0e0204', cavityMidColor: '#240509', cavityRimColor: '#400c12',
       lowerLipRimColor: 'rgba(152, 64, 58, 0.90)', teethColor: '#ede4d6', mustacheCover: true
     };
@@ -1892,8 +2053,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 28. FRANCISCO VILLA (/images/history/francisco_villa_avatar.png)
   if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
     return {
-      x1: 490, y1: 337, cx: 517, cy: 337, x2: 544, y2: 337,
-      chinY: 388, eyeY: 270, leftEyeX: 482, leftEyeY: 270, rightEyeX: 549, rightEyeY: 270, eyeRadius: 15, baseOpen: 0,
+      x1: 488, y1: 337, cx: 516, cy: 337, x2: 544, y2: 337,
+      chinY: 388, eyeY: 270, leftEyeX: 478, leftEyeY: 270, rightEyeX: 548, rightEyeY: 270, eyeRadius: 15, baseOpen: 0,
       bustCrop: { focusX: 516, focusY: 320, zoom: 1.32 },
       maxOpening: 15, cavityDarkColor: '#080102', cavityMidColor: '#1f0306', cavityRimColor: '#3d0b11',
       lowerLipRimColor: 'rgba(145, 60, 50, 0.92)', teethColor: '#ede5d8', mustacheCover: true
@@ -1903,9 +2064,9 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 29. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
   if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
     return {
-      x1: 488, y1: 350, cx: 521, cy: 350, x2: 556, y2: 350,
-      chinY: 414, eyeY: 236, leftEyeX: 472, rightEyeX: 564, eyeRadius: 18, baseOpen: 0,
-      bustCrop: { focusX: 520, focusY: 320, zoom: 1.24 },
+      x1: 478, y1: 350, cx: 512, cy: 350, x2: 546, y2: 350,
+      chinY: 410, eyeY: 256, leftEyeX: 464, leftEyeY: 256, rightEyeX: 554, rightEyeY: 256, eyeRadius: 18, baseOpen: 0,
+      bustCrop: { focusX: 512, focusY: 320, zoom: 1.24 },
       maxOpening: 15.5, cavityDarkColor: '#090203', cavityMidColor: '#210508', cavityRimColor: '#3c0f14',
       lowerLipRimColor: 'rgba(165, 80, 75, 0.88)', teethColor: '#eee6da'
     };
@@ -1914,7 +2075,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 31. LEONA VICARIO (/images/history/leona_vicario_avatar.webp)
   if (norm.includes('leona') || norm.includes('vicario')) {
     return {
-      x1: 458, y1: 571, cx: 511, cy: 572, x2: 564, y2: 571,
+      x1: 458, y1: 572, cx: 511, cy: 573, x2: 564, y2: 572,
       chinY: 642, eyeY: 398, leftEyeX: 427, leftEyeY: 399, rightEyeX: 593, rightEyeY: 398, eyeRadius: 21, eyeRx: 24, eyeRy: 16, baseOpen: 0,
       bustCrop: { focusX: 511, focusY: 485, zoom: 1.30 },
       maxOpening: 15, cavityDarkColor: '#160408', cavityMidColor: '#340810', cavityRimColor: '#54101a',
@@ -1922,10 +2083,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (520, 343)
+  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (518, 344)
   return {
-    x1: 492, y1: 343, cx: 520, cy: 343, x2: 548, y2: 343,
-    chinY: 418, eyeY: 260, leftEyeX: 478, leftEyeY: 260, rightEyeX: 556, rightEyeY: 261, eyeRadius: 18, baseOpen: 0,
+    x1: 492, y1: 344, cx: 518, cy: 344, x2: 544, y2: 344,
+    chinY: 416, eyeY: 262, leftEyeX: 478, leftEyeY: 263, rightEyeX: 554, rightEyeY: 262, eyeRadius: 18, baseOpen: 0,
     maxOpening: 13, cavityDarkColor: '#140306', cavityMidColor: '#2d0910', cavityRimColor: '#50121a',
     lowerLipRimColor: 'rgba(180, 76, 78, 0.90)', teethColor: '#f2eae0', mustacheCover: true
   };

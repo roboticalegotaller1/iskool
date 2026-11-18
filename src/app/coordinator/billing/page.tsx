@@ -270,49 +270,48 @@ export default function CoordinatorBillingDashboardPage() {
     setManualAutoInvoice(record.autoInvoice ?? true);
   };
 
-  // Confirmación del pago manual
+  // Confirmación del pago manual (0ms tiempos muertos)
   const handleConfirmManualPayment = () => {
     if (!manualPaymentRecord) return;
     setIsProcessingManualPayment(true);
 
-    setTimeout(() => {
-      const receiptNum = manualReference || `REC-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-      const formattedDate = new Date(manualDate + 'T12:00:00').toLocaleDateString('es-MX', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
+    const receiptNum = manualReference || `REC-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+    const formattedDate = new Date(manualDate + 'T12:00:00').toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
 
-      // 1. Actualizar en Zustand Store (honrando monto manual y opción de facturación)
-      const effectiveAmount = manualAmount > 0 ? manualAmount : manualPaymentRecord.amount;
-      recordBillingPayment(manualPaymentRecord.id, {
-        method: manualMethod,
-        reference: receiptNum,
-        notes: manualNotes,
-        amount: effectiveAmount,
-        autoInvoice: manualAutoInvoice
-      });
+    // 1. Actualizar en Zustand Store (honrando monto manual y opción de facturación)
+    const effectiveAmount = manualAmount > 0 ? manualAmount : manualPaymentRecord.amount;
+    recordBillingPayment(manualPaymentRecord.id, {
+      method: manualMethod,
+      reference: receiptNum,
+      notes: manualNotes,
+      amount: effectiveAmount,
+      autoInvoice: manualAutoInvoice
+    });
 
-      setIsProcessingManualPayment(false);
-      const paidRecord: FamilyBillingRecord = {
-        ...manualPaymentRecord,
-        amount: effectiveAmount,
-        autoInvoice: manualAutoInvoice,
-        status: 'paid' as const,
-        paidAt: formattedDate
-      };
-      setManualPaymentRecord(null);
+    setIsProcessingManualPayment(false);
+    const paidRecord: FamilyBillingRecord = {
+      ...manualPaymentRecord,
+      amount: effectiveAmount,
+      autoInvoice: manualAutoInvoice,
+      status: 'paid' as const,
+      paidAt: formattedDate
+    };
+    setManualPaymentRecord(null);
 
-      // 2. Abrir comprobante oficial
-      setViewReceiptRecord({
-        record: paidRecord,
-        receiptNumber: receiptNum,
-        paidAt: formattedDate,
-        paymentMethod: 
-          manualMethod === 'cash' ? 'Efectivo en Ventanilla' :
-          manualMethod === 'spei' ? 'Transferencia Bancaria / SPEI' :
-          manualMethod === 'terminal_card' ? 'Tarjeta en Terminal Física' : 'Cheque',
-        reference: manualReference,
+    // 2. Abrir comprobante oficial
+    setViewReceiptRecord({
+      record: paidRecord,
+      receiptNumber: receiptNum,
+      paidAt: formattedDate,
+      paymentMethod: 
+        manualMethod === 'cash' ? 'Efectivo en Ventanilla' :
+        manualMethod === 'spei' ? 'Transferencia Bancaria / SPEI' :
+        manualMethod === 'terminal_card' ? 'Tarjeta en Terminal Física' : 'Cheque',
+      reference: manualReference,
         notes: manualNotes
       });
 
@@ -369,7 +368,6 @@ export default function CoordinatorBillingDashboardPage() {
       }
 
       showToast(`Pago de $${effectiveAmount.toFixed(2)} registrado exitosamente. Folio: ${receiptNum}`);
-    }, 500);
   };
 
   const handleOpenReminderModal = async (record: FamilyBillingRecord) => {
@@ -1489,15 +1487,24 @@ export default function CoordinatorBillingDashboardPage() {
                   </div>
                 ) : (
                   <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                    JJR
+                    {effectiveSchoolId === 'sch-demo-0001' ? 'DEMO' : 'JJR'}
                   </div>
                 )}
                 <div>
                   <h3 className="font-bold text-sm text-slate-900">
-                    {isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'UP Juan Jacobo Rosseau'}
+                    {isIbime
+                      ? 'INSTITUTO BILINGÜE IBIME'
+                      : effectiveSchoolId === 'sch-demo-0001'
+                        ? 'Cuentas demo ISkool'
+                        : 'UP Juan Jacobo Rosseau'}
                   </h3>
                   <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-                    Recibo Oficial de Pago • Control Escolar{isIbime ? ' • CCT: 15PPR3322G' : ''}
+                    Recibo Oficial de Pago • Control Escolar
+                    {isIbime
+                      ? ' • CCT: 15PPR3322G'
+                      : effectiveSchoolId === 'sch-demo-0001'
+                        ? ' • CCT: 0001'
+                        : ''}
                   </p>
                 </div>
               </div>

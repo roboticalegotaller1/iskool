@@ -328,21 +328,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     return resolveCharacter3DRig(matchedFigure?.id || historicalFigureId, name, gender, avatarImage);
   }, [matchedFigure, historicalFigureId, name, gender, avatarImage]);
 
-  // Lista de todos los frames del compendio para precarga inmediata
-  const allFrames = useMemo(() => {
-    const compendiumUrls = Object.values(characterRig.poseCompendium).filter(Boolean) as string[];
-    return Array.from(new Set([characterRig.idle, ...characterRig.talkFrames, ...compendiumUrls]));
-  }, [characterRig]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      allFrames.forEach(src => {
-        const img = new Image();
-        img.src = src;
-      });
-    }
-  }, [allFrames]);
-
   const avatarDisplayTitle = useMemo(() => {
     if (matchedFigure?.name) return matchedFigure.name;
     if (name) return name;
@@ -530,8 +515,8 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           onResolvedGestureChange={setResolvedLiveGesture}
           impulseTrigger={impulseTrigger + gestureImpulse}
           fallbackImageSrc="/images/languages/3d/mentor_female_3d.webp"
-          enableSmartBustCrop={false}
-          videoHasNativeLipSync={characterRig.id === 'claire'}
+          enableSmartBustCrop={variant === 'stage'}
+          videoHasNativeLipSync={false}
           className="w-full h-full object-contain object-bottom drop-shadow-2xl"
         />
       </div>

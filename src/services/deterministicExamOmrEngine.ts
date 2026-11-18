@@ -323,8 +323,13 @@ export function extractExamQuestionsFromStudioBlocks(
         pdaReference: 'NEM-REL-01',
         explanation: 'Asociación conceptual directa extraída del bloque de emparejamiento.'
       });
-    } else if (blk.type === 'ordering_sequence' && Array.isArray(raw.items) && raw.items.length >= 2) {
-      const seqLabels = raw.items.map((it: any, sIdx: number) => `${sIdx + 1}. ${typeof it === 'string' ? it : it.label || it.text || `Paso ${sIdx + 1}`}`);
+    } else if (
+      blk.type === 'ordering_sequence' &&
+      Array.isArray(raw.stepsInCorrectOrder || raw.items) &&
+      (raw.stepsInCorrectOrder || raw.items).length >= 2
+    ) {
+      const seqSource = raw.stepsInCorrectOrder || raw.items;
+      const seqLabels = seqSource.map((it: any, sIdx: number) => `${sIdx + 1}. ${typeof it === 'string' ? it : it.label || it.text || `Paso ${sIdx + 1}`}`);
       pushUniqueQuestion({
         id: `ord-${blk.id}`,
         type: 'single_choice',
@@ -447,9 +452,18 @@ export function extractExamQuestionsFromStudioBlocks(
       pushUniqueQuestion({
         id: `gate-${blk.id}`,
         type: 'single_choice',
-        stem: raw.riddleQuestion || raw.checkpointQuestion || `Verificación de dominio (${blk.title}): ¿Cuál es la clave o criterio que acredita el avance de este bloque?`,
+        stem:
+          raw.clueText ||
+          raw.riddlePrompt ||
+          raw.riddleQuestion ||
+          raw.checkpointQuestion ||
+          raw.gateMessage ||
+          `Verificación de dominio (${blk.title}): ¿Cuál es la clave o criterio que acredita el avance de este bloque?`,
         options: [
-          raw.secretCode || raw.expectedAnswer || 'Cumplimiento integral de los criterios de la rúbrica y evidencia verificada',
+          raw.secretAnswer ||
+            raw.secretCode ||
+            raw.expectedAnswer ||
+            'Cumplimiento integral de los criterios de la rúbrica y evidencia verificada',
           'Avance automático sin validación de evidencias',
           'Entrega parcial sin fundamentación teórica',
           'Revisión superficial sin contraste experimental'
@@ -468,16 +482,26 @@ export function extractExamQuestionsFromStudioBlocks(
       blk.type === 'languages_roleplay_mission' ||
       blk.type === 'languages_practice_portal'
     ) {
+      const isEnglishLang =
+        String(raw.language || '').toLowerCase().startsWith('en') ||
+        /\b(the|would|please|welcome|morning|science)\b/i.test(String(raw.targetPhrase || raw.prompt || blk.title));
       pushUniqueQuestion({
         id: `lang-${blk.id}`,
         type: 'single_choice',
         stem: raw.prompt || raw.targetPhrase || `Competencia Comunicativa CEFR (${blk.title}): Selecciona la estructura lingüística formal y gramaticalmente correcta para esta misión:`,
-        options: [
-          raw.targetPhrase || 'Bonjour, je voudrais réserver une table pour deux personnes, s’il vous plaît.',
-          'Je veux table maintenant vite.',
-          'Moi aller brasserie hier demain.',
-          'Pourquoi tu pas parler jamais.'
-        ],
+        options: isEnglishLang
+          ? [
+              raw.targetPhrase || 'Good morning! Could I reserve a table for two people, please?',
+              'Me want table right now fast.',
+              'Yesterday tomorrow we goes café.',
+              'Why you never not speaking here.'
+            ]
+          : [
+              raw.targetPhrase || 'Bonjour, je voudrais réserver une table pour deux personnes, s’il vous plaît.',
+              'Je veux table maintenant vite.',
+              'Moi aller brasserie hier demain.',
+              'Pourquoi tu pas parler jamais.'
+            ],
         correctOptionIndex: 0,
         points: 2,
         penaltyPerError: defaultPenalty,

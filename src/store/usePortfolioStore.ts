@@ -595,12 +595,24 @@ export const usePortfolioStore = create<PortfolioStoreState>()(
       const schoolAdminStore = useSchoolAdminStore.getState();
       let sessionUser: any = null;
       try {
-        if (typeof localStorage !== 'undefined') {
+        if (typeof sessionStorage !== 'undefined') {
+          const activeRaw = sessionStorage.getItem('iskool_active_session_v2');
+          if (activeRaw) sessionUser = JSON.parse(activeRaw);
+        }
+        if (!sessionUser && typeof localStorage !== 'undefined') {
           const stored = localStorage.getItem('iskool_session_user') || localStorage.getItem('auth_current_user');
           if (stored) sessionUser = JSON.parse(stored);
         }
       } catch (e) {}
       const activeSchoolId = resolveEffectiveSchoolId(sessionUser, schoolAdminStore.activeSchoolId, 'sch-jjrosseau');
+      if (
+        activeSchoolId === 'sch-demo-0001' ||
+        groupId?.startsWith('grp-demo-') ||
+        targetStudentId?.startsWith('std-demo-')
+      ) {
+        set({ isLoadingPortfolio: false, portfolioError: null });
+        return;
+      }
       const schoolStudents = activeSchoolId 
         ? getSchoolStudents(schoolAdminStore.detailedStudents, activeSchoolId, schoolAdminStore.campusesList)
         : schoolAdminStore.detailedStudents;

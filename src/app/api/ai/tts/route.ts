@@ -320,6 +320,8 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, l
 }
 
 
+const inFlightSynthesisPromises = new Map<string, Promise<Buffer>>();
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
@@ -524,14 +526,22 @@ export async function POST(req: NextRequest) {
       : '';
     const synthText = rawNormalizedText || extractedFromSSML || cleanText || text;
 
-    const audioBuffer = await synthesizeNeuralAudio({
-      text: synthText,
-      voice: targetVoice,
-      rate: finalRate,
-      pitch: finalPitch,
-      characterName: characterName || '',
-      role: role || ''
-    });
+    let synthPromise = inFlightSynthesisPromises.get(cacheKey);
+    if (!synthPromise) {
+      synthPromise = synthesizeNeuralAudio({
+        text: synthText,
+        voice: targetVoice,
+        rate: finalRate,
+        pitch: finalPitch,
+        characterName: characterName || '',
+        role: role || ''
+      }).finally(() => {
+        inFlightSynthesisPromises.delete(cacheKey);
+      });
+      inFlightSynthesisPromises.set(cacheKey, synthPromise);
+    }
+
+    const audioBuffer = await synthPromise;
 
     if (!audioBuffer || audioBuffer.length === 0) {
       throw new Error('El sintetizador no generó datos de audio');

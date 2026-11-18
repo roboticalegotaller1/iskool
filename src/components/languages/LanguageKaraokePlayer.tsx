@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { KaraokePhrase, LanguageCode, AvatarGender, useLanguagesStore } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from './HumanGesticulatingAvatar';
-import { playUniversalIskoolVoice, stopAllIskoolAudio, UniversalAudioController } from '@/lib/historicalVoiceEngine';
+import { playUniversalIskoolVoice, prefetchUniversalIskoolVoice, stopAllIskoolAudio, UniversalAudioController } from '@/lib/historicalVoiceEngine';
 import { 
   Mic, 
   MicOff, 
@@ -313,11 +313,24 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
   }, [refreshAudioDevices]);
 
-  // Reiniciar estado al cambiar de frase
+  // Reiniciar estado al cambiar de frase y pre-calentar voz modelo en caché
   useEffect(() => {
     setIsRecording(false);
     setIsCompleted(false);
     setActiveWordIndex(0);
+    if (phrase?.targetText) {
+      const t = setTimeout(() => {
+        void prefetchUniversalIskoolVoice({
+          text: phrase.targetText,
+          characterName: avatarName,
+          voiceId: avatarVoice,
+          language,
+          gender: avatarGender,
+          rate: speechRate,
+        });
+      }, 45);
+      return () => clearTimeout(t);
+    }
     setCompletedIndices([]);
     setErrorIndices([]);
     setCompletedWords([]);

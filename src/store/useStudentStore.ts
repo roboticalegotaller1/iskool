@@ -1166,6 +1166,49 @@ export const useStudentStore = create<StudentStoreState>()(
     inFlightPurchases.add(lockKey);
 
     try {
+      // 0. Modo Sandbox Cuentas Demo (std-demo-*): transacción local atómica en 0ms contra saldo real
+      if (normId.startsWith('std-demo-') || studentId.startsWith('std-demo-')) {
+        const artifact = useGamificationStore.getState().shopArtifacts.find((a) => a.id === artifactId);
+        const price = artifact?.price ?? 50;
+        const currentStats =
+          get().allStats[normId] ||
+          get().allStats[studentId] ||
+          STATS_MAP_SEED[normId] ||
+          STATS_MAP_SEED[studentId] || { coins: 163 };
+        const currentCoins = currentStats.coins ?? 163;
+        if (currentCoins < price) {
+          if (typeof window !== 'undefined' && window.alert) {
+            window.alert(`Monedas insuficientes (${currentCoins} disponibles, requiere ${price}).`);
+          }
+          return;
+        }
+        const prevInv = get().studentInventoryMap[normId] || get().studentInventoryMap[studentId] || [];
+        if (prevInv.includes(artifactId)) return;
+        const nextCoins = currentCoins - price;
+        const nextInv = [...prevInv, artifactId];
+        set((state) => {
+          const base =
+            state.allStats[normId] ||
+            state.allStats[studentId] ||
+            STATS_MAP_SEED[normId] ||
+            STATS_MAP_SEED[studentId] || {};
+          const updatedStats = { ...base, coins: nextCoins, updated_at: new Date().toISOString() };
+          return {
+            allStats: {
+              ...state.allStats,
+              [studentId]: updatedStats,
+              [normId]: updatedStats,
+            },
+            studentInventoryMap: {
+              ...state.studentInventoryMap,
+              [studentId]: nextInv,
+              [normId]: nextInv,
+            },
+          };
+        });
+        return;
+      }
+
       // 1. Intentar compra a través del endpoint API con control de concurrencia y ACID
       try {
         const res = await fetch('/api/store/purchase', {
@@ -1432,37 +1475,34 @@ export const useStudentStore = create<StudentStoreState>()(
     const activeId = normalizeStudentId(studentId);
     const dbStudentId = mapStudentIdToUuid(activeId);
     const { allStats } = get();
-    const studentStats = allStats[activeId] || allStats[studentId] || {
-      student_id: activeId,
-      xp: 0,
-      level: 1,
-      coins: 0,
-      current_streak: 1,
-      max_streak: 1,
-      skill_points: 0,
-      pet_energy: 100,
-      pet_happiness: 80,
-      friendship_exp: 100,
-      pet_stage: 'egg' as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    const studentStats =
+      allStats[activeId] ||
+      allStats[studentId] ||
+      STATS_MAP_SEED[activeId] ||
+      STATS_MAP_SEED[studentId] || {
+        student_id: activeId,
+        xp: 0,
+        level: 1,
+        coins: 0,
+        current_streak: 1,
+        max_streak: 1,
+        skill_points: 0,
+        pet_energy: 100,
+        pet_happiness: 80,
+        friendship_exp: 100,
+        pet_stage: 'egg' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-    let currentXP = (studentStats.xp || 0) + xpEarned;
+    const currentXP = (studentStats.xp || 0) + xpEarned;
     const currentCoins = (studentStats.coins || 0) + coinsEarned;
-    let level = studentStats.level || 1;
-    let leveledUp = false;
-    let skillPoints = studentStats.skill_points ?? 0;
-
-    // Bucle para acumulación de niveles y asignación de +2 skill_points por cada nivel ganado a TODOS los estudiantes
-    let xpRequiredForNextLevel = level * 200;
-    while (currentXP >= xpRequiredForNextLevel) {
-      currentXP -= xpRequiredForNextLevel;
-      level += 1;
-      skillPoints += 2;
-      leveledUp = true;
-      xpRequiredForNextLevel = level * 200;
-    }
+    const prevLevel = studentStats.level || 1;
+    const computedLevel = Math.max(prevLevel, Math.floor(currentXP / 200) + 1);
+    const levelGain = Math.max(0, computedLevel - prevLevel);
+    const level = computedLevel;
+    const leveledUp = levelGain > 0;
+    const skillPoints = (studentStats.skill_points ?? 0) + levelGain * 2;
 
     let newStreak = studentStats.current_streak || 0;
     const todayStr = new Date().toISOString().split('T')[0];
@@ -1680,6 +1720,18 @@ export const useStudentStore = create<StudentStoreState>()(
   },
 
   fetchStats: async (groupId?: string) => {
+    const activeSch = useSchoolAdminStore.getState().activeSchoolId;
+    if (
+      activeSch === 'sch-demo-0001' ||
+      groupId?.startsWith('grp-demo-') ||
+      get().activeStudentId?.startsWith('std-demo-')
+    ) {
+      set((state) => ({
+        isLoadingStats: false,
+        allStats: { ...STATS_MAP_SEED, ...state.allStats },
+      }));
+      return;
+    }
     set({ isLoadingStats: true });
     try {
       // The student_stats table does not have a group_id column.
@@ -1784,7 +1836,17 @@ export const useStudentStore = create<StudentStoreState>()(
         allAvatars: state.allAvatars,
         studentInventoryMap: state.studentInventoryMap,
         studentMessages: state.studentMessages,
-      })
+      }),
+      merge: (persistedState: any, currentState) => {
+        const persisted = persistedState || {};
+        return {
+          ...currentState,
+          ...persisted,
+          allStats: { ...STATS_MAP_SEED, ...(persisted.allStats || {}) },
+          allAvatars: { ...AVATAR_MAP_SEED, ...(persisted.allAvatars || {}) },
+          studentInventoryMap: { ...STUDENT_INVENTORY_SEED, ...(persisted.studentInventoryMap || {}) },
+        };
+      },
     }
   )
 );

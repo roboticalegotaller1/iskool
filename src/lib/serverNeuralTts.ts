@@ -142,7 +142,7 @@ function synthesizeViaWarmDaemon(options: Required<SynthesizeOptions>): Promise<
     const timer = setTimeout(() => {
       pendingRequests.delete(reqId);
       reject(new Error('Timeout en daemon TTS'));
-    }, 6500);
+    }, 3800);
 
     pendingRequests.set(reqId, { resolve, reject, timer });
 
@@ -217,14 +217,16 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     } catch { }
   }
 
-  // 3. Motor Primario Ultra-Rápido Directo en Node.js (96 kbps, cero subprocesos, 0 Tokens)
+  // 3. Motor Primario Ultra-Rápido Directo en Node.js (96 kbps, IPv4 Keep-Alive, cero subprocesos, 0 Tokens)
+  // Nota: synthesizeDirectInstitutionalNeural ya incluye 1 reintento interno inmediato ante 403/jitter.
+  let directError: unknown = null;
   try {
     const directBuffer = await synthesizeDirectInstitutionalNeural({
       text: cleanText,
       voice,
       rate,
       pitch,
-      timeoutMs: 5500
+      timeoutMs: 3500
     });
     if (directBuffer && directBuffer.length > 256) {
       writeCacheFileAtomic(cachedFilePath, directBuffer);
@@ -235,12 +237,22 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       memoryAudioCache.set(cacheKey, directBuffer);
       return directBuffer;
     }
-  } catch {
-    // Si la pasarela directa falla momentáneamente, continuar transparentemente al daemon Python
+  } catch (err) {
+    directError = err;
   }
 
-  // 4. Respaldo en memoria mediante Daemon Persistente Python
+  // En entornos serverless sin intérprete Python local, retornar de inmediato sin colas de subprocesos
+  const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
+  if (process.env.VERCEL || !fs.existsSync(/*turbopackIgnore: true*/ workerScript)) {
+    throw directError instanceof Error
+      ? directError
+      : new Error('Síntesis directa no disponible temporalmente');
+  }
+
+  // 4. Respaldo rápido en memoria mediante Daemon Persistente Python (acotado a 3.8s)
+  let daemonAttempted = false;
   try {
+    daemonAttempted = true;
     const daemonBuffer = await synthesizeViaWarmDaemon({
       text: cleanText,
       voice,
@@ -259,12 +271,17 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
       return daemonBuffer;
     }
   } catch {
-    // Si el daemon está reiniciando, continuar transparentemente al worker CLI por lote
+    // Si el daemon ya intentó y falló por red, evitar otro arranque frío en cadena
   }
 
-  // 5. Respaldo por proceso CLI individual
+  if (daemonAttempted) {
+    throw directError instanceof Error
+      ? directError
+      : new Error('Síntesis neural temporalmente agotada');
+  }
+
+  // 5. Respaldo por proceso CLI individual (únicamente si el daemon no pudo iniciarse)
   const tempOutputFile = path.join(os.tmpdir(), `iskool_tts_${cacheKey}_${Date.now()}.mp3`);
-  const workerScript = path.join(process.cwd(), 'scripts', 'neural_tts_worker.py');
 
   // Usar archivo JSON temporal para evitar desbordamiento o problemas de escape de caracteres en CLI
   const payloadFile = path.join(os.tmpdir(), `iskool_payload_${cacheKey}_${Date.now()}.json`);

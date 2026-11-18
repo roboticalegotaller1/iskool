@@ -229,9 +229,9 @@ export const useWritingEngineStore = create<WritingEngineState>()(
           evaluaciones: updatedAll
         });
 
-        // Recompensa gamificada por entrega de redacción certificada (+80 XP y +25 Monedas)
+        // Recompensa gamificada por entrega de redacción certificada alineada al dictamen oficial
         try {
-          useStudentStore.getState().addXpAndCoins(currentStudentId, 80, 25);
+          useStudentStore.getState().addXpAndCoins(currentStudentId, evaluation.xpGanados || 80, 25);
         } catch {
           // Ignorar si el store no está montado
         }
@@ -316,10 +316,22 @@ export const useWritingEngineStore = create<WritingEngineState>()(
         selectedLanguage: state.selectedLanguage,
         selectedLevel: state.selectedLevel,
         activePrompt: state.activePrompt,
+        currentDraft: state.currentDraft,
+        unlockedHintLevels: state.unlockedHintLevels,
         studentHistory: state.studentHistory,
         allEvaluations: state.allEvaluations,
         selectedCohortGroup: state.selectedCohortGroup
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.currentDraft) {
+          state.analysisOutput = AutonomousWritingEngineService.analizarBorrador({
+            idioma: state.selectedLanguage,
+            nivel: state.selectedLevel,
+            consigna: state.activePrompt?.consignaOficial,
+            borrador_actual: state.currentDraft,
+          });
+        }
+      },
     }
   )
 );

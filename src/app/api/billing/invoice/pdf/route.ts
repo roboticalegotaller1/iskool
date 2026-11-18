@@ -55,14 +55,30 @@ export async function GET(req: NextRequest) {
   );
 
   const tenantParam = req.nextUrl.searchParams.get('tenant') || '';
+  const isDemoSchool =
+    auth.user.school_id === 'sch-demo-0001' ||
+    (auth.user.email || '').toLowerCase().startsWith('demo.');
   const isIbime =
-    auth.user.tenant_id === 'ibime' ||
-    auth.user.school_id === 'sch-ibime' ||
-    (roleLower === 'superadmin' && tenantParam.toLowerCase().includes('ibime'));
+    !isDemoSchool &&
+    (auth.user.tenant_id === 'ibime' ||
+      auth.user.school_id === 'sch-ibime' ||
+      (roleLower === 'superadmin' && tenantParam.toLowerCase().includes('ibime')));
 
-  const schoolName = isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ISKOOL MÉXICO';
-  const schoolSub = isIbime ? 'Educación Bilingüe de Excelencia • CCT: 15PPR3322G • https://ibime.edu.mx' : 'Institución Educativa de Excelencia • CCT: 09PPR1849Z';
-  const razonSocial = isIbime ? 'INSTITUTO BILINGÜE IBIME S.C.' : 'COLEGIO ISKOOL DE MEXICO S.C.';
+  const schoolName = isDemoSchool
+    ? 'CUENTAS DEMO ISKOOL'
+    : isIbime
+      ? 'INSTITUTO BILINGÜE IBIME'
+      : 'COLEGIO ISKOOL MÉXICO';
+  const schoolSub = isDemoSchool
+    ? 'Entorno Institucional Demostrativo • CCT: 0001 • https://iskool.mx'
+    : isIbime
+      ? 'Educación Bilingüe de Excelencia • CCT: 15PPR3322G • https://ibime.edu.mx'
+      : 'Institución Educativa de Excelencia • CCT: 09PPR1849Z';
+  const razonSocial = isDemoSchool
+    ? 'CUENTAS DEMO EDUCATIVAS S.C.'
+    : isIbime
+      ? 'INSTITUTO BILINGÜE IBIME S.C.'
+      : 'COLEGIO ISKOOL DE MEXICO S.C.';
   const rfcEmisor = isIbime ? 'IBI150901AB3' : 'ISK180312AB9';
   const expedicion = isIbime ? 'C.P. 55000 (Estado de México)' : 'C.P. 06700 (CDMX)';
   const primaryColor = isIbime ? '#E41B14' : '#1e40af';

@@ -33,7 +33,12 @@ import {
   HistoricalFigureMoment 
 } from '@/types/studioBlocks';
 import { HistoricalLivingAvatar } from './HistoricalLivingAvatar';
-import { stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
+import {
+  playUniversalIskoolVoice,
+  prefetchUniversalIskoolVoice,
+  stopAllIskoolAudio,
+} from '@/lib/historicalVoiceEngine';
+import { NanoBananaLipSyncCanvas } from '@/components/common/NanoBananaLipSyncCanvas';
 import { HistoricalInteractiveMap } from './HistoricalInteractiveMap';
 import { HistoricalTimelineComic } from './HistoricalTimelineComic';
 import { HistoricalCinematicVideo } from './HistoricalCinematicVideo';
@@ -45,7 +50,7 @@ export interface MagicHistoryBookPlayerProps {
   isProjectorModeInitially?: boolean;
 }
 
-// Estilos visuales de los 5 lomos de libros mágicos (con portadas fotorrealistas Nano Banana 2.1)
+// Estilos visuales de los 5 lomos de libros mágicos (con portadas de alta fidelidad del Motor Visual IA)
 export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   name: string;
   badge: string;
@@ -152,6 +157,25 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   const [assignedToHeroPath, setAssignedToHeroPath] = useState(false);
   const [sharedToCommunity, setSharedToCommunity] = useState(false);
   const [comicMomentIndex, setComicMomentIndex] = useState(0);
+  const [isIntroSpeaking, setIsIntroSpeaking] = useState(false);
+
+  const introNarrationText = data.shortBio
+    ? `Soy ${data.characterName}. ${data.shortBio}`
+    : `Soy ${data.characterName}. Explora mi semblanza e hitos históricos.`;
+
+  useEffect(() => {
+    if (!isOpen || currentPage !== 0) return;
+    const t = setTimeout(() => {
+      void prefetchUniversalIskoolVoice({
+        text: introNarrationText,
+        characterName: data.characterName,
+        voiceId: data.voiceId,
+        birthDeathDates: data.birthDeathDates,
+        language: 'es',
+      });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [isOpen, currentPage, introNarrationText, data.characterName, data.voiceId, data.birthDeathDates]);
 
   // Estados de Preguntas Clave
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
@@ -563,17 +587,16 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                       <div className="p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900 to-black/80 border border-amber-500/30">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                           <div className="lg:col-span-4 text-center">
-                            <div className="w-44 h-44 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl mx-auto overflow-hidden bg-slate-950">
-                              <img 
-                                src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
-                                alt={data.characterName} 
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  if (!target.src.includes('francisco_villa_avatar.png')) {
-                                    target.src = '/images/history/francisco_villa_avatar.png';
-                                  }
-                                }}
-                                className="w-full h-full object-cover"
+                            <div className="w-44 h-44 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl mx-auto overflow-hidden bg-slate-950 relative">
+                              <NanoBananaLipSyncCanvas
+                                imageSrc={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                                characterId={data.vaultNodeSlug || data.characterName}
+                                isSpeaking={isIntroSpeaking}
+                                spokenText={introNarrationText}
+                                isGeographicSite={data.isGeographicSite}
+                                fallbackImageSrc="/images/history/francisco_villa_avatar.png"
+                                enableSmartBustCrop={true}
+                                className="w-full h-full object-cover rounded-full"
                               />
                             </div>
                             <h3 className="text-xl font-black text-amber-200 mt-3 font-serif">
@@ -598,7 +621,31 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                             <div className="pt-2 flex flex-wrap gap-2">
                               <button
                                 type="button"
-                                onClick={() => { stopAllIskoolAudio(); setCurrentPage(1); }}
+                                onClick={() => {
+                                  if (isIntroSpeaking) {
+                                    stopAllIskoolAudio();
+                                    setIsIntroSpeaking(false);
+                                    return;
+                                  }
+                                  setIsIntroSpeaking(true);
+                                  void playUniversalIskoolVoice({
+                                    text: introNarrationText,
+                                    characterName: data.characterName,
+                                    voiceId: data.voiceId,
+                                    birthDeathDates: data.birthDeathDates,
+                                    language: 'es',
+                                    onEnd: () => setIsIntroSpeaking(false),
+                                    onError: () => setIsIntroSpeaking(false),
+                                  });
+                                }}
+                                className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
+                              >
+                                <Volume2 className="w-4 h-4" />
+                                <span>{isIntroSpeaking ? 'Detener Semblanza' : 'Escuchar Semblanza'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { stopAllIskoolAudio(); setIsIntroSpeaking(false); setCurrentPage(1); }}
                                 className="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-md cursor-pointer"
                               >
                                 <span>Explorar Novela Gráfica (4 Momentos)</span>
@@ -606,7 +653,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => { stopAllIskoolAudio(); setCurrentPage(4); }}
+                                onClick={() => { stopAllIskoolAudio(); setIsIntroSpeaking(false); setCurrentPage(4); }}
                                 className="px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-amber-200 font-bold text-xs flex items-center gap-2 border border-amber-500/30 cursor-pointer"
                               >
                                 <MessageSquare className="w-4 h-4 text-amber-400" />

@@ -1127,8 +1127,7 @@ export function PlanningTab({
       console.log("⚡ [Modo Innovación IA]: Bypass activado. Generando nueva propuesta pedagógica...");
     }
 
-    // Esperar a que la simulación termine visualmente
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Cero tiempos muertos artificiales: continuar de inmediato a la generación/despliegue curricular
 
     // Step 2: Si NO existe en Bóveda o se subió una imagen, activar motor de Inteligencia Artificial Pedagógica
     if (!resultPlanning) {

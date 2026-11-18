@@ -807,6 +807,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (typeof window !== 'undefined') {
           localStorage.removeItem('iskool_session_user');
           localStorage.removeItem('auth_current_user');
+
+          // 1.1 Hidratación instantánea (0ms) para sesiones activas verificadas en sessionStorage (Cuentas Demo / navegación intra-pestaña)
+          try {
+            const fastSessionRaw = sessionStorage.getItem('iskool_active_session_v2');
+            if (fastSessionRaw) {
+              const fastUser = JSON.parse(fastSessionRaw) as UserProfile;
+              if (
+                fastUser &&
+                fastUser.id &&
+                fastUser.role &&
+                (fastUser.school_id === 'sch-demo-0001' || fastUser.email?.endsWith('@iskool.mx'))
+              ) {
+                setUser(fastUser);
+                setSession({
+                  access_token: 'session-storage-verified',
+                  user: fastUser,
+                });
+                useSchoolAdminStore.getState().syncUserSchool(fastUser);
+                setLoading(false);
+                return;
+              }
+            }
+          } catch {}
         }
 
         // 2. Consulta al endpoint seguro de sesión perimetral con Cookie HttpOnly (con timeout de 2s)

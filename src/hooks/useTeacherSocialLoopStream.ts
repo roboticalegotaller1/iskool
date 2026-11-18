@@ -76,6 +76,17 @@ export function useTeacherSocialLoopStream({
    */
   const connectSSE = useCallback(() => {
     if (!isMountedRef.current || !enabled || typeof window === 'undefined') return;
+    if (teacherId && (teacherId.includes('-parent-') || teacherId.startsWith('std-'))) return;
+    try {
+      const rawSession = sessionStorage.getItem('iskool_active_session_v2');
+      if (rawSession) {
+        const parsed = JSON.parse(rawSession);
+        const role = String(parsed?.role || '').toLowerCase();
+        if (role && !['teacher', 'director', 'admin', 'superadmin', 'coordinator', 'owner', 'ceo'].includes(role)) {
+          return;
+        }
+      }
+    } catch {}
 
     // Si el navegador está sin internet físico
     if (typeof navigator !== 'undefined' && !navigator.onLine) {

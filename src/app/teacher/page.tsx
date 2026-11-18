@@ -5,6 +5,7 @@ import { useStudentStore } from '@/store/useStudentStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { useSchoolAdminStore, getSchoolGovernance } from '@/store/useSchoolAdminStore';
+import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 import { SUBJECTS_SEED } from '@/store/seeds';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { Header } from '@/components/Header';
@@ -1247,7 +1248,18 @@ function TeacherDashboardContent() {
                   <div className="space-y-2">
                     <button
                       type="button"
-                      onClick={() => setGuidedAttendanceConfirmed(true)}
+                      onClick={() => {
+                        if (!guidedAttendanceConfirmed) {
+                          setGuidedAttendanceConfirmed(true);
+                          useDemoInteractionStore.getState().recordTeacherAttendancePulse({
+                            groupName: ceoMirrorTelemetry.groupLabel,
+                            count: ceoMirrorTelemetry.presentCount,
+                            teacherName: currentTeacher
+                              ? `${currentTeacher.first_name || ''} ${currentTeacher.last_name || ''}`.trim()
+                              : undefined,
+                          });
+                        }
+                      }}
                       className={`w-full py-3 px-5 rounded-2xl font-black text-sm text-white shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 ${
                         guidedAttendanceConfirmed
                           ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20'
@@ -1334,7 +1346,20 @@ function TeacherDashboardContent() {
                   <div className="space-y-2">
                     <button
                       type="button"
-                      onClick={() => setGuidedSummarySent(true)}
+                      onClick={() => {
+                        if (!guidedSummarySent) {
+                          setGuidedSummarySent(true);
+                          useDemoInteractionStore.getState().recordTeacherReportAndXp({
+                            xp: 50,
+                            coins: 20,
+                            teacherName: currentTeacher
+                              ? `${currentTeacher.first_name || ''} ${currentTeacher.last_name || ''}`.trim()
+                              : undefined,
+                            groupName: ceoMirrorTelemetry.groupLabel,
+                            subjectName: ceoMirrorTelemetry.subjectLabel,
+                          });
+                        }
+                      }}
                       className="w-full py-3 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <Send className="h-4 w-4" />

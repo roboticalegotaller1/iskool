@@ -45,6 +45,7 @@ export const DemoGuidedTourDock: React.FC = () => {
   const setStepIndex = useDemoInteractionStore((s) => s.setStepIndex);
 
   const [isSwitching, setIsSwitching] = useState(false);
+  const [dockSide, setDockSide] = useState<'right' | 'left'>('right');
 
   const isDemoSession = useMemo(() => {
     return isDemoSandboxContext({
@@ -54,7 +55,7 @@ export const DemoGuidedTourDock: React.FC = () => {
     });
   }, [user?.email, user?.school_id, user?.id, activeSchoolId]);
 
-  // Pre-calentar las 7 rutas del recorrido para transiciones SPA instantáneas
+  // Pre-calentar las 7 rutas del recorrido y chunks pesados (Consola CEO) para transiciones SPA en 0ms
   useEffect(() => {
     if (!isDemoSession) return;
     DEMO_STORYLINE_STEPS.forEach((st) => {
@@ -64,16 +65,17 @@ export const DemoGuidedTourDock: React.FC = () => {
         // Ignorar si prefetch no está disponible en entorno de test
       }
     });
+    const warmTimer = setTimeout(() => {
+      import('@/components/admin/CEOExecutiveDashboard').catch(() => {});
+    }, 250);
+    return () => clearTimeout(warmTimer);
   }, [isDemoSession, router]);
 
-  // Liberar escudo de transición en cuanto aterriza la nueva ruta
+  // Liberar escudo de transición instantáneamente en cuanto aterriza la nueva ruta (0ms tiempos muertos)
   useEffect(() => {
     if (!pathname) return;
-    const t = setTimeout(() => {
-      endRoleTransition();
-      setIsSwitching(false);
-    }, 150);
-    return () => clearTimeout(t);
+    endRoleTransition();
+    setIsSwitching(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -140,7 +142,7 @@ export const DemoGuidedTourDock: React.FC = () => {
       }
       router.push(targetPath);
     } finally {
-      setTimeout(() => setIsSwitching(false), 350);
+      setTimeout(() => setIsSwitching(false), 120);
     }
   };
 
@@ -165,10 +167,13 @@ export const DemoGuidedTourDock: React.FC = () => {
     }
   };
 
-  // Modo descartado ("Explorar libremente"): pastilla ultra-discreta en esquina inferior izquierda
+  const dockPositionClass =
+    dockSide === 'right' ? 'fixed bottom-20 right-4 sm:right-6 z-[60]' : 'fixed bottom-4 left-4 z-[60]';
+
+  // Modo descartado ("Explorar libremente"): pastilla ultra-discreta sin obstruir controles de página
   if (activeTourMode === 'dismissed') {
     return (
-      <div className="fixed bottom-4 left-4 z-40 pointer-events-auto">
+      <div className={`${dockPositionClass} pointer-events-auto`}>
         <button
           type="button"
           data-testid="demo-tour-reopen-pill"
@@ -188,7 +193,7 @@ export const DemoGuidedTourDock: React.FC = () => {
     return (
       <div
         data-testid="demo-guided-tour-minimized"
-        className="fixed bottom-4 left-4 z-40 pointer-events-auto"
+        className={`${dockPositionClass} pointer-events-auto`}
       >
         <div className="flex items-center gap-2 rounded-full bg-slate-900/95 backdrop-blur-md text-white pl-3.5 pr-2 py-2 shadow-xl border border-indigo-400/30">
           <button
@@ -242,7 +247,7 @@ export const DemoGuidedTourDock: React.FC = () => {
     <aside
       data-testid="demo-guided-tour-dock"
       aria-label="Guía interactiva Cuentas demo"
-      className="fixed bottom-4 left-4 z-40 w-[calc(100vw-2rem)] max-w-sm pointer-events-auto"
+      className={`${dockPositionClass} w-[calc(100vw-2rem)] max-w-sm pointer-events-auto transition-all duration-200`}
     >
       <div className="rounded-2xl bg-slate-950/95 backdrop-blur-xl text-white shadow-2xl border border-indigo-500/40 overflow-hidden">
         {/* Top bar */}
@@ -263,6 +268,15 @@ export const DemoGuidedTourDock: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              data-testid="demo-tour-flip-side-btn"
+              onClick={() => setDockSide((s) => (s === 'right' ? 'left' : 'right'))}
+              className="rounded-lg px-1.5 py-1 text-[10px] font-black text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+              title="Cambiar esquina de la guía (Derecha / Izquierda)"
+            >
+              ⇄
+            </button>
             <button
               type="button"
               data-testid="demo-tour-minimize-btn"

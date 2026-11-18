@@ -31,6 +31,8 @@ interface Props {
   isPlayingAudio: boolean;
   onPlayLineAudio: (text: string, customRate?: number) => void;
   initialPairTimerRunning?: boolean;
+  schoolName?: string;
+  groupLabel?: string;
 }
 
 export const ClassroomBoardModal: React.FC<Props> = ({
@@ -42,6 +44,8 @@ export const ClassroomBoardModal: React.FC<Props> = ({
   isPlayingAudio,
   onPlayLineAudio,
   initialPairTimerRunning = false,
+  schoolName = 'Instituto Bilingüe IBIME',
+  groupLabel = '2º A',
 }) => {
   const [activePairIndex, setActivePairIndex] = useState<number>(0);
   const [pairSecondsLeft, setPairSecondsLeft] = useState<number>(165); // 02:45 default as in mockup
@@ -137,7 +141,7 @@ export const ClassroomBoardModal: React.FC<Props> = ({
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800/90">
         <div className="flex items-center gap-3">
           <span className="text-sm sm:text-base font-black tracking-tight text-slate-200">
-            Instituto Bilingüe IBIME · Centro de Idiomas
+            {schoolName} · Centro de Idiomas 3D
           </span>
           <span className="px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-400/50 text-amber-300 text-xs sm:text-sm font-extrabold">
             Modo Pizarrón Interactivo · {lesson.title}
@@ -147,7 +151,7 @@ export const ClassroomBoardModal: React.FC<Props> = ({
         <div className="flex items-center gap-3">
           <div className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm font-bold flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-            <span>En Vivo: Salón 2º A · Nivel {lesson.level}</span>
+            <span>En Vivo: Salón {groupLabel} · Nivel {lesson.level}</span>
           </div>
 
           <button

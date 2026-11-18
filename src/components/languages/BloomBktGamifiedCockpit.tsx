@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -47,6 +47,7 @@ import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePla
 import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester';
 import {
   playUniversalIskoolVoice,
+  prefetchUniversalIskoolVoice,
   stopAllIskoolAudio,
   MULTILINGUAL_HISTORICAL_FIGURES
 } from '@/lib/historicalVoiceEngine';
@@ -248,6 +249,26 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
                 'Quelle est la différence acoustique entre « tu » et « tout » ?',
               ],
             },
+            {
+              id: 'arthur',
+              name: 'Prof. Henri (Coach Phonétique & Sciences DELF)',
+              language: 'fr' as const,
+              gender: 'male' as const,
+              voiceId: 'fr-FR-HenriNeural',
+              speechRate: 0.95,
+              speechPitch: 0.98,
+              era: 'Laboratoire Acoustique & Débat DELF/DALF',
+              country: 'France',
+              avatarEmoji: '🎙️',
+              avatarImage: '/images/languages/3d/mentor_male_3d_v2.webp',
+              canonicalIntro:
+                "Bonjour ! Je suis le professeur Henri. Ensemble, nous allons calibrer votre articulation phonétique et structurer vos arguments en français.",
+              pdaRelevance: 'Articulación uvular /ʁ/, vocales redondeadas /y/ y debate estructurado.',
+              sampleQuestions: [
+                'Comment articuler clairement le son /y/ en français ?',
+                'Comment structurer un essai argumentatif au niveau B2 ?',
+              ],
+            },
           ]
         : [
             {
@@ -300,6 +321,21 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
       allMentorsForLang[0]
     );
   }, [allMentorsForLang, selectedMentorId]);
+
+  useEffect(() => {
+    if (!activeMentor?.canonicalIntro) return;
+    const t = setTimeout(() => {
+      void prefetchUniversalIskoolVoice({
+        text: activeMentor.canonicalIntro,
+        characterName: activeMentor.name,
+        voiceId: activeMentor.voiceId,
+        language: activeMentor.language,
+        gender: activeMentor.gender,
+        rate: activeMentor.speechRate || 0.96,
+      });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [activeMentor]);
 
   // Reproducción de voz real en 1ª persona con lip-sync a 60 FPS
   const handleSpeakText = async (textToSpeak: string, customSpeaker?: typeof activeMentor) => {

@@ -145,6 +145,24 @@ interface ChatMessage {
 
 type IdleGesture = 'look_left' | 'look_right' | 'subtle_nod' | 'deep_breath' | 'brow_focus';
 
+const historicalAvatarAudioBlobCache = new Map<string, string>();
+const inFlightHistoricalTts = new Map<string, Promise<string>>();
+
+function storeHistoricalAudioBlob(key: string, url: string): void {
+  if (historicalAvatarAudioBlobCache.has(key)) return;
+  if (historicalAvatarAudioBlobCache.size >= 120) {
+    const oldest = historicalAvatarAudioBlobCache.keys().next().value;
+    if (oldest) {
+      const oldUrl = historicalAvatarAudioBlobCache.get(oldest);
+      historicalAvatarAudioBlobCache.delete(oldest);
+      if (oldUrl) {
+        try { URL.revokeObjectURL(oldUrl); } catch {}
+      }
+    }
+  }
+  historicalAvatarAudioBlobCache.set(key, url);
+}
+
 export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   characterName,
   slug,
@@ -286,20 +304,66 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     ];
   }, [characterName, slug]);
 
-  // Sincronizar mensaje inicial y reiniciar hilo cuando cambia el personaje seleccionado
+  // Sincronizar mensaje inicial, reiniciar hilo y pre-calentar saludo neuronal cuando cambia el personaje seleccionado
   useEffect(() => {
+    const greetingText = initialGreeting || (isGeographicSite 
+      ? `Bienvenido a ${characterName}. Soy la memoria viva de este enclave histórico. Pregúntame sobre los acontecimientos, héroes y batallas que aquí tuvieron lugar.`
+      : `Soy ${characterName}. Con el honor y el deber republicano que rigieron mi vida, estoy aquí para responder a tus inquietudes históricas. ¿Qué deseas saber sobre nuestro tiempo?`);
+
     setMessages([
       {
         id: `init-${characterName}-${Date.now()}`,
         sender: 'character',
-        text: initialGreeting || (isGeographicSite 
-          ? `Bienvenido a ${characterName}. Soy la memoria viva de este enclave histórico. Pregúntame sobre los acontecimientos, héroes y batallas que aquí tuvieron lugar.`
-          : `Soy ${characterName}. Con el honor y el deber republicano que rigieron mi vida, estoy aquí para responder a tus inquietudes históricas. ¿Qué deseas saber sobre nuestro tiempo?`),
+        text: greetingText,
         isCached: true,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ]);
-  }, [characterName, isGeographicSite, initialGreeting]);
+
+    if (typeof window !== 'undefined') {
+      const cleanGreeting = greetingText.replace(/[*#_`~>]/g, '').replace(/\s+/g, ' ').trim();
+      const profile = getPersonaProfile(characterName, effectiveAge, variantIndex, birthDeathDates);
+      const resolvedVoiceId = voiceId || profile.voiceId;
+      const histCacheKey = `hist_v1::${resolvedVoiceId}::${characterName}::${effectiveAge ?? ''}::${variantIndex}::${cleanGreeting}`;
+      if (!historicalAvatarAudioBlobCache.has(histCacheKey) && !inFlightHistoricalTts.has(histCacheKey)) {
+        const timer = setTimeout(() => {
+          const ssmlPayload = generateHistoricalSSML(cleanGreeting, characterName, effectiveAge, variantIndex, {
+            voiceId: resolvedVoiceId,
+            voiceRate: voiceRate || profile.prosodyRate,
+            voicePitch: voicePitch || profile.prosodyPitch,
+            birthOrDeathDates: birthDeathDates
+          });
+          const p = fetch('/api/ai/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              ssml: ssmlPayload,
+              characterName,
+              historicalAge: effectiveAge,
+              birthDeathDates,
+              variantIndex,
+              text: cleanGreeting,
+              voice: resolvedVoiceId
+            })
+          })
+            .then(async (r) => {
+              if (!r.ok) throw new Error('prefetch failed');
+              const b = await r.blob();
+              const u = URL.createObjectURL(b);
+              storeHistoricalAudioBlob(histCacheKey, u);
+              return u;
+            })
+            .finally(() => {
+              inFlightHistoricalTts.delete(histCacheKey);
+            });
+          inFlightHistoricalTts.set(histCacheKey, p);
+          void p.catch(() => {});
+        }, 55);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [characterName, isGeographicSite, initialGreeting, effectiveAge, variantIndex, birthDeathDates, voiceId, voiceRate, voicePitch]);
 
   const handleSaveApiKey = (key: string) => {
     if (typeof window !== 'undefined') {
@@ -540,32 +604,52 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       birthOrDeathDates: birthDeathDates
     });
 
+    const histCacheKey = `hist_v1::${resolvedVoiceId}::${characterName}::${effectiveAge ?? ''}::${variantIndex}::${cleanText}`;
+
     const abortController = new AbortController();
     ttsAbortRef.current = abortController;
 
     setCurrentSpokenText(cleanText);
     try {
-      const ttsRes = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: abortController.signal,
-        body: JSON.stringify({
-          ssml: ssmlPayload,
-          characterName,
-          historicalAge: effectiveAge,
-          birthDeathDates,
-          variantIndex,
-          text: cleanText,
-          voice: resolvedVoiceId
-        })
-      });
+      let audioUrl = historicalAvatarAudioBlobCache.get(histCacheKey);
+      if (!audioUrl) {
+        const pending = inFlightHistoricalTts.get(histCacheKey);
+        if (pending) {
+          audioUrl = await pending;
+        } else {
+          const reqPromise = fetch('/api/ai/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            signal: abortController.signal,
+            body: JSON.stringify({
+              ssml: ssmlPayload,
+              characterName,
+              historicalAge: effectiveAge,
+              birthDeathDates,
+              variantIndex,
+              text: cleanText,
+              voice: resolvedVoiceId
+            })
+          }).then(async (ttsRes) => {
+            if (!ttsRes.ok) throw new Error(`Historical TTS HTTP ${ttsRes.status}`);
+            const audioBlob = await ttsRes.blob();
+            const created = URL.createObjectURL(audioBlob);
+            storeHistoricalAudioBlob(histCacheKey, created);
+            return created;
+          });
+          inFlightHistoricalTts.set(histCacheKey, reqPromise);
+          try {
+            audioUrl = await reqPromise;
+          } finally {
+            inFlightHistoricalTts.delete(histCacheKey);
+          }
+        }
+      }
 
       if (mySeq !== ttsSeqRef.current) return;
 
-      if (ttsRes.ok) {
-        const audioBlob = await ttsRes.blob();
-        if (mySeq !== ttsSeqRef.current) return;
-        const audioUrl = URL.createObjectURL(audioBlob);
+      if (audioUrl) {
         const audio = new Audio(audioUrl);
         currentAudioRef.current = audio;
 
@@ -716,7 +800,6 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           }
           audioContextRef.current = null;
           stopLipSyncAnimation();
-          URL.revokeObjectURL(audioUrl);
           currentAudioRef.current = null;
         };
 
@@ -731,7 +814,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           }
           audioContextRef.current = null;
           stopLipSyncAnimation();
-          URL.revokeObjectURL(audioUrl);
+          historicalAvatarAudioBlobCache.delete(histCacheKey);
           currentAudioRef.current = null;
           fallbackSpeechSynthesis(cleanText, onPlaybackStart);
         };

@@ -777,7 +777,14 @@ export function sanitizeAndEnsureCompleteCatalog(rawLessons: LanguageLesson[]): 
     let fixedAvatarVoice = item.avatarVoice;
     let fixedGender = item.avatarGender;
 
-    if (wasMutated && !item.historicalFigureId) {
+    if (item.historicalFigureId) {
+      const figId = item.historicalFigureId.toLowerCase();
+      if (figId === 'shakespeare') fixedAvatarVoice = 'en-GB-RyanNeural';
+      else if (figId === 'ada_lovelace') fixedAvatarVoice = 'en-GB-SoniaNeural';
+      else if (figId === 'abraham_lincoln') fixedAvatarVoice = 'en-US-GuyNeural';
+      else if (figId === 'napoleon' || figId === 'victor_hugo') fixedAvatarVoice = 'fr-FR-HenriNeural';
+      else if (figId === 'marie_curie' || figId === 'jeanne_darc') fixedAvatarVoice = 'fr-FR-DeniseNeural';
+    } else if (wasMutated || !fixedAvatarVoice || (trueLang === 'en' && !fixedAvatarVoice.startsWith('en-')) || (trueLang === 'fr' && !fixedAvatarVoice.startsWith('fr-'))) {
       if (trueLang === 'en') {
         fixedAvatarName = fixedGender === 'male' ? 'Arthur' : 'Claire';
         fixedAvatarVoice = fixedGender === 'male' ? 'en-US-GuyNeural' : 'en-US-JennyNeural';
@@ -824,12 +831,16 @@ export function sanitizeAndEnsureCompleteCatalog(rawLessons: LanguageLesson[]): 
       seenKeys.add(key);
       repaired.push(master);
     } else {
-      // Si es una de las lecciones oficiales base, garantizar que tenga su idioma, nivel y avatar 3D canónicos
+      // Si es una de las lecciones oficiales base, blindar voz neural canónica, idioma, nivel y avatar 3D inmutables
       repaired[existingIdx] = {
         ...repaired[existingIdx],
         language: master.language,
         level: master.level,
+        avatarGender: master.avatarGender,
+        avatarName: master.avatarName,
+        avatarVoice: master.avatarVoice,
         avatarImage: master.avatarImage,
+        historicalFigureId: master.historicalFigureId,
       };
     }
   }

@@ -17,6 +17,7 @@ import {
   MULTILINGUAL_HISTORICAL_FIGURES,
   MultilingualHistoricalFigure,
   playUniversalIskoolVoice,
+  prefetchUniversalIskoolVoice,
   stopAllIskoolAudio,
 } from '@/lib/historicalVoiceEngine';
 import {
@@ -262,7 +263,9 @@ export default function TeacherIdiomasPage() {
   // Estado de reproducción y prueba auditiva de la voz
   const [isPlayingPreview, setIsPlayingPreview] = useState<boolean>(false);
   const [activePlayingLineId, setActivePlayingLineId] = useState<string | null>(null);
+  const [playingGalleryCardId, setPlayingGalleryCardId] = useState<string | null>(null);
   const audioControllerRef = useRef<any>(null);
+  const lastPocketSyncKeyRef = useRef<string>('');
 
   const [curriculumSearch, setCurriculumSearch] = useState<string>('');
   const [expandedWeekNumber, setExpandedWeekNumber] = useState<number | null>(null);
@@ -277,12 +280,10 @@ export default function TeacherIdiomasPage() {
     return byLang.length > 0 ? byLang : cleanLessons;
   }, [cleanLessons, activeLesson.language]);
 
-  // Reiniciar índice de frase de karaoke y sincronizar rig histórico cuando cambia la lección activa
+  // Reiniciar índice de frase de karaoke cuando cambia la lección activa
   useEffect(() => {
     setSelectedKaraokeIndex(0);
-    setUseHistoricalFigure(Boolean(activeLesson.historicalFigureId));
-    setSelectedHistoricalId(activeLesson.historicalFigureId || '');
-  }, [activeLesson.id, activeLesson.historicalFigureId]);
+  }, [activeLesson.id]);
 
   // Cambiar de Nivel CEFR (A1, A2, B1, B2) dentro del idioma activo en 1 clic
   const handleSelectCefrLevel = (targetLevel: 'A1' | 'A2' | 'B1' | 'B2') => {
@@ -721,15 +722,58 @@ export default function TeacherIdiomasPage() {
       const fig = MULTILINGUAL_HISTORICAL_FIGURES.find(
         (f) => f.name === activeLesson.avatarName || f.id === activeLesson.historicalFigureId
       );
-      if (fig) {
-        setSelectedHistoricalId(fig.id);
-      }
+      setSelectedHistoricalId(fig?.id || activeLesson.historicalFigureId || '');
+    } else {
+      setSelectedHistoricalId('');
     }
   }, [
     activeLesson.id,
     activeLesson.avatarName,
     activeLesson.historicalFigureId,
     activeLesson.avatarImage,
+  ]);
+
+  // Pre-calentamiento acústico proactivo de las frases visibles de la lección activa (<15ms al pulsar "Escuchar Diálogo")
+  useEffect(() => {
+    const effectiveRate = activeLesson.defaultSpeed || 0.88;
+    const line0 =
+      activeLesson.dialogue[0]?.text ||
+      (activeLesson.language === 'fr'
+        ? `Bonjour! Je suis ${activeLesson.avatarName}. Bienvenue dans notre atelier de français.`
+        : `Good morning! Welcome to our class. What would you like today?`);
+    const line1 = activeLesson.dialogue[1]?.text;
+
+    const timer = setTimeout(() => {
+      void prefetchUniversalIskoolVoice({
+        text: line0,
+        characterName: activeLesson.avatarName,
+        voiceId: activeLesson.avatarVoice,
+        language: activeLesson.language,
+        gender: activeLesson.avatarGender,
+        rate: effectiveRate,
+      }).then(() => {
+        if (line1) {
+          void prefetchUniversalIskoolVoice({
+            text: line1,
+            characterName: activeLesson.avatarName,
+            voiceId: activeLesson.avatarVoice,
+            language: activeLesson.language,
+            gender: activeLesson.avatarGender,
+            rate: effectiveRate,
+          });
+        }
+      });
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [
+    activeLesson.id,
+    activeLesson.avatarName,
+    activeLesson.avatarVoice,
+    activeLesson.language,
+    activeLesson.avatarGender,
+    activeLesson.defaultSpeed,
+    activeLesson.dialogue,
   ]);
 
   const handleCreateNewLesson = () => {
@@ -943,44 +987,61 @@ export default function TeacherIdiomasPage() {
     }
   };
 
-  // Sincronización global continua del Control Remoto QR del Profesor (incluso con el modal cerrado)
+  // Sincronización global desacoplada y con debounce del Control Remoto QR (cero colisión HTTP con /api/ai/tts)
   useEffect(() => {
-    const cleanId = activeTeacherQrAccount.id.trim().toLowerCase();
-    const { pin } = deriveTeacherRemoteCredentials(
-      activeTeacherQrAccount.id,
-      activeTeacherQrAccount.email,
-      activeTeacherQrAccount.campusName
-    );
+    const syncKey = `${activeTeacherQrAccount.id}|${activeTeacherQrAccount.campusName}|${activeLesson.id}|${activeLesson.title}|${activeLesson.defaultSpeed}|${resolvedAvatar3dSrc}|${activeLesson.dialogue.map((d) => d.text).join('§')}`;
+    if (lastPocketSyncKeyRef.current === syncKey) return;
 
-    syncActiveLessonToPocketServer({
-      teacherId: activeTeacherQrAccount.id,
-      teacherEmail: activeTeacherQrAccount.email,
-      teacherName: activeTeacherQrAccount.name,
-      campusName: activeTeacherQrAccount.campusName,
-      pin,
-      lessonSnapshot: {
-        lessonId: activeLesson.id,
-        lessonTitle: activeLesson.title,
-        avatarName: activeLesson.avatarName,
-        avatarSrc: resolvedAvatar3dSrc,
-        language: activeLesson.language,
-        level: activeLesson.level,
-        defaultSpeed: activeLesson.defaultSpeed,
-        selectedLineIdx: 0,
-        isPlayingAudio: isPlayingPreview || Boolean(activePlayingLineId),
-        choralStatus: 'idle',
-        dialogue: activeLesson.dialogue.map((d) => ({
-          id: d.id,
-          speaker: d.speaker,
-          text: d.text,
-          translationEs: d.translationEs,
-        })),
-        ccqQuestions: activeCeltaGuide.ccqQuestions,
-        spanishInterference: activeCeltaGuide.spanishInterference,
-      },
-    });
+    const timer = setTimeout(() => {
+      lastPocketSyncKeyRef.current = syncKey;
+      const { pin } = deriveTeacherRemoteCredentials(
+        activeTeacherQrAccount.id,
+        activeTeacherQrAccount.email,
+        activeTeacherQrAccount.campusName
+      );
+      void syncActiveLessonToPocketServer({
+        teacherId: activeTeacherQrAccount.id,
+        teacherEmail: activeTeacherQrAccount.email,
+        teacherName: activeTeacherQrAccount.name,
+        campusName: activeTeacherQrAccount.campusName,
+        pin,
+        lessonSnapshot: {
+          lessonId: activeLesson.id,
+          lessonTitle: activeLesson.title,
+          avatarName: activeLesson.avatarName,
+          avatarSrc: resolvedAvatar3dSrc,
+          language: activeLesson.language,
+          level: activeLesson.level,
+          defaultSpeed: activeLesson.defaultSpeed,
+          selectedLineIdx: 0,
+          isPlayingAudio: false,
+          choralStatus: 'idle',
+          dialogue: activeLesson.dialogue.map((d) => ({
+            id: d.id,
+            speaker: d.speaker,
+            text: d.text,
+            translationEs: d.translationEs,
+          })),
+          ccqQuestions: activeCeltaGuide.ccqQuestions,
+          spanishInterference: activeCeltaGuide.spanishInterference,
+        },
+      });
+    }, 350);
 
+    return () => clearTimeout(timer);
+  }, [
+    activeTeacherQrAccount.id,
+    activeTeacherQrAccount.email,
+    activeTeacherQrAccount.name,
+    activeTeacherQrAccount.campusName,
+    activeLesson,
+    resolvedAvatar3dSrc,
+    activeCeltaGuide,
+  ]);
+
+  useEffect(() => {
     if (isPocketRemoteOpen) return;
+    const cleanId = activeTeacherQrAccount.id.trim().toLowerCase();
 
     const handleGlobalRemoteCmd = (cmd: any) => {
       if (!cmd || !cmd.type) return;
@@ -1027,15 +1088,7 @@ export default function TeacherIdiomasPage() {
     return () => {
       if (bc) bc.close();
     };
-  }, [
-    activeTeacherQrAccount,
-    activeLesson,
-    resolvedAvatar3dSrc,
-    activeCeltaGuide,
-    isPlayingPreview,
-    activePlayingLineId,
-    isPocketRemoteOpen,
-  ]);
+  }, [activeTeacherQrAccount.id, activeTeacherQrAccount.name, activeLesson, isPocketRemoteOpen]);
 
   const handleAddDialogueLine = () => {
     const newLine: DialogueLine = {
@@ -2405,15 +2458,42 @@ export default function TeacherIdiomasPage() {
                 {galleryMentors3D.map((card) => (
                   <div
                     key={card.id}
+                    onMouseEnter={() => {
+                      void prefetchUniversalIskoolVoice({
+                        text: card.sampleText,
+                        characterName: card.name,
+                        voiceId: card.voiceId,
+                        language: card.language,
+                        gender: card.gender,
+                        rate: 0.88,
+                      });
+                    }}
                     className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 text-center"
                   >
                     <div className="space-y-2.5">
-                      <div className="w-full h-44 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-                        <img
-                          src={card.image}
-                          alt={card.name}
-                          className="w-full h-full object-cover object-top"
-                        />
+                      <div className="w-full h-44 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex items-end justify-center">
+                        {playingGalleryCardId === card.id ? (
+                          <HumanGesticulatingAvatar
+                            variant="stage"
+                            gender={card.gender}
+                            name={card.name}
+                            language={card.language}
+                            voiceId={card.voiceId}
+                            avatarImage={card.image}
+                            historicalFigureId={card.isHistorical ? card.id : undefined}
+                            isPlaying={true}
+                            currentText={card.sampleText}
+                            speechRate={0.88}
+                            isLightMode={true}
+                            className="w-full h-full"
+                          />
+                        ) : (
+                          <img
+                            src={card.image}
+                            alt={card.name}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        )}
                       </div>
 
                       <div>
@@ -2427,20 +2507,30 @@ export default function TeacherIdiomasPage() {
                     <div className="grid grid-cols-2 gap-1.5 pt-1">
                       <button
                         type="button"
-                        onClick={() =>
-                          playUniversalIskoolVoice({
+                        onClick={() => {
+                          if (playingGalleryCardId === card.id) {
+                            stopAllIskoolAudio();
+                            setPlayingGalleryCardId(null);
+                            return;
+                          }
+                          setPlayingGalleryCardId(card.id);
+                          void playUniversalIskoolVoice({
                             text: card.sampleText,
                             characterName: card.name,
                             voiceId: card.voiceId,
                             language: card.language,
                             gender: card.gender,
                             rate: 0.88,
-                          })
-                        }
+                            onEnd: () =>
+                              setPlayingGalleryCardId((prev) => (prev === card.id ? null : prev)),
+                            onError: () =>
+                              setPlayingGalleryCardId((prev) => (prev === card.id ? null : prev)),
+                          });
+                        }}
                         className="py-2 px-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-extrabold flex items-center justify-center gap-1 cursor-pointer"
                       >
                         <Volume2 className="w-3.5 h-3.5 text-slate-700 shrink-0" />
-                        <span>Escuchar Voz</span>
+                        <span>{playingGalleryCardId === card.id ? 'Detener' : 'Escuchar Voz'}</span>
                       </button>
 
                       <button
@@ -2527,6 +2617,8 @@ export default function TeacherIdiomasPage() {
           isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
           onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
           initialPairTimerRunning={boardStartTimer}
+          schoolName={activeIdiomasSchoolName}
+          groupLabel={effectiveIdiomasSchoolId === 'sch-demo-0001' ? '5º A' : '2º A'}
         />
 
         <PocketRemoteQrModal

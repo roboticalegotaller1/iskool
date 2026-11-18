@@ -696,6 +696,25 @@ export const useCrmStore = create<CrmStoreState>()(
         eventAttendees: state.eventAttendees,
         activePipeline: state.activePipeline,
       }),
+      merge: (persistedState: any, currentState) => {
+        const persisted = persistedState || {};
+        const mergeById = <T extends { id: string }>(seed: T[], saved?: T[]): T[] => {
+          if (!Array.isArray(saved) || saved.length === 0) return seed;
+          const savedIds = new Set(saved.map((item) => item.id));
+          const missing = seed.filter((item) => !savedIds.has(item.id));
+          return [...saved, ...missing];
+        };
+        return {
+          ...currentState,
+          ...persisted,
+          leads: mergeById(CRM_LEADS_SEED, persisted.leads),
+          candidates: mergeById(CRM_CANDIDATES_SEED, persisted.candidates),
+          activities: mergeById(CRM_ACTIVITIES_SEED, persisted.activities),
+          documents: mergeById(CRM_DOCUMENTS_SEED, persisted.documents),
+          events: mergeById(CRM_EVENTS_SEED, persisted.events),
+          eventAttendees: mergeById(CRM_EVENT_ATTENDEES_SEED, persisted.eventAttendees),
+        };
+      },
     }
   )
 );

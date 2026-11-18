@@ -769,6 +769,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => {
+              setCurrentNodeId(initialNodeId);
               setCurrentStepIndex(0);
               setAccumulatedXp(0);
               setCoins(0);

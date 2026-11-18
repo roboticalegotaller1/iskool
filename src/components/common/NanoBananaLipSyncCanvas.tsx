@@ -6,11 +6,26 @@ import {
   getHistoricalMouthConfig,
 } from '@/lib/historicalVoiceEngine';
 
-function getVoiceFormantLevels() {
+function getVoiceFormantLevels(): {
+  rms: number;
+  open: number;
+  spread: number;
+  rounded: number;
+  alveolar: boolean;
+  bilabial: boolean;
+  audioGraphActive?: boolean;
+} {
   if (typeof window !== 'undefined' && (window as any).__iskoolActiveFormantLevels) {
     return (window as any).__iskoolActiveFormantLevels;
   }
-  return { rms: 0, open: 0, spread: 0, rounded: 0, alveolar: false, bilabial: false };
+  return { rms: 0, open: 0, spread: 0, rounded: 0, alveolar: false, bilabial: false, audioGraphActive: false };
+}
+
+function isVoiceAudiblySpeaking(): boolean {
+  if (typeof window !== 'undefined' && typeof (window as any).__iskoolVoiceAudiblySpeaking === 'boolean') {
+    return Boolean((window as any).__iskoolVoiceAudiblySpeaking);
+  }
+  return true;
 }
 
 export type AvatarGestureMode =
@@ -342,6 +357,402 @@ function sampleEyelidSkinPalette(
   }
 }
 
+interface PoseMouthAnatomy {
+  numCols: number;
+  patchHalfW: number;
+  hasTeeth: boolean;
+  poseBaseOpen: number;
+  srcUpperLipBotY: Float32Array;
+  srcTeethBotY: Float32Array;
+  srcLowerLipY: Float32Array;
+}
+
+function computeUpperFaceBridgeShift(
+  refCanvas: HTMLCanvasElement,
+  targetCanvas: HTMLCanvasElement,
+  lx: number,
+  ly: number,
+  rx: number,
+  ry: number,
+  mouthCy: number
+): { dx: number; dy: number } | null {
+  try {
+    const rCtx = refCanvas.getContext('2d', { willReadFrequently: true }) || refCanvas.getContext('2d');
+    const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true }) || targetCanvas.getContext('2d');
+    if (!rCtx || !tCtx) return null;
+
+    const centerX = (lx + rx) * 0.5;
+    const topY = Math.max(0, Math.round(Math.min(ly, ry) - 24));
+    const botY = Math.min(1020, Math.max(topY + 36, Math.round(mouthCy - 18)));
+    const patchW = Math.min(240, Math.max(72, Math.round(Math.abs(rx - lx) * 1.62)));
+    const patchH = Math.min(180, Math.max(36, botY - topY));
+    const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
+    const ry0 = topY;
+
+    const maxShiftX = 80;
+    const maxShiftY = 34;
+    const searchX0 = Math.max(0, rx0 - maxShiftX);
+    const searchY0 = Math.max(0, ry0 - maxShiftY);
+    const searchW = Math.min(1024 - searchX0, patchW + maxShiftX * 2);
+    const searchH = Math.min(1024 - searchY0, patchH + maxShiftY * 2);
+
+    const refData = rCtx.getImageData(rx0, ry0, patchW, patchH).data;
+    const tgtData = tCtx.getImageData(searchX0, searchY0, searchW, searchH).data;
+
+    // Stage 1: Coarse Pyramid Search (4px grid, 6px patch stride -> <1.2ms on main thread)
+    const coarseShiftStep = 4;
+    const coarsePatchStep = 6;
+    let coarseBest1Score = Infinity;
+    let coarseBest1Dx = 0;
+    let coarseBest1Dy = 0;
+    let coarseBest2Score = Infinity;
+    let coarseBest2Dx = 0;
+    let coarseBest2Dy = 0;
+
+    for (let dy = -maxShiftY; dy <= maxShiftY; dy += coarseShiftStep) {
+      const tyBase = ry0 + dy - searchY0;
+      if (tyBase < 0 || tyBase + patchH >= searchH) continue;
+      for (let dx = -maxShiftX; dx <= maxShiftX; dx += coarseShiftStep) {
+        const txBase = rx0 + dx - searchX0;
+        if (txBase < 0 || txBase + patchW >= searchW) continue;
+
+        let sad = 0;
+        for (let py = 0; py < patchH; py += coarsePatchStep) {
+          const rRow = py * patchW;
+          const tRow = (tyBase + py) * searchW + txBase;
+          for (let px = 0; px < patchW; px += coarsePatchStep) {
+            const ri = (rRow + px) * 4;
+            const ti = (tRow + px) * 4;
+            sad +=
+              Math.abs(refData[ri] - tgtData[ti]) +
+              Math.abs(refData[ri + 1] - tgtData[ti + 1]) +
+              Math.abs(refData[ri + 2] - tgtData[ti + 2]);
+          }
+        }
+        const score = sad + (Math.abs(dx) + Math.abs(dy)) * 0.5;
+        if (score < coarseBest1Score) {
+          coarseBest2Score = coarseBest1Score;
+          coarseBest2Dx = coarseBest1Dx;
+          coarseBest2Dy = coarseBest1Dy;
+          coarseBest1Score = score;
+          coarseBest1Dx = dx;
+          coarseBest1Dy = dy;
+        } else if (score < coarseBest2Score && (Math.abs(dx - coarseBest1Dx) > 6 || Math.abs(dy - coarseBest1Dy) > 6)) {
+          coarseBest2Score = score;
+          coarseBest2Dx = dx;
+          coarseBest2Dy = dy;
+        }
+      }
+    }
+
+    // Stage 2: Exact 1px Fine Refinement around top coarse candidate + origin (stride 5 -> <4ms, 0 LongTasks!)
+    let bestScore = Infinity;
+    let bestDx = coarseBest1Dx;
+    let bestDy = coarseBest1Dy;
+    const fineStep = 5;
+    const seeds: Array<[number, number]> =
+      Math.abs(coarseBest1Dx) > 4 || Math.abs(coarseBest1Dy) > 4
+        ? [
+            [coarseBest1Dx, coarseBest1Dy],
+            [0, 0],
+          ]
+        : [[coarseBest1Dx, coarseBest1Dy]];
+
+    for (let s = 0; s < seeds.length; s++) {
+      const [seedDx, seedDy] = seeds[s];
+      const minDy = Math.max(-maxShiftY, seedDy - 3);
+      const maxDy = Math.min(maxShiftY, seedDy + 3);
+      const minDx = Math.max(-maxShiftX, seedDx - 3);
+      const maxDx = Math.min(maxShiftX, seedDx + 3);
+
+      for (let dy = minDy; dy <= maxDy; dy += 1) {
+        const tyBase = ry0 + dy - searchY0;
+        if (tyBase < 0 || tyBase + patchH >= searchH) continue;
+        for (let dx = minDx; dx <= maxDx; dx += 1) {
+          const txBase = rx0 + dx - searchX0;
+          if (txBase < 0 || txBase + patchW >= searchW) continue;
+
+          let sad = 0;
+          for (let py = 0; py < patchH; py += fineStep) {
+            const rRow = py * patchW;
+            const tRow = (tyBase + py) * searchW + txBase;
+            for (let px = 0; px < patchW; px += fineStep) {
+              const ri = (rRow + px) * 4;
+              const ti = (tRow + px) * 4;
+              sad +=
+                Math.abs(refData[ri] - tgtData[ti]) +
+                Math.abs(refData[ri + 1] - tgtData[ti + 1]) +
+                Math.abs(refData[ri + 2] - tgtData[ti + 2]);
+            }
+          }
+          const penalty = (Math.abs(dx) + Math.abs(dy)) * 1.8;
+          const score = sad + penalty;
+          if (score < bestScore) {
+            bestScore = score;
+            bestDx = dx;
+            bestDy = dy;
+          }
+        }
+      }
+    }
+
+    return { dx: bestDx, dy: bestDy };
+  } catch {
+    return null;
+  }
+}
+
+function measurePoseMouthAnatomy(
+  poseCanvas: HTMLCanvasElement,
+  cfg: CharacterAnatomicalMouth,
+  dx: number,
+  dy: number,
+  isCanonical: boolean
+): PoseMouthAnatomy {
+  const numCols = 44;
+  const mouthW = Math.max(24, cfg.x2 - cfg.x1);
+  const halfW = mouthW * 0.5;
+  const patchHalfW = halfW * 1.36;
+  const cx = cfg.cx + dx;
+  const cy = cfg.cy + dy;
+  const y1 = cfg.y1 + dy;
+  const y2 = cfg.y2 + dy;
+  const cornerAvgY = (y1 + y2) * 0.5;
+
+  const srcUpperLipBotY = new Float32Array(numCols);
+  const srcTeethBotY = new Float32Array(numCols);
+  const srcLowerLipY = new Float32Array(numCols);
+
+  const buildFallbackClosed = (): PoseMouthAnatomy => {
+    for (let c = 0; c < numCols; c++) {
+      const u = ((c + 0.5) / numCols) * 2 - 1;
+      const m = Math.max(-1, Math.min(1, u * 1.36));
+      const cornerSideY = m < 0 ? y1 : y2;
+      const curveY = cy + (cornerSideY - cy) * (m * m);
+      srcUpperLipBotY[c] = curveY;
+      srcTeethBotY[c] = curveY;
+      srcLowerLipY[c] = curveY + 1.0;
+    }
+    return { numCols, patchHalfW, hasTeeth: false, poseBaseOpen: 0, srcUpperLipBotY, srcTeethBotY, srcLowerLipY };
+  };
+
+  try {
+    const ctx = poseCanvas.getContext('2d');
+    if (!ctx) return buildFallbackClosed();
+
+    const scanTop = Math.max(0, Math.round(Math.min(y1, y2, cy) - 10));
+    const scanBot = Math.min(1023, Math.round(Math.max(y1, y2, cy) + 28));
+    const scanH = scanBot - scanTop + 1;
+    const scanLeft = Math.max(0, Math.round(cx - patchHalfW - 2));
+    const scanRight = Math.min(1023, Math.round(cx + patchHalfW + 2));
+    const scanW = scanRight - scanLeft + 1;
+    if (scanW <= 8 || scanH <= 8) return buildFallbackClosed();
+
+    const img = ctx.getImageData(scanLeft, scanTop, scanW, scanH).data;
+    const sampleLumaAndSat = (pxAbs: number, pyAbs: number): { luma: number; sat: number; r: number; g: number } => {
+      const lx = Math.max(0, Math.min(scanW - 1, Math.round(pxAbs) - scanLeft));
+      const ly = Math.max(0, Math.min(scanH - 1, Math.round(pyAbs) - scanTop));
+      const idx = (ly * scanW + lx) * 4;
+      const r = img[idx];
+      const g = img[idx + 1];
+      const b = img[idx + 2];
+      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+      const sat = Math.max(r, g, b) - Math.min(r, g, b);
+      return { luma, sat, r, g };
+    };
+
+    // 1. Inspect central columns around cx to classify whether THIS pose has visible teeth / open smile
+    let centerHasTeeth = false;
+    let centerMaxTeethY = -1;
+    let centerMinDarkY = 9999;
+    let centerMaxDarkY = -1;
+    let darkestY = cy;
+    let darkestLuma = 999;
+
+    for (let y = Math.round(cy - 6); y <= Math.round(cy + 20); y++) {
+      let lSum = 0;
+      let sSum = 0;
+      for (let ox = -4; ox <= 4; ox += 2) {
+        const s = sampleLumaAndSat(cx + ox, y);
+        lSum += s.luma;
+        sSum += s.sat;
+      }
+      const lAvg = lSum / 5;
+      const sAvg = sSum / 5;
+      if (lAvg < darkestLuma && y <= cy + 12) {
+        darkestLuma = lAvg;
+        darkestY = y;
+      }
+      if (lAvg > 154 && sAvg < 66 && y >= cy - 5 && y <= cy + 12) {
+        centerHasTeeth = true;
+        if (y > centerMaxTeethY) centerMaxTeethY = y;
+      }
+      if (lAvg < 76 && y >= cy - 2 && y <= cy + 20) {
+        if (y < centerMinDarkY) centerMinDarkY = y;
+        if (y > centerMaxDarkY) centerMaxDarkY = y;
+      }
+    }
+
+    const useCanonicalOpen =
+      isCanonical &&
+      (cfg.baseOpen ?? 0) > 0.08 &&
+      cfg.lowerLipTopY !== undefined;
+
+    const isOpenPose = useCanonicalOpen || centerHasTeeth || (centerMaxDarkY - centerMinDarkY >= 3 && !cfg.mustacheCover);
+
+    if (!isOpenPose) {
+      // Closed-mouth pose: lock strictly to the single darkest stomion line!
+      const centerStomionY = Math.max(cy - 5, Math.min(cy + 7, darkestY));
+      for (let c = 0; c < numCols; c++) {
+        const u = ((c + 0.5) / numCols) * 2 - 1;
+        const m = Math.max(-1, Math.min(1, u * 1.36));
+        const cornerSideY = m < 0 ? y1 : y2;
+        const curveY = centerStomionY + (cornerSideY - centerStomionY) * (m * m);
+        srcUpperLipBotY[c] = curveY;
+        srcTeethBotY[c] = curveY;
+        srcLowerLipY[c] = curveY + 1.0;
+      }
+      return { numCols, patchHalfW, hasTeeth: false, poseBaseOpen: 0, srcUpperLipBotY, srcTeethBotY, srcLowerLipY };
+    }
+
+    // Open-smile / Open-mouth pose: compute smooth parabolic guide + per-column dark-cavity guard!
+    const cUpperLipY = useCanonicalOpen && cfg.upperLipBottomY !== undefined
+      ? cfg.upperLipBottomY + dy
+      : cy;
+    const cTeethBotY = useCanonicalOpen && cfg.teethBottomY !== undefined
+      ? cfg.teethBottomY + dy
+      : centerHasTeeth
+        ? centerMaxTeethY + 0.5
+        : cUpperLipY + 1;
+    let cLowerLipY = useCanonicalOpen && cfg.lowerLipTopY !== undefined
+      ? cfg.lowerLipTopY + dy
+      : centerMaxDarkY > 0
+        ? centerMaxDarkY + 1.2
+        : cTeethBotY + 3.5;
+
+    // Guarantee cLowerLipY at center is strictly below any dark oral cavity pixels
+    for (let guard = 0; guard < 8; guard++) {
+      const s = sampleLumaAndSat(cx, cLowerLipY);
+      if (s.luma >= 84) break;
+      cLowerLipY += 1.0;
+    }
+
+    for (let c = 0; c < numCols; c++) {
+      const u = ((c + 0.5) / numCols) * 2 - 1;
+      const colX = cx + u * patchHalfW;
+      const m = u * 1.36;
+      if (Math.abs(m) >= 1) {
+        const sideY = m < 0 ? y1 : y2;
+        srcUpperLipBotY[c] = sideY;
+        srcTeethBotY[c] = sideY;
+        srcLowerLipY[c] = sideY + 0.5;
+        continue;
+      }
+
+      const cornerSideY = m < 0 ? y1 : y2;
+      const arch = 1 - m * m;
+      const baseCurveY = cornerSideY + (cUpperLipY - cornerSideY) * arch;
+      const teethCurveY = cornerSideY + (cTeethBotY - cornerSideY) * arch;
+      let lowerCurveY = cornerSideY + 0.6 + (cLowerLipY - cornerSideY - 0.6) * Math.pow(arch, 0.82);
+
+      // Sub-pixel per-column dark oral slit guard: step downward until strictly on lower lip vermilion!
+      if (Math.abs(m) < 0.86) {
+        for (let g = 0; g < 7; g++) {
+          const s = sampleLumaAndSat(colX, lowerCurveY);
+          if (s.luma >= 82) break;
+          lowerCurveY += 0.9;
+        }
+      }
+
+      srcUpperLipBotY[c] = baseCurveY;
+      srcTeethBotY[c] = Math.max(baseCurveY, teethCurveY);
+      srcLowerLipY[c] = Math.max(srcTeethBotY[c] + 0.8, lowerCurveY);
+    }
+
+    // 3-tap horizontal smoothing inside mouth interior so lip curve is 100% C1 silky smooth
+    const smoothedLower = new Float32Array(srcLowerLipY);
+    for (let c = 1; c < numCols - 1; c++) {
+      smoothedLower[c] = 0.25 * srcLowerLipY[c - 1] + 0.5 * srcLowerLipY[c] + 0.25 * srcLowerLipY[c + 1];
+    }
+    srcLowerLipY.set(smoothedLower);
+
+    const measuredGap = Math.max(1, cLowerLipY - cUpperLipY);
+    const poseBaseOpen = useCanonicalOpen
+      ? (cfg.baseOpen ?? 0.28)
+      : Math.min(0.46, Math.max(0.16, (measuredGap - Math.max(0, cornerAvgY - cy)) / 26));
+
+    return {
+      numCols,
+      patchHalfW,
+      hasTeeth: centerHasTeeth || useCanonicalOpen,
+      poseBaseOpen,
+      srcUpperLipBotY,
+      srcTeethBotY,
+      srcLowerLipY,
+    };
+  } catch {
+    return buildFallbackClosed();
+  }
+}
+
+interface LipSealPalette {
+  upperLip: string;
+  lowerLip: string;
+  stomionLine: string;
+}
+
+function sampleLipSealPalette(
+  canvas: HTMLCanvasElement,
+  cx: number,
+  cy: number,
+  chinY: number,
+  mustacheCover?: boolean
+): LipSealPalette {
+  const fallback: LipSealPalette = mustacheCover
+    ? {
+        upperLip: 'rgb(88, 52, 46)',
+        lowerLip: 'rgb(148, 78, 72)',
+        stomionLine: 'rgba(42, 16, 18, 0.88)',
+      }
+    : {
+        upperLip: 'rgb(192, 92, 98)',
+        lowerLip: 'rgb(206, 102, 108)',
+        stomionLine: 'rgba(78, 22, 30, 0.85)',
+      };
+  try {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return fallback;
+    const jawSpan = Math.max(28, chinY - cy);
+    // Sample lower lip vermilion slightly below stomion (avoiding white upper teeth!)
+    const sampleY = Math.max(0, Math.min(1018, Math.round(cy + Math.min(14, jawSpan * 0.24))));
+    const sampleX = Math.max(0, Math.min(1014, Math.round(cx - 5)));
+    const data = ctx.getImageData(sampleX, sampleY, 10, 5).data;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    let n = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 128) continue;
+      // Skip bright white tooth pixels if any
+      if (data[i] > 225 && data[i + 1] > 215 && data[i + 2] > 205) continue;
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      n++;
+    }
+    if (n === 0) return fallback;
+    r = Math.round(r / n);
+    g = Math.round(g / n);
+    b = Math.round(b / n);
+    return {
+      upperLip: `rgb(${Math.max(0, r - 12)}, ${Math.max(0, g - 10)}, ${Math.max(0, b - 8)})`,
+      lowerLip: `rgb(${Math.min(255, r + 8)}, ${Math.min(255, g + 4)}, ${Math.min(255, b + 4)})`,
+      stomionLine: `rgba(${Math.max(0, Math.round(r * 0.36))}, ${Math.max(0, Math.round(g * 0.24))}, ${Math.max(0, Math.round(b * 0.26))}, 0.86)`,
+    };
+  } catch {
+    return fallback;
+  }
+}
 interface SpringState {
   open: number;
   openVel: number;
@@ -356,6 +767,28 @@ interface SpringState {
   saccadeX: number;
   saccadeY: number;
   gestureImpulse: number;
+}
+
+interface CachedProcessedPoseEntry {
+  canvas: HTMLCanvasElement;
+  eyeOffset?: PoseEyeOffset;
+  mouthAnatomy?: PoseMouthAnatomy;
+  refPupils?: { lx: number; ly: number; rx: number; ry: number } | null;
+  eyelidSkin?: EyelidSkinPalette;
+  lipSealPalette?: LipSealPalette;
+}
+
+const GLOBAL_PROCESSED_POSE_CACHE = new Map<string, CachedProcessedPoseEntry>();
+const MAX_GLOBAL_PROCESSED_POSES = 180;
+
+function putGlobalProcessedPose(key: string, entry: CachedProcessedPoseEntry): void {
+  if (GLOBAL_PROCESSED_POSE_CACHE.has(key)) {
+    GLOBAL_PROCESSED_POSE_CACHE.delete(key);
+  } else if (GLOBAL_PROCESSED_POSE_CACHE.size >= MAX_GLOBAL_PROCESSED_POSES) {
+    const oldest = GLOBAL_PROCESSED_POSE_CACHE.keys().next().value;
+    if (oldest) GLOBAL_PROCESSED_POSE_CACHE.delete(oldest);
+  }
+  GLOBAL_PROCESSED_POSE_CACHE.set(key, entry);
 }
 
 /**
@@ -389,8 +822,16 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const videoFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const poseCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const poseEyeOffsetRef = useRef<Map<HTMLCanvasElement, PoseEyeOffset>>(new Map());
+  const poseMouthAnatomyRef = useRef<Map<HTMLCanvasElement, PoseMouthAnatomy>>(new Map());
   const pendingVideoEyeSeedRef = useRef<PoseEyeOffset | null>(null);
   const refPupilsRef = useRef<{ lx: number; ly: number; rx: number; ry: number } | null>(null);
+  const canonicalPoseCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const speechStartMsRef = useRef<number>(0);
+  const lipSealPaletteRef = useRef<LipSealPalette>({
+    upperLip: 'rgb(192, 92, 98)',
+    lowerLip: 'rgb(206, 102, 108)',
+    stomionLine: 'rgba(78, 22, 30, 0.85)',
+  });
   const eyelidSkinRef = useRef<EyelidSkinPalette>({
     base: 'rgb(226, 178, 156)',
     highlight: 'rgb(240, 196, 176)',
@@ -423,6 +864,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const forceBlinkRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (isSpeaking && !isSpeakingRef.current) {
+      speechStartMsRef.current = performance.now();
+    }
     isSpeakingRef.current = isSpeaking;
     if (videoElementRef.current) {
       videoElementRef.current.playbackRate = isSpeaking ? 1.12 : 0.86;
@@ -443,6 +887,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   useEffect(() => {
     spokenTextRef.current = spokenText;
     visemeTokensRef.current = buildPhonemeVisemeSequence(spokenText);
+    speechStartMsRef.current = performance.now();
   }, [spokenText]);
 
   useEffect(() => {
@@ -493,9 +938,17 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     (poseCanvas: HTMLCanvasElement, isCanonical: boolean, isBlinkSprite: boolean) => {
       if (isBlinkSprite) return;
       const cfg = resolvedConfig;
-      if (!cfg.leftEyeX || !cfg.rightEyeX || !(cfg.leftEyeY || cfg.eyeY)) return;
       const ctx = poseCanvas.getContext('2d');
       if (!ctx) return;
+
+      if (!cfg.leftEyeX || !cfg.rightEyeX || !(cfg.leftEyeY || cfg.eyeY)) {
+        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        poseMouthAnatomyRef.current.set(
+          poseCanvas,
+          measurePoseMouthAnatomy(poseCanvas, cfg, 0, 0, isCanonical)
+        );
+        return;
+      }
 
       const lx = cfg.leftEyeX;
       const ly = cfg.leftEyeY ?? cfg.eyeY ?? 260;
@@ -504,29 +957,83 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const eRx = cfg.eyeRx ?? cfg.eyeRadius ?? 30;
       const eRy = cfg.eyeRy ?? cfg.eyeRadius ?? 28;
 
+      if (isCanonical || !canonicalPoseCanvasRef.current) {
+        canonicalPoseCanvasRef.current = poseCanvas;
+        const pL = measureDarkPupilCenter(ctx, lx, ly, eRx, eRy);
+        const pR = measureDarkPupilCenter(ctx, rx, ry, eRx, eRy);
+        if (pL && pR) {
+          refPupilsRef.current = { lx: pL.x, ly: pL.y, rx: pR.x, ry: pR.y };
+        }
+        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        poseMouthAnatomyRef.current.set(
+          poseCanvas,
+          measurePoseMouthAnatomy(poseCanvas, cfg, 0, 0, true)
+        );
+        eyelidSkinRef.current = sampleEyelidSkinPalette(poseCanvas, lx, ly, eRy);
+        lipSealPaletteRef.current = sampleLipSealPalette(
+          poseCanvas,
+          cfg.cx,
+          cfg.cy,
+          cfg.chinY ?? cfg.cy + 56,
+          cfg.mustacheCover
+        );
+        return;
+      }
+
+      // Upper-Face Bridge 2D SAD Alignment (strictly above mouth so open/closed pose smiles never bias shift!)
+      const bridgeShift = computeUpperFaceBridgeShift(
+        canonicalPoseCanvasRef.current,
+        poseCanvas,
+        lx,
+        ly,
+        rx,
+        ry,
+        cfg.cy
+      );
+
+      if (bridgeShift) {
+        poseEyeOffsetRef.current.set(poseCanvas, {
+          dxL: bridgeShift.dx,
+          dyL: bridgeShift.dy,
+          dxR: bridgeShift.dx,
+          dyR: bridgeShift.dy,
+        });
+        poseMouthAnatomyRef.current.set(
+          poseCanvas,
+          measurePoseMouthAnatomy(poseCanvas, cfg, bridgeShift.dx, bridgeShift.dy, false)
+        );
+        return;
+      }
+
       const pL = measureDarkPupilCenter(ctx, lx, ly, eRx, eRy);
       const pR = measureDarkPupilCenter(ctx, rx, ry, eRx, eRy);
-      if (!pL || !pR) return;
-
-      if (isCanonical || !refPupilsRef.current) {
-        refPupilsRef.current = { lx: pL.x, ly: pL.y, rx: pR.x, ry: pR.y };
-        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
-        eyelidSkinRef.current = sampleEyelidSkinPalette(poseCanvas, lx, ly, eRy);
-      } else {
+      let dx = 0;
+      let dy = 0;
+      if (pL && pR && refPupilsRef.current) {
         const ref = refPupilsRef.current;
         const clampShift = (v: number) => Math.max(-26, Math.min(26, v));
-        poseEyeOffsetRef.current.set(poseCanvas, {
-          dxL: clampShift(pL.x - ref.lx),
-          dyL: clampShift(pL.y - ref.ly),
-          dxR: clampShift(pR.x - ref.rx),
-          dyR: clampShift(pR.y - ref.ry),
-        });
+        const dxL = clampShift(pL.x - ref.lx);
+        const dyL = clampShift(pL.y - ref.ly);
+        const dxR = clampShift(pR.x - ref.rx);
+        const dyR = clampShift(pR.y - ref.ry);
+        dx = (dxL + dxR) * 0.5;
+        dy = (dyL + dyR) * 0.5;
+        poseEyeOffsetRef.current.set(poseCanvas, { dxL, dyL, dxR, dyR });
       }
+      poseMouthAnatomyRef.current.set(
+        poseCanvas,
+        measurePoseMouthAnatomy(poseCanvas, cfg, dx, dy, false)
+      );
     },
     [resolvedConfig]
   );
 
-  // Helper to load an image URL into a 1024x1024 offscreen canvas and cache it
+  // Helper to load an image URL into a 1024x1024 offscreen canvas and cache it globally across mounts
+  const onLoadRef = useRef(onLoad);
+  useEffect(() => {
+    onLoadRef.current = onLoad;
+  }, [onLoad]);
+
   const loadPoseToCanvas = React.useCallback(
     (src: string, onDone?: (canvas: HTMLCanvasElement) => void, isCanonical = false, isBlinkSprite = false) => {
       if (!src) return;
@@ -535,13 +1042,35 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         onDone?.(cached);
         return;
       }
+
+      const globalKey = `${characterId || imageSrc}::${isCanonical ? 'canon' : isBlinkSprite ? 'blink' : 'pose'}::${src}`;
+      const globalHit = GLOBAL_PROCESSED_POSE_CACHE.get(globalKey);
+      if (globalHit) {
+        poseCacheRef.current.set(src, globalHit.canvas);
+        if (isCanonical || !canonicalPoseCanvasRef.current) {
+          canonicalPoseCanvasRef.current = globalHit.canvas;
+          if (globalHit.refPupils) refPupilsRef.current = globalHit.refPupils;
+          if (globalHit.eyelidSkin) eyelidSkinRef.current = globalHit.eyelidSkin;
+          if (globalHit.lipSealPalette) lipSealPaletteRef.current = globalHit.lipSealPalette;
+        }
+        if (globalHit.eyeOffset) {
+          poseEyeOffsetRef.current.set(globalHit.canvas, globalHit.eyeOffset);
+        }
+        if (globalHit.mouthAnatomy) {
+          poseMouthAnatomyRef.current.set(globalHit.canvas, globalHit.mouthAnatomy);
+        }
+        onDone?.(globalHit.canvas);
+        return;
+      }
+
       const img = new Image();
       img.crossOrigin = 'anonymous';
+      img.decoding = 'async';
       img.onload = () => {
         const off = document.createElement('canvas');
         off.width = 1024;
         off.height = 1024;
-        const octx = off.getContext('2d');
+        const octx = off.getContext('2d', { willReadFrequently: true }) || off.getContext('2d');
         if (octx) {
           octx.imageSmoothingEnabled = true;
           octx.imageSmoothingQuality = 'high';
@@ -549,6 +1078,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         }
         poseCacheRef.current.set(src, off);
         registerPoseEyeAlignment(off, isCanonical, isBlinkSprite);
+        putGlobalProcessedPose(globalKey, {
+          canvas: off,
+          eyeOffset: poseEyeOffsetRef.current.get(off),
+          mouthAnatomy: poseMouthAnatomyRef.current.get(off),
+          refPupils: isCanonical ? refPupilsRef.current : undefined,
+          eyelidSkin: isCanonical ? eyelidSkinRef.current : undefined,
+          lipSealPalette: isCanonical ? lipSealPaletteRef.current : undefined,
+        });
         onDone?.(off);
       };
       img.onerror = () => {
@@ -558,7 +1095,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       };
       img.src = src;
     },
-    [fallbackImageSrc, registerPoseEyeAlignment]
+    [characterId, imageSrc, fallbackImageSrc, registerPoseEyeAlignment]
   );
 
   // Helper to obtain an LRU-bounded cached <video> element (max 3 active decoders per tab)
@@ -691,11 +1228,44 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     [getOrCreatePooledVideo]
   );
 
-  // Preload canonical image + entire poseCompendium + pre-warm 3D video pool
+  // Preload canonical image immediately + time-slice secondary poseCompendium in idle frames (zero LongTasks!)
   useEffect(() => {
     if (!imageSrc) return;
     let cancelled = false;
+    let idleTimerId: ReturnType<typeof setTimeout> | null = null;
     refPupilsRef.current = null;
+
+    const enqueueSecondaryPoses = () => {
+      if (cancelled || !poseCompendium) return;
+      const entries = Object.entries(poseCompendium).filter(
+        ([, url]) => Boolean(url) && url !== imageSrc
+      ) as Array<[string, string]>;
+      let idx = 0;
+
+      const stepNext = () => {
+        if (cancelled || idx >= entries.length) return;
+        const w = typeof window !== 'undefined'
+          ? (window as unknown as { __iskoolVoiceSynthesisPending?: boolean })
+          : undefined;
+        if (w?.__iskoolVoiceSynthesisPending) {
+          idleTimerId = setTimeout(stepNext, 60);
+          return;
+        }
+        const [key, url] = entries[idx++];
+        loadPoseToCanvas(
+          url,
+          () => {
+            if (!cancelled) {
+              idleTimerId = setTimeout(stepNext, 20);
+            }
+          },
+          false,
+          key === 'blink'
+        );
+      };
+
+      idleTimerId = setTimeout(stepNext, 24);
+    };
 
     loadPoseToCanvas(
       imageSrc,
@@ -710,24 +1280,18 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           transitionStartRef.current = performance.now();
         }
         setLoadedSrc(imageSrc);
-        onLoad?.();
+        onLoadRef.current?.();
+        enqueueSecondaryPoses();
       },
       true,
       false
     );
 
-    if (poseCompendium) {
-      Object.entries(poseCompendium).forEach(([key, url]) => {
-        if (url) {
-          loadPoseToCanvas(url, undefined, false, key === 'blink');
-        }
-      });
-    }
-
     return () => {
       cancelled = true;
+      if (idleTimerId) clearTimeout(idleTimerId);
     };
-  }, [imageSrc, poseCompendium, loadPoseToCanvas, onLoad]);
+  }, [imageSrc, poseCompendium, loadPoseToCanvas]);
 
   // Cleanup pooled video elements on unmount
   useEffect(() => {
@@ -751,7 +1315,23 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     (gesture: ConcreteAvatarGesture, now: number) => {
       const compendium = poseCompendiumRef.current;
       const targetUrl = (compendium && compendium[gesture]) || imageSrc;
-      const targetCanvas = poseCacheRef.current.get(targetUrl) || offscreenRef.current;
+      const cachedTarget = poseCacheRef.current.get(targetUrl);
+      const targetCanvas = cachedTarget || offscreenRef.current;
+
+      if (!cachedTarget && targetUrl && targetUrl !== imageSrc) {
+        loadPoseToCanvas(
+          targetUrl,
+          (loadedCanvas) => {
+            if (resolvedGestureRef.current === gesture) {
+              prevPoseCanvasRef.current = currPoseCanvasRef.current;
+              currPoseCanvasRef.current = loadedCanvas;
+              transitionStartRef.current = performance.now();
+            }
+          },
+          false,
+          false
+        );
+      }
 
       if (resolvedGestureRef.current !== gesture) {
         resolvedGestureRef.current = gesture;
@@ -780,17 +1360,18 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         };
       }
 
-      // Resolve dedicated 3D motion clip if one exists for this specific movement;
-      // otherwise render the high-precision 1024x1024 3D pose with 60 FPS bespoke kinematics!
+      // For 3D multi-pose compendium rigs, render crisp 1024x1024 3D poses + 60 FPS real-time formant lip-sync
+      // without un-synced .mp4 mouth loops fighting the anatomical mouth rig or opening while silent.
+      const has3DCompendium = Boolean(compendium && Object.keys(compendium).length > 0);
       const gMap = gestureVideoMapRef.current;
       const masterVid = videoSrcRef.current;
-      if (gesture === 'listen') {
+      if (has3DCompendium || gesture === 'listen') {
         loadActiveVideoStream(undefined);
       } else if (isSpeakingRef.current && activeGestureRef.current === 'auto' && masterVid) {
         loadActiveVideoStream(masterVid);
       } else if (gMap && gMap[gesture]) {
         loadActiveVideoStream(gMap[gesture]);
-      } else if (!gMap && masterVid && (gesture === 'welcome' || gesture === 'explain' || gesture === 'exclaim')) {
+      } else if (!gMap && masterVid && isSpeakingRef.current && (gesture === 'welcome' || gesture === 'explain' || gesture === 'exclaim')) {
         loadActiveVideoStream(masterVid);
       } else {
         loadActiveVideoStream(undefined);
@@ -814,23 +1395,24 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     }
 
     if (!isSpeaking) {
-      if (videoHasNativeLipSyncRef.current && gestureVideoMapRef.current?.calm) {
+      if (poseCompendiumRef.current) {
+        switchToGesturePose('welcome', now);
+        return;
+      }
+      if (gestureVideoMapRef.current?.calm) {
         switchToGesturePose('calm', now);
         return;
       }
-      if (!videoHasNativeLipSyncRef.current && !poseCompendiumRef.current && gestureVideoMapRef.current?.calm) {
-        switchToGesturePose('calm', now);
-        return;
-      }
+      switchToGesturePose('welcome', now);
+      return;
     }
 
     const rawSequence = buildContextualMovementSequence(spokenText || '');
     const compendium = poseCompendiumRef.current;
     const gMap = gestureVideoMapRef.current;
 
-    // Filter to movements supported by this character's compendium or video map
-    const availableSequence = rawSequence.filter(
-      (g) => Boolean(compendium?.[g] || gMap?.[g] || g === 'welcome')
+    const availableSequence = rawSequence.filter((g) =>
+      Boolean(compendium?.[g] || gMap?.[g] || g === 'welcome')
     );
     const cycleSequence: ConcreteAvatarGesture[] =
       availableSequence.length > 0 ? availableSequence : ['welcome'];
@@ -961,72 +1543,93 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       }
 
       const cfg = resolvedConfig;
-      const baseOpen = cfg.baseOpen ?? 0;
       const speaking = isSpeakingRef.current;
       const currentGesture = resolvedGestureRef.current;
       const tSec = now * 0.001;
 
-      // 1. Phoneme-Viseme Sequencer + Real-Time Web Audio Formant Lip-Sync at 60 FPS
-      let targetOpen = 0.04;
-      let targetSpread = 0;
-      let targetTongue = 0.25;
+      const activeStaticAnatomy = staticPoseOff
+        ? poseMouthAnatomyRef.current.get(staticPoseOff)
+        : undefined;
+      const effectiveBaseOpen = activeStaticAnatomy
+        ? activeStaticAnatomy.poseBaseOpen
+        : (cfg.baseOpen ?? 0);
+      const audiblySpeaking =
+        speaking && (isVoiceAudiblySpeaking() || externalOpenRef.current > 0.03);
 
-      if (speaking) {
+      let targetOpen = effectiveBaseOpen;
+      let targetSpread = 0;
+      let targetTongue = 0.22;
+
+      if (audiblySpeaking) {
         const formants = getVoiceFormantLevels();
         const extOpen = externalOpenRef.current;
         const extSpread = externalSpreadRef.current;
 
+        // Advance through weighted viseme tokens anchored to speech start time
         const tokens = visemeTokensRef.current;
-        const seqIndex = Math.floor(tSec * 7.2) % tokens.length;
-        const tok = tokens[seqIndex] || { open: 0.5, spread: 0, tongue: 0.3, bilabial: false };
+        const elapsedSpeechSec = Math.max(0, (now - speechStartMsRef.current) * 0.001);
+        let totalWeight = 0;
+        for (let ti = 0; ti < tokens.length; ti++) {
+          totalWeight += tokens[ti].durationWeight || 0.7;
+        }
+        const safeTotalWeight = Math.max(0.5, totalWeight);
+        const cursorWeight = (elapsedSpeechSec * 7.8) % safeTotalWeight;
+        let accum = 0;
+        let tok = tokens[0] || { open: 0.5, spread: 0, tongue: 0.3, bilabial: false, durationWeight: 1 };
+        for (let ti = 0; ti < tokens.length; ti++) {
+          accum += tokens[ti].durationWeight || 0.7;
+          if (cursorWeight <= accum) {
+            tok = tokens[ti];
+            break;
+          }
+        }
 
-        const sylMod = 0.82 + 0.24 * Math.sin(tSec * 14.5);
+        const sylMod = 0.84 + 0.22 * Math.sin(elapsedSpeechSec * 15.2);
         const oscOpen = tok.bilabial ? 0.0 : Math.min(0.98, tok.open * sylMod);
-        const oscSpread = tok.spread + 0.08 * Math.sin(tSec * 8.4);
+        const oscSpread = tok.spread + 0.07 * Math.sin(elapsedSpeechSec * 8.4);
         const oscTongue = tok.tongue;
 
-        if (formants.rms > 0.015) {
-          if (formants.bilabial || tok.bilabial) {
+        if (formants.audioGraphActive) {
+          // Real-time Web Audio DSP formant tracking: closes naturally on pauses/commas!
+          if (formants.rms <= 0.012 || formants.bilabial) {
+            targetOpen = 0.0;
+            targetSpread = formants.bilabial ? -0.14 : 0;
+            targetTongue = 0.2;
+          } else if (tok.bilabial && formants.rms < 0.065) {
             targetOpen = 0.0;
             targetSpread = -0.12;
+            targetTongue = 0.2;
           } else {
-            const formantOpen = Math.min(0.98, Math.max(0.20, formants.open * 1.2));
-            targetOpen = Math.min(0.98, formantOpen * 0.62 + oscOpen * 0.38);
-            targetSpread = (formants.spread - formants.rounded * 0.85) * 0.45 + oscSpread * 0.35;
-            targetTongue = formants.alveolar ? 0.88 : oscTongue;
+            const formantOpen = Math.min(0.98, Math.max(0.18, formants.open * 1.28));
+            targetOpen = Math.min(0.98, formantOpen * 0.72 + oscOpen * 0.28);
+            targetSpread = (formants.spread - formants.rounded * 0.85) * 0.52 + oscSpread * 0.30;
+            targetTongue = formants.alveolar ? 0.90 : oscTongue;
           }
         } else if (extOpen > 0.03) {
           if (tok.bilabial) {
             targetOpen = 0.0;
-            targetSpread = -0.10;
+            targetSpread = -0.12;
           } else {
-            targetOpen = Math.min(0.98, Math.max(0.22, extOpen * 1.25) * 0.58 + oscOpen * 0.42);
+            targetOpen = Math.min(0.98, Math.max(0.22, extOpen * 1.25) * 0.62 + oscOpen * 0.38);
             targetSpread = extSpread * 0.55 + oscSpread * 0.45;
             targetTongue = oscTongue;
           }
         } else {
+          // Punctuation-aware phoneme sequencer fallback (when WebAudio graph is bypassed)
           targetOpen = oscOpen;
           targetSpread = oscSpread;
           targetTongue = oscTongue;
         }
 
-        if (currentGesture === 'exclaim' || currentGesture === 'celebrate') {
-          targetOpen = Math.min(1.0, targetOpen * 1.14);
-          targetSpread = Math.max(targetSpread, 0.16);
-        } else if (currentGesture === 'pronounce') {
-          targetOpen = Math.min(1.0, targetOpen * 1.22);
-          targetSpread = targetSpread * 1.25;
+        if (targetOpen > 0.05) {
+          if (currentGesture === 'exclaim' || currentGesture === 'celebrate') {
+            targetOpen = Math.min(1.0, targetOpen * 1.14);
+            targetSpread = Math.max(targetSpread, 0.16);
+          } else if (currentGesture === 'pronounce') {
+            targetOpen = Math.min(1.0, targetOpen * 1.20);
+            targetSpread = targetSpread * 1.22;
+          }
         }
-      }
-
-      const poseIsClosedSmile =
-        currentGesture === 'listen' || currentGesture === 'inquire';
-      const effectiveBaseOpen = poseIsClosedSmile ? 0.04 : baseOpen;
-
-      if (!speaking) {
-        targetOpen = effectiveBaseOpen;
-        targetSpread = 0;
-        targetTongue = 0.22;
       }
 
       // 2. Damped 60 FPS Spring Physics Integration
@@ -1164,22 +1767,28 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           transElapsed < TRANS_DURATION
       );
 
+      // Subtle 60 FPS organic chest/head breathing on static 3D pose rigs (100% locked to landmarks)
+      const subtleBreathY =
+        !hasLiveVideoFrame && !isGeographicSiteRef.current
+          ? Math.sin(tSec * (audiblySpeaking ? 2.6 : 1.7)) * (audiblySpeaking ? 1.8 : 1.1)
+          : 0;
+
       if (isCrossDissolving && prevPoseCanvasRef.current) {
         const alpha = Math.min(1, Math.max(0, transElapsed / TRANS_DURATION));
         const smoothAlpha = alpha * alpha * (3 - 2 * alpha);
-        ctx.drawImage(prevPoseCanvasRef.current, 0, 0, 1024, 1024);
+        ctx.drawImage(prevPoseCanvasRef.current, 0, subtleBreathY, 1024, 1024);
         ctx.globalAlpha = smoothAlpha;
-        ctx.drawImage(activeFrameCanvas, 0, 0, 1024, 1024);
+        ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
         ctx.globalAlpha = 1;
       } else {
-        ctx.drawImage(activeFrameCanvas, 0, 0, 1024, 1024);
+        ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
       }
 
       const mouthW = cfg.x2 - cfg.x1;
       const halfW = mouthW * 0.5;
       const chinY = cfg.chinY ?? cfg.cy + Math.max(48, mouthW * 0.85);
       const headShiftX = 0;
-      const headShiftY = 0;
+      const headShiftY = subtleBreathY / 0.72;
 
       // Compute active 3D-tracked facial landmarks for all rigs EXCEPT native-lip-sync 3D videos (Claire) and geographic sites
       const shouldRenderFacialRig =
@@ -1204,215 +1813,290 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         const activeMouthCy = cfg.cy + activeHeadOffsetY;
         const activeChinY = chinY + activeHeadOffsetY;
 
-        // 8. Surgical 60 FPS Strip-Mesh Lip & Mandible Warping
-        const jawHeight = Math.max(36, activeChinY - activeMouthCy);
-        const maxJawDrop = Math.min(40, Math.max(cfg.maxOpening * 2.25, jawHeight * 0.46));
+        // 8 & 9. Unified Piecewise-Continuous Monotonic 3D Mouth & Mandible Shader
+        //        (100% Zero Double-Mouth / Zero Double-Teeth / Zero Collar Warp / Zero Clip Seams)
+        if (audiblySpeaking) {
+          let anatomy = !hasLiveVideoFrame
+            ? poseMouthAnatomyRef.current.get(activeFrameCanvas)
+            : undefined;
+          if (!anatomy) {
+            anatomy = measurePoseMouthAnatomy(
+              activeFrameCanvas,
+              cfg,
+              avgPoseDx,
+              avgPoseDy,
+              activeFrameCanvas === canonicalPoseCanvasRef.current
+            );
+            if (!hasLiveVideoFrame) {
+              poseMouthAnatomyRef.current.set(activeFrameCanvas, anatomy);
+            }
+          }
 
-        const deltaOpen = speaking ? spring.open - effectiveBaseOpen : 0;
-        const isClosedBase = effectiveBaseOpen < 0.12;
+          const numCols = anatomy.numCols;
+          const patchHalfW = anatomy.patchHalfW;
+          const patchW = patchHalfW * 2;
+          const colW = patchW / numCols;
+          const srcMouthCx = cfg.cx + avgPoseDx;
+          const srcPatchLeft = srcMouthCx - patchHalfW;
 
-        if (speaking && (Math.abs(deltaOpen) > 0.01 || Math.abs(spring.spread) > 0.01)) {
-          const warpWidth = halfW * 2.55;
-          const warpLeft = activeMouthCx - warpWidth * 0.5;
-          const horizScale = 1 + spring.spread * 0.26;
+          const srcMinLipY = Math.min(cfg.y1, cfg.y2, cfg.cy) + avgPoseDy;
+          const srcChinBotY = Math.max(srcMinLipY + 26, chinY + avgPoseDy);
+          const jawSpan = srcChinBotY - (cfg.cy + avgPoseDy);
+          const srcAnchorTopY = Math.max(0, srcMinLipY - Math.max(12, jawSpan * 0.28));
+          const srcAnchorBotY = Math.min(1022, srcChinBotY);
 
-          if (!cfg.mustacheCover && Math.abs(deltaOpen) > 0.01) {
-            const upStrips = 8;
-            const upSpanY = Math.max(14, jawHeight * 0.28);
-            const upStripH = upSpanY / upStrips;
-            const upperLiftPx = (isClosedBase ? spring.open : deltaOpen) * maxJawDrop * 0.24;
+          const maxGapPx = Math.min(22, Math.max(11, cfg.maxOpening * 1.26, jawSpan * 0.36));
+          const desiredCenterGapPx = Math.max(0, Math.min(maxGapPx, spring.open * maxGapPx));
+          const spreadScale = 1 + spring.spread * 0.16;
+
+          const dstColCenterX = new Float32Array(numCols);
+          const dstUpperCurveY = new Float32Array(numCols);
+          const dstLowerCurveY = new Float32Array(numCols);
+          let firstMouthCol = -1;
+          let lastMouthCol = -1;
+
+          // STEP A: Continuous Monotonic Upper-Lip & Lower-Mandible Column Slices
+          //         Completely overwrites Layer 1 in [srcAnchorTopY .. srcAnchorBotY] with 0.00px boundary seams!
+          for (let c = 0; c < numCols; c++) {
+            const u = ((c + 0.5) / numCols) * 2 - 1; // -1 .. +1 across patch
+            const m = u * 1.36; // -1 .. +1 strictly between mouth corners x1..x2
+            const cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.6);
+
+            const srcX = srcPatchLeft + c * colW;
+            const relCenterX = srcX + colW * 0.5 - srcMouthCx;
+            const localScaleX = 1 + (spreadScale - 1) * cheekTaper;
+            const dstW = colW * localScaleX;
+            const dstCenterX = activeMouthCx + relCenterX * localScaleX;
+            const dstX = dstCenterX - dstW * 0.5;
+            dstColCenterX[c] = dstCenterX;
+
+            const insideMouth = Math.abs(m) < 0.88;
+            if (insideMouth) {
+              if (firstMouthCol < 0) firstMouthCol = c;
+              lastMouthCol = c;
+            }
+
+            const normM = m / 0.88;
+            const apertureProfile = insideMouth
+              ? Math.pow(Math.max(0, 1 - normM * normM), 1.08)
+              : 0;
+
+            const sUpperLipY = anatomy.srcUpperLipBotY[c];
+            const sTeethBotY = anatomy.srcTeethBotY[c];
+            const sLowerLipY = anatomy.srcLowerLipY[c];
+            const nativeGap = insideMouth ? Math.max(0, sLowerLipY - sTeethBotY) : 0;
+            const targetGap = desiredCenterGapPx * apertureProfile;
+
+            let srcUpperEnd: number;
+            let dstUpperEnd: number;
+            let dstLowerStart: number;
+
+            if (targetGap >= nativeGap) {
+              const extraGap = targetGap - nativeGap;
+              const upperLift = cfg.mustacheCover
+                ? 0
+                : Math.min(2.2, extraGap * 0.12) * apertureProfile;
+              srcUpperEnd = sTeethBotY;
+              dstUpperEnd = sTeethBotY + subtleBreathY - upperLift;
+              dstLowerStart = dstUpperEnd + targetGap;
+            } else {
+              const closeBlend = nativeGap > 0.15
+                ? Math.min(1, (nativeGap - targetGap) / nativeGap)
+                : 0;
+              srcUpperEnd = sTeethBotY * (1 - closeBlend) + sUpperLipY * closeBlend;
+              const meetY = sUpperLipY * 0.42 + sLowerLipY * 0.58 + subtleBreathY;
+              dstUpperEnd =
+                (sTeethBotY + subtleBreathY) * (1 - closeBlend) +
+                (meetY - targetGap * 0.45) * closeBlend;
+              dstLowerStart =
+                (sLowerLipY + subtleBreathY) * (1 - closeBlend) +
+                (meetY + targetGap * 0.55) * closeBlend;
+            }
+
+            // Clamp dstLowerStart strictly above collar/chin bottom so lower slice remains monotonic
+            dstLowerStart = Math.min(srcAnchorBotY + subtleBreathY - 4, dstLowerStart);
+            dstUpperCurveY[c] = dstUpperEnd;
+            dstLowerCurveY[c] = dstLowerStart;
+
+            const innerOverlap = insideMouth && targetGap > 1.2 ? 1.4 : 0.65;
+
+            // 1. Upper slice: [srcAnchorTopY .. srcUpperEnd] -> [srcAnchorTopY + breath .. dstUpperEnd + overlap]
+            const srcUpH = Math.max(2, srcUpperEnd - srcAnchorTopY);
+            const dstUpTop = srcAnchorTopY + subtleBreathY;
+            const dstUpH = Math.max(2, dstUpperEnd + innerOverlap - dstUpTop);
+            ctx.drawImage(
+              activeFrameCanvas,
+              srcX,
+              srcAnchorTopY,
+              colW + 0.9,
+              srcUpH,
+              dstX,
+              dstUpTop,
+              dstW + 0.95,
+              dstUpH
+            );
+
+            // 2. Lower mandible slice: [sLowerLipY .. srcAnchorBotY] -> [dstLowerStart - overlap .. srcAnchorBotY + breath]
+            const srcLowH = Math.max(2, srcAnchorBotY - sLowerLipY);
+            const dstLowTop = dstLowerStart - innerOverlap;
+            const dstLowBot = srcAnchorBotY + subtleBreathY;
+            const dstLowH = Math.max(2, dstLowBot - dstLowTop);
+            ctx.drawImage(
+              activeFrameCanvas,
+              srcX,
+              sLowerLipY,
+              colW + 0.9,
+              srcLowH,
+              dstX,
+              dstLowTop,
+              dstW + 0.95,
+              dstLowH
+            );
+          }
+
+          // STEP B: Hardware Anti-Aliased Smooth Spline Oral Cavity & 3D Tongue
+          if (firstMouthCol >= 0 && lastMouthCol > firstMouthCol && desiredCenterGapPx > 1.15) {
+            const midCol = Math.floor((firstMouthCol + lastMouthCol) * 0.5);
+            const cavTopMid = dstUpperCurveY[midCol];
+            const cavBotMid = dstLowerCurveY[midCol];
+            const cavSpanH = Math.max(2, cavBotMid - cavTopMid);
+            const activeHalfSpanX = Math.max(
+              10,
+              (dstColCenterX[lastMouthCol] - dstColCenterX[firstMouthCol]) * 0.5
+            );
+
+            const traceOralSpline = () => {
+              ctx.beginPath();
+              const leftCornerY = (dstUpperCurveY[firstMouthCol] + dstLowerCurveY[firstMouthCol]) * 0.5;
+              const rightCornerY = (dstUpperCurveY[lastMouthCol] + dstLowerCurveY[lastMouthCol]) * 0.5;
+              ctx.moveTo(dstColCenterX[firstMouthCol], leftCornerY);
+              for (let c = firstMouthCol + 1; c < lastMouthCol; c++) {
+                ctx.lineTo(dstColCenterX[c], dstUpperCurveY[c]);
+              }
+              ctx.lineTo(dstColCenterX[lastMouthCol], rightCornerY);
+              for (let c = lastMouthCol - 1; c > firstMouthCol; c--) {
+                ctx.lineTo(dstColCenterX[c], dstLowerCurveY[c]);
+              }
+              ctx.closePath();
+            };
 
             ctx.save();
-            ctx.beginPath();
-            ctx.ellipse(activeMouthCx, activeMouthCy - upSpanY * 0.45, halfW * 1.15, upSpanY * 0.65, 0, 0, Math.PI * 2);
+            traceOralSpline();
             ctx.clip();
-            for (let i = 0; i < upStrips; i++) {
-              const normY = i / upStrips;
-              const falloff = Math.pow(Math.sin(normY * Math.PI * 0.5), 1.5);
-              const dy = -upperLiftPx * falloff;
-              const srcY = activeMouthCy - upSpanY + i * upStripH;
-              const dstY = srcY + dy;
-              const dstW = warpWidth * (1 + (horizScale - 1) * falloff);
-              const dstX = activeMouthCx - dstW * 0.5;
-              ctx.drawImage(activeFrameCanvas, warpLeft, srcY, warpWidth, upStripH + 1.2, dstX, dstY, dstW, upStripH + 1.4);
+
+            const cavGrad = ctx.createRadialGradient(
+              activeMouthCx,
+              (cavTopMid + cavBotMid) * 0.5,
+              1,
+              activeMouthCx,
+              (cavTopMid + cavBotMid) * 0.5,
+              Math.max(activeHalfSpanX, cavSpanH)
+            );
+            cavGrad.addColorStop(0, cfg.cavityDarkColor);
+            cavGrad.addColorStop(0.68, cfg.cavityMidColor);
+            cavGrad.addColorStop(1, cfg.cavityRimColor);
+            ctx.fillStyle = cavGrad;
+            ctx.fillRect(
+              dstColCenterX[firstMouthCol] - 4,
+              cavTopMid - 6,
+              activeHalfSpanX * 2 + 8,
+              cavSpanH + 12
+            );
+
+            // Volumetric 3D Tongue inside lower cavity
+            if (cavSpanH > 3.2) {
+              const tongueW = activeHalfSpanX * (cfg.mustacheCover ? 0.56 : 0.62);
+              const tongueH = cavSpanH * (0.36 + spring.tongue * 0.18);
+              const tongueY = cavBotMid - tongueH * 0.46;
+              const tGrad = ctx.createRadialGradient(
+                activeMouthCx,
+                tongueY - tongueH * 0.2,
+                1,
+                activeMouthCx,
+                tongueY,
+                tongueW
+              );
+              tGrad.addColorStop(0, cfg.mustacheCover ? '#7e2d36' : '#c85a64');
+              tGrad.addColorStop(0.68, cfg.mustacheCover ? '#4a151b' : '#943540');
+              tGrad.addColorStop(1, cfg.cavityMidColor);
+
+              ctx.beginPath();
+              ctx.ellipse(activeMouthCx, tongueY, tongueW, tongueH, 0, 0, Math.PI * 2);
+              ctx.fillStyle = tGrad;
+              ctx.fill();
             }
+
+            // Subtle feathered upper teeth arch ONLY for closed-base portraits that lack native 3D teeth
+            if (!anatomy.hasTeeth && !cfg.mustacheCover && cavSpanH > 4.2) {
+              const teethW = activeHalfSpanX * 0.64;
+              const teethH = Math.min(cavSpanH * 0.24, 4.4);
+              const teethGrad = ctx.createLinearGradient(
+                activeMouthCx - teethW,
+                cavTopMid,
+                activeMouthCx + teethW,
+                cavTopMid
+              );
+              teethGrad.addColorStop(0, 'rgba(210, 198, 186, 0)');
+              teethGrad.addColorStop(0.22, cfg.teethColor);
+              teethGrad.addColorStop(0.5, '#ffffff');
+              teethGrad.addColorStop(0.78, cfg.teethColor);
+              teethGrad.addColorStop(1, 'rgba(210, 198, 186, 0)');
+
+              ctx.save();
+              ctx.globalAlpha = Math.min(0.62, (cavSpanH - 3.8) / 8.0);
+              ctx.beginPath();
+              ctx.ellipse(activeMouthCx, cavTopMid + teethH * 0.15, teethW, teethH, 0, 0, Math.PI * 2);
+              ctx.fillStyle = teethGrad;
+              ctx.fill();
+              ctx.restore();
+            }
+
+            // Soft inner mucosal rim shadow along smooth spline border
+            traceOralSpline();
+            ctx.globalAlpha = cfg.mustacheCover ? 0.55 : 0.72;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = cfg.cavityRimColor;
+            ctx.stroke();
+            ctx.restore();
+          } else if (
+            firstMouthCol >= 0 &&
+            lastMouthCol > firstMouthCol &&
+            desiredCenterGapPx <= 1.15 &&
+            anatomy.poseBaseOpen > 0.05
+          ) {
+            // STEP C: Feathered natural stomion parting line when an open-smile 3D rig seals lips on /m/, /b/, /p/
+            ctx.save();
+            ctx.beginPath();
+            for (let c = firstMouthCol; c <= lastMouthCol; c++) {
+              const my = (dstUpperCurveY[c] + dstLowerCurveY[c]) * 0.5;
+              if (c === firstMouthCol) ctx.moveTo(dstColCenterX[c], my);
+              else ctx.lineTo(dstColCenterX[c], my);
+            }
+            const sealGrad = ctx.createLinearGradient(
+              dstColCenterX[firstMouthCol],
+              0,
+              dstColCenterX[lastMouthCol],
+              0
+            );
+            sealGrad.addColorStop(0, 'rgba(62, 18, 24, 0)');
+            sealGrad.addColorStop(0.22, 'rgba(62, 18, 24, 0.46)');
+            sealGrad.addColorStop(0.5, 'rgba(62, 18, 24, 0.56)');
+            sealGrad.addColorStop(0.78, 'rgba(62, 18, 24, 0.46)');
+            sealGrad.addColorStop(1, 'rgba(62, 18, 24, 0)');
+            ctx.strokeStyle = sealGrad;
+            ctx.lineWidth = 1.25;
+            ctx.lineCap = 'round';
+            ctx.stroke();
             ctx.restore();
           }
 
-          const numStrips = 28;
-          const warpTop = activeMouthCy - (deltaOpen < 0 ? 6 : 0);
-          const warpSpanY = jawHeight * 1.26;
-          const stripH = warpSpanY / numStrips;
-
-          const lowerDropPx = isClosedBase
-            ? spring.open * maxJawDrop * 0.82
-            : deltaOpen * maxJawDrop * 0.88;
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.ellipse(
-            activeMouthCx,
-            activeMouthCy + jawHeight * 0.52,
-            halfW * 1.28,
-            jawHeight * 0.78,
-            0,
-            0,
-            Math.PI * 2
-          );
-          ctx.clip();
-
-          for (let i = 0; i < numStrips; i++) {
-            const normY = i / numStrips;
-            const falloff = Math.pow(Math.cos(normY * Math.PI * 0.5), 1.6);
-            const dy = lowerDropPx * falloff;
-            const sScaleX = 1 + (horizScale - 1) * Math.sin(normY * Math.PI);
-
-            const srcY = warpTop + i * stripH;
-            const dstY = srcY + dy;
-            const dstW = warpWidth * sScaleX;
-            const dstX = activeMouthCx - dstW * 0.5;
-
-            ctx.drawImage(
-              activeFrameCanvas,
-              warpLeft,
-              srcY,
-              warpWidth,
-              stripH + 1.3,
-              dstX,
-              dstY,
-              dstW,
-              stripH + 1.5
-            );
-          }
-          ctx.restore();
-        }
-
-        // 9. Feathered Anatomical Oral Cavity, Upper Teeth & Tongue Dorsum
-        const effectiveOpen = !speaking
-          ? 0
-          : isClosedBase
-            ? spring.open
-            : Math.max(0, spring.open - effectiveBaseOpen * 0.38);
-
-        if (speaking && effectiveOpen > 0.04) {
-          const activeHalfW = halfW * (0.92 + spring.spread * 0.20);
-          const upperLiftPx = cfg.mustacheCover ? 0 : effectiveOpen * maxJawDrop * 0.24;
-          const lowerDropPx = effectiveOpen * maxJawDrop * 0.78;
-          const cornerY = (cfg.y1 + cfg.y2) * 0.5 + activeHeadOffsetY + lowerDropPx * 0.12;
-          const stomionCenterY = activeMouthCy;
-
-          const leftX = activeMouthCx - activeHalfW;
-          const rightX = activeMouthCx + activeHalfW;
-          const topCtrlY = cfg.mustacheCover ? stomionCenterY + 1.0 : stomionCenterY - upperLiftPx * 1.38;
-          const botCtrlY = stomionCenterY + lowerDropPx * 1.48;
-
-          ctx.save();
-
-          const buildStomionPath = () => {
-            ctx.beginPath();
-            ctx.moveTo(leftX, cornerY);
-            ctx.quadraticCurveTo(activeMouthCx, topCtrlY, rightX, cornerY);
-            ctx.quadraticCurveTo(activeMouthCx, botCtrlY, leftX, cornerY);
-            ctx.closePath();
-          };
-
-          buildStomionPath();
-          ctx.clip();
-
-          const cavGrad = ctx.createRadialGradient(
-            activeMouthCx,
-            stomionCenterY + lowerDropPx * 0.28,
-            1,
-            activeMouthCx,
-            stomionCenterY + lowerDropPx * 0.28,
-            Math.max(activeHalfW, lowerDropPx + upperLiftPx)
-          );
-          cavGrad.addColorStop(0, cfg.cavityDarkColor);
-          cavGrad.addColorStop(0.68, cfg.cavityMidColor);
-          cavGrad.addColorStop(1, cfg.cavityRimColor);
-
-          ctx.globalAlpha = effectiveBaseOpen > 0.15 ? 0.82 : 0.95;
-          ctx.fillStyle = cavGrad;
-          ctx.fillRect(leftX - 4, topCtrlY - 4, activeHalfW * 2 + 8, botCtrlY - topCtrlY + 12);
-
-          const apertureH = lowerDropPx + upperLiftPx;
-          if (apertureH > 3.0) {
-            const tongueW = activeHalfW * (cfg.mustacheCover ? 0.56 : 0.64);
-            const tongueH = cfg.mustacheCover
-              ? apertureH * (0.32 + spring.tongue * 0.14)
-              : apertureH * (0.42 + spring.tongue * 0.24);
-            const tongueCenterY = stomionCenterY + lowerDropPx * (cfg.mustacheCover ? 0.68 : 0.72 - spring.tongue * 0.24);
-
-            const tGrad = ctx.createRadialGradient(
-              activeMouthCx,
-              tongueCenterY - tongueH * 0.2,
-              1,
-              activeMouthCx,
-              tongueCenterY,
-              tongueW
-            );
-            tGrad.addColorStop(0, cfg.mustacheCover ? '#7e2d36' : '#c85a64');
-            tGrad.addColorStop(0.65, cfg.mustacheCover ? '#4a151b' : '#943540');
-            tGrad.addColorStop(1, cfg.cavityMidColor);
-
-            ctx.beginPath();
-            ctx.ellipse(activeMouthCx, tongueCenterY, tongueW, tongueH, 0, 0, Math.PI * 2);
-            ctx.fillStyle = tGrad;
-            ctx.fill();
-          }
-
-          if (!cfg.mustacheCover && apertureH > 3.8 && effectiveBaseOpen < 0.25) {
-            const teethW = activeHalfW * 0.72;
-            const teethH = Math.min(apertureH * 0.28, 5.8);
-            const teethTopY = stomionCenterY - upperLiftPx * 0.65;
-
-            const teethGrad = ctx.createLinearGradient(activeMouthCx - teethW, teethTopY, activeMouthCx + teethW, teethTopY);
-            teethGrad.addColorStop(0, 'rgba(180, 168, 155, 0.35)');
-            teethGrad.addColorStop(0.2, cfg.teethColor);
-            teethGrad.addColorStop(0.5, '#ffffff');
-            teethGrad.addColorStop(0.8, cfg.teethColor);
-            teethGrad.addColorStop(1, 'rgba(180, 168, 155, 0.35)');
-
-            ctx.globalAlpha = Math.min(0.72, (apertureH - 3.2) / 7.5);
-            ctx.beginPath();
-            ctx.roundRect(activeMouthCx - teethW, teethTopY - 1, teethW * 2, teethH, [0, 0, 3, 3]);
-            ctx.fillStyle = teethGrad;
-            ctx.fill();
-          }
-
-          buildStomionPath();
-          ctx.globalAlpha = cfg.mustacheCover ? 0.62 : 0.85;
-          ctx.lineWidth = cfg.mustacheCover ? 1.6 : 2.4;
-          ctx.strokeStyle = cfg.cavityRimColor;
-          ctx.stroke();
-
-          ctx.restore();
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(leftX + activeHalfW * 0.12, cornerY + 0.5);
-          ctx.quadraticCurveTo(activeMouthCx, botCtrlY + 1.2, rightX - activeHalfW * 0.12, cornerY + 0.5);
-          ctx.strokeStyle = cfg.lowerLipRimColor;
-          ctx.lineWidth = 2.2;
-          ctx.lineCap = 'round';
-          ctx.globalAlpha = (cfg.mustacheCover ? 0.38 : 0.74) * Math.min(1, effectiveOpen * 2.5);
-          ctx.stroke();
-          ctx.restore();
-
-          if (cfg.mustacheCover) {
+          if (cfg.mustacheCover && desiredCenterGapPx > 1.0) {
+            const mustacheBottomY = cfg.cy + avgPoseDy + subtleBreathY + 0.5;
             ctx.save();
             ctx.beginPath();
-            ctx.ellipse(
-              activeMouthCx,
-              stomionCenterY - 6,
-              activeHalfW * 1.12,
-              8.5,
-              0,
-              0,
-              Math.PI * 2
-            );
+            ctx.ellipse(activeMouthCx, mustacheBottomY - 5.5, halfW * 1.08, 6.2, 0, 0, Math.PI * 2);
             ctx.clip();
-            ctx.drawImage(activeFrameCanvas, 0, 0, 1024, 1024);
+            ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
             ctx.restore();
           }
         }

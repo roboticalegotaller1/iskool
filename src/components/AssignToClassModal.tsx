@@ -67,18 +67,39 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (AVAILABLE_GROUPS.length > 0 && !AVAILABLE_GROUPS.some((g) => g.id === selectedGroupId)) {
+      setSelectedGroupId(AVAILABLE_GROUPS[0].id);
+    }
+  }, [AVAILABLE_GROUPS, selectedGroupId]);
+
   if (!isOpen || !activity || !mounted) return null;
 
   const selectedGroup = AVAILABLE_GROUPS.find(g => g.id === selectedGroupId) || AVAILABLE_GROUPS[0];
+
+  const resolveLevelGradeIdForGroup = (grp: { id: string; grade: string; name: string }): string => {
+    if (grp.id === 'grp-pb-a') return 'primaria-1º';
+    if (grp.id === 'grp-sec-a') return 'secundaria-2º';
+    if (grp.id === 'grp-prep-a') return 'preparatoria-4ºSemestre';
+    const norm = `${grp.grade || ''} ${grp.name || ''}`.toLowerCase();
+    const numMatch = norm.match(/([1-6])/);
+    const num = numMatch ? numMatch[1] : '4';
+    if (norm.includes('sec')) return `secundaria-${Math.min(3, Number(num))}º`;
+    if (norm.includes('prep') || norm.includes('bach') || norm.includes('cch') || /\b10[1-6]\b/.test(norm)) {
+      return `preparatoria-${num}ºSemestre`;
+    }
+    return `primaria-${num}º`;
+  };
 
   const handleAssign = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       await assignStudioActivity({
+        schoolId: activeSchoolId || undefined,
         groupId: selectedGroup.id,
         groupName: selectedGroup.name,
-        levelGradeId: selectedGroup.id === 'grp-pb-a' ? 'primaria-1º' : selectedGroup.id === 'grp-sec-a' ? 'secundaria-2º' : selectedGroup.id === 'grp-prep-a' ? 'preparatoria-4ºSemestre' : 'primaria-4º',
+        levelGradeId: resolveLevelGradeIdForGroup(selectedGroup),
         subjectId: selectedGroup.subjectId,
         activityTitle: activity.title,
         activityDescription: activity.content_json?.description || activity.title,
@@ -96,8 +117,6 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
       onClose();
     } catch (err) {
       console.error('Error en asignación a la clase:', err);
-      onSuccess(selectedGroup.name);
-      onClose();
     } finally {
       setIsSubmitting(false);
     }

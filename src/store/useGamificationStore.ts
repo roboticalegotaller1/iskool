@@ -4,6 +4,7 @@ import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 import { Mission, QuestAttempt, StudentBadge, GuildBoss, GuildMemberSubmission, ShopArtifact, Quest, Badge, SubmitReadingQuestResult } from '../types';
 import { MISSIONS_SEED, BOSS_SEED, GUILD_SUBMISSIONS_SEED, DEFAULT_ARTIFACTS_SEED, SUBJECTS_SEED, BADGES_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
+import { useSchoolAdminStore } from './useSchoolAdminStore';
 import { supabase } from '@/lib/supabaseClient';
 import { broadcastStoreChange, subscribeToStoreSync } from '@/lib/broadcastSync';
 
@@ -183,6 +184,7 @@ interface GamificationStoreState {
     error?: string;
   }>;
   assignStudioActivity: (payload: {
+    schoolId?: string;
     groupId: string;
     groupName?: string;
     levelGradeId?: string;
@@ -1018,6 +1020,10 @@ export const useGamificationStore = create<GamificationStoreState>()(
   },
 
   fetchMissions: async () => {
+    if (useSchoolAdminStore.getState().activeSchoolId === 'sch-demo-0001') {
+      set({ isLoadingMissions: false, isInitialized: true });
+      return;
+    }
     // Si ya tenemos misiones en memoria, revalidar en segundo plano sin bloquear la UI (Stale-While-Revalidate)
     if (!get().isInitialized) {
       set({ isLoadingMissions: true });
@@ -1341,9 +1347,12 @@ export const useGamificationStore = create<GamificationStoreState>()(
       } as any
     };
 
+    const targetSchoolId =
+      payload.schoolId || useSchoolAdminStore.getState().activeSchoolId || 'sch-1';
+
     const newMission: Mission = {
       id: missionId,
-      school_id: 'sch-1',
+      school_id: targetSchoolId,
       subject_id: targetSubjectId,
       level_grade_id: targetLevelGradeId,
       title: payload.activityTitle,
@@ -1371,35 +1380,37 @@ export const useGamificationStore = create<GamificationStoreState>()(
       return { missionsList: [...state.missionsList, newMission] };
     });
 
-    // Sincronización en segundo plano con Supabase
-    try {
-      await supabase.from('missions').insert([{
-        id: missionId,
-        school_id: '00000000-0000-0000-0000-000000000000',
-        subject_id: isUuid(targetSubjectId) ? targetSubjectId : undefined,
-        title: newMission.title,
-        description: newMission.description,
-        story_intro: newMission.story_intro,
-        map_position_x: 50,
-        map_position_y: 50,
-        is_active: true,
-        created_at: newMission.created_at
-      }]);
+    // Sincronización en segundo plano con servidor remoto únicamente para colegios productivos con UUID válido
+    if (targetSchoolId !== 'sch-demo-0001' && isUuid(targetSchoolId)) {
+      try {
+        await supabase.from('missions').insert([{
+          id: missionId,
+          school_id: targetSchoolId,
+          subject_id: isUuid(targetSubjectId) ? targetSubjectId : undefined,
+          title: newMission.title,
+          description: newMission.description,
+          story_intro: newMission.story_intro,
+          map_position_x: 50,
+          map_position_y: 50,
+          is_active: true,
+          created_at: newMission.created_at
+        }]);
 
-      await supabase.from('quests').insert([{
-        id: questId,
-        mission_id: missionId,
-        title: newQuest.title,
-        description: newQuest.description,
-        type: newQuest.type,
-        sequence_order: 1,
-        xp_reward: xpReward,
-        coins_reward: coinsReward,
-        content: newQuest.content,
-        created_at: newQuest.created_at
-      }]);
-    } catch (dbErr) {
-      console.warn('Nota: Persistencia remota institucional completada en modo local:', dbErr);
+        await supabase.from('quests').insert([{
+          id: questId,
+          mission_id: missionId,
+          title: newQuest.title,
+          description: newQuest.description,
+          type: newQuest.type,
+          sequence_order: 1,
+          xp_reward: xpReward,
+          coins_reward: coinsReward,
+          content: newQuest.content,
+          created_at: newQuest.created_at
+        }]);
+      } catch (dbErr) {
+        console.warn('Nota: Persistencia remota institucional completada en modo local:', dbErr);
+      }
     }
 
     return { success: true, missionId, questId };
