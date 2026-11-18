@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { 
   useSchoolAdminStore, 
   getSchoolCampuses, 
@@ -32,7 +32,7 @@ import { InstitutionalMemoryOverview } from '@/components/coordinator/Institutio
 import { useComingSoon } from '@/components/ui/ComingSoonModal';
 
 export default function CoordinatorDashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isSwitchingRole } = useAuth();
   const router = useRouter();
   const { showComingSoon } = useComingSoon();
 
@@ -203,14 +203,14 @@ export default function CoordinatorDashboard() {
 
   // Redirección si es alumno
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !isSwitchingRole && !isRoleTransitionInFlight()) {
       if (!user) {
         router.replace('/login');
       } else if (user.role === 'student') {
         router.replace('/student');
       }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, isSwitchingRole, router]);
 
   // Mantener sincronizada la lista de profesores registrada en el sistema con el abordaje de onboarding
   useEffect(() => {

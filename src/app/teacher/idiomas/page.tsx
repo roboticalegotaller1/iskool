@@ -48,6 +48,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import { english40WeeksCurriculum } from '@/components/languages/data/english40WeeksCurriculum';
 import { french40WeeksCurriculum } from '@/components/languages/data/french40WeeksCurriculum';
 import { CurricularWeek, CurricularLesson } from '@/components/languages/data/curriculumTypes';
@@ -299,9 +300,28 @@ export default function TeacherIdiomasPage() {
   };
 
   const { user: authUser } = useAuth();
+  const activeSchoolId = useSchoolAdminStore((s) => s.activeSchoolId);
   const adminSchools = useSchoolAdminStore((s) => s.institutionsList);
   const adminCampuses = useSchoolAdminStore((s) => s.campusesList);
   const adminTeachers = useSchoolAdminStore((s) => s.teachersList);
+
+  const effectiveIdiomasSchoolId = authUser?.school_id || activeSchoolId || '';
+  const isIbimeSession = useMemo(() => {
+    if (effectiveIdiomasSchoolId === 'sch-ibime') return true;
+    if (authUser?.email && authUser.email.toLowerCase().includes('ibime')) return true;
+    if (!effectiveIdiomasSchoolId && typeof window !== 'undefined' && window.location.pathname.startsWith('/ibime')) {
+      return true;
+    }
+    return !effectiveIdiomasSchoolId;
+  }, [effectiveIdiomasSchoolId, authUser?.email]);
+
+  const activeIdiomasSchoolName = useMemo(() => {
+    if (isIbimeSession) return 'Instituto Bilingüe IBIME';
+    const found = (adminSchools || []).find((s) => s.id === effectiveIdiomasSchoolId);
+    if (found?.name) return found.name;
+    if (effectiveIdiomasSchoolId === 'sch-demo-0001') return 'Cuentas demo';
+    return 'ISkool';
+  }, [isIbimeSession, adminSchools, effectiveIdiomasSchoolId]);
 
   const allAvailableCampuses = useMemo(() => {
     const list: {
@@ -313,6 +333,26 @@ export default function TeacherIdiomasPage() {
       cct: string;
       levelInfo: string;
     }[] = [];
+
+    if (!isIbimeSession && effectiveIdiomasSchoolId) {
+      const scopedCampuses = (adminCampuses || []).filter(
+        (ac) => ac.school_id === effectiveIdiomasSchoolId
+      );
+      scopedCampuses.forEach((ac) => {
+        list.push({
+          id: ac.id,
+          name: ac.name,
+          shortName: ac.name,
+          schoolName: activeIdiomasSchoolName,
+          badge: activeIdiomasSchoolName,
+          cct: (ac as any).cct || '0001',
+          levelInfo: 'Comunidad Educativa',
+        });
+      });
+      if (list.length > 0) {
+        return list;
+      }
+    }
 
     IBIME_CAMPUSES.forEach((c) => {
       list.push({
@@ -343,7 +383,24 @@ export default function TeacherIdiomasPage() {
     });
 
     return list;
-  }, [adminSchools, adminCampuses]);
+  }, [isIbimeSession, effectiveIdiomasSchoolId, activeIdiomasSchoolName, adminSchools, adminCampuses]);
+
+  useEffect(() => {
+    if (!isIbimeSession && allAvailableCampuses.length > 0) {
+      const preferredId =
+        authUser?.campus_id ||
+        (effectiveIdiomasSchoolId === 'sch-demo-0001' ? 'cmp-demo-sec' : allAvailableCampuses[0].id);
+      if (
+        !allAvailableCampuses.some((c) => c.id === selectedCampusId) ||
+        selectedCampusId === 'montes'
+      ) {
+        const target = allAvailableCampuses.find((c) => c.id === preferredId) || allAvailableCampuses[0];
+        if (target && target.id !== selectedCampusId) {
+          setSelectedCampusId(target.id);
+        }
+      }
+    }
+  }, [isIbimeSession, effectiveIdiomasSchoolId, authUser?.campus_id, allAvailableCampuses, selectedCampusId]);
 
   const selectedCampus = useMemo(() => {
     return allAvailableCampuses.find((c) => c.id === selectedCampusId) || allAvailableCampuses[0];
@@ -1225,14 +1282,20 @@ export default function TeacherIdiomasPage() {
 
             <div className="flex items-center gap-2.5">
               <div className="p-1 rounded-xl bg-slate-800 border border-slate-700 shrink-0">
-                <IbimeOfficialLogo variant="shield_only" size={30} />
+                {isIbimeSession ? (
+                  <IbimeOfficialLogo variant="shield_only" size={30} />
+                ) : (
+                  <ISkoolOfficialLogo variant="emblem_only" size={30} showTagline={false} />
+                )}
               </div>
               <div>
                 <h1 className="text-sm sm:text-base font-black tracking-tight text-white leading-tight">
-                  Instituto Bilingüe IBIME · Centro de Idiomas
+                  {isIbimeSession
+                    ? 'Instituto Bilingüe IBIME · Centro de Idiomas'
+                    : `${activeIdiomasSchoolName} · Centro de Idiomas 3D`}
                 </h1>
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
-                  <Building2 className="w-3 h-3 text-red-400 shrink-0" />
+                  <Building2 className={`w-3 h-3 shrink-0 ${isIbimeSession ? 'text-red-400' : 'text-cyan-400'}`} />
                   <select
                     aria-label="Seleccionar plantel"
                     value={selectedCampusId}
@@ -1256,7 +1319,7 @@ export default function TeacherIdiomasPage() {
 
           {/* Centro: Píldora Unificada de Grupo, Certificación y Selector Rápido de Nivel CEFR (A1, A2, B1, B2) */}
           <div className="px-3.5 py-1.5 rounded-full bg-slate-800/90 border border-slate-700 text-xs sm:text-sm font-extrabold text-slate-100 shadow-inner flex flex-wrap items-center gap-2">
-            <span>Grupo: 2º A</span>
+            <span>Grupo: {effectiveIdiomasSchoolId === 'sch-demo-0001' ? '5º A' : '2º A'}</span>
             <span className="text-slate-500">·</span>
             <span className="text-emerald-400 font-black">
               {activeLesson.language === 'fr' ? '🇫🇷 DELF' : '🇬🇧 Cambridge'} {activeLesson.level} (

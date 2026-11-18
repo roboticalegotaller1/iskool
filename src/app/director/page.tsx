@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
 import { 
   Building2, 
@@ -71,7 +71,7 @@ const CEOEmailCommunicationsModal = dynamic(
 type DirectorTab = 'overview' | 'governance' | 'school_control' | 'vault' | 'finances';
 
 export default function DirectorPortalPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isSwitchingRole } = useAuth();
   const router = useRouter();
 
   const {
@@ -103,7 +103,7 @@ export default function DirectorPortalPage() {
 
   // Control de Acceso: Rol Director, Dueño o Super Usuario en auditoría
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !isSwitchingRole && !isRoleTransitionInFlight()) {
       if (!user) {
         router.replace('/login');
       } else if (!isSuperUser && (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime')))) {
@@ -113,7 +113,7 @@ export default function DirectorPortalPage() {
         router.replace('/login');
       }
     }
-  }, [user, authLoading, router, isSuperUser]);
+  }, [user, authLoading, isSwitchingRole, router, isSuperUser]);
 
   // Determinar Colegio del Director:
   // Centralizado vía resolveEffectiveSchoolId para cero desincronización

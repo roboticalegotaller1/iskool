@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { Loader } from '@/components/Loader';
 import { isPlatformSuperUser } from '@/types';
 
@@ -12,16 +12,17 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, loading, isSwitchingRole } = useAuth();
   const router = useRouter();
 
   // Solo los 3 Super Usuarios oficiales de ISkool tienen pase de supervisión global.
   // Dueños de escuela (owner) y demás roles están estrictamente sujetos a allowedRoles de su módulo.
   const isSuperExecutive = user && isPlatformSuperUser(user);
   const isAllowed = user && (isSuperExecutive || allowedRoles.includes(user.role));
+  const inRoleTransition = Boolean(isSwitchingRole || isRoleTransitionInFlight());
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !inRoleTransition) {
       if (!user) {
         router.replace('/login');
       } else if (!isAllowed) {
@@ -56,13 +57,20 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
         }
       }
     }
-  }, [user, loading, isAllowed, router]);
+  }, [user, loading, isAllowed, inRoleTransition, router]);
 
   if (loading) {
     return <Loader message="Comprobando credenciales de acceso..." />;
   }
 
-  if (!user || !isAllowed) {
+  if (!user) {
+    return <Loader message="Redirigiendo a tu espacio institucional..." />;
+  }
+
+  if (!isAllowed) {
+    if (inRoleTransition) {
+      return <>{children}</>;
+    }
     return <Loader message="Redirigiendo a tu espacio institucional..." />;
   }
 

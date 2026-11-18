@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Compass,
+  ChevronLeft,
   ChevronRight,
   Minimize2,
   Maximize2,
@@ -14,7 +15,7 @@ import {
   Activity,
   Loader2,
 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, endRoleTransition } from '@/context/AuthContext';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useStudentStore } from '@/store/useStudentStore';
 import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
@@ -30,7 +31,7 @@ import {
 export const DemoGuidedTourDock: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, login } = useAuth();
+  const { user, login, switchDemoPersona } = useAuth();
   const activeSchoolId = useSchoolAdminStore((s) => s.activeSchoolId);
   const selectSchool = useSchoolAdminStore((s) => s.selectSchool);
   const switchStudent = useStudentStore((s) => s.switchStudent);
@@ -52,6 +53,28 @@ export const DemoGuidedTourDock: React.FC = () => {
       userId: user?.id,
     });
   }, [user?.email, user?.school_id, user?.id, activeSchoolId]);
+
+  // Pre-calentar las 7 rutas del recorrido para transiciones SPA instantáneas
+  useEffect(() => {
+    if (!isDemoSession) return;
+    DEMO_STORYLINE_STEPS.forEach((st) => {
+      try {
+        router.prefetch(st.targetRoute);
+      } catch {
+        // Ignorar si prefetch no está disponible en entorno de test
+      }
+    });
+  }, [isDemoSession, router]);
+
+  // Liberar escudo de transición en cuanto aterriza la nueva ruta
+  useEffect(() => {
+    if (!pathname) return;
+    const t = setTimeout(() => {
+      endRoleTransition();
+      setIsSwitching(false);
+    }, 150);
+    return () => clearTimeout(t);
+  }, [pathname]);
 
   useEffect(() => {
     if (!isDemoSession || !user?.email) return;
@@ -89,19 +112,46 @@ export const DemoGuidedTourDock: React.FC = () => {
 
   const switchToPersona = async (persona: DemoAccountPersona, stepIdx: number) => {
     if (isSwitching) return;
+    const targetStep =
+      DEMO_STORYLINE_STEPS[stepIdx] ||
+      DEMO_STORYLINE_STEPS.find((st) => st.personaId === persona.id);
+    const targetPath = targetStep?.targetRoute || persona.defaultRoute;
+    const targetPathname = targetPath.split('?')[0];
+
+    if (
+      user?.email?.trim().toLowerCase() === persona.email.toLowerCase() &&
+      pathname === targetPathname
+    ) {
+      setStepIndex(stepIdx);
+      return;
+    }
+
     setIsSwitching(true);
     try {
       setStepIndex(stepIdx);
       selectSchool(DEMO_SCHOOL_ID);
-      await login(persona.email, DEMO_DEFAULT_PASSWORD);
       if (persona.linkedStudentId) {
         await switchStudent(persona.linkedStudentId);
       }
-      const targetStep = DEMO_STORYLINE_STEPS.find((st) => st.personaId === persona.id);
-      const targetPath = targetStep?.targetRoute || persona.defaultRoute;
+      if (switchDemoPersona) {
+        await switchDemoPersona(persona.email, DEMO_DEFAULT_PASSWORD);
+      } else {
+        await login(persona.email, DEMO_DEFAULT_PASSWORD);
+      }
       router.push(targetPath);
     } finally {
       setTimeout(() => setIsSwitching(false), 350);
+    }
+  };
+
+  const handlePrevStep = () => {
+    const prevIdx =
+      (currentStepIndex - 1 + DEMO_STORYLINE_STEPS.length) % DEMO_STORYLINE_STEPS.length;
+    const prevStep = DEMO_STORYLINE_STEPS[prevIdx];
+    const prevPersona =
+      DEMO_PERSONAS.find((p) => p.id === prevStep.personaId) || DEMO_PERSONAS[prevIdx];
+    if (prevPersona) {
+      void switchToPersona(prevPersona, prevIdx);
     }
   };
 
@@ -154,6 +204,23 @@ export const DemoGuidedTourDock: React.FC = () => {
               Cero Bóveda
             </span>
             <Maximize2 className="h-3.5 w-3.5 text-slate-300" />
+          </button>
+          <button
+            type="button"
+            disabled={isSwitching}
+            data-testid="demo-tour-min-next-btn"
+            onClick={handleNextStep}
+            className="inline-flex items-center gap-1 rounded-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 px-2.5 py-1 text-[10px] font-black transition-colors cursor-pointer"
+            title={activeStep.nextRoleLabel}
+          >
+            {isSwitching ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <>
+                <span>Siguiente</span>
+                <ChevronRight className="h-3 w-3" />
+              </>
+            )}
           </button>
           <button
             type="button"
@@ -283,25 +350,38 @@ export const DemoGuidedTourDock: React.FC = () => {
             >
               Explorar libremente
             </button>
-            <button
-              type="button"
-              disabled={isSwitching}
-              data-testid="demo-tour-next-btn"
-              onClick={handleNextStep}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 px-3 py-1.5 text-[11px] font-black shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
-            >
-              {isSwitching ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  <span>Cambiando rol...</span>
-                </>
-              ) : (
-                <>
-                  <span>{activeStep.nextRoleLabel}</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                disabled={isSwitching}
+                data-testid="demo-tour-prev-btn"
+                onClick={handlePrevStep}
+                className="inline-flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-50 text-slate-200 p-1.5 transition-all cursor-pointer"
+                title="Estación anterior"
+                aria-label="Estación anterior"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                disabled={isSwitching}
+                data-testid="demo-tour-next-btn"
+                onClick={handleNextStep}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 px-3 py-1.5 text-[11px] font-black shadow-md shadow-emerald-500/20 transition-all cursor-pointer"
+              >
+                {isSwitching ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Cambiando rol...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>{activeStep.nextRoleLabel}</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -9,17 +9,43 @@ import { DEMO_STAFF_USERS, DEMO_TEACHERS } from '@/lib/demo/demoSchoolSeeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+
+let roleTransitionUntilMs = 0;
+let roleTransitionTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+export function isRoleTransitionInFlight(): boolean {
+  return Date.now() < roleTransitionUntilMs;
+}
+
+export function beginRoleTransition(durationMs = 2500): void {
+  roleTransitionUntilMs = Date.now() + durationMs;
+}
+
+export function endRoleTransition(): void {
+  roleTransitionUntilMs = 0;
+  if (roleTransitionTimeoutId) {
+    clearTimeout(roleTransitionTimeoutId);
+    roleTransitionTimeoutId = null;
+  }
+}
 
 interface AuthContextType {
   session: any | null;
   user: UserProfile | null;
   loading: boolean;
+  isSwitchingRole?: boolean;
   login: (email: string, userPassword?: string) => Promise<{
     success: boolean;
     user?: UserProfile;
     error?: string;
     mustChangePassword?: boolean;
     username?: string;
+  }>;
+  switchDemoPersona?: (email: string, userPassword?: string) => Promise<{
+    success: boolean;
+    user?: UserProfile;
+    error?: string;
   }>;
   logout: () => Promise<void>;
 }
@@ -765,6 +791,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<any | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSwitchingRole, setIsSwitchingRole] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -1227,7 +1254,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true, user: finalUser };
   };
 
+  /**
+   * Conmutación instantánea en caliente entre las cuentas del entorno Cuentas demo (sch-demo-0001).
+   * Evita activar loading global (cero pantallas intermedias ni rebote a /login) sincronizando
+   * primero la cookie HttpOnly y blindando la transición mientras Next.js cambia de ruta.
+   */
+  const switchDemoPersona = async (
+    email: string,
+    userPassword?: string
+  ): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    if (!cleanEmail || !isDemoSandboxContext({ email: cleanEmail })) {
+      return login(email, userPassword);
+    }
+
+    const resolvedUser = getDemoUser(cleanEmail);
+    const effectivePass = userPassword && userPassword.trim() ? userPassword.trim() : 'DemoISkool2026!';
+    let finalUser: UserProfile = {
+      ...resolvedUser,
+      school_id: resolvedUser.school_id || 'sch-demo-0001',
+      updated_at: new Date().toISOString(),
+    };
+
+    beginRoleTransition(2800);
+    setIsSwitchingRole(true);
+
+    if (typeof window !== 'undefined') {
+      try {
+        const serverRes = await fetch('/api/auth/session', {
+          method: 'POST',
+          cache: 'no-store',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            password: effectivePass,
+            user: { id: resolvedUser.id, email: resolvedUser.email },
+          }),
+        });
+        if (serverRes.ok) {
+          const serverData = await serverRes.json().catch(() => null);
+          if (serverData?.success && serverData?.user) {
+            finalUser = {
+              ...resolvedUser,
+              ...serverData.user,
+              school_id: serverData.user.school_id || resolvedUser.school_id || 'sch-demo-0001',
+              updated_at: new Date().toISOString(),
+            };
+          }
+        }
+      } catch {
+        // Conservar perfil resuelto en memoria si hay latencia local
+      }
+
+      try {
+        sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(finalUser));
+      } catch {}
+      const secureAttr = window.location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = `tenant-id=iskool; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+    }
+
+    beginRoleTransition(2200);
+    useSchoolAdminStore.getState().syncUserSchool(finalUser);
+    setSession({ user: finalUser });
+    setUser(finalUser);
+
+    if (roleTransitionTimeoutId) {
+      clearTimeout(roleTransitionTimeoutId);
+    }
+    roleTransitionTimeoutId = setTimeout(() => {
+      endRoleTransition();
+      setIsSwitchingRole(false);
+    }, 1800);
+
+    return { success: true, user: finalUser };
+  };
+
   const logout = async () => {
+    endRoleTransition();
+    setIsSwitchingRole(false);
     setLoading(true);
     await supabase.auth.signOut().catch(() => null);
     
@@ -1252,7 +1356,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, loading, login, logout }}>
+    <AuthContext.Provider value={{ session, user, loading, isSwitchingRole, login, switchDemoPersona, logout }}>
       {children}
     </AuthContext.Provider>
   );

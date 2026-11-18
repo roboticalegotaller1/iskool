@@ -183,13 +183,13 @@ const RUBRIC_CRITERIA = [
   }
 ];
 
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { useTeacherSocialLoopStream } from '@/hooks/useTeacherSocialLoopStream';
 
 function TeacherDashboardContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, isSwitchingRole } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -405,6 +405,29 @@ function TeacherDashboardContent() {
     deferredClassesCount: 4,
     ceoEndorsed: false,
   });
+
+  // Sincronizar grupo y asignatura del Piloto Automático con 5°A Primaria cuando opera Cuentas demo (sch-demo-0001)
+  useEffect(() => {
+    const isDemoTeacherContext =
+      effectiveSchoolId === 'sch-demo-0001' ||
+      user?.school_id === 'sch-demo-0001' ||
+      user?.email?.toLowerCase() === 'demo.docente@iskool.mx';
+    if (isDemoTeacherContext) {
+      setCeoMirrorTelemetry((prev) =>
+        prev.groupLabel === '5°A Primaria'
+          ? prev
+          : {
+              ...prev,
+              groupLabel: '5°A Primaria',
+              subjectLabel: 'Saberes y Pensamiento Científico',
+              activeSessionTitle: 'Proporcionalidad Directa, Fracciones y Ecosistemas Locales',
+              presentCount: 28,
+              totalStudents: 28,
+              stampedCount: 28,
+            }
+      );
+    }
+  }, [effectiveSchoolId, user?.school_id, user?.email]);
 
   useEffect(() => {
     const onTelemetryEvent = (e: Event) => {
@@ -812,14 +835,14 @@ function TeacherDashboardContent() {
   }, [isRecording]);
 
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !isSwitchingRole && !isRoleTransitionInFlight()) {
       if (!user) {
         router.push(isIbime ? '/ibime/login' : '/login');
       } else if (user.role === 'student') {
         router.push(isIbime ? '/ibime/portal' : '/student');
       }
     }
-  }, [user, loading, router, isIbime]);
+  }, [user, loading, isSwitchingRole, router, isIbime]);
 
   useEffect(() => {
     if (user && (user.role === 'teacher' || isAdminSupervisor)) {
@@ -1130,9 +1153,20 @@ function TeacherDashboardContent() {
             groupName={ceoMirrorTelemetry.groupLabel}
             subjectName={ceoMirrorTelemetry.subjectLabel}
             students={(() => {
+              const isDemoSchool =
+                effectiveSchoolId === 'sch-demo-0001' || user?.school_id === 'sch-demo-0001';
+              const prioritizedSource = isDemoSchool
+                ? [...availableTeacherStudents].sort((a, b) => {
+                    if (a.id === 'std-demo-01') return -1;
+                    if (b.id === 'std-demo-01') return 1;
+                    const a5p = a.level === 'primaria' && a.grade === '5º' ? 0 : 1;
+                    const b5p = b.level === 'primaria' && b.grade === '5º' ? 0 : 1;
+                    return a5p - b5p;
+                  })
+                : availableTeacherStudents;
               const seenNames = new Set<string>();
               const uniqueStudents: typeof availableTeacherStudents = [];
-              for (const st of availableTeacherStudents) {
+              for (const st of prioritizedSource) {
                 const fullName = `${st.first_name} ${st.last_name_1 || ''}`.trim();
                 if (!seenNames.has(fullName.toLowerCase())) {
                   seenNames.add(fullName.toLowerCase());

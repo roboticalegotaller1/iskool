@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 import { DEMO_DEFAULT_PASSWORD, DEMO_SCHOOL_ID } from '@/lib/demo/demoSandboxConfig';
 import { 
@@ -104,7 +104,7 @@ const SuperUserCommandCenter = dynamic(() => import('@/components/admin/SuperUse
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium' | 'command_center';
 
 export default function SuperUserAdminPage() {
-  const { user, login, loading: authLoading } = useAuth();
+  const { user, login, switchDemoPersona, loading: authLoading, isSwitchingRole } = useAuth();
   const router = useRouter();
 
   const {
@@ -164,7 +164,7 @@ export default function SuperUserAdminPage() {
   }, [isSuperUser, activeSchoolId, user]);
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && !isSwitchingRole && !isRoleTransitionInFlight()) {
       if (!user) {
         router.replace('/login');
       } else if (!isSuperUser && (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime')))) {
@@ -177,7 +177,7 @@ export default function SuperUserAdminPage() {
         router.replace('/login');
       }
     }
-  }, [user, authLoading, router, isSuperUser]);
+  }, [user, authLoading, isSwitchingRole, router, isSuperUser]);
 
   // Sincronización y candado para dueños de colegio y CEOs: nunca pueden operar fuera de su school_id
   useEffect(() => {
@@ -2178,7 +2178,11 @@ export default function SuperUserAdminPage() {
                                 useDemoInteractionStore.getState().setTourMode('expanded');
                                 useDemoInteractionStore.getState().setStepIndex(0);
                                 selectSchool(DEMO_SCHOOL_ID);
-                                await login('demo.director@iskool.mx', DEMO_DEFAULT_PASSWORD);
+                                if (switchDemoPersona) {
+                                  await switchDemoPersona('demo.director@iskool.mx', DEMO_DEFAULT_PASSWORD);
+                                } else {
+                                  await login('demo.director@iskool.mx', DEMO_DEFAULT_PASSWORD);
+                                }
                                 router.push('/director');
                               }}
                               className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black shadow-sm transition-colors cursor-pointer shrink-0 flex items-center gap-1"
