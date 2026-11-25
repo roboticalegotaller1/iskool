@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAuthorizationCodeTicket } from '@/lib/auth/oauthTickets';
 import { validateApiAuth } from '@/lib/authValidator';
 import { TenantId } from '@/lib/auth/multiTenantSession';
+import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 
 /**
  * Endpoint OAuth 2.0 / OIDC: /api/auth/oauth/authorize
@@ -64,8 +65,9 @@ export async function GET(req: NextRequest) {
     const authResult = await validateApiAuth(req, { expectedTenant: requestedTenant });
 
     if (!authResult.authenticated || !authResult.user) {
-      // Si el usuario no tiene sesión activa, redirigir a la pantalla de login con los parámetros de retorno
-      const loginUrl = new URL(requestedTenant === 'ibime' ? '/ibime/login' : '/login', req.url);
+      // Si el usuario no tiene sesión activa, redirigir al origen público canónico (nunca localhost interno de Amplify)
+      const publicOrigin = GoogleOAuthService.resolveOAuthOrigin(req.nextUrl.origin, req.headers);
+      const loginUrl = new URL(requestedTenant === 'ibime' ? '/ibime/login' : '/login', publicOrigin);
       loginUrl.searchParams.set('redirect', req.nextUrl.pathname + req.nextUrl.search);
       loginUrl.searchParams.set('tenant', requestedTenant);
       return NextResponse.redirect(loginUrl);

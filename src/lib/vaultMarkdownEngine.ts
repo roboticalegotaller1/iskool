@@ -1,7 +1,64 @@
 import fs from 'fs';
 import path from 'path';
-import DOMPurify from 'isomorphic-dompurify';
 import { marked } from 'marked';
+
+// Carga perezosa y segura de DOMPurify para evitar fallos en frío en entornos serverless (AWS Amplify)
+let cachedDomPurify: { sanitize: (html: string, cfg?: Record<string, unknown>) => string } | null | undefined;
+function getDomPurify() {
+  if (cachedDomPurify !== undefined) return cachedDomPurify;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require('isomorphic-dompurify');
+    const instance = mod?.default || mod;
+    if (instance && typeof instance.sanitize === 'function') {
+      cachedDomPurify = instance;
+      return cachedDomPurify;
+    }
+  } catch {
+    // Respaldo determinista sin dependencias de DOM si el runtime serverless omite hojas CSS de jsdom
+  }
+  cachedDomPurify = null;
+  return null;
+}
+
+const ALLOWED_HTML_TAGS = new Set([
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'b', 'i', 'strong', 'em', 'strike',
+  'code', 'hr', 'br', 'div', 'span', 'pre', 'blockquote', 'ul', 'ol', 'li',
+  'table', 'thead', 'tbody', 'tr', 'th', 'td', 'details', 'summary', 'mark'
+]);
+
+const ALLOWED_HTML_ATTRS = new Set([
+  'href', 'title', 'class', 'id', 'target', 'rel', 'align', 'width', 'height',
+  'data-vault-link', 'data-pda'
+]);
+
+function fallbackSanitizeHtml(dirtyHtml: string): string {
+  // 1. Remover bloques peligrosos completos con su contenido
+  let clean = dirtyHtml
+    .replace(/<(script|iframe|object|embed|style|form)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+    .replace(/<(script|iframe|object|embed|style|form|input|button)\b[^>]*\/?>/gi, '');
+
+  // 2. Filtrar etiquetas y atributos contra lista blanca estricta
+  clean = clean.replace(/<(\/?)([a-zA-Z0-9-]+)([^>]*)>/g, (_full, closing: string, rawTag: string, rawAttrs: string) => {
+    const tag = rawTag.toLowerCase();
+    if (!ALLOWED_HTML_TAGS.has(tag)) return '';
+    if (closing) return `</${tag}>`;
+
+    const safeAttrs: string[] = [];
+    const attrRegex = /([a-zA-Z0-9-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g;
+    let m: RegExpExecArray | null;
+    while ((m = attrRegex.exec(rawAttrs)) !== null) {
+      const name = m[1].toLowerCase();
+      const val = (m[2] ?? m[3] ?? m[4] ?? '').trim();
+      if (!ALLOWED_HTML_ATTRS.has(name) || name.startsWith('on') || name === 'style') continue;
+      if (name === 'href' && /^(javascript|vbscript|data):/i.test(val.replace(/[\u0000-\u0020]+/g, ''))) continue;
+      const escaped = val.replace(/"/g, '&quot;');
+      safeAttrs.push(`${name}="${escaped}"`);
+    }
+    return safeAttrs.length > 0 ? `<${tag} ${safeAttrs.join(' ')}>` : `<${tag}>`;
+  });
+  return clean;
+}
 
 // Configurar marked para tablas y GitHub Flavored Markdown (GFM)
 marked.setOptions({
@@ -69,20 +126,22 @@ const VAULT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora de persistencia en memoria
  * Sanitiza HTML usando DOMPurify con lista blanca estricta para prevenir XSS.
  */
 export function sanitizeHtml(dirtyHtml: string): string {
-  return DOMPurify.sanitize(dirtyHtml, {
-    ALLOWED_TAGS: [
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'b', 'i', 'strong', 'em', 'strike',
-      'code', 'hr', 'br', 'div', 'span', 'pre', 'blockquote', 'ul', 'ol', 'li',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'details', 'summary', 'mark'
-    ],
-    ALLOWED_ATTR: [
-      'href', 'title', 'class', 'id', 'target', 'rel', 'align', 'width', 'height',
-      'data-vault-link', 'data-pda'
-    ],
-    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'style'],
-    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'style']
-  });
+  if (!dirtyHtml) return '';
+  const purify = getDomPurify();
+  if (purify) {
+    try {
+      return purify.sanitize(dirtyHtml, {
+        ALLOWED_TAGS: Array.from(ALLOWED_HTML_TAGS),
+        ALLOWED_ATTR: Array.from(ALLOWED_HTML_ATTRS),
+        ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+        FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'style'],
+        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'style']
+      });
+    } catch {
+      return fallbackSanitizeHtml(dirtyHtml);
+    }
+  }
+  return fallbackSanitizeHtml(dirtyHtml);
 }
 
 /**

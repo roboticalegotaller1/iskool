@@ -70,8 +70,8 @@ const nextConfig: NextConfig = {
     qualities: [75, 85],
     minimumCacheTTL: 86400,
   },
-  // Motor gráfico WebGL opera únicamente en navegador; paquetes binarios y de transporte permanecen externos en servidor
-  serverExternalPackages: ["pixi.js", "sharp", "ws", "nodemailer"],
+  // Motor gráfico WebGL opera únicamente en navegador; paquetes binarios, DOM y transporte permanecen externos en servidor
+  serverExternalPackages: ["pixi.js", "sharp", "ws", "nodemailer", "isomorphic-dompurify", "jsdom"],
   typescript: {
     // Type safety is strictly verified across the entire repository (0 errors).
     ignoreBuildErrors: false,

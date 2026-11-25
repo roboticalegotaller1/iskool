@@ -123,4 +123,36 @@ describe('Auditoría Quirúrgica de Seguridad 2026 — Aislamiento Multi-Tenant,
     const resInbound = await inboundRoute.GET(new NextRequest('http://localhost:3000/api/mail/inbound?tenantId=sch-b'));
     expect(resInbound.status).toBe(403);
   });
+
+  it('VULN-SEC-06: /api/integrations/google/callback nunca filtra origen interno localhost tras CloudFront y rotate-initial-password exige no-store', async () => {
+    const callbackRoute = await import('@/app/api/integrations/google/callback/route');
+    const rotateRoute = await import('@/app/api/auth/rotate-initial-password/route');
+
+    const cloudfrontReq = new Request('https://localhost:3000/api/integrations/google/callback?state=forged&code=fake', {
+      headers: {
+        via: '1.1 cloudfront.net (CloudFront)',
+        'cloudfront-viewer-country': 'MX',
+      },
+    });
+    const cbRes = await callbackRoute.GET(cloudfrontReq);
+    expect(cbRes.status).toBeGreaterThanOrEqual(300);
+    expect(cbRes.status).toBeLessThan(400);
+    const location = cbRes.headers.get('location') || '';
+    expect(location).not.toContain('localhost');
+    expect(location).toContain('https://iskool.mx/portal-ceo/email?error=');
+
+    const rotRes = await rotateRoute.POST(
+      new NextRequest('http://localhost:3000/api/auth/rotate-initial-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'probe.inexistente@iskool.mx',
+          currentPassword: 'WrongPassword1',
+          newPassword: 'NewSecurePassword2026!',
+        }),
+      })
+    );
+    expect(rotRes.status).toBe(401);
+    expect(rotRes.headers.get('cache-control') || '').toContain('no-store');
+  });
 });

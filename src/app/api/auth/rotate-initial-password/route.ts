@@ -8,10 +8,17 @@ const RotatePasswordSchema = z.object({
   newPassword: z.string().min(8).max(128),
 });
 
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' };
+
 const rotationAttemptTracker = new Map<string, { count: number; resetAtMs: number }>();
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+  if (rotationAttemptTracker.size > 500) {
+    for (const [k, v] of rotationAttemptTracker) {
+      if (v.resetAtMs <= now) rotationAttemptTracker.delete(k);
+    }
+  }
   const entry = rotationAttemptTracker.get(ip);
   if (!entry || entry.resetAtMs <= now) {
     rotationAttemptTracker.set(ip, { count: 1, resetAtMs: now + 60_000 });
@@ -34,7 +41,7 @@ export async function POST(req: NextRequest) {
     if (!checkRateLimit(clientIp)) {
       return NextResponse.json(
         { success: false, error: 'Demasiados intentos. Espere un minuto.' },
-        { status: 429 }
+        { status: 429, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -46,7 +53,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error: 'Verifique su usuario y asegúrese de que la nueva contraseña tenga al menos 8 caracteres.',
         },
-        { status: 400, headers: { 'Cache-Control': 'no-store' } }
+        { status: 400, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -60,19 +67,22 @@ export async function POST(req: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error || 'No se pudo actualizar la contraseña.' },
-        { status: 401 }
+        { status: 401, headers: NO_STORE_HEADERS }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      username: result.node?.username,
-      initialPasswordInvalidated: true,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        username: result.node?.username,
+        initialPasswordInvalidated: true,
+      },
+      { headers: NO_STORE_HEADERS }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || 'Error al rotar contraseña inicial.' },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }

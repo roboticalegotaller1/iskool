@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStampedCfdiByUuid } from '@/lib/fiscal/pacAdapter';
 import { buildCfdi40Xml } from '@/lib/fiscal/cfdiXmlBuilder';
 import { validateApiAuth } from '@/lib/authValidator';
+import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 
 export async function GET(req: NextRequest) {
   const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
@@ -98,7 +99,8 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Redirigir a la representación gráfica oficial en PDF
+  // Redirigir a la representación gráfica oficial en PDF usando el origen público canónico
+  const publicOrigin = GoogleOAuthService.resolveOAuthOrigin(req.nextUrl.origin, req.headers);
   const pdfUrl = `/api/billing/invoice/pdf?receipt_id=${receiptId}&uuid=${uuid}&rfc=${rfcReceptor}&amount=${amount}&concept=${encodeURIComponent(concept)}&student=${encodeURIComponent(studentName)}`;
-  return NextResponse.redirect(new URL(pdfUrl, req.url));
+  return NextResponse.redirect(new URL(pdfUrl, publicOrigin));
 }
