@@ -130,6 +130,27 @@ cambios de dirección y rectitud. Devuelve `ok | dudoso | sintetico` con los mot
   origen, 400 de pase y asunto etiquetado.
 - Componente: el formulario no envía sin pizarrón borrado y muestra el error.
 
+## Decisiones tras la revisión del constructor (criterio del agente)
+
+1. **Camino de teclado con límites propios.** `mode: 'keyboard'` no se salta el análisis: exige un
+   registro de teclas (`teclas: [{t}]`) con al menos 2 pulsaciones y ≥ 1.5 s entre la primera y el
+   envío del borrado automático. Además tiene un límite propio de **3 envíos por IP por hora**; a
+   partir del cuarto se responde `200 { ok: true }` sin enviar. Dentro del límite se entrega con
+   etiqueta `[POSIBLE SPAM]`.
+2. **Envío sin JavaScript.** Se conserva `action="/api/demo"` en el formulario (evita la advertencia
+   de contenido mixto). Si llega un cuerpo `urlencoded`/`multipart` (nunca trae verificación), el
+   servidor responde **303** a `/?demo=sin-verificacion#contacto` en lugar de un JSON 400; la portada
+   muestra en la sección de contacto un aviso amable con el correo de contacto. Nada se envía.
+3. **Cobertura baja nunca descarta en silencio.** Las muestras se diezman **por distancia** (se guarda
+   un punto cuando el puntero se movió ≥ ~1 % del ancho), con tope de ~1500 puntos, de modo que un
+   borrado lento cabe completo. El cliente envía el radio del borrador normalizado; el servidor
+   recalcula la cobertura con la misma cuadrícula. Cobertura recalculada baja pasa a **`dudoso`**
+   (se entrega etiquetado). `sintetico` queda solo para: < 15 puntos, duración < 600 ms, o
+   intervalos y velocidad prácticamente constantes con trayectoria recta.
+4. **Verificación de origen igual que el middleware.** Se compara el host de `Origin` contra
+   `x-forwarded-host || host` (como la protección existente en `src/middleware.ts`), y si viene
+   `Sec-Fetch-Site` debe ser `same-origin`. Sin `Origin` se deja pasar a las siguientes verificaciones.
+
 ## Hallazgo aparte (fuera de este cambio)
 
 El formulario de `/promo` (`src/app/promo/page.tsx:1052`) envía a `/api/demo` campos con otros
