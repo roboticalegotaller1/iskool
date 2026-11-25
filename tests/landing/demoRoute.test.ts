@@ -50,6 +50,11 @@ describe('el perímetro deja pasar el formulario público', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1')
   })
 
+  it('GET /api/demo/challenge sin sesión tampoco', async () => {
+    const response = await middleware(new NextRequest('https://iskool.mx/api/demo/challenge'))
+    expect(response.headers.get('x-middleware-next')).toBe('1')
+  })
+
   it('/sitemap.xml sin sesión tampoco', async () => {
     const response = await middleware(new NextRequest('https://iskool.mx/sitemap.xml'))
     expect(response.headers.get('x-middleware-next')).toBe('1')
