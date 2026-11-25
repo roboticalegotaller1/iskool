@@ -178,3 +178,54 @@ body:has(.lp-root) {
     display: none;
   }
 }
+
+/* ---------- Pizarrón del formulario ---------- */
+
+/* Palomita de "¡Listo!": aparece una sola vez, así que puede tener un toque de gusto. */
+@keyframes lp-pizarron-aparece {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lp-pizarron-funde {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lp-pizarron-traza {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.lp-pizarron-listo {
+  animation: lp-pizarron-aparece 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.lp-pizarron-palomita path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: lp-pizarron-traza 320ms cubic-bezier(0.23, 1, 0.32, 1) 120ms forwards;
+}
+
+/* Sin movimiento: solo un fundido breve y la palomita ya trazada. */
+@media (prefers-reduced-motion: reduce) {
+  .lp-pizarron-listo {
+    animation: lp-pizarron-funde 150ms ease both;
+  }
+
+  .lp-pizarron-palomita path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

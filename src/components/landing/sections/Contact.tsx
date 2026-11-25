@@ -1,5 +1,6 @@
 import { REGION, SITE } from '@/content/landing/site'
 import { plainWhatsappLink } from '@/lib/landing/contactLinks'
+import { AvisoSinVerificacion } from '../AvisoSinVerificacion'
 import { DemoForm } from '../DemoForm'
 import { Icon } from '../Icon'
 import { ANCHORS } from './anchors'
@@ -45,6 +46,7 @@ export function Contact() {
         </div>
 
         <div className="lg:col-span-7">
+          <AvisoSinVerificacion email={SITE.email} />
           <DemoForm placeName={REGION.placeName} email={SITE.email} whatsappNumber={SITE.whatsappNumber} />
           <noscript>
             <p className="mt-6 text-lg font-medium text-lp-navy">Escríbenos a {SITE.email} para solicitar tu demostración.</p>

@@ -1,12 +1,60 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DemoForm } from '@/components/landing/DemoForm'
 import { Landing } from '@/components/landing/Landing'
 import { landingJsonLd, landingMetadata } from '@/lib/landing/metadata'
 
 vi.mock('@/components/landing/fonts', () => ({ LANDING_FONT_VARIABLES: 'fuentes-de-prueba' }))
+
+// jsdom no puede fabricar eventos confiables (isTrusted siempre es falso): la prueba decide.
+const confianza = vi.hoisted(() => ({ confiable: true }))
+vi.mock('@/lib/landing/verification/trusted', () => ({ esEventoConfiable: () => confianza.confiable }))
+// El pase se resuelve al instante; el solucionador real se prueba en solver.test.ts.
+vi.mock('@/lib/landing/verification/solver', () => ({ solveChallenge: vi.fn(async () => 4242) }))
+
+const PASE_1 = { salt: '1'.repeat(32) + '.1700000000000.1700001800000', challenge: 'c'.repeat(64), max: 75000, signature: 'f1' }
+const PASE_2 = { salt: '2'.repeat(32) + '.1700000000000.1700001800000', challenge: 'd'.repeat(64), max: 75000, signature: 'f2' }
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+
+// Simula el servidor: el pase y los envíos se atienden por separado; cada llamada recibe una respuesta nueva.
+function servidor(envios: Array<() => Response> = [], pases: Array<() => Response> = [() => json(PASE_1), () => json(PASE_2)]) {
+  const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    void init
+    if (url === '/api/demo/challenge') return (pases.shift() ?? (() => json(PASE_2)))()
+    return (envios.shift() ?? (() => json({ ok: true })))()
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+const llamadasA = (fetchMock: ReturnType<typeof servidor>, url: string) => fetchMock.mock.calls.filter(([u]) => u === url)
+const cuerpoEnviado = (fetchMock: ReturnType<typeof servidor>, n = 0) =>
+  JSON.parse(String(llamadasA(fetchMock, '/api/demo')[n][1]?.body))
+
+beforeEach(() => {
+  confianza.confiable = true
+  // jsdom no dibuja: un contexto falso que acepta cualquier llamada.
+  const ctx: Record<string | symbol, unknown> = {}
+  const falso = new Proxy(ctx, {
+    get: (t, k) => (k in t ? t[k] : (t[k] = vi.fn(() => ({ addColorStop: vi.fn() })))),
+    set: (t, k, v) => {
+      t[k] = v
+      return true
+    },
+  })
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((() => falso) as never)
+  servidor()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  window.history.replaceState(null, '', '/')
+})
 
 const PROHIBITED = /\b(apps?|aplicaci[oó]n|m[oó]vil)\b/i
 
@@ -93,6 +141,13 @@ describe('metadatos de la portada', () => {
 })
 
 describe('formulario de demostración', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true, toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame', 'performance', 'Date'] })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   const fill = () => {
     for (const [label, value] of [
       ['Nombre', 'Ana Pérez'],
@@ -105,24 +160,191 @@ describe('formulario de demostración', () => {
     }
   }
 
-  it('si el servidor no puede enviar, ofrece el correo como alternativa', async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response('{"ok":false}', { status: 503 }))
-    vi.stubGlobal('fetch', fetchMock)
+  const pizarron = () => screen.getByRole('button', { name: /pizarrón/i })
+
+  // Barre el pizarrón en zigzag como lo haría una persona con el dedo.
+  const borrar = () => {
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.pointerDown(board, { pointerId: 1, clientX: 4, clientY: 8 })
+    let derecha = true
+    for (let y = 0.05; y < 1; y += 0.1) {
+      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId: 1, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      derecha = !derecha
+    }
+    fireEvent.pointerUp(board, { pointerId: 1 })
+  }
+
+  // La persona tarda unos segundos en llenar el formulario.
+  const esperar = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms))
+
+  const montar = async () => {
     render(<DemoForm placeName="México" email="contacto@iskool.mx" whatsappNumber={null} />)
+    await esperar(50)
+  }
+
+  const enviar = () => fireEvent.click(screen.getByRole('button', { name: /Enviar solicitud/ }))
+
+  it('si el servidor no puede enviar, ofrece el correo como alternativa', async () => {
+    const fetchMock = servidor([() => json({ ok: false }, 503)])
+    await montar()
     fill()
-    fireEvent.click(screen.getByRole('button', { name: /Enviar solicitud/ }))
-    const fallback = await screen.findByRole('link', { name: 'contacto@iskool.mx' })
+    borrar()
+    await esperar(4000)
+    enviar()
+    const fallback = await waitFor(() => within(screen.getByRole('status')).getByRole('link', { name: 'contacto@iskool.mx' }))
     expect(fallback.getAttribute('href')).toBe('mailto:contacto@iskool.mx')
     expect(fetchMock).toHaveBeenCalledWith('/api/demo', expect.objectContaining({ method: 'POST' }))
-    vi.unstubAllGlobals()
+    // Con 503 se pide un pase nuevo para el siguiente intento.
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo/challenge')).toHaveLength(2))
   })
 
   it('confirma cuando la solicitud se envió', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 })))
-    render(<DemoForm placeName="México" email="contacto@iskool.mx" whatsappNumber={null} />)
+    servidor([() => json({ ok: true })])
+    await montar()
     fill()
-    fireEvent.click(screen.getByRole('button', { name: /Enviar solicitud/ }))
+    borrar()
+    await esperar(4000)
+    enviar()
     await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
-    vi.unstubAllGlobals()
+  })
+
+  it('no envía sin borrar el pizarrón y enfoca el pizarrón con el mensaje', async () => {
+    const fetchMock = servidor()
+    await montar()
+    fill()
+    await esperar(4000)
+    enviar()
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Borra el pizarrón para enviar.')
+    expect(document.activeElement).toBe(pizarron())
+    expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(0)
+  })
+
+  it("con el pizarrón borrado envía con 'verificacion' en el cuerpo", async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    borrar()
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    const body = cuerpoEnviado(fetchMock)
+    expect(body.nombre).toBe('Ana Pérez')
+    expect(body.sitio).toBe('')
+    const v = body.verificacion
+    expect(v).toMatchObject({ ...PASE_1, number: 4242, mode: 'pointer', teclas: [] })
+    expect(v.radio).toBeGreaterThan(0)
+    expect(v.radio).toBeLessThanOrEqual(0.06)
+    expect(v.trazo.length).toBeGreaterThan(15)
+    expect(v.trazo.length).toBeLessThanOrEqual(1500)
+    for (const p of v.trazo) {
+      expect(p.x).toBeGreaterThanOrEqual(0)
+      expect(p.x).toBeLessThanOrEqual(1)
+      expect(p.y).toBeGreaterThanOrEqual(0)
+      expect(p.y).toBeLessThanOrEqual(1)
+    }
+    for (let i = 1; i < v.trazo.length; i++) expect(v.trazo[i].t).toBeGreaterThanOrEqual(v.trazo[i - 1].t)
+  })
+
+  it('ignora los toques que no vienen de una persona', async () => {
+    const fetchMock = servidor()
+    await montar()
+    fill()
+    confianza.confiable = false
+    borrar()
+    expect(screen.queryByText('¡Listo! Gracias.')).toBeNull()
+    enviar()
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'Borra el pizarrón para enviar.')
+    expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(0)
+  })
+
+  it('si el pase vence, reinicia el pizarrón y conserva los datos', async () => {
+    const fetchMock = servidor([
+      () => json({ ok: false, error: 'verificacion', mensaje: 'La verificación venció; borra el pizarrón otra vez.' }, 400),
+      () => json({ ok: true }),
+    ])
+    await montar()
+    fill()
+    borrar()
+    await esperar(4000)
+    enviar()
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'La verificación venció; borra el pizarrón otra vez.')
+    expect(screen.queryByText('¡Listo! Gracias.')).toBeNull()
+    expect((screen.getByLabelText('Nombre') as HTMLInputElement).value).toBe('Ana Pérez')
+    expect((screen.getByLabelText('Correo') as HTMLInputElement).value).toBe('ana@ejemplo.edu')
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo/challenge')).toHaveLength(2))
+
+    borrar()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(2))
+    expect(cuerpoEnviado(fetchMock, 1).verificacion.salt).toBe(PASE_2.salt)
+    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
+  })
+
+  it('el pizarrón tiene touch-action none', async () => {
+    await montar()
+    expect(pizarron().style.touchAction).toBe('none')
+    expect(screen.getByText('Para enviar, borra el pizarrón con el dedo o el mouse')).toBeTruthy()
+    expect(screen.getByText(/¿No puedes usar el pizarrón\? Escríbenos a/).textContent).toContain('contacto@iskool.mx')
+  })
+
+  it('si /api/demo/challenge falla, ofrece el correo', async () => {
+    servidor([], [() => json({ ok: false }, 503)])
+    await montar()
+    const fallback = await waitFor(() => within(screen.getByRole('status')).getByRole('link', { name: 'contacto@iskool.mx' }))
+    expect(fallback.getAttribute('href')).toBe('mailto:contacto@iskool.mx')
+  })
+
+  it('después de enviado, un segundo clic no vuelve a llamar fetch', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    borrar()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
+    fill()
+    enviar()
+    await esperar(4000)
+    expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1)
+  })
+
+  it('el pizarrón se completa con teclado', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    const board = pizarron()
+    board.focus()
+    fireEvent.keyDown(board, { key: 'Enter' })
+    await esperar(2000)
+    expect(screen.getByText(/Presiona Enter otra vez/)).toBeTruthy()
+    expect(screen.queryByText('¡Listo! Gracias.')).toBeNull()
+    fireEvent.keyDown(board, { key: ' ' })
+    await esperar(2000)
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    const v = cuerpoEnviado(fetchMock).verificacion
+    expect(v.mode).toBe('keyboard')
+    expect(v.teclas).toHaveLength(2)
+    const fin = Math.max(v.teclas[1].t, v.trazo[v.trazo.length - 1].t)
+    expect(fin - v.teclas[0].t).toBeGreaterThanOrEqual(1500)
+  })
+})
+
+describe('aviso de envío sin verificación', () => {
+  it('con ?demo=sin-verificacion la sección de contacto muestra el aviso con el correo', async () => {
+    window.history.replaceState(null, '', '/?demo=sin-verificacion')
+    render(<Landing />)
+    const aviso = await screen.findByText(/No pudimos recibir tu solicitud/)
+    expect(aviso.textContent).toContain('contacto@iskool.mx')
+  })
+
+  it('sin el parámetro no hay aviso', async () => {
+    render(<Landing />)
+    await act(async () => {})
+    expect(screen.queryByText(/No pudimos recibir tu solicitud/)).toBeNull()
   })
 })
