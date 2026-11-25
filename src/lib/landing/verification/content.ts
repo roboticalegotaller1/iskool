@@ -24,26 +24,32 @@ const VOCALES = new Set(['a', 'e', 'i', 'o', 'u'])
 // Nezahualcóyotl) y apellidos extranjeros comunes (Christopher, Schmidt).
 function palabraSinSentido(palabra: string): boolean {
   const p = normalizar(palabra).replace(/[^a-z]/g, '')
-  if (p.length < 5) return false
+  if (p.length < 4) return false
 
   // Siglas cortas en mayúsculas (CBTIS, CECYT) son legítimas.
   const letras = palabra.replace(/[^\p{L}]/gu, '')
   if (letras.length <= 6 && letras === letras.toUpperCase()) return false
 
+  // La 'y' cuenta como vocal salvo al inicio de palabra (Brynn); la 'w' es consonante.
+  const q = p.replace(/(?<!^)y/g, 'a')
+  // Palabra de 4+ letras sin ninguna vocal.
+  if (!/[aeiou]/.test(q)) return true
+  if (p.length < 5) return false
+
   // Misma letra repetida 5 o más veces seguidas.
   if (/(.)\1{4,}/.test(p)) return true
 
-  // La 'y' cuenta como vocal salvo al inicio de palabra (Brynn); la 'w' es consonante.
-  const q = p.replace(/(?<!^)y/g, 'a')
-  const rachas = q.match(/[^aeiou]+/g) ?? []
-  // Racha muy larga de consonantes (el español real casi no pasa de 4 y los
-  // apellidos alemanes comunes llegan a 6, como en Kirchstrasse).
-  if (rachas.some((r) => r.length >= 7)) return true
+  // Los grupos germánicos/ingleses comunes (Kirchstrasse, Schwarz, Christopher)
+  // se cuentan como una sola unidad antes de medir las rachas.
+  const c = q.replace(/ngst|sch|tch|rch|chr|ght|str/g, 'x')
+  const rachas = c.match(/[^aeiou]+/g) ?? []
+  // Racha larga de consonantes (el español real casi no pasa de 4).
+  if (rachas.some((r) => r.length >= 5)) return true
   // Dos o más rachas de 3+ consonantes en una misma palabra.
   if (rachas.filter((r) => r.length >= 3).length >= 2) return true
 
   // Palabras largas con muy pocas vocales.
-  const vocales = [...q].filter((c) => VOCALES.has(c)).length
+  const vocales = [...q].filter((ch) => VOCALES.has(ch)).length
   return p.length >= 9 && vocales / p.length < 0.25
 }
 
@@ -114,7 +120,7 @@ export function analyzeContent(demo: DemoRequest): string[] {
   if (campos.some((c) => textoSinSentido(c))) motivos.push(MOTIVO_SIN_SENTIDO)
 
   // Los correos escritos en el texto no son ligas.
-  if ([...campos, demo.telefono].some((c) => PATRON_LIGA.test(c.replace(/\S+@\S+/g, ' ')))) motivos.push(MOTIVO_LIGA)
+  if ([...campos, demo.telefono].some((c) => PATRON_LIGA.test(c.replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, ' ')))) motivos.push(MOTIVO_LIGA)
 
   if (telefonoFueraDeRegion(demo.telefono)) motivos.push(MOTIVO_TELEFONO)
 

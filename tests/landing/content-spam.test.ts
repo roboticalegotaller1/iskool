@@ -133,4 +133,23 @@ describe('analyzeContent', () => {
     expect(analyzeContent(con({ nombre: 'Brynn Schwarz' }))).toEqual([])
     expect(analyzeContent(con({ nombre: 'Wolfgang Kirchstrasse' }))).toEqual([])
   })
+
+  it('el tecleo al azar de teclado se marca', () => {
+    for (const mensaje of ['sdfgh qwrtz', 'bcdfg hjklm', 'ghjklñ zxcvbn', 'dfghjk wrtpsd']) {
+      expect(analyzeContent(con({ mensaje }))).toContain('texto sin sentido')
+    }
+  })
+
+  it('los nombres con grupos germánicos siguen limpios y el bot marcado', () => {
+    for (const nombre of ['Brynn Schwarz', 'Wolfgang Kirchstrasse', 'Xóchitl Hernández']) {
+      expect(analyzeContent(con({ nombre }))).toEqual([])
+    }
+    expect(analyzeContent(con({ mensaje: 'Jfeuwgduwefhw fuhe-' }))).toContain('texto sin sentido')
+  })
+
+  it('un correo mal formado pegado a una liga sigue marcándose', () => {
+    expect(analyzeContent(con({ mensaje: 'escribe a x@y.com/www.spam.com' }))).toContain(
+      'liga en los datos',
+    )
+  })
 })
