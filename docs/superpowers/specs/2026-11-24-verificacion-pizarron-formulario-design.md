@@ -77,11 +77,11 @@ funciona con dedo y mouse), llevar la manzana al escritorio (poco movimiento), o
 - Un pizarrón verde (o la paleta de la portada: marino/cielo) con trazos de gis dibujados en
   `<canvas>` a partir de una semilla aleatoria por pase (los trazos cambian cada vez).
 - La persona arrastra con dedo, mouse o lápiz (Pointer Events, `touch-action: none` dentro del
-  pizarrón) y el gis se borra donde pasa el borrador. Al cubrir ~65 % aparece una palomita y el
+  pizarrón) y el gis se borra donde pasa el borrador. Al cubrir 55 % aparece una palomita y el
   texto "¡Listo! Gracias." La animación respeta `prefers-reduced-motion`.
 - Se registran muestras `{x, y, t}` del puntero (normalizadas a 0–1, cada ~16 ms, máximo ~400)
   y solo de eventos con `isTrusted`.
-- Rótulo claro: "Para enviar, borra el pizarrón con el dedo o el mouse". El botón "Enviar solicitud"
+- Rótulo claro: "Para enviar, borra el pizarrón con el dedo o el mouse: bastan 2 o 3 pasadas". El botón "Enviar solicitud"
   sigue visible; si se pulsa sin haber borrado, se muestra el error junto al pizarrón y se enfoca.
 - Accesibilidad: el pizarrón es enfocable; con teclado (Enter / Espacio) se borra con una animación
   automática. Ese camino se marca como `mode: 'keyboard'` y se trata como "sospechoso" (se entrega
@@ -100,7 +100,7 @@ Orden y resultado:
 | Límite por IP (el actual) | 429 |
 | Pase ausente, firma inválida, `sha256(salt+number) ≠ challenge`, vencido, menos de 3 s, ya usado | 400 con mensaje "La verificación venció; borra el pizarrón otra vez." |
 | Movimiento claramente sintético (ver abajo) | `200 { ok: true }` sin enviar |
-| Movimiento dudoso, modo teclado o contenido sospechoso | Se envía con asunto `[POSIBLE SPAM] Solicitud de demostración — …` y una línea al final con los motivos |
+| Movimiento dudoso, modo teclado o contenido sospechoso | Se envía con asunto `[REVISAR] Solicitud de demostración — …` y una línea al final con los motivos |
 | Todo bien | Se envía normal |
 
 **Análisis del trazo** (función pura, probada): a partir de las muestras el servidor recalcula la
@@ -136,7 +136,7 @@ cambios de dirección y rectitud. Devuelve `ok | dudoso | sintetico` con los mot
    registro de teclas (`teclas: [{t}]`) con al menos 2 pulsaciones y ≥ 1.5 s entre la primera y el
    envío del borrado automático. Además tiene un límite propio de **3 envíos por IP por hora**; a
    partir del cuarto se responde `200 { ok: true }` sin enviar. Dentro del límite se entrega con
-   etiqueta `[POSIBLE SPAM]`.
+   etiqueta `[REVISAR]`.
 2. **Envío sin JavaScript.** Se conserva `action="/api/demo"` en el formulario (evita la advertencia
    de contenido mixto). Si llega un cuerpo `urlencoded`/`multipart` (nunca trae verificación), el
    servidor responde **303** a la dirección relativa `/#demo-sin-verificacion` en lugar de un JSON
@@ -175,3 +175,23 @@ como tarea aparte (mapear campos y agregar el pizarrón ahí).
 
 Valor exacto de `max`, umbrales numéricos del trazo, forma y cantidad de trazos de gis, tamaño
 de la cuadrícula de cobertura, nombres de archivos, siempre dentro de lo descrito arriba.
+
+## Ajustes tras la prueba en navegador (2026-11-25)
+
+- **Etiqueta `[REVISAR]`** en lugar de `[POSIBLE SPAM]` (decisión de Carlos): la palabra "SPAM" en
+  el asunto podía hacer que el propio buzón mandara a Spam justo las solicitudes que se quieren rescatar.
+- **Borrar no debe ser tedioso** (pedido de Carlos). Con radio 0.06 y meta de 65 % hacían falta
+  unas 6 pasadas bien hechas (10 en la prueba real). Ahora el borrador mide 0.12 (tope del servidor
+  `RADIO_MAX` = 0.15) y la meta es **55 %**: bastan 2 o 3 pasadas flojas, uno o dos segundos. La
+  protección no depende de cuánto se borra sino de cómo se mueve el borrador (análisis del trazo), así
+  que no se debilita. Una prueba fija que tres pasadas de persona alcanzan la meta y salen `ok`.
+- La espera mínima del formulario se deriva de `MIN_FILL_MS` en lugar de un número aparte.
+- **El cálculo del pase cede el hilo con `MessageChannel`, no con `setTimeout`.** En la prueba en
+  navegador, con la pestaña oculta, el cálculo se quedaba casi detenido (el navegador frena los
+  temporizadores); ahora tarda alrededor de 1 s también en una pestaña en segundo plano.
+- **Se registran los movimientos agrupados** (`getCoalescedEvents`), para que un equipo lento no
+  entregue un trazo con huecos.
+- **"¡Listo!" solo cuando el servidor también lo aceptará**: además de la cobertura, el pizarrón
+  exige `MIN_POINTS` y `MIN_DURATION_MS` antes de darse por terminado. Así nunca se le dice "listo" a
+  un trazo que el servidor descartaría en silencio (con el borrador más grande, la cobertura podía
+  alcanzarse con muy pocos puntos).

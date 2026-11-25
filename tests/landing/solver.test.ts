@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createChallenge, sha256Hex } from '@/lib/landing/verification/challenge'
 import { solveChallenge } from '@/lib/landing/verification/solver'
 
@@ -18,6 +18,15 @@ describe('solucionador del pase', () => {
     expect(pase).not.toBeNull()
     const numero = await solveChallenge(pase!)
     expect(sha256Hex(pase!.salt + String(numero))).toBe(pase!.challenge)
+  })
+
+  it('no depende de temporizadores, que el navegador frena en pestañas ocultas', async () => {
+    const espia = vi.spyOn(globalThis, 'setTimeout')
+    const pase = createChallenge()
+    const numero = await solveChallenge(pase!)
+    expect(sha256Hex(pase!.salt + String(numero))).toBe(pase!.challenge)
+    expect(espia).not.toHaveBeenCalled()
+    espia.mockRestore()
   })
 
   it('rechaza si el número no está hasta max', async () => {

@@ -138,12 +138,12 @@ describe('POST /api/demo', () => {
     expect(JSON.stringify(vi.mocked(console.warn).mock.calls)).not.toMatch(/Ana|ejemplo\.edu|5678|10\.0\./)
   })
 
-  it("trazo dudoso → asunto empieza con '[POSIBLE SPAM] ' y el cuerpo termina con 'Motivos de revisión:'", async () => {
+  it("trazo dudoso → asunto empieza con '[REVISAR] ' y el cuerpo termina con 'Motivos de revisión:'", async () => {
     conCorreo()
     const response = await POST(post(conVerificacion(valid, puntero(humanTrace({ coverage: 'partial' })))))
     expect(response.status).toBe(200)
     const { subject, text } = mensajeEnviado()
-    expect(subject).toBe(`[POSIBLE SPAM] ${buildDemoSubject(valid)}`)
+    expect(subject).toBe(`[REVISAR] ${buildDemoSubject(valid)}`)
     const ultimaLinea = text.trimEnd().split('\n').pop()
     expect(ultimaLinea).toBe('Motivos de revisión: borró poco del pizarrón')
   })
@@ -176,7 +176,7 @@ describe('POST /api/demo', () => {
     const response = await POST(post(conVerificacion(bot)))
     expect(response.status).toBe(200)
     const { subject, text } = mensajeEnviado()
-    expect(subject.startsWith('[POSIBLE SPAM] ')).toBe(true)
+    expect(subject.startsWith('[REVISAR] ')).toBe(true)
     const ultimaLinea = text.trimEnd().split('\n').pop() ?? ''
     expect(ultimaLinea.startsWith('Motivos de revisión: ')).toBe(true)
     expect(ultimaLinea).toContain('texto sin sentido')
@@ -187,7 +187,7 @@ describe('POST /api/demo', () => {
     conCorreo()
     const response = await POST(post(conVerificacion({ ...valid, mensaje: 'Visita www.ofertas.example' }, teclado())))
     expect(response.status).toBe(200)
-    expect(mensajeEnviado().subject.startsWith('[POSIBLE SPAM] ')).toBe(true)
+    expect(mensajeEnviado().subject.startsWith('[REVISAR] ')).toBe(true)
     const ultimaLinea = mensajeEnviado().text.trimEnd().split('\n').pop() ?? ''
     expect(ultimaLinea.startsWith('Motivos de revisión: usó el teclado en lugar del dedo o el mouse (puede ser una persona que no usa mouse), ')).toBe(true)
     expect(ultimaLinea).toContain('liga en los datos')
@@ -200,7 +200,7 @@ describe('POST /api/demo', () => {
       expect((await POST(post(conVerificacion(valid, teclado()), ip))).status).toBe(200)
     }
     expect(sendMail).toHaveBeenCalledTimes(3)
-    for (const [mensaje] of sendMail.mock.calls) expect(mensaje.subject.startsWith('[POSIBLE SPAM] ')).toBe(true)
+    for (const [mensaje] of sendMail.mock.calls) expect(mensaje.subject.startsWith('[REVISAR] ')).toBe(true)
     const cuarta = await POST(post(conVerificacion(valid, teclado()), ip))
     expect(cuarta.status).toBe(200)
     expect(await cuarta.json()).toEqual({ ok: true })

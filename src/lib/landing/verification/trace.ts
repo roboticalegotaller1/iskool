@@ -18,13 +18,13 @@ export interface TraceInput {
 export type TraceVerdict = { veredicto: 'ok' | 'dudoso' | 'sintetico'; motivos: string[] }
 
 /** Fracción del pizarrón que debe quedar borrada. */
-export const COVERAGE_TARGET = 0.65
+export const COVERAGE_TARGET = 0.55
 /** Lado de la cuadrícula con la que se mide la cobertura. */
 export const COVERAGE_GRID = 24
 /** Tope de puntos que el cliente puede enviar. */
 export const MAX_TRACE_POINTS = 1500
 /** Radio normalizado máximo del borrador; un radio mayor se recorta a este. */
-export const RADIO_MAX = 0.1
+export const RADIO_MAX = 0.15
 
 /** Menos puntos que esto no es un borrado. */
 export const MIN_POINTS = 15

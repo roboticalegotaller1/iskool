@@ -20,7 +20,7 @@ function checkDemoRateLimit(ip: string): boolean {
   return entry.count <= 10
 }
 
-const SPAM_TAG = '[POSIBLE SPAM] '
+const SPAM_TAG = '[REVISAR] '
 
 // A un robot se le responde como si todo hubiera salido bien, sin enviar nada.
 const fingirExito = () => Response.json({ ok: true })

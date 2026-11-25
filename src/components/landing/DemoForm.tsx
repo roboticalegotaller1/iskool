@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { buildWhatsappLink, type DemoRequest } from '@/lib/landing/contactLinks'
 import { HONEYPOT_FIELD, REQUIRED_FIELDS, VERIFICATION_FIELD, validateDemoRequest, type DemoField } from '@/lib/landing/demoForm'
 import type { DemoChallenge } from '@/lib/landing/verification/challenge'
-import { CHALLENGE_TTL_MS } from '@/lib/landing/verification/challengeTiming'
+import { CHALLENGE_TTL_MS, MIN_FILL_MS } from '@/lib/landing/verification/challengeTiming'
 import { solveChallenge } from '@/lib/landing/verification/solver'
 import { Icon } from './Icon'
 import { Pizarron, type PizarronState } from './Pizarron'
@@ -34,8 +34,8 @@ interface PaseResuelto {
   recibidoEn: number
 }
 
-// El servidor rechaza un pase con menos de 3 s de emitido; se deja un margen.
-const MIN_ESPERA_MS = 3200
+// El servidor rechaza un pase recién emitido (MIN_FILL_MS); se deja un margen.
+const MIN_ESPERA_MS = MIN_FILL_MS + 200
 
 // Un pase más viejo que esto se cambia en silencio por uno nuevo antes de enviar, con un minuto
 // de margen para que no venza en el camino. El trazo no está ligado al pase: el borrado se conserva.

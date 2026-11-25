@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } fr
 import {
   COVERAGE_TARGET,
   MAX_TRACE_POINTS,
+  MIN_DURATION_MS,
   MIN_KEYBOARD_MS,
   MIN_KEYS,
+  MIN_POINTS,
   computeCoverage,
   type TracePoint,
 } from '@/lib/landing/verification/trace'
@@ -30,7 +32,7 @@ interface PizarronProps {
 }
 
 /** Radio normalizado del borrador (el servidor lo recorta a RADIO_MAX). */
-export const RADIO_BORRADOR = 0.06
+export const RADIO_BORRADOR = 0.12
 // Se guarda un punto cuando el puntero se movió al menos esto (normalizado).
 const DIEZMADO = 0.01
 const MAX_TECLAS = 20
@@ -128,8 +130,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
     })
 
   // Tiempo en ms desde el primer evento, siempre creciente.
-  const tiempo = () => {
-    const ahora = performance.now()
+  const tiempo = (ahora: number = performance.now()) => {
     if (origen.current === null) origen.current = ahora
     ultimoT.current = Math.max(ultimoT.current, Math.round(ahora - origen.current))
     return ultimoT.current
@@ -228,21 +229,31 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
 
   // ---------- Dedo y mouse ----------
 
-  const registrar = (e: PointerEvent<HTMLDivElement>, inicioDeTrazo: boolean) => {
-    if (trazo.current.length >= MAX_TRACE_POINTS) return
-    const rect = e.currentTarget.getBoundingClientRect()
+  const registrar = (
+    tablero: HTMLDivElement,
+    clientX: number,
+    clientY: number,
+    inicioDeTrazo: boolean,
+    ahora?: number,
+  ) => {
+    if (listoRef.current || trazo.current.length >= MAX_TRACE_POINTS) return
+    const rect = tablero.getBoundingClientRect()
     if (!(rect.width > 0 && rect.height > 0)) return
-    const x = redondear(recortar01((e.clientX - rect.left) / rect.width))
-    const y = redondear(recortar01((e.clientY - rect.top) / rect.height))
+    const x = redondear(recortar01((clientX - rect.left) / rect.width))
+    const y = redondear(recortar01((clientY - rect.top) / rect.height))
     const previo = trazo.current[trazo.current.length - 1]
     if (!inicioDeTrazo && previo && Math.hypot(x - previo.x, y - previo.y) < DIEZMADO) return
-    const punto = { x, y, t: tiempo() }
+    const punto = { x, y, t: tiempo(ahora) }
     if (inicioDeTrazo) cortes.current.add(trazo.current.length)
     trazo.current.push(punto)
     borrarTramo(punto, inicioDeTrazo ? null : previo)
     // Al llegar al tope se da por terminado: quien repasó mucho la misma zona no debe quedarse
     // atorada; el servidor recalcula la cobertura y, si es baja, lo entrega etiquetado.
-    if (medir() >= COVERAGE_TARGET || trazo.current.length >= MAX_TRACE_POINTS) completar()
+    // "¡Listo!" solo cuando el servidor también lo aceptará como borrado de persona: suficiente
+    // cobertura, puntos y duración. Así nunca se dice "listo" a un trazo que se descartaría.
+    const t = trazo.current
+    const comoPersona = t.length >= MIN_POINTS && t[t.length - 1].t - t[0].t >= MIN_DURATION_MS
+    if ((medir() >= COVERAGE_TARGET && comoPersona) || t.length >= MAX_TRACE_POINTS) completar()
     avisar()
   }
 
@@ -276,12 +287,19 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
       // Sin captura el borrado sigue funcionando dentro del pizarrón.
     }
     modo.current = 'pointer'
-    registrar(e, true)
+    registrar(e.currentTarget, e.clientX, e.clientY, true)
   }
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerId !== puntero.current || listoRef.current || tecladoActivo() || !esEventoConfiable(e.nativeEvent)) return
-    registrar(e, false)
+    // El navegador agrupa varios movimientos en un solo evento cuando la pantalla va lenta; se
+    // registran todos para que el trazo no llegue con huecos desde un equipo modesto.
+    const finos = e.nativeEvent.getCoalescedEvents?.() ?? []
+    if (finos.length > 1) {
+      for (const f of finos) registrar(e.currentTarget, f.clientX, f.clientY, false, f.timeStamp)
+    } else {
+      registrar(e.currentTarget, e.clientX, e.clientY, false)
+    }
   }
 
   const soltar = (e: PointerEvent<HTMLDivElement>) => {
@@ -378,7 +396,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
         ¡Borra el pizarrón!
       </p>
       <p id="pizarron-ayuda" className="mt-1 text-sm text-lp-muted">
-        Para enviar, borra el pizarrón con el dedo o el mouse
+        Para enviar, borra el pizarrón con el dedo o el mouse: bastan 2 o 3 pasadas
       </p>
 
       <div className="relative mt-3">

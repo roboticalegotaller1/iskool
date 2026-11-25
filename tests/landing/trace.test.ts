@@ -11,6 +11,7 @@ import {
   type TracePoint,
 } from '@/lib/landing/verification/trace'
 import { HUMAN_TRACE_RADIO, humanTrace, straightTrace } from './helpers/humanTrace'
+import { RADIO_BORRADOR } from '@/components/landing/Pizarron'
 
 const puntero = (trazo: TracePoint[], radio = HUMAN_TRACE_RADIO) => ({ mode: 'pointer' as const, radio, trazo, teclas: [] })
 const teclado = (teclas: { t: number }[]) => ({ mode: 'keyboard' as const, radio: HUMAN_TRACE_RADIO, trazo: [], teclas })
@@ -30,7 +31,7 @@ function barridoEnFilas(): TracePoint[] {
 
 describe('cobertura del pizarrón', () => {
   it('constantes exportadas', () => {
-    expect(COVERAGE_TARGET).toBe(0.65)
+    expect(COVERAGE_TARGET).toBe(0.55)
     expect(COVERAGE_GRID).toBe(24)
     expect(MAX_TRACE_POINTS).toBe(1500)
   })
@@ -255,5 +256,40 @@ describe('la señal constante exige las tres condiciones juntas', () => {
     const r = analyzeTrace(puntero(trazo))
     expect(r.motivos).not.toContain('constante')
     expect(r.veredicto).not.toBe('sintetico')
+  })
+})
+
+// Borrar no debe ser tedioso: con dos o tres pasadas flojas de lado a lado basta.
+describe('borrar el pizarrón es rápido', () => {
+  // Pasadas de persona: renglones irregulares, sin llegar a los bordes, con temblor y ritmo variable.
+  function pasadas(n: number, seed: number): TracePoint[] {
+    let s = seed
+    const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647
+    const puntos: TracePoint[] = []
+    let t = 0
+    for (let i = 0; i < n; i++) {
+      const y = 0.15 + (0.7 * i) / Math.max(1, n - 1) + (rnd() - 0.5) * 0.08
+      const [x0, x1] = i % 2 ? [0.9 - rnd() * 0.08, 0.1 + rnd() * 0.08] : [0.1 + rnd() * 0.08, 0.9 - rnd() * 0.08]
+      for (let k = 0; k <= 40; k++) {
+        t += 10 + rnd() * 14
+        const avance = (1 - Math.cos((Math.PI * k) / 40)) / 2
+        puntos.push({ x: x0 + (x1 - x0) * avance, y: y + (rnd() - 0.5) * 0.04, t })
+      }
+      t += 80 + rnd() * 120
+    }
+    return puntos
+  }
+
+  it('el borrador del pizarrón cabe en el tope del servidor', () => {
+    expect(RADIO_BORRADOR).toBeLessThanOrEqual(RADIO_MAX)
+  })
+
+  it('tres pasadas flojas bastan y el servidor las acepta como humanas', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const trazo = pasadas(3, seed)
+      expect(computeCoverage(trazo, RADIO_BORRADOR)).toBeGreaterThanOrEqual(COVERAGE_TARGET)
+      const r = analyzeTrace({ mode: 'pointer', radio: RADIO_BORRADOR, trazo, teclas: [] })
+      expect(r).toEqual({ veredicto: 'ok', motivos: [] })
+    }
   })
 })

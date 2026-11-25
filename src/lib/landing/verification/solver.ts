@@ -6,7 +6,20 @@ import type { DemoChallenge } from './challenge'
 
 const LOTE = 500
 
-const cederHilo = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+// Cede el hilo con un mensaje y no con setTimeout: el navegador frena los
+// temporizadores en pestañas ocultas (hasta 1 por segundo o menos) y el pase
+// tardaría minutos si la persona abrió la página en otra pestaña.
+function cederHilo(): Promise<void> {
+  if (typeof MessageChannel === 'undefined') return new Promise((resolve) => setTimeout(resolve, 0))
+  return new Promise((resolve) => {
+    const canal = new MessageChannel()
+    canal.port1.onmessage = () => {
+      canal.port1.close()
+      resolve()
+    }
+    canal.port2.postMessage(null)
+  })
+}
 
 function aHex(buffer: ArrayBuffer): string {
   let hex = ''

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, createEvent, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -8,7 +8,7 @@ import { Landing } from '@/components/landing/Landing'
 import { Contact } from '@/components/landing/sections/Contact'
 import { landingJsonLd, landingMetadata } from '@/lib/landing/metadata'
 import { CHALLENGE_TTL_MS } from '@/lib/landing/verification/challengeTiming'
-import { COVERAGE_TARGET, analyzeTrace, computeCoverage } from '@/lib/landing/verification/trace'
+import { COVERAGE_TARGET, RADIO_MAX, analyzeTrace, computeCoverage } from '@/lib/landing/verification/trace'
 
 vi.mock('@/components/landing/fonts', () => ({ LANDING_FONT_VARIABLES: 'fuentes-de-prueba' }))
 
@@ -177,7 +177,11 @@ describe('formulario de demostración', () => {
     fireEvent.pointerDown(board, { pointerId, isPrimary, clientX: 4, clientY: 8 })
     let derecha = true
     for (let y = 0.05; y < 1; y += 0.1) {
-      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      for (let x = 0; x <= 1.0001; x += 0.02) {
+        // Una mano tarda: ~16 ms entre movimientos (un borrado instantáneo no es de persona).
+        vi.advanceTimersByTime(16)
+        fireEvent.pointerMove(board, { pointerId, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      }
       derecha = !derecha
     }
     fireEvent.pointerUp(board, { pointerId })
@@ -262,7 +266,7 @@ describe('formulario de demostración', () => {
     const v = body.verificacion
     expect(v).toMatchObject({ ...PASE_1, number: 4242, mode: 'pointer', teclas: [] })
     expect(v.radio).toBeGreaterThan(0)
-    expect(v.radio).toBeLessThanOrEqual(0.06)
+    expect(v.radio).toBeLessThanOrEqual(RADIO_MAX)
     expect(v.trazo.length).toBeGreaterThan(15)
     expect(v.trazo.length).toBeLessThanOrEqual(1500)
     for (const p of v.trazo) {
@@ -372,7 +376,7 @@ describe('formulario de demostración', () => {
     // Ya borrado, el pizarrón no debe estorbar el desplazamiento de la página en un teléfono.
     expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
     expect(pizarron().style.touchAction).toBe('auto')
-    expect(screen.getByText('Para enviar, borra el pizarrón con el dedo o el mouse')).toBeTruthy()
+    expect(screen.getByText('Para enviar, borra el pizarrón con el dedo o el mouse: bastan 2 o 3 pasadas')).toBeTruthy()
     expect(screen.getByText(/¿No puedes usar el pizarrón\? Escríbenos a/).textContent).toContain('contacto@iskool.mx')
   })
 
@@ -437,6 +441,19 @@ describe('formulario de demostración', () => {
     expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
   })
 
+  it('no dice "¡Listo!" a un trazo que el servidor descartaría (pocos puntos o instantáneo)', async () => {
+    await montar()
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    // Barrido completo pero sin que pase el tiempo: cubre el pizarrón en 0 ms.
+    fireEvent.pointerDown(board, { pointerId: 1, isPrimary: true, clientX: 4, clientY: 8 })
+    for (let y = 0.05; y < 1; y += 0.2) {
+      for (let x = 0; x <= 1.0001; x += 0.1) fireEvent.pointerMove(board, { pointerId: 1, clientX: x * 400, clientY: y * 200 })
+    }
+    fireEvent.pointerUp(board, { pointerId: 1 })
+    expect(screen.queryByText('¡Listo! Gracias.')).toBeNull()
+  })
+
   it('un toque primario nuevo reemplaza a uno que nunca se soltó', async () => {
     await montar()
     const board = pizarron()
@@ -449,7 +466,10 @@ describe('formulario de demostración', () => {
     fireEvent.pointerDown(board, { pointerId: 2, isPrimary: true, clientX: 4, clientY: 8 })
     let derecha = true
     for (let y = 0.05; y < 1; y += 0.1) {
-      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId: 2, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      for (let x = 0; x <= 1.0001; x += 0.02) {
+        vi.advanceTimersByTime(16)
+        fireEvent.pointerMove(board, { pointerId: 2, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      }
       derecha = !derecha
     }
     expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
@@ -465,6 +485,38 @@ describe('formulario de demostración', () => {
     enviar()
     await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
     expect(analyzeTrace(cuerpoEnviado(fetchMock).verificacion)).toEqual({ veredicto: 'ok', motivos: [] })
+  })
+
+  it('en un equipo lento registra los movimientos agrupados y tres pasadas bastan', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.pointerDown(board, { pointerId: 1, isPrimary: true, clientX: 30, clientY: 40 })
+    // Tres pasadas de lado a lado; el navegador entrega un solo evento por pasada con
+    // todos los movimientos intermedios agrupados, como en un celular modesto.
+    let t = performance.now()
+    for (const [y, derecha] of [[0.2, true], [0.5, false], [0.8, true]] as const) {
+      const finos = Array.from({ length: 40 }, (_, k) => {
+        t += 12 + (k % 5) * 3
+        const avance = (1 - Math.cos((Math.PI * k) / 39)) / 2
+        const x = derecha ? 0.08 + 0.84 * avance : 0.92 - 0.84 * avance
+        return { clientX: x * 400, clientY: (y + Math.sin(k) * 0.02) * 200, timeStamp: t }
+      })
+      const ultimo = finos[finos.length - 1]
+      const evento = createEvent.pointerMove(board, { pointerId: 1, clientX: ultimo.clientX, clientY: ultimo.clientY })
+      Object.defineProperty(evento, 'getCoalescedEvents', { value: () => finos })
+      fireEvent(board, evento)
+    }
+    fireEvent.pointerUp(board, { pointerId: 1 })
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    const v = cuerpoEnviado(fetchMock).verificacion
+    expect(v.trazo.length).toBeGreaterThan(15)
+    expect(analyzeTrace(v)).toEqual({ veredicto: 'ok', motivos: [] })
   })
 
   it('si el teclado espera la segunda pulsación, el dedo puede tomar el control', async () => {
