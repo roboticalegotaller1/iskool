@@ -1,9 +1,13 @@
 'use client'
 
-import { useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { buildWhatsappLink, type DemoRequest } from '@/lib/landing/contactLinks'
-import { HONEYPOT_FIELD, REQUIRED_FIELDS, validateDemoRequest, type DemoField } from '@/lib/landing/demoForm'
+import { HONEYPOT_FIELD, REQUIRED_FIELDS, VERIFICATION_FIELD, validateDemoRequest, type DemoField } from '@/lib/landing/demoForm'
+import type { DemoChallenge } from '@/lib/landing/verification/challenge'
+import { CHALLENGE_TTL_MS, MIN_FILL_MS } from '@/lib/landing/verification/challengeTiming'
+import { solveChallenge } from '@/lib/landing/verification/solver'
 import { Icon } from './Icon'
+import { Pizarron, type PizarronState } from './Pizarron'
 
 type Status = 'idle' | 'sending' | 'sent' | 'failed' | 'whatsapp'
 
@@ -23,6 +27,50 @@ const FIELDS: { name: DemoField; label: string; type: string; autoComplete: stri
 
 const EMPTY: DemoRequest = { nombre: '', escuela: '', cargo: '', telefono: '', correo: '', mensaje: '' }
 
+// Pase resuelto en segundo plano mientras la persona llena el formulario.
+interface PaseResuelto {
+  pase: DemoChallenge
+  number: number
+  recibidoEn: number
+}
+
+// El servidor rechaza un pase recién emitido (MIN_FILL_MS); se deja un margen.
+const MIN_ESPERA_MS = MIN_FILL_MS + 200
+
+// Un pase más viejo que esto se cambia en silencio por uno nuevo antes de enviar, con un minuto
+// de margen para que no venza en el camino. El trazo no está ligado al pase: el borrado se conserva.
+const PASE_POR_VENCER_MS = CHALLENGE_TTL_MS - 60_000
+
+const MSG_SIN_BORRAR = 'Borra el pizarrón para enviar.'
+const MSG_VENCIO = 'La verificación venció; borra el pizarrón otra vez.'
+
+const dormir = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+// Reintentos silenciosos del pase al cargar la página (espera antes de cada uno).
+const REINTENTOS_PASE_MS = [1000, 3000]
+
+// Un intento: pide el pase y busca su número.
+async function obtenerPase(signal: AbortSignal): Promise<PaseResuelto> {
+  const response = await fetch('/api/demo/challenge', { cache: 'no-store', signal })
+  if (!response.ok) throw new Error(String(response.status))
+  const pase = (await response.json()) as DemoChallenge
+  const recibidoEn = Date.now()
+  const number = await solveChallenge(pase, signal)
+  return { pase, number, recibidoEn }
+}
+
+async function obtenerPaseConReintentos(signal: AbortSignal): Promise<PaseResuelto> {
+  for (let intento = 0; ; intento++) {
+    try {
+      return await obtenerPase(signal)
+    } catch (error) {
+      if (signal.aborted || intento >= REINTENTOS_PASE_MS.length) throw error
+      await dormir(REINTENTOS_PASE_MS[intento])
+      if (signal.aborted) throw error
+    }
+  }
+}
+
 const CONTROL =
   'mt-2 block w-full rounded-2xl border bg-white px-4 py-3 text-base text-lp-navy shadow-[0_1px_0_rgba(11,27,63,0.04)] transition-colors placeholder:text-lp-muted/60 focus:border-lp-blue'
 
@@ -33,9 +81,45 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
   const [trap, setTrap] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
 
+  const [generacion, setGeneracion] = useState(0)
+  const [resetKey, setResetKey] = useState(0)
+  const [errorPizarron, setErrorPizarron] = useState<string | undefined>()
+  const pizarron = useRef<PizarronState | null>(null)
+  const paseRef = useRef<Promise<PaseResuelto> | null>(null)
+  const enviando = useRef(false)
+  const enviado = useRef(false)
+
+  // Pide el pase y lo resuelve en segundo plano; uno nuevo en cada generación. Si falla se
+  // reintenta en silencio: la persona solo se entera si al enviar tampoco se consigue.
+  useEffect(() => {
+    const control = new AbortController()
+    const promesa = obtenerPaseConReintentos(control.signal)
+    promesa.catch(() => {})
+    paseRef.current = promesa
+    return () => control.abort()
+  }, [generacion])
+
+  const pedirPaseNuevo = () => {
+    paseRef.current = null
+    setGeneracion((g) => g + 1)
+  }
+
+  // Pase nuevo y pizarrón limpio; lo que la persona escribió se queda.
+  const rearmar = () => {
+    pedirPaseNuevo()
+    setResetKey((k) => k + 1)
+  }
+
+  const onPizarron = useCallback((state: PizarronState) => {
+    pizarron.current = state
+    if (state.listo) setErrorPizarron(undefined)
+  }, [])
+
+  const enfocarPizarron = () => formRef.current?.querySelector<HTMLElement>('[data-pizarron]')?.focus()
+
   const update = (name: DemoField, value: string) => {
     setValues((v) => ({ ...v, [name]: value }))
-    setStatus('idle')
+    setStatus((s) => (s === 'sent' ? s : 'idle'))
   }
 
   // Devuelve la solicitud si todo está bien; si no, marca los errores y enfoca el primer campo.
@@ -51,22 +135,97 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
 
   async function onSend(e: FormEvent) {
     e.preventDefault()
-    if (status === 'sending') return
+    if (enviando.current || enviado.current) return
     const req = validated()
     if (!req) return
+    const borrado = pizarron.current
+    if (!borrado?.listo) {
+      setErrorPizarron(MSG_SIN_BORRAR)
+      enfocarPizarron()
+      return
+    }
 
+    enviando.current = true
     setStatus('sending')
     try {
+      let resuelto: PaseResuelto
+      try {
+        if (!paseRef.current) throw new Error('sin pase')
+        resuelto = await paseRef.current
+      } catch {
+        // El pase de fondo no se consiguió: un intento más ahora mismo.
+        try {
+          resuelto = await obtenerPase(new AbortController().signal)
+          paseRef.current = Promise.resolve(resuelto)
+        } catch {
+          // Tampoco: se prepara otro para la próxima y se ofrece el correo.
+          pedirPaseNuevo()
+          setStatus('failed')
+          return
+        }
+      }
+
+      // La persona tardó tanto que el pase está por vencer: se consigue otro sin pedirle borrar de nuevo.
+      if (Date.now() - resuelto.recibidoEn > PASE_POR_VENCER_MS) {
+        try {
+          resuelto = await obtenerPase(new AbortController().signal)
+          paseRef.current = Promise.resolve(resuelto)
+        } catch {
+          pedirPaseNuevo()
+          setStatus('failed')
+          return
+        }
+      }
+
+      // El tiempo mínimo cuenta desde el pase que de verdad se envía (también si se acaba de cambiar).
+      const espera = MIN_ESPERA_MS - (Date.now() - resuelto.recibidoEn)
+      if (espera > 0) await dormir(espera)
+
+      const { pase, number } = resuelto
       const response = await fetch('/api/demo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...req, [HONEYPOT_FIELD]: trap }),
+        body: JSON.stringify({
+          ...req,
+          [HONEYPOT_FIELD]: trap,
+          [VERIFICATION_FIELD]: {
+            salt: pase.salt,
+            challenge: pase.challenge,
+            max: pase.max,
+            signature: pase.signature,
+            number,
+            mode: borrado.mode,
+            radio: borrado.radio,
+            trazo: borrado.trazo,
+            teclas: borrado.teclas,
+          },
+        }),
       })
-      if (!response.ok) throw new Error(String(response.status))
-      setValues(EMPTY)
-      setStatus('sent')
-    } catch {
+      if (response.ok) {
+        enviado.current = true
+        setValues(EMPTY)
+        setStatus('sent')
+        return
+      }
+      if (response.status === 400) {
+        const data = (await response.json().catch(() => null)) as { error?: unknown } | null
+        if (data?.error === 'verificacion') {
+          rearmar()
+          setErrorPizarron(MSG_VENCIO)
+          setStatus('idle')
+          enfocarPizarron()
+          return
+        }
+      }
+      // Con 502 o 503 el pase ya se gastó: se prepara otro para el siguiente intento.
+      if (response.status === 502 || response.status === 503) rearmar()
       setStatus('failed')
+    } catch {
+      // Sin respuesta no se sabe si el pase se gastó: se prepara otro.
+      rearmar()
+      setStatus('failed')
+    } finally {
+      enviando.current = false
     }
   }
 
@@ -146,7 +305,16 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
             className={`${CONTROL} border-lp-navy/15`}
           />
         </div>
+
+        <Pizarron onChange={onPizarron} resetKey={resetKey} error={errorPizarron} />
       </div>
+
+      <p className="mt-3 text-sm text-lp-muted">
+        ¿No puedes usar el pizarrón? Escríbenos a{' '}
+        <a href={`mailto:${email}`} className="font-semibold text-lp-navy underline decoration-lp-sky underline-offset-4">
+          {email}
+        </a>
+      </p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <button

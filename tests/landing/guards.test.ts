@@ -13,7 +13,13 @@ function walk(dir: string): string[] {
 }
 
 // El módulo de fuentes importa de un paquete cuyo nombre incluye una marca; ese identificador no se puede evitar.
-const read = (file: string) => readFileSync(file, 'utf8').replaceAll('next/font/google', '')
+// El pizarrón dibuja con el elemento estándar de dibujo del navegador: su etiqueta y sus tipos no son la marca.
+const read = (file: string) =>
+  readFileSync(file, 'utf8')
+    .replaceAll('next/font/google', '')
+    .replaceAll('<canvas', '')
+    .replaceAll('HTMLCanvasElement', '')
+    .replaceAll('CanvasRenderingContext2D', '')
 const files = LANDING_DIRS.flatMap(walk)
 
 // Marcas de terceros y nombre del prospecto: no deben aparecer en textos ni componentes.
