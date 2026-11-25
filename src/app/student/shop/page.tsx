@@ -646,8 +646,8 @@ export default function MagicShopPage() {
                             disabled={!hasCoins || isPurchasing}
                             className={`px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 flex items-center gap-1 ${
                               hasCoins && !isPurchasing
-                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-950/50 border border-emerald-400/30'
-                                : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800'
+                                ? 'bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md shadow-emerald-950/50 border border-emerald-400/40'
+                                : 'bg-slate-800 text-slate-300 opacity-75 cursor-not-allowed border border-slate-700'
                             }`}
                           >
                             {isPurchasing ? 'Canjeando...' : 'Canjear'}

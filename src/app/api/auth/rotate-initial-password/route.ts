@@ -44,9 +44,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Verifique su usuario y asegúrese de que la nueva contraseña tenga al menos 6 caracteres.',
+          error: 'Verifique su usuario y asegúrese de que la nueva contraseña tenga al menos 8 caracteres.',
         },
-        { status: 400 }
+        { status: 400, headers: { 'Cache-Control': 'no-store' } }
       );
     }
 

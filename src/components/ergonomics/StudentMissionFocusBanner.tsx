@@ -88,7 +88,7 @@ export const StudentMissionFocusBanner: React.FC<StudentMissionFocusBannerProps>
             {/* 3-Step Visual Progress */}
             <div className="flex items-center gap-3 mb-5">
               <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white font-black text-xs">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-700 text-white font-black text-xs">
                   1
                 </span>
                 <span className="text-xs font-extrabold text-slate-800">Explorar Tema</span>
@@ -112,7 +112,7 @@ export const StudentMissionFocusBanner: React.FC<StudentMissionFocusBannerProps>
               type="button"
               data-testid="btn-student-start-mission-now"
               onClick={onStartActiveQuest}
-              className="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-600 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition"
+              className="flex-1 min-w-[220px] inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 hover:bg-emerald-800 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-emerald-900/25 transition"
             >
               <Rocket className="h-4 w-4" />
               🚀 COMENZAR MISIÓN AHORA

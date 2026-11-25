@@ -190,9 +190,9 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
               
               if (isAnswered) {
                 if (isCorrect) {
-                  buttonStyle = "bg-emerald-500 text-white border-emerald-600 shadow-lg shadow-emerald-500/30 scale-[1.02]";
+                  buttonStyle = "bg-emerald-700 text-white border-emerald-800 shadow-lg shadow-emerald-700/30 scale-[1.02]";
                 } else if (isSelected && !isCorrect) {
-                  buttonStyle = "bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-500/30";
+                  buttonStyle = "bg-rose-700 text-white border-rose-800 shadow-lg shadow-rose-700/30";
                 } else {
                   buttonStyle = "bg-slate-100 dark:bg-zinc-800/40 text-slate-400 dark:text-zinc-500 border-slate-200/50 opacity-60";
                 }

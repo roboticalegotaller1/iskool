@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
+
+const EXECUTIVE_INBOX_ROLES = new Set(['superadmin', 'admin', 'owner', 'ceo', 'director', 'coordinator']);
 
 export async function GET(req: NextRequest) {
   const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
@@ -11,10 +14,27 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const isSuperUser = ['superadmin', 'admin', 'owner', 'ceo', 'director'].includes(auth.user.role || '');
+  const roleLower = (auth.user.role || '').toLowerCase();
+  if (!EXECUTIVE_INBOX_ROLES.has(roleLower)) {
+    return NextResponse.json(
+      { error: 'Permisos directivos requeridos para consultar asuntos institucionales.' },
+      { status: 403 }
+    );
+  }
+
+  const isSuperUser = isPlatformSuperUser(auth.user as any);
   const { searchParams } = new URL(req.url);
-  const requestedSchoolId = searchParams.get('schoolId') || auth.user.school_id || '938fa492-4ddc-4f6f-80d7-1bd054af8536';
-  const schoolId = (isSuperUser || !auth.user.school_id) ? requestedSchoolId : auth.user.school_id;
+  const userSchoolId = auth.user.school_id || auth.user.tenant_id || '';
+  const requestedSchoolId = searchParams.get('schoolId') || userSchoolId || '938fa492-4ddc-4f6f-80d7-1bd054af8536';
+
+  if (!isSuperUser && userSchoolId && requestedSchoolId !== userSchoolId) {
+    return NextResponse.json(
+      { error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+      { status: 403 }
+    );
+  }
+
+  const schoolId = isSuperUser ? requestedSchoolId : (userSchoolId || requestedSchoolId);
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

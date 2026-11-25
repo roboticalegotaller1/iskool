@@ -2173,7 +2173,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     setPermissionBlocked(false);
                     if (!isRecording) startRecording();
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>✨ Modo Táctil / Guiado</span>

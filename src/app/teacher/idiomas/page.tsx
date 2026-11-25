@@ -1757,7 +1757,7 @@ export default function TeacherIdiomasPage() {
                 <button
                   type="button"
                   onClick={handleCreateNewLesson}
-                  className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
+                  className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-bold flex items-center gap-1 cursor-pointer shadow-2xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Nueva</span>
@@ -1897,8 +1897,8 @@ export default function TeacherIdiomasPage() {
                         onClick={() => handlePlayAudioSample()}
                         className={`flex-1 py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all ${
                           isPlayingPreview
-                            ? 'bg-rose-600 text-white animate-pulse'
-                            : 'bg-[#059669] hover:bg-emerald-600 text-white'
+                            ? 'bg-rose-700 text-white animate-pulse'
+                            : 'bg-[#047857] hover:bg-[#065F46] text-white'
                         }`}
                       >
                         {isPlayingPreview ? (

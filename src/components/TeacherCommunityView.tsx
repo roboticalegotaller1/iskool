@@ -647,10 +647,10 @@ export const TeacherCommunityView: React.FC = () => {
                     aria-label={`Previsualizar y jugar ${activity.title}`}
                     className={`py-2.5 px-3.5 rounded-2xl font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       isMasterclass 
-                        ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-500/20' 
+                        ? 'bg-amber-800 hover:bg-amber-700 text-white shadow-amber-700/20' 
                         : isCognitiveChallenge
-                        ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-500/20'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20'
+                        ? 'bg-cyan-700 hover:bg-cyan-600 text-white shadow-cyan-700/20'
+                        : 'bg-emerald-700 hover:bg-emerald-600 text-white shadow-emerald-700/20'
                     }`}
                   >
                     <Play className="w-3.5 h-3.5 fill-white" />

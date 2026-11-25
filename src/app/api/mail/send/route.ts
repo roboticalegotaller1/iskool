@@ -256,7 +256,8 @@ export async function POST(req: NextRequest) {
       const userRole = (auth.user.role || '').toLowerCase();
       const isDirectorOrAdmin = ['admin', 'superadmin', 'director', 'ceo', 'owner'].includes(userRole);
       if (!isDirectorOrAdmin && auth.user.email) {
-        effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(auth.user.email));
+        effectiveSender = auth.user.email;
+        effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(effectiveSender));
       }
     }
 

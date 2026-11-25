@@ -2616,6 +2616,21 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
               ...currentTeachers.filter(t => t.school_id !== demoId),
               ...demoTeachersSeed
             ];
+          } else {
+            const demoTeacherSeedById = new Map(demoTeachersSeed.map(t => [t.id, t]));
+            currentTeachers = currentTeachers.map(t => {
+              if (t.school_id !== demoId) return t;
+              const canonical = demoTeacherSeedById.get(t.id);
+              if (!canonical) return t;
+              const staleTokens = (t.ai_tokens_consumed || 0) < 25000;
+              if (!staleTokens) return t;
+              return {
+                ...t,
+                ai_tokens_consumed: canonical.ai_tokens_consumed,
+                assigned_subjects: (t.assigned_subjects && t.assigned_subjects.length > 0) ? t.assigned_subjects : canonical.assigned_subjects,
+                assigned_groups: (t.assigned_groups && t.assigned_groups.length > 0) ? t.assigned_groups : canonical.assigned_groups,
+              };
+            });
           }
           const existingTeacherIds = new Set(currentTeachers.map(t => t.id));
           const missingTeachers = TEACHERS_LIST_SEED.filter(t => !existingTeacherIds.has(t.id));

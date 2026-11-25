@@ -167,7 +167,7 @@ export const QuestCard: React.FC<QuestCardProps> = ({
           <button
             type="button"
             disabled
-            className="w-full py-3 px-4 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed"
+            className="w-full py-3 px-4 rounded-2xl bg-slate-900 border border-slate-700 text-slate-300 opacity-75 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed"
           >
             <Lock className="w-4 h-4" />
             <span>Requiere Nivel {requiredLevel || quest.required_level || 1}</span>

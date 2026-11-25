@@ -198,7 +198,15 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const tenantId = searchParams.get('tenantId') || authResult.user.school_id || 'sch-test-case';
+  const userSchoolId = authResult.user.school_id || authResult.user.tenant_id || '';
+  const tenantId = searchParams.get('tenantId') || userSchoolId || 'sch-test-case';
+  const roleLower = (authResult.user.role || '').toLowerCase();
+  if (roleLower !== 'superadmin' && userSchoolId && tenantId !== userSchoolId) {
+    return NextResponse.json(
+      { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+      { status: 403 }
+    );
+  }
   const email = searchParams.get('email') || undefined;
 
   const pending = InboundMailSpoolService.getPendingEmails(tenantId, email);

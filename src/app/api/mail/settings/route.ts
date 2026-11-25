@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CeoEmailSettingsService } from '@/lib/services/ceoEmailSettingsService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 
 export const runtime = 'nodejs';
 
 const ALLOWED_STAFF_ROLES = ['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo'];
+
+function isAuthorizedForTenant(user: any, tenantId: string): boolean {
+  if (isPlatformSuperUser(user)) return true;
+  const userTenant = user?.tenant_id || user?.school_id;
+  if (!userTenant) return true;
+  if (tenantId !== userTenant) {
+    const ibimeAliases = new Set(['sch-ibime', 'e1000000-0000-0000-0000-000000000001', 'IBIME', 'ibime']);
+    if (ibimeAliases.has(userTenant) && ibimeAliases.has(tenantId)) return true;
+    return false;
+  }
+  return true;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,13 +30,10 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId') || auth.user.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = searchParams.get('tenantId') || auth.user.tenant_id || auth.user.school_id || 'e1000000-0000-0000-0000-000000000001';
 
-    // Aislamiento Hermético Multi-Tenant (Anti-BOLA)
-    const userRole = (auth.user.role || '').toLowerCase();
-    const isSuperAdmin = userRole === 'superadmin' || userRole === 'admin' || userRole === 'owner';
-    const userTenant = auth.user.tenant_id;
-    if (!isSuperAdmin && userTenant && tenantId !== userTenant && !tenantId.includes(userTenant)) {
+    // Aislamiento Hermético Multi-Tenant (Anti-BOLA exacto, sin substring bypass)
+    if (!isAuthorizedForTenant(auth.user, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: No tiene autorización para consultar ajustes de otro plantel escolar.' },
         { status: 403 }
@@ -55,13 +65,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { action } = body;
-    const tenantId = body.tenantId || auth.user.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = body.tenantId || auth.user.tenant_id || auth.user.school_id || 'e1000000-0000-0000-0000-000000000001';
 
-    // Aislamiento Hermético Multi-Tenant (Anti-BOLA)
-    const userRole = (auth.user.role || '').toLowerCase();
-    const isSuperAdmin = userRole === 'superadmin' || userRole === 'admin' || userRole === 'owner';
-    const userTenant = auth.user.tenant_id;
-    if (!isSuperAdmin && userTenant && tenantId !== userTenant && !tenantId.includes(userTenant)) {
+    // Aislamiento Hermético Multi-Tenant (Anti-BOLA exacto, sin substring bypass)
+    if (!isAuthorizedForTenant(auth.user, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: No tiene autorización para modificar ajustes de otro plantel escolar.' },
         { status: 403 }

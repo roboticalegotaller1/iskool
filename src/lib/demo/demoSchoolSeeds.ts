@@ -287,7 +287,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Central Primaria',
       specialty: 'Pedagogía NEM 2024 y Piloto Automático de Aula',
       bio: 'Docente titular de 5ºA Primaria experto en pase de lista en 1 toque, sellado digital e integración continua con familias.',
-      ai_tokens_consumed: 18400,
+      ai_tokens_consumed: 105400,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['5ºA', '5ºB'],
@@ -309,7 +309,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Norte Secundaria',
       specialty: 'Inmersión Bilingüe, Avatares 3D a 60 FPS y Fonética Neural',
       bio: 'Especialista en entornos conversacionales 3D multilingües e inteligencia fonética interactiva.',
-      ai_tokens_consumed: 14200,
+      ai_tokens_consumed: 75200,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['5ºA', '1ºA'],
@@ -331,7 +331,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Norte Secundaria',
       specialty: 'Historia de México y Personajes Históricos en 1ª Persona',
       bio: 'Titular de Historia y Laboratorio de Ciudadanía con dinámicas narrativas en primera persona.',
-      ai_tokens_consumed: 9100,
+      ai_tokens_consumed: 60100,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['1ºA', '2ºA'],
@@ -353,7 +353,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Norte Secundaria',
       specialty: 'Razonamiento Lógico-Matemático y Evaluación Analítica',
       bio: 'Docente de Secundaria enfocada en modelado matemático, diagnóstico oportuno y seguimiento personalizado.',
-      ai_tokens_consumed: 6800,
+      ai_tokens_consumed: 120800,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['1ºA', '3ºA'],
@@ -394,7 +394,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Central Primaria',
       specialty: PRI_SPECIALTIES[i % PRI_SPECIALTIES.length],
       bio: `Titular de Campus Central Primaria especializado en ${PRI_SPECIALTIES[i % PRI_SPECIALTIES.length].toLowerCase()}.`,
-      ai_tokens_consumed: 2100 + (i * 230) % 3400,
+      ai_tokens_consumed: [30200, 45400, 75600, 90300, 60800, 120200, 45100, 105900][i % 8],
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
@@ -427,7 +427,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Norte Secundaria',
       specialty: SEC_SPECIALTIES[i % SEC_SPECIALTIES.length],
       bio: `Docente de Campus Norte Secundaria dedicado a ${SEC_SPECIALTIES[i % SEC_SPECIALTIES.length].toLowerCase()}.`,
-      ai_tokens_consumed: 2600 + (i * 290) % 3900,
+      ai_tokens_consumed: [45800, 90400, 30500, 105200, 60900, 135300, 75100][i % 7],
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
@@ -460,7 +460,7 @@ const buildTeachers = (): UserProfile[] => {
       campus_name: 'Campus Sur Preparatoria',
       specialty: PREP_SPECIALTIES[i % PREP_SPECIALTIES.length],
       bio: `Catedrático de Campus Sur Preparatoria especializado en ${PREP_SPECIALTIES[i % PREP_SPECIALTIES.length].toLowerCase()}.`,
-      ai_tokens_consumed: 2900 + (i * 310) % 4100,
+      ai_tokens_consumed: [60400, 105700, 45200, 135600, 75900, 30800, 90100][i % 7],
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
@@ -1437,6 +1437,46 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     notes: 'Requiere validación de horas de laboratorio',
   },
 ];
+
+const DEMO_PAYROLL_BASE: StaffPayrollRecord[] = [...DEMO_STAFF_PAYROLL];
+const PAYROLL_BANKS = ['BBVA Bancomer', 'Santander', 'Citibanamex', 'Banorte', 'HSBC México'];
+const PAYROLL_STATUSES: StaffPayrollRecord['status'][] = ['pagado', 'pagado', 'pagado', 'en_dispersion', 'pendiente'];
+
+const existingPayrollEmployeeIds = new Set(DEMO_PAYROLL_BASE.map((r) => r.employee_id));
+DEMO_TEACHERS.forEach((t, idx) => {
+  if (existingPayrollEmployeeIds.has(t.id)) return;
+  const fullName = `${t.first_name} ${t.last_name}`.replace(/\s*\(Idiomas 3D\)/i, '').trim();
+  const baseSalary = t.campus_id === 'cmp-demo-prep' ? 15600 + (idx % 4) * 550 : t.campus_id === 'cmp-demo-sec' ? 14400 + (idx % 4) * 500 : 13400 + (idx % 4) * 450;
+  const bonuses = 1100 + (idx % 5) * 250;
+  const deductions = Math.round((baseSalary + bonuses) * 0.135);
+  const netSalary = baseSalary + bonuses - deductions;
+  const status = PAYROLL_STATUSES[idx % PAYROLL_STATUSES.length];
+  const seqNum = String(DEMO_PAYROLL_BASE.length + 1).padStart(3, '0');
+  DEMO_PAYROLL_BASE.push({
+    id: `pay-cdemo-${seqNum}`,
+    employee_id: t.id,
+    employee_name: fullName,
+    role: 'teacher',
+    department: t.campus_id === 'cmp-demo-prep' ? 'Académico Preparatoria' : t.campus_id === 'cmp-demo-sec' ? 'Académico Secundaria' : 'Académico Primaria',
+    position_title: t.assigned_subjects?.[0] ? `Titular de ${t.assigned_subjects[0]}` : 'Docente Titular',
+    school_id: DEMO_SCHOOL_ID,
+    campus_name: t.campus_name || 'Campus Central Primaria',
+    base_salary: baseSalary,
+    bonuses,
+    deductions,
+    net_salary: netSalary,
+    payment_period: '1ª Quincena Marzo 2026',
+    period_type: 'quincenal',
+    payment_date: status === 'pagado' ? '2026-03-15' : undefined,
+    status,
+    payment_method: 'SPEI / Transferencia Bancaria',
+    account_clabe: `01218000${String(1000000000 + idx * 13791).slice(0, 10)}`,
+    bank_name: PAYROLL_BANKS[idx % PAYROLL_BANKS.length],
+    receipt_folio: status === 'pagado' ? `NOM-DEMO-2026-${seqNum}` : undefined,
+    notes: status === 'pagado' ? 'Dispersión quincenal acreditada' : 'Programado para dispersión SPEI',
+  });
+});
+DEMO_STAFF_PAYROLL.splice(0, DEMO_STAFF_PAYROLL.length, ...DEMO_PAYROLL_BASE);
 
 export const getDemoAvatarUrl = (isFemale: boolean, index: number): string =>
   getAdultPhoto(isFemale, index);

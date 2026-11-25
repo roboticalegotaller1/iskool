@@ -8,8 +8,11 @@ import {
 } from '@/lib/services/workOsAiDraftVault.service';
 import { EmailTriageTelemetryService } from '@/lib/services/emailTriageTelemetry.service';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 
 export const dynamic = 'force-dynamic';
+
+const WORKOS_EXECUTIVE_ROLES = new Set(['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator']);
 
 /**
  * GET /api/admin/workos/draft
@@ -24,9 +27,30 @@ export async function GET(req: NextRequest) {
         { status: 401 }
       );
     }
+    const roleLower = (auth.user?.role || '').toLowerCase();
+    if (auth.authenticated && !WORKOS_EXECUTIVE_ROLES.has(roleLower)) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos directivos requeridos para consultar borradores.' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q') || '';
-    const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    const userTenant = auth.user?.tenant_id || auth.user?.school_id || '';
+    const requestedTenant = searchParams.get('tenantId') || userTenant || 'e1000000-0000-0000-0000-000000000001';
+    if (
+      auth.authenticated &&
+      !isPlatformSuperUser(auth.user as any) &&
+      userTenant &&
+      requestedTenant !== userTenant
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+        { status: 403 }
+      );
+    }
+    const tenantId = requestedTenant;
     const listAll = searchParams.get('all') === 'true';
 
     if (listAll) {
@@ -76,10 +100,30 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+    const postRoleLower = (auth.user?.role || '').toLowerCase();
+    if (auth.authenticated && !WORKOS_EXECUTIVE_ROLES.has(postRoleLower)) {
+      return NextResponse.json(
+        { success: false, error: 'Permisos directivos requeridos para generar borradores.' },
+        { status: 403 }
+      );
+    }
 
     const body = await req.json();
     const subject = (body.subject || '').trim();
-    const tenantId = body.tenantId || 'e1000000-0000-0000-0000-000000000001';
+    const userTenant = auth.user?.tenant_id || auth.user?.school_id || '';
+    const requestedTenant = body.tenantId || userTenant || 'e1000000-0000-0000-0000-000000000001';
+    if (
+      auth.authenticated &&
+      !isPlatformSuperUser(auth.user as any) &&
+      userTenant &&
+      requestedTenant !== userTenant
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+        { status: 403 }
+      );
+    }
+    const tenantId = requestedTenant;
     const tone = body.tone || 'formal_empathetic';
     const audience = body.audience || 'parents';
     const whiteLabelShield = body.whiteLabelShield ?? true;

@@ -163,14 +163,8 @@ body:has(.lp-root) {
     animation-delay: var(--d, 0s);
   }
 
-  /* Aparición al entrar en pantalla, solo donde el navegador lo soporta sin JavaScript. */
-  @supports (animation-timeline: view()) {
-    .lp-reveal {
-      animation: lp-rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 38%;
-    }
-  }
+  /* Visibilidad inmediata garantizada sin atrapar secciones en opacity: 0 en navegadores Chromium/Windows. */
+  .lp-reveal { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

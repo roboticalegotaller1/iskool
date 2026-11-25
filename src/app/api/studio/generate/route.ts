@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { generateGamifiedProject } from '@/services/pedagogicalProjectEngine';
+import { generateOrFetchStudioMasterClass } from '@/lib/services/studioVaultEngine.service';
 import { validateApiAuth } from '@/lib/authValidator';
 
 const StudioGenerateSchema = z.object({
   topic: z.string().trim().min(2, 'El parámetro "topic" debe tener al menos 2 caracteres').max(200, 'El tema es demasiado largo'),
+  grade: z.string().trim().max(100).optional(),
   ageGroup: z.string().trim().max(100).optional().default('Fase 5'),
   faseNem: z.string().trim().max(100).optional(),
   campoFormativo: z.string().trim().max(100).optional(),
@@ -12,7 +14,8 @@ const StudioGenerateSchema = z.object({
   templateType: z.string().trim().optional(),
   gamificationStyle: z.string().trim().optional().default('rpg_adventure'),
   questionCount: z.coerce.number().int().min(1).max(20).optional().default(5),
-  language: z.string().trim().optional().default('Español')
+  language: z.string().trim().optional().default('Español'),
+  forceRegenerate: z.boolean().optional().default(false),
 });
 
 /**
@@ -73,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     const { 
       topic, 
+      grade,
       ageGroup, 
       faseNem: inputFaseNem, 
       campoFormativo, 
@@ -80,12 +84,57 @@ export async function POST(req: NextRequest) {
       templateType,
       gamificationStyle: rawStyle, 
       questionCount,
-      language = 'Español'
+      language = 'Español',
+      forceRegenerate = false,
     } = parsedBody.data;
 
     const isEscapeRoom = template_type === 'escape_room' || templateType === 'escape_room' || rawStyle === 'escape_room';
     const gamificationStyle = isEscapeRoom ? 'escape_room' : rawStyle;
     const fase = inputFaseNem || ageGroup || 'Fase 5';
+
+    // MODO CLASE INTERACTIVA MAESTRA (Vault-First 0 Tokens + Tokens Reales + Persistencia Bóveda Curricular)
+    if (!isEscapeRoom) {
+      const master = await generateOrFetchStudioMasterClass({
+        topic,
+        grade,
+        faseNem: fase,
+        gamificationStyle: gamificationStyle as any,
+        language,
+        forceRegenerate,
+      });
+
+      const masterQuestions = master.blocks
+        .filter((b) => b.type === 'quiz_question')
+        .map((b: any) => ({
+          question: b.data.question,
+          options: b.data.options,
+          correctIndex: b.data.correctIndex,
+          explanation: b.data.explanation,
+          timeLimitSeconds: b.data.timeLimitSeconds,
+        }));
+
+      return NextResponse.json({
+        success: true,
+        title: master.metadata.title,
+        description: master.metadata.description,
+        language,
+        template_type: template_type || templateType || 'master_class',
+        metadata: master.metadata,
+        blocks: master.blocks,
+        connections: master.connections,
+        startNodeId: master.startNodeId,
+        questions: masterQuestions,
+        relatedResources: master.relatedResources,
+        teacherMonitoringRubric: master.teacherMonitoringRubric,
+        tokenTelemetry: master.tokenTelemetry,
+        vaultRelativePath: master.vaultRelativePath,
+        planeacionViewerUrl: master.planeacionViewerUrl,
+        persistedInVault: master.persistedInVault,
+        fromVault: master.tokenTelemetry.fromVault,
+        gradeLabel: master.gradeLabel,
+        cleanTopic: master.cleanTopic,
+      });
+    }
 
     // Construcción e inyección del SYSTEM PROMPT dinámico
     const systemPrompt = getStudioSystemPrompt(language, isEscapeRoom, topic);

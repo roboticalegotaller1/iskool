@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, ActivityBuilderMetadata, FlowConnection } from '@/types/studioBlocks';
 import { useStudentStore } from '@/store/useStudentStore';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
+import { InteractiveMathLabWidget } from './InteractiveMathLabWidget';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
 import { attachStudioBroadcastMaster, getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
@@ -116,6 +117,10 @@ export const StudioFlowPlayer: React.FC<Props> = ({
   // Estados de Pregunta (Quiz)
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(false);
+  const [selectedHotspotId, setSelectedHotspotId] = useState<string | null>(null);
+  const [visitedHotspots, setVisitedHotspots] = useState<Record<string, boolean>>({});
+  const [selectedExitTrafficLight, setSelectedExitTrafficLight] = useState<number | null>(null);
+  const [exitReflectionText, setExitReflectionText] = useState<string>('');
 
   // Estados de Combate contra Boss
   const [bossHp, setBossHp] = useState(100);
@@ -1703,7 +1708,11 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   onClick={() => handleNextStep(25)}
                   className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
                 >
-                  <span>¡Comprendido, Libertador! Avanzar (+25 XP)</span>
+                  <span>
+                    {activeBlock.data.style === 'instruction'
+                      ? '¡Clase Comprendida! Avanzar (+25 XP)'
+                      : '¡Entendido! Continuar Aventura (+25 XP)'}
+                  </span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -2744,45 +2753,106 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             );
           })()}
 
-          {/* ================= 30. MAPA DE PUNTOS CALIENTES & OCLUSIÓN VISUAL (0 TOKENS) ================= */}
+          {/* ================= 30. MAPA DE PUNTOS CALIENTES & DIAGRAMA INTERACTIVO ================= */}
           {activeBlock?.type === 'interactive_hotspot_canvas' && (
             <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/40 dark:to-sky-950/40 border-2 border-cyan-200 dark:border-cyan-800 space-y-4">
-              <div>
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-200/80 text-cyan-950">
-                  Mapa de Puntos Calientes &amp; Oclusión Visual • 0 Tokens
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-200/80 text-cyan-950">
+                    Diagrama Interactivo &amp; Puntos Calientes
+                  </span>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1">
+                    {activeBlock.data.diagramTitle || activeBlock.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5">
+                    {activeBlock.data.instructions}
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-cyan-300 text-xs font-black text-cyan-900 dark:text-cyan-200">
+                  {Object.keys(visitedHotspots).length} / {(activeBlock.data.hotspots || []).length} puntos explorados
                 </span>
-                <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                  {activeBlock.data.diagramTitle || activeBlock.title}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5">
-                  {activeBlock.data.instructions}
-                </p>
               </div>
 
+              {activeBlock.data.diagramImageUrl && (
+                <div className="relative w-full rounded-2xl overflow-hidden border-2 border-cyan-200 dark:border-cyan-800 bg-white shadow-md">
+                  <img
+                    src={activeBlock.data.diagramImageUrl}
+                    alt={activeBlock.data.diagramTitle || activeBlock.title}
+                    className="w-full h-auto block select-none"
+                  />
+                  {(activeBlock.data.hotspots || []).map((pin, idx) => {
+                    const pid = pin.id || String(idx);
+                    const isVisited = Boolean(visitedHotspots[pid]);
+                    const isSelected = selectedHotspotId === pid;
+                    return (
+                      <button
+                        key={pid}
+                        type="button"
+                        onClick={() => {
+                          playSound('correct');
+                          setSelectedHotspotId(pid);
+                          setVisitedHotspots((prev) => ({ ...prev, [pid]: true }));
+                        }}
+                        style={{ left: `${pin.xPercent}%`, top: `${pin.yPercent}%` }}
+                        aria-label={`Explorar punto ${pin.pinNumber}: ${pin.correctLabel}`}
+                        className={`absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full font-black text-xs flex items-center justify-center shadow-lg border-2 border-white transition-transform cursor-pointer ${
+                          isSelected
+                            ? 'bg-amber-600 text-white scale-125 ring-4 ring-amber-400/50 z-20'
+                            : isVisited
+                              ? 'bg-emerald-700 text-white scale-105 z-10'
+                              : 'bg-indigo-700 hover:bg-indigo-800 text-white animate-pulse z-10'
+                        }`}
+                      >
+                        {pin.pinNumber}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {(activeBlock.data.hotspots || []).map((pin, idx) => (
-                  <button
-                    key={pin.id || idx}
-                    type="button"
-                    onClick={() => playSound('correct')}
-                    className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-cyan-200 hover:border-emerald-500 text-left transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-cyan-900 dark:text-white">📍 #{pin.pinNumber} {pin.correctLabel}</span>
-                      <span className="text-[10px] font-mono font-bold text-emerald-600">({pin.xPercent}%, {pin.yPercent}%) ✓</span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 dark:text-zinc-300 mt-1">{pin.hint}</p>
-                  </button>
-                ))}
+                {(activeBlock.data.hotspots || []).map((pin, idx) => {
+                  const pid = pin.id || String(idx);
+                  const isVisited = Boolean(visitedHotspots[pid]);
+                  const isSelected = selectedHotspotId === pid;
+                  return (
+                    <button
+                      key={pid}
+                      type="button"
+                      onClick={() => {
+                        playSound('correct');
+                        setSelectedHotspotId(pid);
+                        setVisitedHotspots((prev) => ({ ...prev, [pid]: true }));
+                      }}
+                      className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-600 shadow-sm'
+                          : isVisited
+                            ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-400'
+                            : 'bg-white dark:bg-zinc-900 border-cyan-200 hover:border-indigo-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-black text-slate-900 dark:text-white">
+                          📍 #{pin.pinNumber} · {pin.correctLabel}
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold ${isVisited ? 'text-emerald-700' : 'text-slate-500'}`}>
+                          {isVisited ? 'Verificado ✓' : 'Explorar'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-700 dark:text-zinc-300 mt-1 leading-relaxed">{pin.hint}</p>
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => handleNextStep(45)}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-2.5 rounded-2xl bg-cyan-700 hover:bg-cyan-800 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                  <span>Puntos Calientes Identificados: Continuar (+45 XP)</span>
+                  <span>Diagrama Explorado: Continuar (+45 XP)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -2857,21 +2927,50 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => playSound('correct')}
-                    className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-amber-200 hover:border-emerald-500 text-xs font-bold text-left text-slate-800 dark:text-zinc-200 transition-all cursor-pointer"
+                    onClick={() => {
+                      playSound('correct');
+                      setSelectedExitTrafficLight(idx);
+                    }}
+                    className={`p-3 rounded-2xl border-2 text-xs font-bold text-left transition-all cursor-pointer ${
+                      selectedExitTrafficLight === idx
+                        ? 'bg-emerald-700 text-white border-emerald-800 shadow-sm'
+                        : 'bg-white dark:bg-zinc-900 border-amber-200 hover:border-emerald-500 text-slate-800 dark:text-zinc-200'
+                    }`}
                   >
                     {opt}
                   </button>
                 ))}
               </div>
 
+              <textarea
+                rows={2}
+                value={exitReflectionText}
+                onChange={(e) => setExitReflectionText(e.target.value)}
+                placeholder="Escribe brevemente 1 aprendizaje clave o duda para el monitoreo en vivo de tu profesor..."
+                className="w-full rounded-2xl border border-amber-300 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-xs text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+
               <div className="flex justify-end pt-1">
                 <button
                   type="button"
-                  onClick={() => handleNextStep(40)}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                  onClick={() => {
+                    if (typeof fetch !== 'undefined') {
+                      fetch('/api/realtime/teacher-milestones', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          event: 'exit_ticket_completed',
+                          activityTitle: metadata.title,
+                          trafficLight: selectedExitTrafficLight ?? 0,
+                          reflection: exitReflectionText.slice(0, 240),
+                        }),
+                      }).catch(() => {});
+                    }
+                    handleNextStep(40);
+                  }}
+                  className="px-6 py-2.5 rounded-2xl bg-amber-800 hover:bg-amber-900 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                  <span>Registrar Boleto de Salida 3-2-1 (+40 XP)</span>
+                  <span>Registrar Boleto y Reportar a Monitoreo Docente (+40 XP)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -2915,43 +3014,18 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             </div>
           )}
 
-          {/* ================= 34. PIZARRA MATEMÁTICA & GRAFICADOR STEM (0 TOKENS) ================= */}
+          {/* ================= 34. PIZARRA MATEMÁTICA & GRAFICADOR STEM INTERACTIVO ================= */}
           {activeBlock?.type === 'interactive_whiteboard_math' && (
-            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40 border-2 border-blue-200 dark:border-blue-800 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-200/80 text-blue-950">
-                    Pizarra Matemática &amp; Graficador Cartesiano STEM • 0 Tokens
-                  </span>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                    {activeBlock.data.challengeTitle || activeBlock.title}
-                  </h3>
-                </div>
-                <span className="px-3 py-1 rounded-xl bg-blue-600 text-white font-mono font-black text-xs">
-                  {activeBlock.data.formulaExpression || 'y = 2x + 3'}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-blue-200 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-600 dark:text-zinc-300">
-                  {activeBlock.data.promptQuestion || 'Evaluación Algebraica Exacta en Cliente (0 Tokens):'}
-                </span>
-                <span className="text-sm font-mono font-black text-emerald-600">
-                  Coordenada Verificada: ({activeBlock.data.targetCoordinate?.x ?? 2}, {activeBlock.data.targetCoordinate?.y ?? 7}) ✓
-                </span>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleNextStep(50)}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Verificar Ecuación y Continuar (+50 XP)</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <InteractiveMathLabWidget
+              title={activeBlock.data.challengeTitle || activeBlock.title}
+              mathMode={activeBlock.data.mathMode || 'quadratic_parabola'}
+              formulaExpression={activeBlock.data.formulaExpression}
+              targetSlopeM={activeBlock.data.targetSlopeM}
+              targetInterceptB={activeBlock.data.targetInterceptB}
+              targetCoordinate={activeBlock.data.targetCoordinate}
+              promptQuestion={activeBlock.data.promptQuestion}
+              onComplete={(xp) => handleNextStep(xp)}
+            />
           )}
         </motion.div>
       </AnimatePresence>

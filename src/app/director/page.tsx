@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
+import {
+  buildDemoPlanningsForTeacher,
+  getTeacherPlanningCount,
+  type DemoTeacherPlanningDetail,
+} from '@/lib/demo/demoTeacherPlannings';
 import { 
   Building2, 
   Users, 
@@ -143,6 +148,20 @@ export default function DirectorPortalPage() {
 
   // Pestaña y filtros locales
   const [activeTab, setActiveTab] = useState<DirectorTab>('overview');
+  const [planningInspector, setPlanningInspector] = useState<{
+    teacher: any;
+    plannings: DemoTeacherPlanningDetail[];
+    selectedId: string;
+  } | null>(null);
+
+  const openTeacherPlanningsModal = (teacher: any) => {
+    const plannings = buildDemoPlanningsForTeacher(teacher);
+    setPlanningInspector({
+      teacher,
+      plannings,
+      selectedId: plannings[0]?.id || '',
+    });
+  };
   const [selectedCampusFilter, setSelectedCampusFilter] = useState<string>('all');
   const [controlSubTab, setControlSubTab] = useState<'students' | 'groups' | 'teachers' | 'schedules'>('students');
 
@@ -219,6 +238,8 @@ export default function DirectorPortalPage() {
 
   // Filtros de búsqueda en Control Escolar
   const [searchStudent, setSearchStudent] = useState('');
+  const [selectedStudentGrade, setSelectedStudentGrade] = useState<string>('all');
+  const [selectedStudentGroupId, setSelectedStudentGroupId] = useState<string>('all');
   const [searchTeacher, setSearchTeacher] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -337,8 +358,34 @@ export default function DirectorPortalPage() {
   }, [teachersList, directorSchoolId, schoolCampuses, selectedCampusFilter]);
 
   const schoolGroups = useMemo(() => {
-    return getSchoolGroups(groupsList, directorSchoolId, schoolCampuses);
-  }, [groupsList, directorSchoolId, schoolCampuses]);
+    const list = getSchoolGroups(groupsList, directorSchoolId, schoolCampuses);
+    if (selectedCampusFilter === 'all') return list;
+    return list.filter(
+      (g) =>
+        g.campus_name?.toLowerCase() === selectedCampusFilter.toLowerCase() ||
+        g.campus_id === selectedCampusFilter
+    );
+  }, [groupsList, directorSchoolId, schoolCampuses, selectedCampusFilter]);
+
+  const groupByIdMap = useMemo(() => {
+    return new Map(schoolGroups.map((g) => [g.id, g]));
+  }, [schoolGroups]);
+
+  const availableStudentGrades = useMemo(() => {
+    const set = new Set<string>();
+    schoolGroups.forEach((g) => {
+      if (g.grade) set.add(g.grade);
+    });
+    schoolStudents.forEach((s) => {
+      if (s.grade) set.add(s.grade);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+  }, [schoolGroups, schoolStudents]);
+
+  const availableStudentGroups = useMemo(() => {
+    if (selectedStudentGrade === 'all') return schoolGroups;
+    return schoolGroups.filter((g) => g.grade === selectedStudentGrade);
+  }, [schoolGroups, selectedStudentGrade]);
 
   const schoolSubjects = useMemo(() => {
     return getSchoolSubjects(subjectsList, directorSchoolId);
@@ -374,10 +421,13 @@ export default function DirectorPortalPage() {
     return Math.round((presentCount / schoolAttendanceRecords.length) * 100);
   }, [schoolAttendanceRecords]);
 
-  // Supervisión de Planeaciones Curriculares NEM (Bóveda Curricular SEP)
+  // Supervisión de Planeaciones Curriculares NEM (enlazada en tiempo real a la suma de planeaciones docentes)
   const totalCurricularPlans = useMemo(() => {
+    if (schoolTeachers.length > 0) {
+      return schoolTeachers.reduce((acc, t) => acc + getTeacherPlanningCount(t), 0);
+    }
     return Math.max(schoolSubjects.length * 4, 18);
-  }, [schoolSubjects]);
+  }, [schoolTeachers, schoolSubjects]);
 
   // Toggle de configuración de gobernanza
   const handleToggleGovernance = (key: keyof SchoolGovernanceSettings) => {
@@ -415,9 +465,22 @@ export default function DirectorPortalPage() {
     });
   };
 
-  // Filtrado de alumnos en control escolar
+  // Filtrado de alumnos en control escolar (búsqueda + grado + grupo)
   const filteredStudents = useMemo(() => {
     return schoolStudents.filter(s => {
+      if (selectedStudentGrade !== 'all' && s.grade !== selectedStudentGrade) {
+        return false;
+      }
+      if (selectedStudentGroupId !== 'all') {
+        const targetGrp = groupByIdMap.get(selectedStudentGroupId);
+        const matchesId = s.group_id === selectedStudentGroupId;
+        const matchesFallback =
+          !s.group_id &&
+          targetGrp &&
+          s.grade === targetGrp.grade &&
+          s.campus_name === targetGrp.campus_name;
+        if (!matchesId && !matchesFallback) return false;
+      }
       const q = searchStudent.toLowerCase();
       const match = !q ||
         s.first_name.toLowerCase().includes(q) ||
@@ -426,7 +489,7 @@ export default function DirectorPortalPage() {
         (s.email && s.email.toLowerCase().includes(q));
       return match;
     });
-  }, [schoolStudents, searchStudent]);
+  }, [schoolStudents, selectedStudentGrade, selectedStudentGroupId, groupByIdMap, searchStudent]);
 
   // Filtrado de profesores en control escolar
   const filteredTeachers = useMemo(() => {
@@ -1283,9 +1346,15 @@ export default function DirectorPortalPage() {
                             <span>{teacher.campus_name || 'Plantel Principal'}</span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                              {Math.max(1, Math.round(((teacher.ai_tokens_consumed || 15000) / 15000)))} Plan(es)
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => openTeacherPlanningsModal(teacher)}
+                              title="Ver planeaciones del docente"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 hover:border-indigo-300 transition-colors cursor-pointer"
+                            >
+                              <Eye className="h-3 w-3 shrink-0" />
+                              <span>{getTeacherPlanningCount(teacher)} Plan(es)</span>
+                            </button>
                           </td>
                           <td className="p-3">
                             <span className="font-mono bg-amber-50 px-2 py-1 rounded border border-amber-200 text-amber-800 font-bold">
@@ -1395,16 +1464,77 @@ export default function DirectorPortalPage() {
             {/* Subtab Alumnos */}
             {controlSubTab === 'students' && (
               <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs p-5 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input aria-label="Buscar alumno por nombre, matrícula o CURP..."
-                      type="text"
-                      value={searchStudent}
-                      onChange={(e) => setSearchStudent(e.target.value)}
-                      placeholder="Buscar alumno por nombre, matrícula o CURP..."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                    />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                    <div className="relative flex-1 min-w-[220px] max-w-sm">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        aria-label="Buscar alumno por nombre, matrícula o CURP..."
+                        type="text"
+                        value={searchStudent}
+                        onChange={(e) => setSearchStudent(e.target.value)}
+                        placeholder="Buscar alumno por nombre, matrícula o CURP..."
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+
+                    <select
+                      aria-label="Filtrar alumnos por grado"
+                      value={selectedStudentGrade}
+                      onChange={(e) => {
+                        const nextGrade = e.target.value;
+                        setSelectedStudentGrade(nextGrade);
+                        if (nextGrade !== 'all' && selectedStudentGroupId !== 'all') {
+                          const grp = groupByIdMap.get(selectedStudentGroupId);
+                          if (grp && grp.grade !== nextGrade) {
+                            setSelectedStudentGroupId('all');
+                          }
+                        }
+                      }}
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer"
+                    >
+                      <option value="all">Todos los grados ({availableStudentGrades.length})</option>
+                      {availableStudentGrades.map((grade) => (
+                        <option key={grade} value={grade}>
+                          Grado: {grade}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      aria-label="Filtrar alumnos por grupo"
+                      value={selectedStudentGroupId}
+                      onChange={(e) => {
+                        const nextGroupId = e.target.value;
+                        setSelectedStudentGroupId(nextGroupId);
+                        if (nextGroupId !== 'all') {
+                          const grp = groupByIdMap.get(nextGroupId);
+                          if (grp?.grade) setSelectedStudentGrade(grp.grade);
+                        }
+                      }}
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer max-w-[240px]"
+                    >
+                      <option value="all">Todos los grupos ({availableStudentGroups.length})</option>
+                      {availableStudentGroups.map((grp) => (
+                        <option key={grp.id} value={grp.id}>
+                          {grp.grade} "{grp.name}" · {grp.campus_name || 'Plantel'}
+                        </option>
+                      ))}
+                    </select>
+
+                    {(selectedStudentGrade !== 'all' || selectedStudentGroupId !== 'all' || searchStudent.trim() !== '') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedStudentGrade('all');
+                          setSelectedStudentGroupId('all');
+                          setSearchStudent('');
+                        }}
+                        className="px-2.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 cursor-pointer"
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-bold text-slate-500">{filteredStudents.length} alumnos mostrados</span>
@@ -1423,7 +1553,7 @@ export default function DirectorPortalPage() {
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                         <th className="p-3">Alumno</th>
-                        <th className="p-3">Nivel & Grado</th>
+                        <th className="p-3">Grado & Grupo</th>
                         <th className="p-3">Plantel</th>
                         <th className="p-3">Tutor Registrado</th>
                         <th className="p-3">Estado</th>
@@ -1431,16 +1561,19 @@ export default function DirectorPortalPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                      {filteredStudents.slice(0, 20).map(std => {
+                      {filteredStudents.slice(0, selectedStudentGroupId !== 'all' ? 60 : 25).map(std => {
                         const isBlocked = !!std.is_blocked || std.status === 'suspendido';
+                        const grpObj = std.group_id ? groupByIdMap.get(std.group_id) : undefined;
                         return (
                           <tr key={std.id} className="hover:bg-slate-50/80 transition-colors">
                             <td className="p-3 font-bold text-slate-900">
                               {std.first_name} {std.last_name_1}
                               <span className="block text-[10px] text-slate-500 font-mono">CURP: {std.curp || 'S/N'}</span>
                             </td>
-                            <td className="p-3 font-mono text-purple-700 font-bold">
-                              {std.grade || '1º'}
+                            <td className="p-3">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 border border-purple-200 font-mono text-purple-800 font-bold">
+                                {std.grade || grpObj?.grade || '1º'} {grpObj?.name ? `· Grupo ${grpObj.name}` : ''}
+                              </span>
                             </td>
                             <td className="p-3 text-slate-500">
                               {std.campus_name || 'Plantel Principal'}
@@ -1484,16 +1617,30 @@ export default function DirectorPortalPage() {
             {controlSubTab === 'groups' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {schoolGroups.map(grp => {
-                  const studentsInGroup = schoolStudents.filter(s => s.campus_name === grp.campus_name && s.grade === grp.grade);
+                  const studentsInGroup = schoolStudents.filter(
+                    (s) => s.group_id === grp.id || (!s.group_id && s.campus_name === grp.campus_name && s.grade === grp.grade)
+                  );
                   return (
-                    <div key={grp.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
+                    <button
+                      key={grp.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStudentGrade(grp.grade || 'all');
+                        setSelectedStudentGroupId(grp.id);
+                        setControlSubTab('students');
+                      }}
+                      className="text-left p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md shadow-xs space-y-2 transition-all cursor-pointer group"
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{grp.campus_name || 'Plantel'}</span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-mono text-slate-600 font-bold">Grupo {grp.name}</span>
+                        <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">{grp.campus_name || 'Plantel'}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-mono text-slate-700 font-bold">Grupo {grp.name}</span>
                       </div>
-                      <h4 className="text-base font-black text-slate-900">{grp.grade} Grupo "{grp.name}"</h4>
-                      <p className="text-xs text-slate-500">{studentsInGroup.length} alumnos matriculados</p>
-                    </div>
+                      <h4 className="text-base font-black text-slate-900 group-hover:text-blue-700 transition-colors">{grp.grade} Grupo "{grp.name}"</h4>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{studentsInGroup.length} alumnos matriculados</span>
+                        <span className="font-bold text-blue-700 opacity-85 group-hover:opacity-100">Ver lista →</span>
+                      </div>
+                    </button>
                   );
                 })}
               </div>
@@ -1539,9 +1686,14 @@ export default function DirectorPortalPage() {
                       </div>
                       <div className="pt-2 border-t border-slate-100 text-xs text-slate-600 flex items-center justify-between">
                         <span>{t.campus_name || 'Plantel'}</span>
-                        <span className="font-semibold text-xs text-indigo-700">
-                          {Math.max(1, Math.round(((t.ai_tokens_consumed || 15000) / 15000)))} Plan(es) NEM
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openTeacherPlanningsModal(t)}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-semibold text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 transition-colors cursor-pointer"
+                        >
+                          <Eye className="h-3 w-3 shrink-0" />
+                          <span>{getTeacherPlanningCount(t)} Plan(es) NEM</span>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1576,19 +1728,19 @@ export default function DirectorPortalPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Planeaciones Registradas</span>
-                  <span className="text-2xl font-black text-slate-900">48 Planeaciones</span>
+                  <span className="text-2xl font-black text-slate-900">{totalCurricularPlans} Planeaciones</span>
                   <span className="text-[11px] text-emerald-700 font-bold block">100% conforme a la NEM</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Proyectos Formativos en Curso</span>
-                  <span className="text-2xl font-black text-purple-700">12 Proyectos</span>
+                  <span className="text-2xl font-black text-purple-700">{Math.max(12, Math.round(totalCurricularPlans * 0.25))} Proyectos</span>
                   <span className="text-[11px] text-slate-500 block">Articulación comunitaria activa</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Rúbricas Analíticas</span>
-                  <span className="text-2xl font-black text-cyan-700">36 Rúbricas</span>
+                  <span className="text-2xl font-black text-cyan-700">{totalCurricularPlans} Rúbricas</span>
                   <span className="text-[11px] text-slate-500 block">Entregables tangibles definidos</span>
                 </div>
               </div>
@@ -2186,6 +2338,200 @@ export default function DirectorPortalPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Auditor de Planeaciones Docentes (Contenido Completo NEM 2024) */}
+      {planningInspector && (() => {
+        const selectedPlan =
+          planningInspector.plannings.find((p) => p.id === planningInspector.selectedId) ||
+          planningInspector.plannings[0];
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-3 sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="director-planning-modal-title"
+          >
+            <div className="w-full max-w-5xl max-h-[90vh] rounded-3xl bg-white border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase">
+                      Auditoría Curricular · {planningInspector.plannings.length} Planeaciones
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500 truncate">
+                      {planningInspector.teacher.campus_name || 'Campus Institucional'}
+                    </span>
+                  </div>
+                  <h3 id="director-planning-modal-title" className="text-base sm:text-lg font-black text-slate-900 mt-1 truncate">
+                    {planningInspector.teacher.first_name} {planningInspector.teacher.last_name}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPlanningInspector(null)}
+                  aria-label="Cerrar visor de planeaciones"
+                  className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+                {/* Lista seleccionable de planeaciones del docente */}
+                <div className="lg:col-span-4 border-b lg:border-b-0 lg:border-r border-slate-200 bg-slate-50/70 p-4 overflow-y-auto space-y-2 max-h-60 lg:max-h-none">
+                  <div className="text-[11px] font-black uppercase tracking-wider text-slate-500 px-1 mb-2">
+                    Selecciona una planeación
+                  </div>
+                  {planningInspector.plannings.map((plan, idx) => {
+                    const isSelected = selectedPlan?.id === plan.id;
+                    return (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onClick={() =>
+                          setPlanningInspector((prev) =>
+                            prev ? { ...prev, selectedId: plan.id } : null
+                          )
+                        }
+                        className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-indigo-700 text-white border-indigo-800 shadow-md'
+                            : 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-[10px] font-bold uppercase opacity-85">
+                          <span>#{idx + 1} · {plan.gradeGroup}</span>
+                          <span>{plan.duration}</span>
+                        </div>
+                        <div className="font-bold text-xs mt-1 leading-snug line-clamp-2">
+                          {plan.title}
+                        </div>
+                        <div className={`text-[10px] mt-1 truncate ${isSelected ? 'text-indigo-100' : 'text-slate-500'}`}>
+                          {plan.subjectName}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Contenido completo de la planeación seleccionada */}
+                <div className="lg:col-span-8 p-5 sm:p-6 overflow-y-auto space-y-5 bg-white">
+                  {selectedPlan && (
+                    <>
+                      <div className="space-y-2 border-b border-slate-100 pb-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold inline-flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" /> {selectedPlan.vaultStatus}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold">
+                            {selectedPlan.faseNem}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {selectedPlan.duration}
+                          </span>
+                        </div>
+                        <h4 className="text-lg font-black text-slate-900 leading-snug">
+                          {selectedPlan.title}
+                        </h4>
+                        <div className="text-xs text-slate-600 flex flex-wrap gap-x-4 gap-y-1">
+                          <span><strong>Campo Formativo:</strong> {selectedPlan.campoFormativo}</span>
+                          <span><strong>Eje Articulador:</strong> {selectedPlan.ejeArticulador}</span>
+                          <span><strong>Actualizada:</strong> {selectedPlan.updatedAt}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-indigo-800 block">
+                          Proceso de Desarrollo de Aprendizaje (PDA Oficial SEP)
+                        </span>
+                        <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                          {selectedPlan.pdaOficial}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h5 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                          Propósito Pedagógico
+                        </h5>
+                        <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                          {selectedPlan.proposito}
+                        </p>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h5 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                          Secuencia Didáctica Cronometrada
+                        </h5>
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                            <span className="text-xs font-black text-slate-900 block mb-1">1. Inicio (Activación)</span>
+                            <p className="text-xs text-slate-700 leading-relaxed">{selectedPlan.inicio}</p>
+                          </div>
+                          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                            <span className="text-xs font-black text-slate-900 block mb-1">2. Desarrollo (Construcción Guiada)</span>
+                            <p className="text-xs text-slate-700 leading-relaxed">{selectedPlan.desarrollo}</p>
+                          </div>
+                          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                            <span className="text-xs font-black text-slate-900 block mb-1">3. Cierre (Síntesis y Evaluación)</span>
+                            <p className="text-xs text-slate-700 leading-relaxed">{selectedPlan.cierre}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                            Materiales y Recursos
+                          </h5>
+                          <ul className="list-disc pl-4 space-y-1 text-xs text-slate-700">
+                            {selectedPlan.materiales.map((mat, mIdx) => (
+                              <li key={mIdx}>{mat}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-2">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-emerald-900">
+                            Entregable Tangible
+                          </h5>
+                          <p className="text-xs text-slate-800 leading-relaxed">
+                            {selectedPlan.entregableTangible}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h5 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                          Rúbrica Analítica de Evaluación
+                        </h5>
+                        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-200 text-slate-700">
+                                <th className="p-2.5 font-bold">Criterio</th>
+                                <th className="p-2.5 font-bold">Nivel Logrado</th>
+                                <th className="p-2.5 font-bold">En Proceso</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 text-slate-700">
+                              {selectedPlan.evaluacionRubrica.map((rub, rIdx) => (
+                                <tr key={rIdx}>
+                                  <td className="p-2.5 font-bold text-slate-900">{rub.criterio}</td>
+                                  <td className="p-2.5">{rub.logrado}</td>
+                                  <td className="p-2.5">{rub.enProceso}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Modal de Correo Institucional & Triage Cognitivo CEO */}
       {isEmailModalOpen && (

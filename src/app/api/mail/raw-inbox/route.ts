@@ -6,6 +6,23 @@ import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.s
 import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs, sanitizeCommercialTrademarks, decodeEmailBodyOrSnippet } from '@/utils/timeZoneUtils';
 import { validateApiAuth } from '@/lib/authValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { validateMailTargetAsync } from '@/lib/security/ssrfValidator';
+import { isPlatformSuperUser } from '@/types';
+
+const EXECUTIVE_INBOX_ROLES = new Set(['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator']);
+
+function isTenantAllowedForInbox(user: any, targetTenantId: string): boolean {
+  if (isPlatformSuperUser(user)) return true;
+  const userSchool = user?.school_id;
+  const userTenantUuid = user?.institution_metadata?.tenant_uuid || user?.tenant_id;
+  if (!userSchool && !userTenantUuid) return true;
+  if (targetTenantId === userSchool || targetTenantId === userTenantUuid) return true;
+  const ibimeAliases = new Set(['sch-ibime', 'e1000000-0000-0000-0000-000000000001', 'IBIME', 'ibime']);
+  if ((userSchool && ibimeAliases.has(userSchool)) || (userTenantUuid && ibimeAliases.has(userTenantUuid))) {
+    if (ibimeAliases.has(targetTenantId)) return true;
+  }
+  return false;
+}
 
 export const runtime = 'nodejs';
 
@@ -226,7 +243,8 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       );
     }
-    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+    const getRoleLower = (authResult.user?.role || '').toLowerCase();
+    if (!EXECUTIVE_INBOX_ROLES.has(getRoleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para acceder al buzón ejecutivo.' },
         { status: 403 }
@@ -234,7 +252,13 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = searchParams.get('tenantId') || authResult.user?.school_id || authResult.user?.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+    if (!isTenantAllowedForInbox(authResult.user, tenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
+        { status: 403 }
+      );
+    }
     if (
       isDemoSandboxContext({
         email: authResult.user?.email,
@@ -765,6 +789,13 @@ export async function POST(request: NextRequest) {
     // 2. Consulta en vivo por IMAP (imap.gmail.com:993) cuando se proporciona Contraseña de Aplicación de 16 dígitos
     let resolvedPostEmail = email;
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+      const ssrfCheck = await validateMailTargetAsync(targetHost, targetPort);
+      if (!ssrfCheck.valid) {
+        return NextResponse.json(
+          { success: false, error: ssrfCheck.reason || 'Servidor IMAP bloqueado por política de seguridad.' },
+          { status: 403 }
+        );
+      }
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
@@ -1040,7 +1071,8 @@ export async function DELETE(request: NextRequest) {
         { status: 401 }
       );
     }
-    if (['student', 'parent'].includes((authResult.user?.role || '').toLowerCase())) {
+    const delRoleLower = (authResult.user?.role || '').toLowerCase();
+    if (!EXECUTIVE_INBOX_ROLES.has(delRoleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para eliminar correos ejecutivos.' },
         { status: 403 }
@@ -1048,7 +1080,13 @@ export async function DELETE(request: NextRequest) {
     }
     const body = await request.json().catch(() => ({}));
     const { searchParams } = new URL(request.url);
-    const tenantId = body.tenantId || searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = body.tenantId || searchParams.get('tenantId') || authResult.user?.school_id || authResult.user?.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+    if (!isTenantAllowedForInbox(authResult.user, tenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
+        { status: 403 }
+      );
+    }
     const ids: string[] = Array.isArray(body.ids)
       ? body.ids
       : (body.id ? [body.id] : (searchParams.get('id') ? [searchParams.get('id')!] : []));

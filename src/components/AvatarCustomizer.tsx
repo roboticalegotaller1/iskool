@@ -480,7 +480,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
         {/* Notificación de feedback */}
         {feedbackNotice && (
           <div className={`px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 shrink-0 ${
-            feedbackNotice.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+            feedbackNotice.type === 'success' ? 'bg-emerald-700 text-white' : 'bg-rose-700 text-white'
           }`}>
             <span>{feedbackNotice.msg}</span>
           </div>

@@ -14,6 +14,7 @@ export async function GET(req: Request) {
     await GoogleAuthService.handleCallback(code, state);
     return NextResponse.redirect(new URL('/portal-ceo/email?connected=success', req.url));
   } catch (err: any) {
-    return NextResponse.redirect(new URL(`/portal-ceo/email?error=${encodeURIComponent(err.message)}`, req.url));
+    console.error('Error en callback de integración:', err?.message || err);
+    return NextResponse.redirect(new URL('/portal-ceo/email?error=oauth_callback_failed', req.url));
   }
 }

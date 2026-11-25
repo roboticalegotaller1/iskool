@@ -1210,6 +1210,7 @@ export function autoOrganizeOrgNodes(
 export function isStaleDemoOrgGraph(graph?: SchoolOrganizationGraph | null): boolean {
   if (!graph || !Array.isArray(graph.nodes)) return true;
   if (graph.nodes.length < 50) return true;
+  if (!Array.isArray(graph.timetablePlacements) || graph.timetablePlacements.length === 0) return true;
   return !graph.nodes.some((n) => n.nodeId === 'demo-ceo-01');
 }
 
@@ -1378,6 +1379,20 @@ export function createDemoSchoolOrganizationGraph(): SchoolOrganizationGraph {
       teachAnother: idx === 0,
     }));
 
+    const teacherIndex = teacherSpecs.findIndex((ts) => ts.nodeId === spec.nodeId);
+    const campusHourlyBase =
+      spec.nodeId === 'demo-idio-01'
+        ? 310
+        : spec.campusId === 'cmp-demo-prep'
+          ? 290
+          : spec.campusId === 'cmp-demo-sec'
+            ? 270
+            : 250;
+    const realisticHourlyRate =
+      meta.category === 'profesor'
+        ? campusHourlyBase + ((teacherIndex >= 0 ? teacherIndex : 0) % 4) * 10
+        : meta.defaultHourlyRateMxn;
+
     return {
       nodeId: spec.nodeId,
       schoolId: 'sch-demo-0001',
@@ -1402,7 +1417,7 @@ export function createDemoSchoolOrganizationGraph(): SchoolOrganizationGraph {
       passwordUpdatedAt: createdAt,
       permissions: getDefaultPermissionsForSubRole(spec.subRole),
       subjects,
-      hourlyRateMxn: meta.defaultHourlyRateMxn,
+      hourlyRateMxn: realisticHourlyRate,
       monthlyBaseSalaryMxn: spec.nodeId === 'demo-ceo-01' ? 58000 : meta.defaultMonthlyBaseMxn,
       slaHours: meta.defaultSlaHours,
       isProvisioned: true,
@@ -1437,13 +1452,88 @@ export function createDemoSchoolOrganizationGraph(): SchoolOrganizationGraph {
       createdAt,
     }));
 
+  const campusSchedules: Record<string, CampusScheduleConfig> = {
+    'cmp-demo-pri': {
+      campusId: 'cmp-demo-pri',
+      campusName: 'Campus Central Primaria',
+      blockDurationMinutes: 50,
+      entryTime: '08:00',
+      exitTime: '14:40',
+      workDays: 'lun_vie',
+      updatedAt: createdAt,
+    },
+    'cmp-demo-sec': {
+      campusId: 'cmp-demo-sec',
+      campusName: 'Campus Norte Secundaria',
+      blockDurationMinutes: 50,
+      entryTime: '07:30',
+      exitTime: '14:10',
+      workDays: 'lun_vie',
+      updatedAt: createdAt,
+    },
+    'cmp-demo-prep': {
+      campusId: 'cmp-demo-prep',
+      campusName: 'Campus Sur Preparatoria',
+      blockDurationMinutes: 50,
+      entryTime: '07:30',
+      exitTime: '14:30',
+      workDays: 'lun_vie',
+      updatedAt: createdAt,
+    },
+  };
+
+  const demoWeekdays: WeekdayKey[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  const demoSlotTimes = [
+    { startTime: '08:00', endTime: '08:50' },
+    { startTime: '08:50', endTime: '09:40' },
+    { startTime: '09:40', endTime: '10:30' },
+    { startTime: '11:00', endTime: '11:50' },
+    { startTime: '11:50', endTime: '12:40' },
+    { startTime: '12:40', endTime: '13:30' },
+    { startTime: '13:30', endTime: '14:20' },
+    { startTime: '14:20', endTime: '15:10' },
+  ];
+
+  const teacherNodes = nodes.filter((n) => n.category === 'profesor');
+  const timetablePlacements: TimetablePlacement[] = [];
+  teacherNodes.forEach((tNode, tIdx) => {
+    // 20 a 24 bloques semanales de 50 min (16.67h - 20.0h/sem) por docente para nómina realista
+    const blocksPerWeek = 20 + (tIdx % 5);
+    const subjList = tNode.subjects.length > 0
+      ? tNode.subjects
+      : [{ id: `subj-${tNode.nodeId}-0`, subjectName: 'Lenguajes (Español)', contourColor: SUBJECT_CONTOUR_PALETTE[0], teachAnother: true }];
+    const fullName = getFullNameOfNode(tNode);
+
+    for (let b = 0; b < blocksPerWeek; b++) {
+      const day = demoWeekdays[(tIdx + b) % demoWeekdays.length];
+      const slotIndex = (Math.floor(b / demoWeekdays.length) + (tIdx % 3)) % demoSlotTimes.length;
+      const slot = demoSlotTimes[slotIndex];
+      const subj = subjList[b % subjList.length];
+      timetablePlacements.push({
+        id: `tt-demo-${tNode.nodeId}-${b + 1}`,
+        schoolId: 'sch-demo-0001',
+        campusId: tNode.campusId,
+        day,
+        slotIndex,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        durationMinutes: 50,
+        teacherNodeId: tNode.nodeId,
+        teacherFullName: fullName,
+        subjectId: subj.id,
+        subjectName: subj.subjectName || 'Titular de Grupo',
+        contourColor: subj.contourColor || SUBJECT_CONTOUR_PALETTE[b % SUBJECT_CONTOUR_PALETTE.length],
+      });
+    }
+  });
+
   return {
     schoolId: 'sch-demo-0001',
     nodes,
     edges,
     savedSubjects,
-    campusSchedules: {},
-    timetablePlacements: [],
+    campusSchedules,
+    timetablePlacements,
     alerts: [],
     updatedAt: createdAt,
   };

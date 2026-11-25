@@ -79,7 +79,7 @@ export const SuperUserFourQuadrantCockpit: React.FC<SuperUserFourQuadrantCockpit
             type="button"
             data-testid="btn-verify-zerotrust-live"
             onClick={handleVerifyZeroTrustLive}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 px-3 py-1.5 text-[11px] font-extrabold text-emerald-200 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-950/95 hover:bg-emerald-900 border border-emerald-400/50 px-3 py-1.5 text-[11px] font-extrabold text-emerald-100 transition cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-emerald-300 ${isCheckingZeroTrust ? 'animate-spin' : ''}`} />
             <span>Verificar Blindaje ({securityVerifiedAt})</span>
