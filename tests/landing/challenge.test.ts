@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { createHmac } from 'crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   CHALLENGE_TTL_MS,
@@ -67,6 +68,27 @@ describe('pase firmado de la solicitud de demostración', () => {
     const now = issuedAt(c) + MIN_FILL_MS
     expect(verifyChallenge(pass(c, solve(c) + 1), now).ok).toBe(false)
     expect(verifyChallenge(pass(c, solve(c)), now)).toEqual({ ok: true })
+  })
+
+  it('rechaza el dígito corrido del número a la sal (vigencia ampliada)', () => {
+    // Se busca un pase cuyo número tenga al menos dos dígitos para poder correr el prefijo.
+    let c = createChallenge()!
+    let n = solve(c)
+    while (n < 10) {
+      c = createChallenge()!
+      n = solve(c)
+    }
+    const digits = String(n)
+    const input = { salt: c.salt + digits.slice(0, -1), challenge: c.challenge, signature: c.signature, number: Number(digits.slice(-1)) }
+    // El hash del ataque es idéntico al del pase legítimo: solo la forma estricta de la sal lo detiene.
+    expect(sha256Hex(input.salt + String(input.number))).toBe(c.challenge)
+    expect(verifyChallenge(input, issuedAt(c) + MIN_FILL_MS).ok).toBe(false)
+  })
+
+  it('no acepta como clave la contraseña del correo cruda', () => {
+    const c = createChallenge()!
+    const raw = { ...pass(c, solve(c)), signature: createHmac('sha256', 'x').update(c.challenge).digest('hex') }
+    expect(verifyChallenge(raw, issuedAt(c) + MIN_FILL_MS)).toEqual({ ok: false, motivo: 'firma' })
   })
 
   it('rechaza entrada sin forma', () => {
