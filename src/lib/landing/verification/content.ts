@@ -33,20 +33,22 @@ function palabraSinSentido(palabra: string): boolean {
   // Misma letra repetida 5 o más veces seguidas.
   if (/(.)\1{4,}/.test(p)) return true
 
-  // La 'y' y la 'w' se tratan como consonantes.
-  const rachas = p.match(/[^aeiou]+/g) ?? []
-  // Racha larga de consonantes (el español real casi no pasa de 4).
-  if (rachas.some((r) => r.length >= 5)) return true
+  // La 'y' cuenta como vocal salvo al inicio de palabra (Brynn); la 'w' es consonante.
+  const q = p.replace(/(?<!^)y/g, 'a')
+  const rachas = q.match(/[^aeiou]+/g) ?? []
+  // Racha muy larga de consonantes (el español real casi no pasa de 4 y los
+  // apellidos alemanes comunes llegan a 6, como en Kirchstrasse).
+  if (rachas.some((r) => r.length >= 7)) return true
   // Dos o más rachas de 3+ consonantes en una misma palabra.
   if (rachas.filter((r) => r.length >= 3).length >= 2) return true
 
   // Palabras largas con muy pocas vocales.
-  const vocales = [...p].filter((c) => VOCALES.has(c)).length
+  const vocales = [...q].filter((c) => VOCALES.has(c)).length
   return p.length >= 9 && vocales / p.length < 0.25
 }
 
 function textoSinSentido(texto: string): boolean {
-  const palabras = texto.split(/\s+/).filter((w) => /\p{L}/u.test(w))
+  const palabras = palabrasDe(texto)
   if (palabras.length === 0) return false
   const raras = palabras.filter(palabraSinSentido).length
   if (raras === 0) return false
@@ -54,15 +56,20 @@ function textoSinSentido(texto: string): boolean {
   return raras >= 2 || raras / palabras.length >= 0.4
 }
 
+// La etiqueta del dominio está acotada (máx. 63) para evitar retroceso cuadrático.
 const PATRON_LIGA =
-  /https?:|www\.|\b[a-z0-9-]+\.(?:com|net|org|info|biz|xyz|top|link|click|ru|cn|io|ly)\b/i
+  /https?:|www\.|\b[a-z0-9-]{1,63}\.(?:com|net|org|info|biz|xyz|top|link|click|ru|cn|io|ly)\b/i
 
-// Teléfono: 10 dígitos (México/Norteamérica), 12 con 52, 13 con 521 (formato
-// móvil antiguo de México) u 11 con 1. Un campo vacío no se marca.
+// Teléfono: se juzga solo el primer número (antes de "/", ",", ";", "o" o
+// "ext"). Válido con 10 dígitos (México/Norteamérica), con prefijos antiguos
+// 044/045/01 delante de 10, 12 con 52, 13 con 521 u 11 con 1. Vacío no se marca.
 function telefonoFueraDeRegion(telefono: string): boolean {
-  const d = telefono.replace(/\D/g, '')
+  const primero = telefono.split(/[/,;]|\bext|\bx\b|\bo\b/i)[0]
+  const d = primero.replace(/\D/g, '')
   if (d.length === 0) return false
   if (d.length === 10) return false
+  if (d.length === 13 && (d.startsWith('044') || d.startsWith('045'))) return false
+  if (d.length === 12 && d.startsWith('01')) return false
   if (d.length === 12 && d.startsWith('52')) return false
   if (d.length === 13 && d.startsWith('521')) return false
   if (d.length === 11 && d.startsWith('1')) return false
@@ -79,7 +86,7 @@ const RAICES_ESCOLARES = [
   'director', 'directiv', 'coordinador', 'maestr', 'profesor', 'docente', 'rector',
   'supervisor', 'prefect', 'orientador', 'administra', 'secretari', 'propietari',
   'dueno', 'fundador', 'gerente', 'representante', 'titular', 'encargad', 'jefe',
-  'subdirec', 'tesorer', 'pedagog', 'psicolog', 'asesor', 'cargo',
+  'subdirec', 'tesorer', 'pedagog', 'psicolog', 'asesor', 'cargo', 'contad', 'conserje', 'intendent', 'auxiliar',
 ]
 
 function esRelacionEscolar(texto: string): boolean {
@@ -94,10 +101,20 @@ function palabrasDe(texto: string): string[] {
 export function analyzeContent(demo: DemoRequest): string[] {
   const motivos: string[] = []
 
+  // Se acota cada campo antes de analizarlo (entradas enormes no cuestan más).
+  demo = {
+    ...demo,
+    nombre: demo.nombre.slice(0, 500),
+    escuela: demo.escuela.slice(0, 500),
+    cargo: demo.cargo.slice(0, 500),
+    telefono: demo.telefono.slice(0, 500),
+    mensaje: demo.mensaje.slice(0, 4000),
+  }
   const campos = [demo.nombre, demo.escuela, demo.cargo, demo.mensaje]
   if (campos.some((c) => textoSinSentido(c))) motivos.push(MOTIVO_SIN_SENTIDO)
 
-  if ([...campos, demo.telefono].some((c) => PATRON_LIGA.test(c))) motivos.push(MOTIVO_LIGA)
+  // Los correos escritos en el texto no son ligas.
+  if ([...campos, demo.telefono].some((c) => PATRON_LIGA.test(c.replace(/\S+@\S+/g, ' ')))) motivos.push(MOTIVO_LIGA)
 
   if (telefonoFueraDeRegion(demo.telefono)) motivos.push(MOTIVO_TELEFONO)
 

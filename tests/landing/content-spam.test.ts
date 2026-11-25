@@ -99,4 +99,38 @@ describe('analyzeContent', () => {
     expect(analyzeContent(con({ escuela: 'Empresa Educativa Sol', cargo: 'Telefonia' }))).toEqual([])
     expect(analyzeContent(con({ escuela: 'Empresa', cargo: '' }))).toEqual([])
   })
+
+  it('una cadena enorme con guiones se analiza rápido', () => {
+    const t0 = performance.now()
+    analyzeContent(con({ mensaje: 'a-'.repeat(100000) + '!', nombre: 'a-'.repeat(100000) + '!' }))
+    expect(performance.now() - t0).toBeLessThan(200)
+  })
+
+  it('un correo escrito en el mensaje no cuenta como liga', () => {
+    expect(analyzeContent(con({ mensaje: 'Mi correo es juan@ejemplo.com, escríbeme.' }))).toEqual([])
+  })
+
+  it('tolera prefijos antiguos, extensiones y varios números', () => {
+    for (const telefono of [
+      '044 55 1234 5678',
+      '045 55 1234 5678',
+      '01 55 1234 5678',
+      '55 1234 5678 ext 12',
+      '5512345678 / 5587654321',
+      '+52 1 55 1234 5678',
+    ]) {
+      expect(analyzeContent(con({ telefono }))).toEqual([])
+    }
+  })
+
+  it('reconoce contador, conserje, intendente y auxiliar como puestos', () => {
+    for (const cargo of ['Contadora', 'Conserje', 'Intendente', 'Auxiliar']) {
+      expect(analyzeContent(con({ escuela: 'Empresa', cargo }))).toEqual([])
+    }
+  })
+
+  it('nombres con y o apellidos alemanes están limpios', () => {
+    expect(analyzeContent(con({ nombre: 'Brynn Schwarz' }))).toEqual([])
+    expect(analyzeContent(con({ nombre: 'Wolfgang Kirchstrasse' }))).toEqual([])
+  })
 })
