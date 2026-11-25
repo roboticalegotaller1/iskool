@@ -20,7 +20,7 @@ frontend:
         - if [ -n "$SMTP_PORT" ]; then echo "SMTP_PORT=$SMTP_PORT" >> .env.production; fi
         - if [ -n "$SMTP_USER" ]; then echo "SMTP_USER=$SMTP_USER" >> .env.production; fi
         - if [ -n "$SMTP_PASS" ]; then echo "SMTP_PASS=$SMTP_PASS" >> .env.production; fi
-        - if [ -n "$DEMO_FORM_SECRET" ]; then echo "DEMO_FORM_SECRET=$DEMO_FORM_SECRET" >> .env.production; fi
+        - if [ -n "$DEMO_FORM_SECRET" ]; then printf '%s=%s\n' "DEMO_FORM_SECRET" "$DEMO_FORM_SECRET" >> .env.production; fi
         - if [ -n "$MOTOR_IA_API_KEY" ]; then printf '%s=%s\n' "MOTOR_IA_API_KEY" "$MOTOR_IA_API_KEY" >> .env.production; fi
         - if [ -n "$AI_API_KEY" ]; then printf '%s=%s\n' "AI_API_KEY" "$AI_API_KEY" >> .env.production; fi
         - if [ -n "$TOKEN_ENCRYPTION_SECRET" ]; then printf '%s=%s\n' "TOKEN_ENCRYPTION_SECRET" "$TOKEN_ENCRYPTION_SECRET" >> .env.production; fi

@@ -1,10 +1,13 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DemoForm } from '@/components/landing/DemoForm'
 import { Landing } from '@/components/landing/Landing'
+import { Contact } from '@/components/landing/sections/Contact'
 import { landingJsonLd, landingMetadata } from '@/lib/landing/metadata'
+import { CHALLENGE_TTL_MS } from '@/lib/landing/verification/challengeTiming'
 import { COVERAGE_TARGET, analyzeTrace, computeCoverage } from '@/lib/landing/verification/trace'
 
 vi.mock('@/components/landing/fonts', () => ({ LANDING_FONT_VARIABLES: 'fuentes-de-prueba' }))
@@ -327,9 +330,48 @@ describe('formulario de demostración', () => {
     await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
   })
 
-  it('el pizarrón tiene touch-action none', async () => {
+  it('si el pase está por vencer, consigue otro en silencio sin pedir borrar de nuevo', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    borrar()
+    await esperar(4000)
+    // La persona se fue a otra cosa: el pase de fondo tiene 29 min, a uno de vencer.
+    vi.setSystemTime(Date.now() + CHALLENGE_TTL_MS - 60_000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo/challenge')).toHaveLength(2))
+    // El tiempo mínimo cuenta desde el pase nuevo: todavía no se envía.
+    await esperar(1000)
+    expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(0)
+    await esperar(3000)
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    expect(cuerpoEnviado(fetchMock).verificacion.salt).toBe(PASE_2.salt)
+    expect(cuerpoEnviado(fetchMock).verificacion.mode).toBe('pointer')
+    expect(screen.queryByRole('alert')).toBeNull()
+    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
+  })
+
+  it('con un pase todavía vigente no pide otro', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    borrar()
+    await esperar(4000)
+    vi.setSystemTime(Date.now() + CHALLENGE_TTL_MS - 120_000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    expect(llamadasA(fetchMock, '/api/demo/challenge')).toHaveLength(1)
+    expect(cuerpoEnviado(fetchMock).verificacion.salt).toBe(PASE_1.salt)
+  })
+
+  it('el pizarrón tiene touch-action none mientras se borra y lo suelta al terminar', async () => {
     await montar()
     expect(pizarron().style.touchAction).toBe('none')
+    borrar()
+    await esperar(50)
+    // Ya borrado, el pizarrón no debe estorbar el desplazamiento de la página en un teléfono.
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    expect(pizarron().style.touchAction).toBe('auto')
     expect(screen.getByText('Para enviar, borra el pizarrón con el dedo o el mouse')).toBeTruthy()
     expect(screen.getByText(/¿No puedes usar el pizarrón\? Escríbenos a/).textContent).toContain('contacto@iskool.mx')
   })
@@ -485,16 +527,27 @@ describe('formulario de demostración', () => {
 })
 
 describe('aviso de envío sin verificación', () => {
-  it('con ?demo=sin-verificacion la sección de contacto muestra el aviso con el correo', async () => {
-    window.history.replaceState(null, '', '/?demo=sin-verificacion')
-    render(<Landing />)
-    const aviso = await screen.findByText(/No pudimos recibir tu solicitud/)
-    expect(aviso.textContent).toContain('contacto@iskool.mx')
+  // La sección se genera en el servidor: el aviso viaja en el HTML estático, oculto, y solo
+  // `:target` (la dirección /#demo-sin-verificacion) lo muestra, aun sin JavaScript.
+  const html = () => renderToStaticMarkup(<Contact />)
+  const aviso = () => {
+    const contenedor = document.createElement('div')
+    contenedor.innerHTML = html()
+    return contenedor.querySelector<HTMLElement>('#demo-sin-verificacion')
+  }
+
+  it('el HTML del servidor de la sección de contacto trae el aviso con su ancla y el correo', () => {
+    const elemento = aviso()
+    expect(elemento).not.toBeNull()
+    expect(elemento!.closest('section')?.id).toBe('contacto')
+    expect(elemento!.textContent).toMatch(/No pudimos verificar tu solicitud/)
+    expect(elemento!.textContent).toMatch(/Recarga la página, borra el pizarrón/)
+    expect(elemento!.querySelector('a')?.getAttribute('href')).toBe('mailto:contacto@iskool.mx')
   })
 
-  it('sin el parámetro no hay aviso', async () => {
-    render(<Landing />)
-    await act(async () => {})
-    expect(screen.queryByText(/No pudimos recibir tu solicitud/)).toBeNull()
+  it('está oculto por omisión y solo se muestra como destino del ancla', () => {
+    const clases = aviso()!.className.split(/\s+/)
+    expect(clases).toContain('hidden')
+    expect(clases).toContain('target:block')
   })
 })

@@ -1,6 +1,5 @@
 import { REGION, SITE } from '@/content/landing/site'
 import { plainWhatsappLink } from '@/lib/landing/contactLinks'
-import { AvisoSinVerificacion } from '../AvisoSinVerificacion'
 import { DemoForm } from '../DemoForm'
 import { Icon } from '../Icon'
 import { ANCHORS } from './anchors'
@@ -46,7 +45,21 @@ export function Contact() {
         </div>
 
         <div className="lg:col-span-7">
-          <AvisoSinVerificacion email={SITE.email} />
+          {/* Aviso estático para quien envió sin que cargara el pizarrón: el servidor lo regresa a
+              /#demo-sin-verificacion y `:target` lo muestra sin JavaScript, sin volver dinámica la portada. */}
+          <div
+            id="demo-sin-verificacion"
+            className="mb-6 hidden scroll-mt-24 rounded-2xl bg-lp-amber/20 px-5 py-4 text-base font-medium text-lp-navy target:block"
+          >
+            <p>
+              No pudimos verificar tu solicitud, así que no se envió. Recarga la página, borra el pizarrón y vuelve a
+              enviarla, o escríbenos a{' '}
+              <a href={`mailto:${SITE.email}`} className="font-semibold underline underline-offset-4">
+                {SITE.email}
+              </a>{' '}
+              y con gusto te atendemos.
+            </p>
+          </div>
           <DemoForm placeName={REGION.placeName} email={SITE.email} whatsappNumber={SITE.whatsappNumber} />
           <noscript>
             <p className="mt-6 text-lg font-medium text-lp-navy">Escríbenos a {SITE.email} para solicitar tu demostración.</p>

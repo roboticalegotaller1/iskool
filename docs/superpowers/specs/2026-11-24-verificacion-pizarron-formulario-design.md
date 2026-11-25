@@ -139,8 +139,9 @@ cambios de dirección y rectitud. Devuelve `ok | dudoso | sintetico` con los mot
    etiqueta `[POSIBLE SPAM]`.
 2. **Envío sin JavaScript.** Se conserva `action="/api/demo"` en el formulario (evita la advertencia
    de contenido mixto). Si llega un cuerpo `urlencoded`/`multipart` (nunca trae verificación), el
-   servidor responde **303** a `/?demo=sin-verificacion#contacto` en lugar de un JSON 400; la portada
-   muestra en la sección de contacto un aviso amable con el correo de contacto. Nada se envía.
+   servidor responde **303** a la dirección relativa `/#demo-sin-verificacion` en lugar de un JSON
+   400; la sección de contacto trae, en el HTML estático del servidor, un aviso oculto con ese `id`
+   que se muestra con `:target` (sin JavaScript). Nada se envía.
 3. **Cobertura baja nunca descarta en silencio.** Las muestras se diezman **por distancia** (se guarda
    un punto cuando el puntero se movió ≥ ~1 % del ancho), con tope de ~1500 puntos, de modo que un
    borrado lento cabe completo. El cliente envía el radio del borrador normalizado; el servidor
@@ -150,6 +151,18 @@ cambios de dirección y rectitud. Devuelve `ok | dudoso | sintetico` con los mot
 4. **Verificación de origen igual que el middleware.** Se compara el host de `Origin` contra
    `x-forwarded-host || host` (como la protección existente en `src/middleware.ts`), y si viene
    `Sec-Fetch-Site` debe ser `same-origin`. Sin `Origin` se deja pasar a las siguientes verificaciones.
+5. **Revisión final de la rama.** El aviso para envíos sin verificación pasó de la cadena de consulta
+   `?demo=sin-verificacion` (que leía un componente cliente después de hidratar y por eso no llegaba
+   a quien no cargó JavaScript) al ancla `#demo-sin-verificacion`: el aviso viaja estático en la
+   sección de contacto, oculto, y `:target` lo muestra; la portada sigue estática y la dirección del
+   303 es relativa, sin depender de `x-forwarded-host`. En el correo, los motivos del trazo llegan
+   como frases legibles; el cupo de teclado se revisa antes de enviar pero solo cuenta entregas
+   exitosas; los descartes silenciosos dejan un `console.warn` sin datos personales; un cuerpo de
+   más de 128 KB recibe 413; y el formulario cambia en silencio un pase a un minuto de vencer.
+   **Límites conocidos:** el uso único del pase y los límites por IP viven en la memoria de cada
+   proceso (varias instancias no los comparten); el trazo no está ligado al pase; las IP salen de
+   `x-forwarded-for`, que depende del proxy de enfrente; y la verificación de origen de la ruta es
+   más estricta que la del middleware (exige `Sec-Fetch-Site: same-origin` cuando viene).
 
 ## Hallazgo aparte (fuera de este cambio)
 

@@ -395,7 +395,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
           onPointerCancel={soltar}
           onLostPointerCapture={soltar}
           onKeyDown={onKeyDown}
-          style={{ touchAction: 'none' }}
+          style={{ touchAction: listo ? 'auto' : 'none' }}
           className={`relative aspect-[16/10] w-full cursor-crosshair select-none overflow-hidden rounded-2xl border-[6px] bg-lp-navy shadow-[inset_0_2px_18px_rgba(0,0,0,0.45)] sm:aspect-[2/1] ${
             error ? 'border-lp-amber ring-4 ring-lp-amber/25' : 'border-lp-navy-deep'
           }`}

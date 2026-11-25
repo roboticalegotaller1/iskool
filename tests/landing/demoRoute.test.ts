@@ -58,6 +58,7 @@ describe('POST /api/demo', () => {
     for (const name of ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS']) vi.stubEnv(name, '')
     vi.stubEnv('DEMO_FORM_SECRET', 'clave-de-prueba')
     vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
     sendMail.mockReset()
     sendMail.mockResolvedValue({})
     createTransport.mockReset()
@@ -92,6 +93,7 @@ describe('POST /api/demo', () => {
     const response = await POST(post({ ...valid, sitio: 'http://spam' }))
     expect(response.status).toBe(200)
     expect(sendMail).not.toHaveBeenCalled()
+    expect(console.warn).toHaveBeenCalledWith('Solicitud de demostración descartada:', 'campo trampa')
   })
 
   it('envío humano limpio se entrega con el asunto normal', async () => {
@@ -128,6 +130,12 @@ describe('POST /api/demo', () => {
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ ok: true })
     expect(sendMail).not.toHaveBeenCalled()
+    // Queda constancia del descarte con los motivos del trazo, sin datos de la persona.
+    expect(console.warn).toHaveBeenCalledTimes(1)
+    const [etiqueta, motivos] = vi.mocked(console.warn).mock.calls[0]
+    expect(etiqueta).toBe('Solicitud de demostración descartada:')
+    expect(Array.isArray(motivos) && motivos.length > 0).toBe(true)
+    expect(JSON.stringify(vi.mocked(console.warn).mock.calls)).not.toMatch(/Ana|ejemplo\.edu|5678|10\.0\./)
   })
 
   it("trazo dudoso → asunto empieza con '[POSIBLE SPAM] ' y el cuerpo termina con 'Motivos de revisión:'", async () => {
@@ -137,7 +145,22 @@ describe('POST /api/demo', () => {
     const { subject, text } = mensajeEnviado()
     expect(subject).toBe(`[POSIBLE SPAM] ${buildDemoSubject(valid)}`)
     const ultimaLinea = text.trimEnd().split('\n').pop()
-    expect(ultimaLinea).toBe('Motivos de revisión: cobertura')
+    expect(ultimaLinea).toBe('Motivos de revisión: borró poco del pizarrón')
+  })
+
+  it('los motivos del trazo llegan al correo como frases, nunca como códigos', async () => {
+    conCorreo()
+    expect((await POST(post(conVerificacion(valid, puntero(humanTrace({ coverage: 'partial' }))))))).toHaveProperty('status', 200)
+    expect((await POST(post(conVerificacion(valid, teclado()))))).toHaveProperty('status', 200)
+    const [cobertura, porTeclado] = sendMail.mock.calls.map(([m]) => (m as { text: string }).text.trimEnd().split('\n').pop() ?? '')
+    expect(cobertura).toBe('Motivos de revisión: borró poco del pizarrón')
+    expect(porTeclado).toBe(
+      'Motivos de revisión: usó el teclado en lugar del dedo o el mouse (puede ser una persona que no usa mouse)'
+    )
+    // Ningún código crudo del análisis del trazo aparece en el cuerpo.
+    for (const [m] of sendMail.mock.calls) {
+      expect((m as { text: string }).text).not.toMatch(/\b(cobertura|exceso|teclas|duracion|forma|puntos|constante)\b|: teclado\b/)
+    }
   })
 
   it('contenido del bot del 2026-11-24 con trazo humano → etiquetado', async () => {
@@ -166,7 +189,7 @@ describe('POST /api/demo', () => {
     expect(response.status).toBe(200)
     expect(mensajeEnviado().subject.startsWith('[POSIBLE SPAM] ')).toBe(true)
     const ultimaLinea = mensajeEnviado().text.trimEnd().split('\n').pop() ?? ''
-    expect(ultimaLinea.startsWith('Motivos de revisión: teclado, ')).toBe(true)
+    expect(ultimaLinea.startsWith('Motivos de revisión: usó el teclado en lugar del dedo o el mouse (puede ser una persona que no usa mouse), ')).toBe(true)
     expect(ultimaLinea).toContain('liga en los datos')
   })
 
@@ -182,6 +205,33 @@ describe('POST /api/demo', () => {
     expect(cuarta.status).toBe(200)
     expect(await cuarta.json()).toEqual({ ok: true })
     expect(sendMail).toHaveBeenCalledTimes(3)
+    expect(console.warn).toHaveBeenCalledWith('Solicitud de demostración descartada:', 'cupo de teclado')
+  })
+
+  it('los envíos de teclado que fallan al mandar el correo no gastan el cupo', async () => {
+    conCorreo()
+    const ip = { 'x-forwarded-for': '192.0.2.78' }
+    sendMail.mockRejectedValueOnce(new Error('caído')).mockRejectedValueOnce(new Error('caído')).mockRejectedValueOnce(new Error('caído'))
+    for (let i = 0; i < 3; i++) {
+      expect((await POST(post(conVerificacion(valid, teclado()), ip))).status).toBe(502)
+    }
+    const cuarta = await POST(post(conVerificacion(valid, teclado()), ip))
+    expect(cuarta.status).toBe(200)
+    expect(sendMail).toHaveBeenCalledTimes(4)
+    expect(console.warn).not.toHaveBeenCalled()
+  })
+
+  it('un cuerpo de más de 128 KB → 413 sin leerlo', async () => {
+    conCorreo()
+    const grande = JSON.stringify({ ...valid, mensaje: 'a'.repeat(130 * 1024) })
+    const request = post(grande, { 'content-length': String(Buffer.byteLength(grande)) })
+    // Si el entorno descarta la cabecera, la prueba no probaría nada.
+    expect(Number(request.headers.get('content-length'))).toBeGreaterThan(128 * 1024)
+    const json = vi.spyOn(request, 'json')
+    const response = await POST(request)
+    expect(response.status).toBe(413)
+    expect(json).not.toHaveBeenCalled()
+    expect(sendMail).not.toHaveBeenCalled()
   })
 
   it('Origin de otro dominio → 403', async () => {
@@ -212,20 +262,32 @@ describe('POST /api/demo', () => {
     expect(sendMail).toHaveBeenCalledTimes(1)
   })
 
-  it("formulario urlencoded → 303 con Location que termina en '/?demo=sin-verificacion#contacto'", async () => {
+  it("formulario urlencoded → 303 a '/#demo-sin-verificacion' (relativa, sin cabeceras del proxy)", async () => {
     conCorreo()
     const response = await POST(
       new Request('http://localhost/api/demo', {
         method: 'POST',
-        headers: { 'content-type': 'application/x-www-form-urlencoded', 'x-forwarded-for': nuevaIp() },
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-forwarded-for': nuevaIp(),
+          'x-forwarded-host': 'malicioso.example',
+        },
         body: new URLSearchParams(valid).toString(),
       })
     )
     expect(response.status).toBe(303)
-    const location = response.headers.get('location') ?? ''
-    expect(location.endsWith('/?demo=sin-verificacion#contacto')).toBe(true)
-    expect(() => new URL(location)).not.toThrow()
+    expect(response.headers.get('location')).toBe('/#demo-sin-verificacion')
     expect(sendMail).not.toHaveBeenCalled()
+  })
+
+  it('formulario multipart → mismo 303', async () => {
+    const datos = new FormData()
+    for (const [k, v] of Object.entries(valid)) datos.append(k, v)
+    const response = await POST(
+      new Request('http://localhost/api/demo', { method: 'POST', headers: { 'x-forwarded-for': nuevaIp() }, body: datos })
+    )
+    expect(response.status).toBe(303)
+    expect(response.headers.get('location')).toBe('/#demo-sin-verificacion')
   })
 })
 

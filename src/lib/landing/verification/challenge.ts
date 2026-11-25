@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'crypto'
+import { CHALLENGE_TTL_MS, MIN_FILL_MS } from './challengeTiming'
 
 // Pase firmado de prueba de trabajo para la solicitud de demostración.
 // El servidor emite un acertijo que el navegador resuelve por fuerza bruta; al enviar el formulario
@@ -11,8 +12,8 @@ export interface DemoChallenge {
   signature: string
 }
 
-export const CHALLENGE_TTL_MS = 30 * 60_000
-export const MIN_FILL_MS = 3_000
+export { CHALLENGE_TTL_MS, MIN_FILL_MS }
+
 // Tope de la búsqueda del número secreto (calibrar contra el tiempo de cómputo en un teléfono modesto).
 const CHALLENGE_MAX = 75_000
 

@@ -4,7 +4,7 @@ import { buildDemoMessage, buildDemoSubject } from '@/lib/landing/contactLinks'
 import { VERIFICATION_FIELD, isHoneypotFilled, parseDemoRequest, validateDemoRequest } from '@/lib/landing/demoForm'
 import { verifyChallenge } from '@/lib/landing/verification/challenge'
 import { analyzeContent } from '@/lib/landing/verification/content'
-import { checkKeyboardLimit } from '@/lib/landing/verification/keyboardLimit'
+import { isKeyboardLimited, recordKeyboardDelivery } from '@/lib/landing/verification/keyboardLimit'
 import { analyzeTrace } from '@/lib/landing/verification/trace'
 
 const demoAttemptTracker = new Map<string, { count: number; resetAtMs: number }>()
@@ -43,24 +43,43 @@ function isSameOrigin(request: Request): boolean {
   }
 }
 
-// Dirección absoluta de la portada, respetando el dominio público cuando hay un proxy delante.
-function landingUrl(request: Request, path: string): URL {
-  const url = new URL(request.url)
-  const forwardedHost = firstHeaderValue(request.headers.get('x-forwarded-host'))
-  const forwardedProto = firstHeaderValue(request.headers.get('x-forwarded-proto'))
-  if (forwardedHost) url.host = forwardedHost
-  if (forwardedProto === 'http' || forwardedProto === 'https') url.protocol = `${forwardedProto}:`
-  return new URL(path, url.origin)
+// Tope del cuerpo: una solicitud legítima (datos y trazo del pizarrón) pesa mucho menos.
+const MAX_BODY_BYTES = 128 * 1024
+
+// Ancla del aviso estático de la sección de contacto; se muestra con `:target`, sin JavaScript.
+const AVISO_SIN_VERIFICACION = '/#demo-sin-verificacion'
+
+// Cómo se leen en el correo los motivos del trazo; el dueño del buzón no es técnico.
+const MOTIVOS_TRAZO: Record<string, string> = {
+  cobertura: 'borró poco del pizarrón',
+  exceso: 'trazo inusualmente largo',
+  teclado: 'usó el teclado en lugar del dedo o el mouse (puede ser una persona que no usa mouse)',
+}
+const MOTIVO_TRAZO_DESCONOCIDO = 'trazo poco común en el pizarrón'
+
+const describirMotivoTrazo = (codigo: string) => MOTIVOS_TRAZO[codigo] ?? MOTIVO_TRAZO_DESCONOCIDO
+
+// Descartes silenciosos: queda constancia en el registro, solo con el motivo y sin datos personales.
+const descartar = (motivo: string | string[]) => {
+  console.warn('Solicitud de demostración descartada:', motivo)
+  return fingirExito()
 }
 
 // Recibe la solicitud de demostración, revisa el pizarrón y la entrega al buzón de contacto
 // (con etiqueta de revisión cuando algo se ve dudoso). Las credenciales del servidor de correo
 // viven en variables de entorno del hosting, nunca en el código.
 export async function POST(request: Request) {
-  // Un envío sin JavaScript nunca trae la verificación: se regresa a la portada con un aviso.
+  // Un cuerpo desmedido se rechaza antes de leerlo.
+  const contentLength = Number(request.headers.get('content-length'))
+  if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+    return Response.json({ ok: false }, { status: 413 })
+  }
+
+  // Un envío sin JavaScript nunca trae la verificación: se regresa a la portada, al aviso
+  // estático de la sección de contacto. La dirección es relativa para no depender del proxy.
   const contentType = (request.headers.get('content-type') || '').toLowerCase()
   if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
-    return Response.redirect(landingUrl(request, '/?demo=sin-verificacion#contacto'), 303)
+    return new Response(null, { status: 303, headers: { Location: AVISO_SIN_VERIFICACION } })
   }
 
   // Un cuerpo ilegible se rechaza más adelante, al revisar los datos.
@@ -71,7 +90,7 @@ export async function POST(request: Request) {
     body = undefined
   }
 
-  if (isHoneypotFilled(body)) return fingirExito()
+  if (isHoneypotFilled(body)) return descartar('campo trampa')
 
   if (!isSameOrigin(request)) return Response.json({ ok: false }, { status: 403 })
 
@@ -103,12 +122,13 @@ export async function POST(request: Request) {
   }
 
   const trazo = analyzeTrace(verificacion)
-  if (trazo.veredicto === 'sintetico') return fingirExito()
+  if (trazo.veredicto === 'sintetico') return descartar(trazo.motivos)
 
+  // El cupo de teclado se revisa aquí, pero se cuenta solo cuando el correo sí sale.
   const isKeyboard = (verificacion as Record<string, unknown>).mode === 'keyboard'
-  if (isKeyboard && !checkKeyboardLimit(clientIp)) return fingirExito()
+  if (isKeyboard && isKeyboardLimited(clientIp)) return descartar('cupo de teclado')
 
-  const motivos = [...trazo.motivos, ...analyzeContent(demo)]
+  const motivos = [...trazo.motivos.map(describirMotivoTrazo), ...analyzeContent(demo)]
 
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
@@ -142,5 +162,6 @@ export async function POST(request: Request) {
     return Response.json({ ok: false }, { status: 502 })
   }
 
+  if (isKeyboard) recordKeyboardDelivery(clientIp)
   return Response.json({ ok: true })
 }

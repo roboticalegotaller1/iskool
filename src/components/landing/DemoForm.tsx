@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { buildWhatsappLink, type DemoRequest } from '@/lib/landing/contactLinks'
 import { HONEYPOT_FIELD, REQUIRED_FIELDS, VERIFICATION_FIELD, validateDemoRequest, type DemoField } from '@/lib/landing/demoForm'
 import type { DemoChallenge } from '@/lib/landing/verification/challenge'
+import { CHALLENGE_TTL_MS } from '@/lib/landing/verification/challengeTiming'
 import { solveChallenge } from '@/lib/landing/verification/solver'
 import { Icon } from './Icon'
 import { Pizarron, type PizarronState } from './Pizarron'
@@ -35,6 +36,10 @@ interface PaseResuelto {
 
 // El servidor rechaza un pase con menos de 3 s de emitido; se deja un margen.
 const MIN_ESPERA_MS = 3200
+
+// Un pase más viejo que esto se cambia en silencio por uno nuevo antes de enviar, con un minuto
+// de margen para que no venza en el camino. El trazo no está ligado al pase: el borrado se conserva.
+const PASE_POR_VENCER_MS = CHALLENGE_TTL_MS - 60_000
 
 const MSG_SIN_BORRAR = 'Borra el pizarrón para enviar.'
 const MSG_VENCIO = 'La verificación venció; borra el pizarrón otra vez.'
@@ -160,6 +165,19 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
         }
       }
 
+      // La persona tardó tanto que el pase está por vencer: se consigue otro sin pedirle borrar de nuevo.
+      if (Date.now() - resuelto.recibidoEn > PASE_POR_VENCER_MS) {
+        try {
+          resuelto = await obtenerPase(new AbortController().signal)
+          paseRef.current = Promise.resolve(resuelto)
+        } catch {
+          pedirPaseNuevo()
+          setStatus('failed')
+          return
+        }
+      }
+
+      // El tiempo mínimo cuenta desde el pase que de verdad se envía (también si se acaba de cambiar).
       const espera = MIN_ESPERA_MS - (Date.now() - resuelto.recibidoEn)
       if (espera > 0) await dormir(espera)
 
