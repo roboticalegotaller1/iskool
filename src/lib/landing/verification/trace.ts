@@ -39,10 +39,10 @@ const CV_CONSTANTE = 0.05
 const RECTITUD_CONSTANTE = 0.98
 // Giro (grados) respecto a la dirección del tramo que abre un tramo nuevo.
 const GIRO_TRAMO = 60
-// Holgura para puntos fuera del pizarrón (arrastres que salen del borde).
-const HOLGURA = 0.5
+/** Más puntos que esto ya no es un borrado lento sino abuso: se trata como forma inválida. */
+export const MAX_ABUSE_POINTS = 10 * MAX_TRACE_POINTS
 
-const SINTETICO_FORMA: TraceVerdict = { veredicto: 'sintetico', motivos: ['forma'] }
+const sinteticoForma = (): TraceVerdict => ({ veredicto: 'sintetico', motivos: ['forma'] })
 
 const finito = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
 const esObjeto = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null
@@ -138,26 +138,33 @@ function rectitud(trazo: TracePoint[]): number {
   return recorridoTotal === 0 ? 0 : directoTotal / recorridoTotal
 }
 
-// Valida la forma; devuelve null si algo no lo podría producir un navegador real.
+const recortar01 = (v: number) => Math.min(1, Math.max(0, v))
+
+// Valida la forma; devuelve null solo con datos de verdad mal formados (tipos
+// incorrectos, números no finitos, tiempos que retroceden, modo desconocido o un
+// volumen de abuso). Los puntos fuera del pizarrón se recortan a [0, 1]: en un
+// pizarrón angosto el dedo de una persona real puede salirse al arrastrar.
 function leerEntrada(input: unknown): TraceInput | null {
   if (!esObjeto(input)) return null
   const { mode, radio, trazo, teclas } = input
   if (mode !== 'pointer' && mode !== 'keyboard') return null
   if (!finito(radio) || radio <= 0) return null
   if (!Array.isArray(trazo) || !Array.isArray(teclas)) return null
+  if (trazo.length > MAX_ABUSE_POINTS || teclas.length > MAX_ABUSE_POINTS) return null
+  const limpio: TracePoint[] = []
   let tPrevio = -Infinity
   for (const p of trazo) {
     if (!esObjeto(p) || !finito(p.x) || !finito(p.y) || !finito(p.t)) return null
-    if (p.x < -HOLGURA || p.x > 1 + HOLGURA || p.y < -HOLGURA || p.y > 1 + HOLGURA) return null
     if (p.t < 0 || p.t < tPrevio) return null
     tPrevio = p.t
+    limpio.push({ x: recortar01(p.x), y: recortar01(p.y), t: p.t })
   }
   tPrevio = -Infinity
   for (const k of teclas) {
     if (!esObjeto(k) || !finito(k.t) || k.t < 0 || k.t < tPrevio) return null
     tPrevio = k.t
   }
-  return { mode, radio, trazo: trazo as TracePoint[], teclas: teclas as { t: number }[] }
+  return { mode, radio, trazo: limpio, teclas: teclas as { t: number }[] }
 }
 
 /**
@@ -167,15 +174,17 @@ function leerEntrada(input: unknown): TraceInput | null {
  * de borrar no debe perderse en silencio.
  */
 export function analyzeTrace(input: unknown): TraceVerdict {
-  if (esObjeto(input) && Array.isArray(input.trazo) && input.trazo.length > MAX_TRACE_POINTS) {
-    return { veredicto: 'sintetico', motivos: ['exceso'] }
-  }
   const entrada = leerEntrada(input)
-  if (!entrada) return SINTETICO_FORMA
+  if (!entrada) return sinteticoForma()
 
   if (entrada.mode === 'keyboard') return analizarTeclado(entrada)
 
-  const { trazo, radio } = entrada
+  // Un borrado muy lento puede rebasar el tope: no se descarta, se etiqueta, y
+  // para acotar el costo solo se analizan los primeros MAX_TRACE_POINTS puntos.
+  const exceso = entrada.trazo.length > MAX_TRACE_POINTS
+  const trazo = exceso ? entrada.trazo.slice(0, MAX_TRACE_POINTS) : entrada.trazo
+  const { radio } = entrada
+  const dudosos: string[] = []
   const sinteticos: string[] = []
   if (trazo.length < MIN_POINTS) sinteticos.push('puntos')
   const duracion = trazo.length > 0 ? trazo[trazo.length - 1].t - trazo[0].t : 0
@@ -190,8 +199,11 @@ export function analyzeTrace(input: unknown): TraceVerdict {
       // Eventos agrupados (dt = 0) no aportan velocidad.
       if (dt > 0) velocidades.push(Math.hypot(trazo[n].x - trazo[n - 1].x, trazo[n].y - trazo[n - 1].y) / dt)
     }
-    // Un humano rápido tiene intervalos casi constantes (un evento por cuadro) y uno
-    // lento pasos casi iguales; solo los tres juntos delatan a un script.
+    // Ninguna condición sola basta: un humano rápido tiene intervalos casi
+    // constantes (un evento por cuadro) y el diezmado por distancia iguala los
+    // pasos. Intervalo y velocidad no son independientes (con pasos iguales, la
+    // velocidad varía justo cuando varía el intervalo), así que la rectitud es la
+    // que separa a un script de una mano que avanza pareja.
     if (
       coefVariacion(intervalos) < CV_CONSTANTE &&
       coefVariacion(velocidades) < CV_CONSTANTE &&
@@ -202,7 +214,9 @@ export function analyzeTrace(input: unknown): TraceVerdict {
   }
   if (sinteticos.length > 0) return { veredicto: 'sintetico', motivos: sinteticos }
 
-  if (computeCoverage(trazo, radio) < COVERAGE_TARGET) return { veredicto: 'dudoso', motivos: ['cobertura'] }
+  if (computeCoverage(trazo, radio) < COVERAGE_TARGET) dudosos.push('cobertura')
+  if (exceso) dudosos.push('exceso')
+  if (dudosos.length > 0) return { veredicto: 'dudoso', motivos: dudosos }
   return { veredicto: 'ok', motivos: [] }
 }
 

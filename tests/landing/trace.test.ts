@@ -4,6 +4,7 @@ import {
   COVERAGE_GRID,
   COVERAGE_TARGET,
   MAX_TRACE_POINTS,
+  MAX_ABUSE_POINTS,
   RADIO_MAX,
   analyzeTrace,
   computeCoverage,
@@ -176,14 +177,83 @@ describe('análisis del trazo del pizarrón', () => {
       { mode: 'pointer', radio: 0.06, trazo: 'no', teclas: [] },
       { mode: 'pointer', radio: 0.06, trazo: [{ x: 0.1, y: Number.NaN, t: 0 }], teclas: [] },
       { mode: 'pointer', radio: 0.06, trazo: [{ x: 0.1, y: 0.1, t: 5 }, { x: 0.2, y: 0.2, t: 3 }], teclas: [] },
-      { mode: 'pointer', radio: 0.06, trazo: [{ x: 9, y: 0.1, t: 0 }], teclas: [] },
+      { mode: 'pointer', radio: 0.06, trazo: [{ x: '0.1', y: 0.1, t: 0 }], teclas: [] },
+      { mode: 'pointer', radio: 0.06, trazo: [{ x: 0.1, y: Number.POSITIVE_INFINITY, t: 0 }], teclas: [] },
+      { mode: 'pointer', radio: 0.06, trazo: [null], teclas: [] },
       { mode: 'keyboard', radio: 0.06, trazo: [], teclas: [{ t: 'a' }] },
     ]
     for (const m of malas) expect(analyzeTrace(m), JSON.stringify(m)).toEqual({ veredicto: 'sintetico', motivos: ['forma'] })
   })
 
-  it(`más de ${MAX_TRACE_POINTS} puntos → sintetico`, () => {
-    const trazo = Array.from({ length: MAX_TRACE_POINTS + 1 }, (_, i) => ({ x: (i % 100) / 100, y: 0.5, t: i * 16 }))
-    expect(analyzeTrace(puntero(trazo)).veredicto).toBe('sintetico')
+  it('la entrada mal formada devuelve un objeto nuevo cada vez', () => {
+    const a = analyzeTrace(null)
+    a.motivos.push('alterado')
+    expect(analyzeTrace(null)).toEqual({ veredicto: 'sintetico', motivos: ['forma'] })
+  })
+
+  it('puntos muy fuera del pizarrón se recortan, no se descartan', () => {
+    // En un pizarrón angosto de teléfono el dedo puede salirse al arrastrar.
+    const trazo = humanTrace().map((p, i) => (i % 25 === 0 ? { ...p, x: 1.8 } : p))
+    const r = analyzeTrace(puntero(trazo))
+    expect(r.veredicto).not.toBe('sintetico')
+    expect(['ok', 'dudoso']).toContain(r.veredicto)
+    // Un punto en x = 9 se recorta al borde en vez de invalidar la entrada.
+    expect(analyzeTrace(puntero([{ x: 9, y: 0.1, t: 0 }])).motivos).not.toContain('forma')
+  })
+
+  it(`borrado lento con más de ${MAX_TRACE_POINTS} puntos → dudoso por exceso, nunca sintetico`, () => {
+    const trazo = humanTrace({ durationMs: 35000 })
+    expect(trazo.length).toBeGreaterThan(MAX_TRACE_POINTS)
+    expect(trazo.length).toBeLessThan(MAX_ABUSE_POINTS)
+    expect(analyzeTrace(puntero(trazo))).toEqual({ veredicto: 'dudoso', motivos: ['exceso'] })
+  })
+
+  it(`más de ${MAX_ABUSE_POINTS} puntos es abuso → sintetico por forma`, () => {
+    const trazo = Array.from({ length: MAX_ABUSE_POINTS + 1 }, (_, i) => ({ x: (i % 100) / 100, y: 0.5, t: i * 16 }))
+    expect(analyzeTrace(puntero(trazo))).toEqual({ veredicto: 'sintetico', motivos: ['forma'] })
+  })
+})
+
+describe('la señal constante exige las tres condiciones juntas', () => {
+  it('recta con intervalos fijos de 16 ms pero velocidad variable → no sintetico', () => {
+    const trazo: TracePoint[] = []
+    let x = 0.05
+    for (let i = 0; i < 100; i++) {
+      trazo.push({ x, y: 0.5, t: i * 16 })
+      x += 0.004 + 0.008 * ((i * 7) % 5) / 4 // pasos de 0.004 a 0.012
+    }
+    const r = analyzeTrace(puntero(trazo))
+    expect(r.motivos).not.toContain('constante')
+    expect(r.veredicto).toBe('dudoso')
+  })
+
+  it('recta a velocidad constante con intervalos irregulares → no sintetico', () => {
+    // Eventos crudos sin diezmar: el paso es proporcional al intervalo.
+    const trazo: TracePoint[] = []
+    let t = 0
+    let x = 0.05
+    for (let i = 0; i < 100; i++) {
+      trazo.push({ x, y: 0.5, t })
+      const dt = 10 + ((i * 11) % 7) * 3 // 10 a 28 ms
+      t += dt
+      x += 0.0004 * dt
+    }
+    const r = analyzeTrace(puntero(trazo))
+    expect(r.motivos).not.toContain('constante')
+    expect(r.veredicto).toBe('dudoso')
+  })
+
+  it('curva con tiempos y velocidad constantes → no sintetico', () => {
+    // Espiral a rapidez constante: intervalos y velocidad sin variación, pero no es recta.
+    const trazo: TracePoint[] = []
+    let ang = 0
+    for (let i = 0; i < 400; i++) {
+      const r = 0.05 + (0.4 * i) / 400
+      trazo.push({ x: 0.5 + r * Math.cos(ang), y: 0.5 + r * Math.sin(ang), t: i * 16 })
+      ang += 0.01 / r // longitud de arco ~0.01 por paso
+    }
+    const r = analyzeTrace(puntero(trazo))
+    expect(r.motivos).not.toContain('constante')
+    expect(r.veredicto).not.toBe('sintetico')
   })
 })
