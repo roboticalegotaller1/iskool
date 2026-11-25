@@ -235,7 +235,9 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
     if (inicioDeTrazo) cortes.current.add(trazo.current.length)
     trazo.current.push(punto)
     borrarTramo(punto, inicioDeTrazo ? null : previo)
-    if (medir() >= COVERAGE_TARGET) completar()
+    // Al llegar al tope se da por terminado: quien repasó mucho la misma zona no debe quedarse
+    // atorada; el servidor recalcula la cobertura y, si es baja, lo entrega etiquetado.
+    if (medir() >= COVERAGE_TARGET || trazo.current.length >= MAX_TRACE_POINTS) completar()
     avisar()
   }
 
@@ -256,7 +258,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
   }
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerId !== puntero.current || listoRef.current || !esEventoConfiable(e.nativeEvent)) return
+    if (e.pointerId !== puntero.current || listoRef.current || tecladoActivo() || !esEventoConfiable(e.nativeEvent)) return
     registrar(e, false)
   }
 

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DemoForm } from '@/components/landing/DemoForm'
 import { Landing } from '@/components/landing/Landing'
 import { landingJsonLd, landingMetadata } from '@/lib/landing/metadata'
+import { COVERAGE_TARGET, analyzeTrace, computeCoverage } from '@/lib/landing/verification/trace'
 
 vi.mock('@/components/landing/fonts', () => ({ LANDING_FONT_VARIABLES: 'fuentes-de-prueba' }))
 
@@ -245,6 +246,26 @@ describe('formulario de demostración', () => {
       expect(p.y).toBeLessThanOrEqual(1)
     }
     for (let i = 1; i < v.trazo.length; i++) expect(v.trazo[i].t).toBeGreaterThanOrEqual(v.trazo[i - 1].t)
+    // El servidor recalcula la cobertura con el mismo trazo y el mismo radio.
+    expect(computeCoverage(v.trazo, v.radio)).toBeGreaterThanOrEqual(COVERAGE_TARGET)
+  })
+
+  it('quien repasa mucho la misma zona no se queda atorada al llegar al tope de puntos', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.pointerDown(board, { pointerId: 1, clientX: 0, clientY: 20 })
+    for (let i = 0; i < 1700; i++) fireEvent.pointerMove(board, { pointerId: 1, clientX: i % 2 === 0 ? 80 : 4, clientY: 20 })
+    fireEvent.pointerUp(board, { pointerId: 1 })
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    const v = cuerpoEnviado(fetchMock).verificacion
+    expect(v.trazo.length).toBeLessThanOrEqual(1500)
+    expect(computeCoverage(v.trazo, v.radio)).toBeLessThan(COVERAGE_TARGET)
   })
 
   it('ignora los toques que no vienen de una persona', async () => {
@@ -331,6 +352,7 @@ describe('formulario de demostración', () => {
     expect(v.teclas).toHaveLength(2)
     const fin = Math.max(v.teclas[1].t, v.trazo[v.trazo.length - 1].t)
     expect(fin - v.teclas[0].t).toBeGreaterThanOrEqual(1500)
+    expect(analyzeTrace(v)).toEqual({ veredicto: 'dudoso', motivos: ['teclado'] })
   })
 })
 
