@@ -8,6 +8,8 @@ export const MAX_FIELD_LENGTH = 200
 export const MAX_MESSAGE_LENGTH = 4000
 /** Campo oculto que una persona nunca llena; si llega con texto, lo envió un robot. */
 export const HONEYPOT_FIELD = 'sitio'
+/** Campo del cuerpo con el pase resuelto y el trazo del pizarrón. */
+export const VERIFICATION_FIELD = 'verificacion'
 
 const SINGLE_LINE_FIELDS = ['nombre', 'escuela', 'cargo', 'telefono', 'correo'] as const satisfies readonly DemoField[]
 
