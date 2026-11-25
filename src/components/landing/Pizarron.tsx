@@ -71,11 +71,16 @@ function rutaTeclado(): { x: number; y: number }[][] {
 
 const [MITAD_1, MITAD_2] = rutaTeclado()
 
-const pedirCuadro = (cb: () => void): number =>
-  typeof requestAnimationFrame === 'function' ? requestAnimationFrame(cb) : (setTimeout(cb, 16) as unknown as number)
-const cancelarCuadro = (id: number) => {
-  if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(id)
-  clearTimeout(id)
+// Cada espera recuerda de qué tipo es, para cancelarla con la función correcta.
+type Espera = { tipo: 'cuadro'; id: number } | { tipo: 'temporizador'; id: ReturnType<typeof setTimeout> }
+
+const pedirCuadro = (cb: () => void): Espera =>
+  typeof requestAnimationFrame === 'function'
+    ? { tipo: 'cuadro', id: requestAnimationFrame(cb) }
+    : { tipo: 'temporizador', id: setTimeout(cb, 16) }
+const cancelarEspera = (espera: Espera) => {
+  if (espera.tipo === 'cuadro') cancelAnimationFrame(espera.id)
+  else clearTimeout(espera.id)
 }
 
 export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
@@ -97,7 +102,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
   const listoRef = useRef(false)
   const fase = useRef<FaseTeclado>('quieto')
   const segundaPendiente = useRef(false)
-  const cuadro = useRef<number | null>(null)
+  const cuadro = useRef<Espera | null>(null)
   const semilla = useRef(1)
 
   const [listo, setListo] = useState(false)
@@ -190,7 +195,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
 
   // Reinicio del trazo y del gis: al montar y cada vez que llega un pase nuevo.
   useEffect(() => {
-    if (cuadro.current !== null) cancelarCuadro(cuadro.current)
+    if (cuadro.current !== null) cancelarEspera(cuadro.current)
     cuadro.current = null
     trazo.current = []
     cortes.current = new Set()
@@ -206,7 +211,7 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
     pintar()
     avisar()
     return () => {
-      if (cuadro.current !== null) cancelarCuadro(cuadro.current)
+      if (cuadro.current !== null) cancelarEspera(cuadro.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey])
@@ -243,10 +248,27 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
 
   const tecladoActivo = () => fase.current !== 'quieto'
 
+  // Si el teclado espera la segunda pulsación y la persona prefiere el dedo, el dedo toma el
+  // control desde cero: un trazo de puntero no se mezcla con el borrado automático.
+  const dejarTeclado = () => {
+    fase.current = 'quieto'
+    segundaPendiente.current = false
+    modo.current = 'pointer'
+    trazo.current = []
+    cortes.current = new Set()
+    teclas.current = []
+    setEsperaTecla(false)
+    pintar()
+    medir()
+  }
+
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (!esEventoConfiable(e.nativeEvent) || listoRef.current || tecladoActivo()) return
-    // Un solo dedo a la vez: un segundo toque no hace saltar el borrador.
-    if (puntero.current !== null) return
+    if (!esEventoConfiable(e.nativeEvent) || listoRef.current) return
+    if (fase.current === 'espera') dejarTeclado()
+    if (tecladoActivo()) return
+    // Un solo dedo a la vez: un segundo toque simultáneo no hace saltar el borrador. Un toque
+    // primario nuevo sí reemplaza al anterior, por si se perdió su aviso de soltar.
+    if (puntero.current !== null && puntero.current !== e.pointerId && !e.isPrimary) return
     puntero.current = e.pointerId
     try {
       e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -303,11 +325,12 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
         return
       }
       // No debería pasar con las duraciones elegidas: se espera lo que falte y se marca el último instante.
-      cuadro.current = setTimeout(() => {
+      const id = setTimeout(() => {
         const ultimo = trazo.current[trazo.current.length - 1]
         if (ultimo) trazo.current.push({ x: ultimo.x, y: ultimo.y, t: tiempo() })
         cerrar()
-      }, Math.max(16, falta)) as unknown as number
+      }, Math.max(16, falta))
+      cuadro.current = { tipo: 'temporizador', id }
     }
     cerrar()
   }
@@ -358,28 +381,32 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
         Para enviar, borra el pizarrón con el dedo o el mouse
       </p>
 
-      <div
-        ref={boardRef}
-        data-pizarron=""
-        role="button"
-        tabIndex={0}
-        aria-label={listo ? 'Pizarrón borrado' : 'Pizarrón para borrar. Con el teclado, presiona Enter.'}
-        aria-describedby={['pizarron-ayuda', error ? 'pizarron-error' : null].filter(Boolean).join(' ')}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={soltar}
-        onPointerCancel={soltar}
-        onKeyDown={onKeyDown}
-        style={{ touchAction: 'none' }}
-        className={`relative mt-3 aspect-[16/10] w-full cursor-crosshair select-none overflow-hidden rounded-2xl border-[6px] bg-lp-navy shadow-[inset_0_2px_18px_rgba(0,0,0,0.45)] sm:aspect-[2/1] ${
-          error ? 'border-lp-amber ring-4 ring-lp-amber/25' : 'border-lp-navy-deep'
-        }`}
-      >
-        <canvas
-          ref={lienzoRef}
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 size-full transition-opacity duration-300 ease-out ${listo ? 'opacity-0' : 'opacity-100'}`}
-        />
+      <div className="relative mt-3">
+        <div
+          ref={boardRef}
+          data-pizarron=""
+          role="button"
+          tabIndex={0}
+          aria-label={listo ? 'Pizarrón borrado' : 'Pizarrón para borrar. Con el teclado, presiona Enter.'}
+          aria-describedby={['pizarron-ayuda', error ? 'pizarron-error' : null].filter(Boolean).join(' ')}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={soltar}
+          onPointerCancel={soltar}
+          onLostPointerCapture={soltar}
+          onKeyDown={onKeyDown}
+          style={{ touchAction: 'none' }}
+          className={`relative aspect-[16/10] w-full cursor-crosshair select-none overflow-hidden rounded-2xl border-[6px] bg-lp-navy shadow-[inset_0_2px_18px_rgba(0,0,0,0.45)] sm:aspect-[2/1] ${
+            error ? 'border-lp-amber ring-4 ring-lp-amber/25' : 'border-lp-navy-deep'
+          }`}
+        >
+          <canvas
+            ref={lienzoRef}
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 size-full transition-opacity duration-300 ease-out ${listo ? 'opacity-0' : 'opacity-100'}`}
+          />
+        </div>
+        {/* Fuera del botón: dentro de un role="button" los hijos son presentacionales y no se anunciarían. */}
         <div aria-live="polite" className="pointer-events-none absolute inset-0 grid place-items-center">
           {listo && (
             <div className="lp-pizarron-listo flex flex-col items-center gap-3 text-white">

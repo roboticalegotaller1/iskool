@@ -41,6 +41,31 @@ const MSG_VENCIO = 'La verificación venció; borra el pizarrón otra vez.'
 
 const dormir = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
+// Reintentos silenciosos del pase al cargar la página (espera antes de cada uno).
+const REINTENTOS_PASE_MS = [1000, 3000]
+
+// Un intento: pide el pase y busca su número.
+async function obtenerPase(signal: AbortSignal): Promise<PaseResuelto> {
+  const response = await fetch('/api/demo/challenge', { cache: 'no-store', signal })
+  if (!response.ok) throw new Error(String(response.status))
+  const pase = (await response.json()) as DemoChallenge
+  const recibidoEn = Date.now()
+  const number = await solveChallenge(pase, signal)
+  return { pase, number, recibidoEn }
+}
+
+async function obtenerPaseConReintentos(signal: AbortSignal): Promise<PaseResuelto> {
+  for (let intento = 0; ; intento++) {
+    try {
+      return await obtenerPase(signal)
+    } catch (error) {
+      if (signal.aborted || intento >= REINTENTOS_PASE_MS.length) throw error
+      await dormir(REINTENTOS_PASE_MS[intento])
+      if (signal.aborted) throw error
+    }
+  }
+}
+
 const CONTROL =
   'mt-2 block w-full rounded-2xl border bg-white px-4 py-3 text-base text-lp-navy shadow-[0_1px_0_rgba(11,27,63,0.04)] transition-colors placeholder:text-lp-muted/60 focus:border-lp-blue'
 
@@ -59,22 +84,13 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
   const enviando = useRef(false)
   const enviado = useRef(false)
 
-  // Pide el pase y lo resuelve en segundo plano; uno nuevo en cada generación.
+  // Pide el pase y lo resuelve en segundo plano; uno nuevo en cada generación. Si falla se
+  // reintenta en silencio: la persona solo se entera si al enviar tampoco se consigue.
   useEffect(() => {
     const control = new AbortController()
-    const promesa = (async () => {
-      const response = await fetch('/api/demo/challenge', { cache: 'no-store', signal: control.signal })
-      if (!response.ok) throw new Error(String(response.status))
-      const pase = (await response.json()) as DemoChallenge
-      const recibidoEn = Date.now()
-      const number = await solveChallenge(pase, control.signal)
-      return { pase, number, recibidoEn }
-    })()
+    const promesa = obtenerPaseConReintentos(control.signal)
+    promesa.catch(() => {})
     paseRef.current = promesa
-    // Sin pase no hay forma de enviar: se ofrece el correo de inmediato, nunca una espera sin fin.
-    promesa.catch(() => {
-      if (!control.signal.aborted && paseRef.current === promesa && !enviado.current) setStatus('failed')
-    })
     return () => control.abort()
   }, [generacion])
 
@@ -132,10 +148,16 @@ export function DemoForm({ placeName, email, whatsappNumber }: DemoFormProps) {
         if (!paseRef.current) throw new Error('sin pase')
         resuelto = await paseRef.current
       } catch {
-        // El pase no se pudo obtener: se intenta otro para la próxima y se ofrece el correo.
-        pedirPaseNuevo()
-        setStatus('failed')
-        return
+        // El pase de fondo no se consiguió: un intento más ahora mismo.
+        try {
+          resuelto = await obtenerPase(new AbortController().signal)
+          paseRef.current = Promise.resolve(resuelto)
+        } catch {
+          // Tampoco: se prepara otro para la próxima y se ofrece el correo.
+          pedirPaseNuevo()
+          setStatus('failed')
+          return
+        }
       }
 
       const espera = MIN_ESPERA_MS - (Date.now() - resuelto.recibidoEn)

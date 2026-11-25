@@ -22,10 +22,14 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 
 // Simula el servidor: el pase y los envíos se atienden por separado; cada llamada recibe una respuesta nueva.
-function servidor(envios: Array<() => Response> = [], pases: Array<() => Response> = [() => json(PASE_1), () => json(PASE_2)]) {
+function servidor(
+  envios: Array<() => Response> = [],
+  pases: Array<() => Response> = [() => json(PASE_1), () => json(PASE_2)],
+  otroPase: () => Response = () => json(PASE_2),
+) {
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     void init
-    if (url === '/api/demo/challenge') return (pases.shift() ?? (() => json(PASE_2)))()
+    if (url === '/api/demo/challenge') return (pases.shift() ?? otroPase)()
     return (envios.shift() ?? (() => json({ ok: true })))()
   })
   vi.stubGlobal('fetch', fetchMock)
@@ -164,13 +168,32 @@ describe('formulario de demostración', () => {
   const pizarron = () => screen.getByRole('button', { name: /pizarrón/i })
 
   // Barre el pizarrón en zigzag como lo haría una persona con el dedo.
-  const borrar = () => {
+  const borrar = (pointerId = 1, isPrimary = true) => {
     const board = pizarron()
     board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
-    fireEvent.pointerDown(board, { pointerId: 1, clientX: 4, clientY: 8 })
+    fireEvent.pointerDown(board, { pointerId, isPrimary, clientX: 4, clientY: 8 })
     let derecha = true
     for (let y = 0.05; y < 1; y += 0.1) {
-      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId: 1, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      derecha = !derecha
+    }
+    fireEvent.pointerUp(board, { pointerId })
+  }
+
+  // Como una mano: un evento cada ~16 ms con variación y pasos desiguales.
+  const borrarConTiempo = () => {
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    let semilla = 7
+    const azar = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647)
+    fireEvent.pointerDown(board, { pointerId: 1, isPrimary: true, clientX: 4, clientY: 8 })
+    let derecha = true
+    for (let y = 0.05; y < 1; y += 0.1) {
+      for (let x = 0; x <= 1.0001; x += 0.015 + azar() * 0.02) {
+        vi.advanceTimersByTime(10 + Math.round(azar() * 14))
+        const px = derecha ? x : 1 - x
+        fireEvent.pointerMove(board, { pointerId: 1, clientX: px * 400, clientY: (y + (azar() - 0.5) * 0.03) * 200 })
+      }
       derecha = !derecha
     }
     fireEvent.pointerUp(board, { pointerId: 1 })
@@ -311,11 +334,116 @@ describe('formulario de demostración', () => {
     expect(screen.getByText(/¿No puedes usar el pizarrón\? Escríbenos a/).textContent).toContain('contacto@iskool.mx')
   })
 
-  it('si /api/demo/challenge falla, ofrece el correo', async () => {
-    servidor([], [() => json({ ok: false }, 503)])
+  it('si /api/demo/challenge falla, reintenta en silencio y al enviar ofrece el correo', async () => {
+    const fetchMock = servidor([], [], () => json({ ok: false }, 503))
     await montar()
+    await esperar(5000)
+    // Mientras nadie ha enviado, no se muestra ningún error.
+    expect(screen.getByRole('status').textContent).toBe('')
+    expect(llamadasA(fetchMock, '/api/demo/challenge')).toHaveLength(3)
+    fill()
+    borrar()
+    enviar()
     const fallback = await waitFor(() => within(screen.getByRole('status')).getByRole('link', { name: 'contacto@iskool.mx' }))
     expect(fallback.getAttribute('href')).toBe('mailto:contacto@iskool.mx')
+    expect(llamadasA(fetchMock, '/api/demo/challenge').length).toBeGreaterThanOrEqual(4)
+    expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(0)
+  })
+
+  it('si el pase falla una vez al cargar, el reintento silencioso permite enviar', async () => {
+    const fetchMock = servidor([() => json({ ok: true })], [() => json({ ok: false }, 503), () => json(PASE_1)])
+    await montar()
+    fill()
+    borrar()
+    await esperar(4000)
+    expect(screen.getByRole('status').textContent).toBe('')
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    expect(cuerpoEnviado(fetchMock).verificacion.salt).toBe(PASE_1.salt)
+  })
+
+  it('si el pase de fondo no se consiguió, al enviar pide uno nuevo y envía', async () => {
+    const falla = () => json({ ok: false }, 503)
+    const fetchMock = servidor([() => json({ ok: true })], [falla, falla, falla])
+    await montar()
+    await esperar(5000)
+    fill()
+    borrar()
+    enviar()
+    await esperar(4000)
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    expect(cuerpoEnviado(fetchMock).verificacion.salt).toBe(PASE_2.salt)
+    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/Recibimos tu solicitud/))
+  })
+
+  it('anuncia "¡Listo! Gracias." en una región viva fuera del botón del pizarrón', async () => {
+    await montar()
+    borrar()
+    const vivo = screen.getByText('¡Listo! Gracias.').closest('[aria-live]')
+    expect(vivo).not.toBeNull()
+    expect(pizarron().contains(vivo)).toBe(false)
+  })
+
+  it('si se pierde el aviso de soltar, el pizarrón no se traba', async () => {
+    await montar()
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.pointerDown(board, { pointerId: 1, clientX: 10, clientY: 10 })
+    fireEvent.lostPointerCapture(board, { pointerId: 1 })
+    // Un toque nuevo con otro identificador (aun sin ser primario) ya no se ignora.
+    borrar(2, false)
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+  })
+
+  it('un toque primario nuevo reemplaza a uno que nunca se soltó', async () => {
+    await montar()
+    const board = pizarron()
+    board.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 200, right: 400, bottom: 200, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.pointerDown(board, { pointerId: 9, isPrimary: true, clientX: 10, clientY: 10 })
+    // Un segundo dedo simultáneo (no primario) se ignora.
+    fireEvent.pointerDown(board, { pointerId: 10, isPrimary: false, clientX: 300, clientY: 150 })
+    fireEvent.pointerMove(board, { pointerId: 10, clientX: 350, clientY: 150 })
+    // Sin pointerup del 9: un toque primario nuevo toma el control y borra.
+    fireEvent.pointerDown(board, { pointerId: 2, isPrimary: true, clientX: 4, clientY: 8 })
+    let derecha = true
+    for (let y = 0.05; y < 1; y += 0.1) {
+      for (let x = 0; x <= 1.0001; x += 0.02) fireEvent.pointerMove(board, { pointerId: 2, clientX: (derecha ? x : 1 - x) * 400, clientY: y * 200 })
+      derecha = !derecha
+    }
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+  })
+
+  it('un borrado con ritmo de persona pasa la revisión del servidor como ok', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    borrarConTiempo()
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    expect(analyzeTrace(cuerpoEnviado(fetchMock).verificacion)).toEqual({ veredicto: 'ok', motivos: [] })
+  })
+
+  it('si el teclado espera la segunda pulsación, el dedo puede tomar el control', async () => {
+    const fetchMock = servidor([() => json({ ok: true })])
+    await montar()
+    fill()
+    const board = pizarron()
+    board.focus()
+    fireEvent.keyDown(board, { key: 'Enter' })
+    await esperar(2000)
+    expect(screen.getByText(/Presiona Enter otra vez/)).toBeTruthy()
+    borrar()
+    expect(screen.queryByText(/Presiona Enter otra vez/)).toBeNull()
+    expect(screen.getByText('¡Listo! Gracias.')).toBeTruthy()
+    await esperar(4000)
+    enviar()
+    await waitFor(() => expect(llamadasA(fetchMock, '/api/demo')).toHaveLength(1))
+    const v = cuerpoEnviado(fetchMock).verificacion
+    expect(v.mode).toBe('pointer')
+    expect(v.teclas).toEqual([])
+    expect(computeCoverage(v.trazo, v.radio)).toBeGreaterThanOrEqual(COVERAGE_TARGET)
   })
 
   it('después de enviado, un segundo clic no vuelve a llamar fetch', async () => {
