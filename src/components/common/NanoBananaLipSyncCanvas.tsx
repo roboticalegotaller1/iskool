@@ -578,6 +578,8 @@ function computeBlinkSpriteBridgeShift(
   }
 }
 
+const MOUTH_PATCH_WIDTH_MULT = 1.46;
+
 function measurePoseMouthAnatomy(
   poseCanvas: HTMLCanvasElement,
   cfg: CharacterAnatomicalMouth,
@@ -585,11 +587,12 @@ function measurePoseMouthAnatomy(
   dy: number,
   isCanonical: boolean
 ): PoseMouthAnatomy {
-  const numCols = 44;
+  const numCols = 48;
   const mouthW = Math.max(24, cfg.x2 - cfg.x1);
   const halfW = mouthW * 0.5;
-  const patchHalfW = halfW * 1.36;
-  const cx = cfg.cx + dx;
+  const patchHalfW = halfW * MOUTH_PATCH_WIDTH_MULT;
+  const mouthMidX = (cfg.x1 + cfg.x2) * 0.5;
+  const cx = mouthMidX + dx;
   const cy = cfg.cy + dy;
   const y1 = cfg.y1 + dy;
   const y2 = cfg.y2 + dy;
@@ -602,7 +605,7 @@ function measurePoseMouthAnatomy(
   const buildFallbackClosed = (): PoseMouthAnatomy => {
     for (let c = 0; c < numCols; c++) {
       const u = ((c + 0.5) / numCols) * 2 - 1;
-      const m = Math.max(-1, Math.min(1, u * 1.36));
+      const m = Math.max(-1, Math.min(1, u * MOUTH_PATCH_WIDTH_MULT));
       const cornerSideY = m < 0 ? y1 : y2;
       const curveY = cy + (cornerSideY - cy) * (m * m);
       srcUpperLipBotY[c] = curveY;
@@ -616,8 +619,8 @@ function measurePoseMouthAnatomy(
     const ctx = poseCanvas.getContext('2d');
     if (!ctx) return buildFallbackClosed();
 
-    const scanTop = Math.max(0, Math.round(Math.min(y1, y2, cy) - 10));
-    const scanBot = Math.min(1023, Math.round(Math.max(y1, y2, cy) + 28));
+    const scanTop = Math.max(0, Math.round(Math.min(y1, y2, cy) - 12));
+    const scanBot = Math.min(1023, Math.round(Math.max(y1, y2, cy) + 30));
     const scanH = scanBot - scanTop + 1;
     const scanLeft = Math.max(0, Math.round(cx - patchHalfW - 2));
     const scanRight = Math.min(1023, Math.round(cx + patchHalfW + 2));
@@ -637,19 +640,23 @@ function measurePoseMouthAnatomy(
       return { luma, sat, r, g };
     };
 
-    // 1. Inspect central columns around cx to classify whether THIS pose has visible teeth / open smile
+    const isTeethPixel = (luma: number, sat: number) => luma > 152 && sat < 64;
+
+    // 1. Inspect central columns around cfg.cx to classify open/clenched teeth vs closed mouth
+    const probeX = cfg.cx + dx;
     let centerHasTeeth = false;
+    let centerMinTeethY = 9999;
     let centerMaxTeethY = -1;
     let centerMinDarkY = 9999;
     let centerMaxDarkY = -1;
     let darkestY = cy;
     let darkestLuma = 999;
 
-    for (let y = Math.round(cy - 6); y <= Math.round(cy + 20); y++) {
+    for (let y = Math.round(cy - 6); y <= Math.round(cy + 18); y++) {
       let lSum = 0;
       let sSum = 0;
       for (let ox = -4; ox <= 4; ox += 2) {
-        const s = sampleLumaAndSat(cx + ox, y);
+        const s = sampleLumaAndSat(probeX + ox, y);
         lSum += s.luma;
         sSum += s.sat;
       }
@@ -659,11 +666,12 @@ function measurePoseMouthAnatomy(
         darkestLuma = lAvg;
         darkestY = y;
       }
-      if (lAvg > 154 && sAvg < 66 && y >= cy - 5 && y <= cy + 12) {
+      if (isTeethPixel(lAvg, sAvg) && y >= cy - 5 && y <= cy + 14) {
         centerHasTeeth = true;
+        if (y < centerMinTeethY) centerMinTeethY = y;
         if (y > centerMaxTeethY) centerMaxTeethY = y;
       }
-      if (lAvg < 76 && y >= cy - 2 && y <= cy + 20) {
+      if (lAvg < 78 && y >= cy - 2 && y <= cy + 18) {
         if (y < centerMinDarkY) centerMinDarkY = y;
         if (y > centerMaxDarkY) centerMaxDarkY = y;
       }
@@ -681,7 +689,7 @@ function measurePoseMouthAnatomy(
       const centerStomionY = Math.max(cy - 5, Math.min(cy + 7, darkestY));
       for (let c = 0; c < numCols; c++) {
         const u = ((c + 0.5) / numCols) * 2 - 1;
-        const m = Math.max(-1, Math.min(1, u * 1.36));
+        const m = Math.max(-1, Math.min(1, u * MOUTH_PATCH_WIDTH_MULT));
         const cornerSideY = m < 0 ? y1 : y2;
         const curveY = centerStomionY + (cornerSideY - centerStomionY) * (m * m);
         srcUpperLipBotY[c] = curveY;
@@ -691,32 +699,46 @@ function measurePoseMouthAnatomy(
       return { numCols, patchHalfW, hasTeeth: false, poseBaseOpen: 0, srcUpperLipBotY, srcTeethBotY, srcLowerLipY };
     }
 
-    // Open-smile / Open-mouth pose: compute smooth parabolic guide + per-column dark-cavity guard!
+    // Open-smile / Clenched-teeth pose:
+    // Cap upper teeth thickness strictly to anatomical upper incisors so clenched 2-row smiles (e.g. encourage/celebrate)
+    // NEVER drag lower teeth into the upper slice or detach the lower lip!
+    const canonicalUpperTeethH =
+      cfg.upperLipBottomY !== undefined && cfg.teethBottomY !== undefined && cfg.teethBottomY > cfg.upperLipBottomY
+        ? Math.min(7.5, Math.max(3.5, cfg.teethBottomY - cfg.upperLipBottomY))
+        : 6.0;
+
     const cUpperLipY = useCanonicalOpen && cfg.upperLipBottomY !== undefined
       ? cfg.upperLipBottomY + dy
-      : cy;
+      : centerHasTeeth && centerMinTeethY < 9999
+        ? Math.max(cy - 4, Math.min(cy + 4, centerMinTeethY - 0.6))
+        : cy;
+
+    const isClenchedTwoRowTeeth = centerHasTeeth && centerMaxDarkY < 0;
     const cTeethBotY = useCanonicalOpen && cfg.teethBottomY !== undefined
       ? cfg.teethBottomY + dy
       : centerHasTeeth
-        ? centerMaxTeethY + 0.5
+        ? Math.min(centerMaxTeethY + 0.4, cUpperLipY + canonicalUpperTeethH)
         : cUpperLipY + 1;
+
     let cLowerLipY = useCanonicalOpen && cfg.lowerLipTopY !== undefined
       ? cfg.lowerLipTopY + dy
       : centerMaxDarkY > 0
-        ? centerMaxDarkY + 1.2
-        : cTeethBotY + 3.5;
+        ? Math.max(centerMaxDarkY + 1.2, centerMaxTeethY > 0 ? centerMaxTeethY + 1.0 : 0)
+        : isClenchedTwoRowTeeth
+          ? centerMaxTeethY + 1.6
+          : cTeethBotY + 3.5;
 
-    // Guarantee cLowerLipY at center is strictly below any dark oral cavity pixels
-    for (let guard = 0; guard < 8; guard++) {
-      const s = sampleLumaAndSat(cx, cLowerLipY);
-      if (s.luma >= 84) break;
-      cLowerLipY += 1.0;
+    // Guarantee cLowerLipY at center is strictly below BOTH dark oral cavity AND any white lower teeth!
+    for (let guard = 0; guard < 10; guard++) {
+      const s = sampleLumaAndSat(probeX, cLowerLipY);
+      if (s.luma >= 84 && !isTeethPixel(s.luma, s.sat)) break;
+      cLowerLipY += 0.9;
     }
 
     for (let c = 0; c < numCols; c++) {
       const u = ((c + 0.5) / numCols) * 2 - 1;
       const colX = cx + u * patchHalfW;
-      const m = u * 1.36;
+      const m = u * MOUTH_PATCH_WIDTH_MULT;
       if (Math.abs(m) >= 1) {
         const sideY = m < 0 ? y1 : y2;
         srcUpperLipBotY[c] = sideY;
@@ -729,33 +751,47 @@ function measurePoseMouthAnatomy(
       const arch = 1 - m * m;
       const baseCurveY = cornerSideY + (cUpperLipY - cornerSideY) * arch;
       const teethCurveY = cornerSideY + (cTeethBotY - cornerSideY) * arch;
-      let lowerCurveY = cornerSideY + 0.6 + (cLowerLipY - cornerSideY - 0.6) * Math.pow(arch, 0.82);
+      let lowerCurveY = cornerSideY + 0.8 + (cLowerLipY - cornerSideY - 0.8) * Math.pow(arch, 0.80);
 
-      // Sub-pixel per-column dark oral slit guard: step downward until strictly on lower lip vermilion!
-      if (Math.abs(m) < 0.86) {
-        for (let g = 0; g < 7; g++) {
+      // Sub-pixel per-column dark oral slit & lower-teeth guard strictly tapered by arch so labial corner shadows NEVER cause a step/notch!
+      if (Math.abs(m) < 0.80) {
+        const maxSteps = Math.max(1, Math.round(9 * Math.max(0, 1 - (m / 0.80) * (m / 0.80))));
+        for (let g = 0; g < maxSteps; g++) {
           const s = sampleLumaAndSat(colX, lowerCurveY);
-          if (s.luma >= 82) break;
-          lowerCurveY += 0.9;
+          if (s.luma >= 84 && !isTeethPixel(s.luma, s.sat)) break;
+          lowerCurveY += 0.85;
         }
       }
 
+      // Smoothly clamp lowerCurveY to converge seamlessly into cornerSideY as |m| -> 1
+      const maxCornerOffset = Math.max(0.8, (cLowerLipY - cornerSideY) * Math.pow(Math.max(0, arch), 0.72) + 2.4 * arch);
+      lowerCurveY = Math.min(cornerSideY + maxCornerOffset, lowerCurveY);
+
       srcUpperLipBotY[c] = baseCurveY;
       srcTeethBotY[c] = Math.max(baseCurveY, teethCurveY);
-      srcLowerLipY[c] = Math.max(srcTeethBotY[c] + 0.8, lowerCurveY);
+      srcLowerLipY[c] = Math.max(srcTeethBotY[c] + 0.6, lowerCurveY);
     }
 
-    // 3-tap horizontal smoothing inside mouth interior so lip curve is 100% C1 silky smooth
-    const smoothedLower = new Float32Array(srcLowerLipY);
-    for (let c = 1; c < numCols - 1; c++) {
-      smoothedLower[c] = 0.25 * srcLowerLipY[c - 1] + 0.5 * srcLowerLipY[c] + 0.25 * srcLowerLipY[c + 1];
+    // 5-tap Gaussian horizontal smoothing across all three curves so corners are 100% C2 silky smooth (zero corner steps!)
+    const smooth5 = (arr: Float32Array) => {
+      const out = new Float32Array(arr);
+      for (let c = 2; c < numCols - 2; c++) {
+        out[c] = 0.10 * arr[c - 2] + 0.22 * arr[c - 1] + 0.36 * arr[c] + 0.22 * arr[c + 1] + 0.10 * arr[c + 2];
+      }
+      arr.set(out);
+    };
+    smooth5(srcUpperLipBotY);
+    smooth5(srcTeethBotY);
+    smooth5(srcLowerLipY);
+    for (let c = 0; c < numCols; c++) {
+      srcTeethBotY[c] = Math.max(srcUpperLipBotY[c], srcTeethBotY[c]);
+      srcLowerLipY[c] = Math.max(srcTeethBotY[c] + 0.5, srcLowerLipY[c]);
     }
-    srcLowerLipY.set(smoothedLower);
 
     const measuredGap = Math.max(1, cLowerLipY - cUpperLipY);
     const poseBaseOpen = useCanonicalOpen
       ? (cfg.baseOpen ?? 0.28)
-      : Math.min(0.46, Math.max(0.16, (measuredGap - Math.max(0, cornerAvgY - cy)) / 26));
+      : Math.min(0.44, Math.max(0.16, (measuredGap - Math.max(0, cornerAvgY - cy)) / 26));
 
     return {
       numCols,
@@ -1982,19 +2018,21 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const patchHalfW = anatomy.patchHalfW;
           const patchW = patchHalfW * 2;
           const colW = patchW / numCols;
-          const srcMouthCx = cfg.cx + avgPoseDx;
+          const mouthMidX = (cfg.x1 + cfg.x2) * 0.5;
+          const srcMouthCx = mouthMidX + avgPoseDx;
+          const dstMouthMidX = mouthMidX + activeHeadOffsetX;
           const srcMouthMidY = cfg.cy + avgPoseDy;
           const srcPatchLeft = srcMouthCx - patchHalfW;
 
           const srcMinLipY = Math.min(cfg.y1, cfg.y2, cfg.cy) + avgPoseDy;
           const srcChinBotY = Math.max(srcMinLipY + 26, chinY + avgPoseDy);
           const jawSpan = srcChinBotY - srcMouthMidY;
-          const srcAnchorTopY = Math.max(0, srcMinLipY - Math.max(14, jawSpan * 0.30));
+          const srcAnchorTopY = Math.max(0, srcMinLipY - Math.max(18, jawSpan * 0.36));
           const srcAnchorBotY = Math.min(1022, srcChinBotY);
 
-          const maxGapPx = Math.min(21, Math.max(11, cfg.maxOpening * 1.24, jawSpan * 0.35));
+          const maxGapPx = Math.min(20, Math.max(11, cfg.maxOpening * 1.22, jawSpan * 0.34));
           const desiredCenterGapPx = Math.max(0, Math.min(maxGapPx, spring.open * maxGapPx));
-          const spreadScale = 1 + spring.spread * 0.15;
+          const spreadScale = 1 + spring.spread * 0.14;
 
           const dstColCenterX = new Float32Array(numCols);
           const dstUpperCurveY = new Float32Array(numCols);
@@ -2003,9 +2041,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           let lastMouthCol = -1;
 
           // Prepare feathered offscreen mandible scratch buffer in exact 1024-space coordinates
-          const padX = 12;
-          const padY = 10;
-          const patchBoxLeft = Math.floor(activeMouthCx - patchHalfW - padX);
+          const padX = 14;
+          const padY = 12;
+          const patchBoxLeft = Math.floor(dstMouthMidX - patchHalfW - padX);
           const patchBoxTop = Math.floor(srcAnchorTopY + subtleBreathY - padY);
           const patchBoxW = Math.ceil(patchW + padX * 2);
           const patchBoxH = Math.ceil(srcAnchorBotY - srcAnchorTopY + padY * 2);
@@ -2036,29 +2074,29 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             //         Parabolic colAnchorBotY(u) tapers upward along the anatomical jawline, NEVER cutting collars or beards!
             for (let c = 0; c < numCols; c++) {
               const u = ((c + 0.5) / numCols) * 2 - 1; // -1 .. +1 across patch
-              const m = u * 1.36; // -1 .. +1 strictly between mouth corners x1..x2
+              const m = u * MOUTH_PATCH_WIDTH_MULT; // -1 .. +1 strictly between true mouth corners x1..x2
               const cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.65);
               const jawOval = Math.pow(Math.max(0, 1 - u * u * 0.88), 0.62);
-              const colAnchorTopY = Math.max(0, srcMinLipY - Math.max(12, jawSpan * (0.20 + 0.10 * jawOval)));
+              const colAnchorTopY = Math.max(0, srcMinLipY - Math.max(15, jawSpan * (0.24 + 0.12 * jawOval)));
               const colAnchorBotY = Math.min(1022, srcMouthMidY + Math.max(18, jawSpan * (0.48 + 0.52 * jawOval)));
 
               const srcX = srcPatchLeft + c * colW;
               const relCenterX = srcX + colW * 0.5 - srcMouthCx;
               const localScaleX = 1 + (spreadScale - 1) * cheekTaper;
               const dstW = colW * localScaleX;
-              const dstCenterX = activeMouthCx + relCenterX * localScaleX;
+              const dstCenterX = dstMouthMidX + relCenterX * localScaleX;
               const dstX = dstCenterX - dstW * 0.5;
               dstColCenterX[c] = dstCenterX;
 
-              const insideMouth = Math.abs(m) < 0.88;
+              const insideMouth = Math.abs(m) < 0.96;
               if (insideMouth) {
                 if (firstMouthCol < 0) firstMouthCol = c;
                 lastMouthCol = c;
               }
 
-              const normM = m / 0.88;
+              const normM = m / 0.96;
               const apertureProfile = insideMouth
-                ? Math.pow(Math.max(0, 1 - normM * normM), 1.12)
+                ? Math.pow(Math.max(0, Math.cos(normM * Math.PI * 0.5)), 1.35)
                 : 0;
 
               const sUpperLipY = anatomy.srcUpperLipBotY[c];
@@ -2349,20 +2387,20 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               }
             }
 
-            // FINAL FEATHER PASS: C2 smooth elliptical radial alpha feather around outer cheek/beard/chin boundary
-            // Inner 74% is 100% opaque (full mouth & lower lip), outer 26% smoothly dissolves to 0.00% seam!
+            // FINAL FEATHER PASS: C2 smooth elliptical radial alpha feather strictly outside mouth corners & lips
+            // Inner 80% is 100% opaque (guarantees zero ghost teeth bleed-through on corners/lips); outer 20% dissolves seamlessly!
             mCtx.globalCompositeOperation = 'destination-in';
-            const maskCx = activeMouthCx;
+            const maskCx = dstMouthMidX;
             const maskCy = (srcAnchorTopY + srcAnchorBotY) * 0.5 + subtleBreathY;
-            const maskRx = patchHalfW + padX * 0.5;
-            const maskRy = (srcAnchorBotY - srcAnchorTopY) * 0.5 + padY * 0.45;
+            const maskRx = patchHalfW + padX * 0.68;
+            const maskRy = (srcAnchorBotY - srcAnchorTopY) * 0.5 + padY * 0.65;
             mCtx.save();
             mCtx.translate(maskCx, maskCy);
             mCtx.scale(maskRx, maskRy);
-            const featherGrad = mCtx.createRadialGradient(0, 0, 0.70, 0, 0, 1.0);
+            const featherGrad = mCtx.createRadialGradient(0, 0, 0.80, 0, 0, 1.0);
             featherGrad.addColorStop(0, 'rgba(0,0,0,1)');
-            featherGrad.addColorStop(0.55, 'rgba(0,0,0,0.72)');
-            featherGrad.addColorStop(0.85, 'rgba(0,0,0,0.22)');
+            featherGrad.addColorStop(0.50, 'rgba(0,0,0,0.68)');
+            featherGrad.addColorStop(0.84, 'rgba(0,0,0,0.20)');
             featherGrad.addColorStop(1, 'rgba(0,0,0,0)');
             mCtx.fillStyle = featherGrad;
             mCtx.beginPath();

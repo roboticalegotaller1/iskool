@@ -1751,7 +1751,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 472, y1: 379, cx: 512, cy: 388, x2: 552, y2: 379,
+      x1: 466, y1: 375, cx: 512, cy: 388, x2: 558, y2: 375,
       upperLipBottomY: 388, teethBottomY: 394, lowerLipTopY: 398.5,
       chinY: 438, eyeY: 292, leftEyeX: 460, leftEyeY: 292, rightEyeX: 569, rightEyeY: 293,
       eyeRadius: 31, eyeRx: 36, eyeRy: 26, baseOpen: 0.32,
@@ -1771,7 +1771,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       };
     }
     return {
-      x1: 483, y1: 245, cx: 515, cy: 248, x2: 546, y2: 245,
+      x1: 478, y1: 243, cx: 515, cy: 248, x2: 550, y2: 242,
       upperLipBottomY: 248, teethBottomY: 250.5, lowerLipTopY: 253,
       chinY: 274, eyeY: 203, leftEyeX: 485, leftEyeY: 204, rightEyeX: 540, rightEyeY: 202,
       eyeRadius: 16, eyeRx: 17, eyeRy: 13, baseOpen: 0.24,
@@ -1824,8 +1824,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 8. MENTOR FEMENINO 3D (/images/languages/3d/mentor_female_3d.webp)
   if (norm.includes('mentor female') || norm.includes('mentor_female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara')) {
     return {
-      x1: 468, y1: 375, cx: 512, cy: 380, x2: 548, y2: 373,
-      upperLipBottomY: 380, teethBottomY: 388, lowerLipTopY: 394.5,
+      x1: 458, y1: 374, cx: 512, cy: 380, x2: 562, y2: 368,
+      upperLipBottomY: 380, teethBottomY: 386.5, lowerLipTopY: 394.5,
       chinY: 432, eyeY: 273, leftEyeX: 446, leftEyeY: 280, rightEyeX: 573, rightEyeY: 265,
       eyeRadius: 38, eyeRx: 44, eyeRy: 34, baseOpen: 0.34,
       maxOpening: 17, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',

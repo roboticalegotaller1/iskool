@@ -89,6 +89,11 @@ describe('🎬 AUDITORÍA FORENSE DE AVATARES 60 FPS: ANATOMÍA, POSES 3D Y MOTO
     expect(getHistoricalMouthConfig('abraham_lincoln').chinY).toBeLessThanOrEqual(322);
     expect(getHistoricalMouthConfig('victor_hugo').chinY).toBeLessThanOrEqual(558);
 
+    // Cobertura completa de comisuras en sonrisas anchas (evita dientes congelados a la derecha en Claire/Sophie)
+    const claireCfg = getHistoricalMouthConfig('claire');
+    expect(claireCfg.x2 - claireCfg.x1).toBeGreaterThanOrEqual(100);
+    expect(claireCfg.x2).toBeGreaterThanOrEqual(560);
+
     // Todas las figuras históricas multilingües resuelven su rig 3D
     for (const fig of MULTILINGUAL_HISTORICAL_FIGURES) {
       expect(CHARACTER_3D_RIGS[fig.id]).toBeDefined();
@@ -122,5 +127,9 @@ describe('🎬 AUDITORÍA FORENSE DE AVATARES 60 FPS: ANATOMÍA, POSES 3D Y MOTO
     // Micro-sacadas intra-esclerales con destello corneal especular
     expect(src).toContain('scaledSacX');
     expect(src).toContain('glintX');
+
+    // Protección contra doble hilera de dientes en sonrisas abiertas/apretadas y núcleo opaco 80% sin fantasmas
+    expect(src).toContain('isClenchedTwoRowTeeth');
+    expect(src).toContain('MOUTH_PATCH_WIDTH_MULT');
   });
 });
