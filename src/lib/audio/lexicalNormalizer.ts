@@ -1,6 +1,8 @@
+import { normalizeSpanishMathAndNegatives } from './mathSpeechNormalizer';
+
 /**
  * Módulo de Normalización Léxica, Temporal y Acústica para Español Neutro Mexicano (ISkool)
- * Convierte fechas, años, números romanos, abreviaturas históricas y símbolos
+ * Convierte fechas, años, números romanos, negativos/matemáticas, abreviaturas históricas y símbolos
  * a texto fonético ortográfico extendido determinista.
  */
 
@@ -377,7 +379,11 @@ export function normalizeMexicanSpanishText(text: string): string {
     .replace(/\s+\/\s+/g, ', ')
     .replace(/\s*·\s*/g, ', ');
 
-  // 8.c Números decimales (ej. "9.9" -> "nueve punto nueve", "95.8" -> "noventa y cinco punto ocho", "4.0" -> "cuatro punto cero")
+  // 8.b2 Normalización matemática, números negativos (-5 -> "menos cinco"), potencias, subíndices y ecuaciones
+  // Se ejecuta DESPUÉS de rangos de años históricos (1810-1821) y símbolos métricos (km², m²), y ANTES de decimales y cardinales.
+  result = normalizeSpanishMathAndNegatives(result);
+
+  // 8.c Números decimales (ej. "9.9" -> "nueve punto nueve", "menos 12.5" -> "menos doce punto cinco", "4.0" -> "cuatro punto cero")
   // Crítico para la fluidez: evita que el punto decimal sea interpretado como punto final de oración ("nueve. nueve")
   result = result.replace(/\b(\d+)\.(\d+)\b/g, (_match, intPart, decPart) => {
     const intVal = parseInt(intPart, 10);
@@ -397,13 +403,19 @@ export function normalizeMexicanSpanishText(text: string): string {
     return `${intWords} punto ${decWords}`;
   });
 
-  // 9. Cantidades y Números Cardinales Restantes en Contexto Histórico
-  // Apócope contextual de "1" y "21" antes de sustantivos (ej. 1 soldado -> un soldado, 21 cañones -> veintiún cañones)
-  result = result.replace(/\b1\s+([a-záéíóúñ]+)\b/gi, 'un $1');
-  result = result.replace(/\b21\s+([a-záéíóúñ]+)\b/gi, 'veintiún $1');
+  // 9. Cantidades y Números Cardinales Restantes en Contexto Histórico y Matemático
+  // Apócope contextual de "1" y "21" solo antes de sustantivos (evita "1 y" -> "un y" o "1 es" -> "un es")
+  result = result.replace(
+    /\b1\s+(?!(?:y|o|u|e|es|son|fue|era|más|menos|por|entre|igual|al|a|de|en|con|para|que|ni|si|se|no|punto|coma)\b)([a-záéíóúñ]{2,})\b/gi,
+    'un $1'
+  );
+  result = result.replace(
+    /\b21\s+(?!(?:y|o|u|e|es|son|fue|era|más|menos|por|entre|igual|al|a|de|en|con|para|que|ni|si|se|no|punto|coma)\b)([a-záéíóúñ]{2,})\b/gi,
+    'veintiún $1'
+  );
 
-  // Conversión de enteros restantes (e.g. 500 combatientes, 25 cañones, 4 momentos, 15 días)
-  result = result.replace(/\b([1-9]\d{0,8})\b/g, (_match, numStr) => {
+  // Conversión de enteros restantes (incluyendo 0 aislado que haya quedado tras decimales)
+  result = result.replace(/\b(\d{1,9})\b/g, (_match, numStr) => {
     const val = parseInt(numStr, 10);
     if (isNaN(val)) return numStr;
     return numberToSpanishWords(val);

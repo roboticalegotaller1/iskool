@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, ActivityBuilderMetadata, FlowConnection } from '@/types/studioBlocks';
 import { useStudentStore } from '@/store/useStudentStore';
@@ -8,7 +8,13 @@ import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
 import { InteractiveMathLabWidget } from './InteractiveMathLabWidget';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
-import { attachStudioBroadcastMaster, getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
+import {
+  attachStudioBroadcastMaster,
+  getSharedSfxAudioContext,
+  unlockSharedBroadcastAudioContext,
+  type StudioBroadcastChain
+} from '@/lib/audio/studioBroadcastMaster';
+import { normalizeSpanishMathAndNegatives } from '@/lib/audio/mathSpeechNormalizer';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import {
   extractExamQuestionsFromStudioBlocks,
@@ -298,10 +304,61 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
   };
 
-  // Reproductor de Voz Neural LatAm (Respaldo Neural Continuo - 24 Voces LatAm Calibrado a 3.8-flash-lite-tts)
+  const activeTtsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const activeTtsUrlRef = useRef<string | null>(null);
+  const activeTtsChainRef = useRef<StudioBroadcastChain | null>(null);
+  const activeTtsAbortRef = useRef<AbortController | null>(null);
+
+  const stopNeuralVoice = useCallback(() => {
+    try { activeTtsAbortRef.current?.abort(); } catch {}
+    activeTtsAbortRef.current = null;
+    if (activeTtsAudioRef.current) {
+      try {
+        activeTtsAudioRef.current.pause();
+        activeTtsAudioRef.current.currentTime = 0;
+        activeTtsAudioRef.current.onended = null;
+        activeTtsAudioRef.current.onerror = null;
+      } catch {}
+      activeTtsAudioRef.current = null;
+    }
+    if (activeTtsChainRef.current) {
+      try { activeTtsChainRef.current.cleanup(); } catch {}
+      activeTtsChainRef.current = null;
+    }
+    if (activeTtsUrlRef.current) {
+      try { URL.revokeObjectURL(activeTtsUrlRef.current); } catch {}
+      activeTtsUrlRef.current = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
+    setIsSpeakingTts(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopNeuralVoice();
+    };
+  }, [stopNeuralVoice]);
+
+  // Reproductor de Voz Neural LatAm con Normalización Matemática/Negativos, Cadencia Fluida y Masterización Broadcast
   const playNeuralVoice = async (text: string, lang: string = 'es-MX', gender: 'male' | 'female' = 'female') => {
     if (!text) return;
+
+    // Si ya se está reproduciendo voz, el botón funciona como alternador limpio (Detener)
+    if (isSpeakingTts) {
+      stopNeuralVoice();
+      return;
+    }
+
+    stopNeuralVoice();
+    // Desbloquear AudioContext sincrónicamente dentro del gesto del usuario para activar EQ cálida de estudio
+    unlockSharedBroadcastAudioContext();
     setIsSpeakingTts(true);
+
+    const abortController = new AbortController();
+    activeTtsAbortRef.current = abortController;
+
     try {
       const blockData = (activeBlock?.data || {}) as Record<string, any>;
       const resolvedCharacterName =
@@ -316,6 +373,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
       const res = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: abortController.signal,
         body: JSON.stringify({
           text,
           language: lang,
@@ -324,31 +382,55 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
         })
       });
+      if (abortController.signal.aborted) return;
       if (res.ok) {
         const blob = await res.blob();
+        if (abortController.signal.aborted) return;
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
+        activeTtsAudioRef.current = audio;
+        activeTtsUrlRef.current = url;
         const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
         });
+        activeTtsChainRef.current = chain;
         const cleanupPreview = () => {
-          setIsSpeakingTts(false);
-          try { chain?.cleanup(); } catch {}
-          try { URL.revokeObjectURL(url); } catch {}
+          if (activeTtsAudioRef.current === audio) {
+            stopNeuralVoice();
+          }
         };
         audio.onended = cleanupPreview;
         audio.onerror = cleanupPreview;
         await audio.play();
         return;
       }
-    } catch (_) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || abortController.signal.aborted) {
+        setIsSpeakingTts(false);
+        return;
+      }
       // Fallback en caso de red offline
+    }
+    if (abortController.signal.aborted) {
+      setIsSpeakingTts(false);
+      return;
     }
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
+      const spokenFallback = lang.toLowerCase().startsWith('es')
+        ? normalizeSpanishMathAndNegatives(text)
+        : text;
+      const u = new SpeechSynthesisUtterance(spokenFallback);
       u.lang = lang;
+      u.rate = 1.05;
+      u.pitch = 1.02;
+      const voices = window.speechSynthesis.getVoices() || [];
+      const preferredVoice =
+        voices.find((v) => /es-MX/i.test(v.lang) && /dalia|jorge|natural|neural|online/i.test(v.name)) ||
+        voices.find((v) => /es-MX/i.test(v.lang)) ||
+        voices.find((v) => /es-(419|US|CO|AR)/i.test(v.lang));
+      if (preferredVoice) u.voice = preferredVoice;
       u.onend = () => setIsSpeakingTts(false);
       u.onerror = () => setIsSpeakingTts(false);
       window.speechSynthesis.speak(u);
@@ -364,8 +446,9 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     } catch (_) {}
   }, []);
 
-  // Inicializar estado al cambiar de bloque
+  // Inicializar estado al cambiar de bloque y detener narración anterior
   useEffect(() => {
+    stopNeuralVoice();
     setSelectedOption(null);
     setIsQuestionAnswered(false);
     setIsChestOpened(false);
@@ -1687,11 +1770,15 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => playNeuralVoice(activeBlock.data.content || activeBlock.title, 'es-MX', 'male')}
-                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
+                    onClick={() => playNeuralVoice(activeBlock.data.content || activeBlock.title, 'es-MX', 'female')}
+                    className={`px-3 py-2 rounded-xl text-white text-xs font-black flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer transition-colors ${
+                      isSpeakingTts
+                        ? 'bg-rose-600 hover:bg-rose-700'
+                        : 'bg-emerald-600 hover:bg-emerald-700'
+                    }`}
                   >
-                    <Volume2 className="w-4 h-4" />
-                    <span>{isSpeakingTts ? 'Reproduciendo Voz Neural...' : 'Escuchar Voz Neural LatAm'}</span>
+                    {isSpeakingTts ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                    <span>{isSpeakingTts ? 'Detener Voz Neural' : 'Escuchar Voz Neural LatAm'}</span>
                   </button>
                 </div>
 

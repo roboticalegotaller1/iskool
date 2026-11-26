@@ -44,7 +44,7 @@ interface PendingDaemonRequest {
   timer: NodeJS.Timeout;
 }
 
-const WORKER_ENGINE_GENERATION = 'v9_institutional_human_96k_r1';
+const WORKER_ENGINE_GENERATION = 'v10_pedagogical_math_fluid_96k';
 let daemonProcess: ChildProcessWithoutNullStreams | null = null;
 let daemonGeneration = '';
 let daemonStdoutBuffer = '';
@@ -183,10 +183,10 @@ export async function synthesizeNeuralAudio(options: SynthesizeOptions): Promise
     throw new Error('Texto vacío para síntesis');
   }
 
-  // Clave de caché v9 (Motor Neuronal Directo 96kbps + Fonética Humana 0 Tokens)
+  // Clave de caché v10 (Motor Neuronal Directo 96kbps + Fonética Matemática/Negativos + Entonación Fluida)
   const cacheKey = crypto
     .createHash('sha256')
-    .update(`v9_institutional_human_96k_r1::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
+    .update(`v10_pedagogical_math_fluid_96k::${voice}::${characterName}::${role}::${rate}::${pitch}::${cleanText}`)
     .digest('hex');
 
   // 1. Verificar caché en memoria

@@ -359,7 +359,7 @@ export function prepareCleanSpokenText(rawText: string): string {
   return clean;
 }
 
-function splitCleanTextIntoTurns(text: string, maxUtf8Bytes = 1500): string[] {
+function splitCleanTextIntoTurns(text: string, maxUtf8Bytes = 280): string[] {
   if (Buffer.byteLength(text, 'utf8') <= maxUtf8Bytes) {
     return [text];
   }
@@ -547,38 +547,41 @@ export async function synthesizeDirectInstitutionalNeural(options: {
   }
 
   const turns = splitCleanTextIntoTurns(cleanText);
-  const turnBuffers: Buffer[] = [];
+  const perTurnTimeoutMs =
+    turns.length > 1
+      ? Math.max(timeoutMs, 7500)
+      : Math.max(timeoutMs, cleanText.length > 180 ? 5500 : timeoutMs);
   const primaryFormat = /multilingualneural$|eloiseneural$/i.test(voiceId)
     ? 'audio-24khz-48kbitrate-mono-mp3'
     : 'audio-24khz-96kbitrate-mono-mp3';
 
-  for (const turnText of turns) {
-    try {
-      const buf = await synthesizeSingleTurnWs(
-        turnText,
-        voiceId,
-        rate,
-        pitch,
-        primaryFormat,
-        timeoutMs
-      );
-      turnBuffers.push(buf);
-    } catch (firstErr: any) {
-      // Reintento único inmediato ajustando reloj (403) o con bitrate estándar 48kbps
-      const fallbackFmt = firstErr?.statusCode === 403
-        ? primaryFormat
-        : 'audio-24khz-48kbitrate-mono-mp3';
-      const retryBuf = await synthesizeSingleTurnWs(
-        turnText,
-        voiceId,
-        rate,
-        pitch,
-        fallbackFmt,
-        Math.min(3000, timeoutMs)
-      );
-      turnBuffers.push(retryBuf);
-    }
-  }
+  const turnBuffers = await Promise.all(
+    turns.map(async (turnText) => {
+      try {
+        return await synthesizeSingleTurnWs(
+          turnText,
+          voiceId,
+          rate,
+          pitch,
+          primaryFormat,
+          perTurnTimeoutMs
+        );
+      } catch (firstErr: any) {
+        // Reintento único inmediato ajustando reloj (403) o con bitrate estándar 48kbps
+        const fallbackFmt = firstErr?.statusCode === 403
+          ? primaryFormat
+          : 'audio-24khz-48kbitrate-mono-mp3';
+        return await synthesizeSingleTurnWs(
+          turnText,
+          voiceId,
+          rate,
+          pitch,
+          fallbackFmt,
+          Math.min(6000, perTurnTimeoutMs)
+        );
+      }
+    })
+  );
 
   return Buffer.concat(turnBuffers);
 }

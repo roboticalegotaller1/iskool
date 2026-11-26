@@ -398,7 +398,7 @@ export async function POST(req: NextRequest) {
           .replace(/!\[.*?\]\(.*?\)/g, '')
           .replace(/\[\[(.*?)\]\]/g, '$1')
           .replace(/[*_#`~>]/g, '')
-          .replace(/\s+/g, ' ')
+          .replace(/[ \t]+/g, ' ')
           .trim();
         rawNormalizedText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
       } else {
@@ -406,12 +406,12 @@ export async function POST(req: NextRequest) {
         rawNormalizedText = targetSSML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
       }
     } else if (text && typeof text === 'string' && text.trim()) {
-      // Limpieza inicial de markdown preservando ortografía del idioma
+      // Limpieza inicial de markdown preservando saltos de párrafo y listas para respiración natural
       cleanText = text
         .replace(/!\[.*?\]\(.*?\)/g, '')
         .replace(/\[\[(.*?)\]\]/g, '$1')
         .replace(/[*_#`~>]/g, '')
-        .replace(/\s+/g, ' ')
+        .replace(/[ \t]+/g, ' ')
         .trim();
 
       if (!cleanText) {
@@ -459,14 +459,26 @@ export async function POST(req: NextRequest) {
         resolvedProsodyRate = characterProfile.prosodyRate || '-2%';
         resolvedProsodyPitch = characterProfile.prosodyPitch || '+0Hz';
       } else {
-        // Canalización Multilingüe Automatizada (incluye Próceres en Francés e Inglés)
+        // Canalización Multilingüe Automatizada (incluye Tutores Pedagógicos y Próceres en Francés e Inglés)
+        const isSpanishPedagogicalTutor = resolved.lang === 'es' && !characterProfile && (role === 'tutor' || role === 'pedagogical');
+        const hasExplicitRate = typeof body.rate === 'number' && Math.abs(body.rate - 1.0) > 0.001;
+        const hasExplicitPitch = typeof body.pitch === 'number' && Math.abs(body.pitch - 1.0) > 0.001;
+
         const ratePercent = characterProfile
           ? parseInt(characterProfile.prosodyRate, 10) || 0
-          : Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
+          : hasExplicitRate
+            ? Math.max(-6, Math.min(8, Math.round((rate - 1.0) * 50)))
+            : isSpanishPedagogicalTutor
+              ? (characterGender === 'male' ? 3 : 4)
+              : 0;
         resolvedProsodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
         const pitchHz = characterProfile
           ? parseInt(characterProfile.prosodyPitch, 10) || 0
-          : Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
+          : hasExplicitPitch
+            ? Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)))
+            : isSpanishPedagogicalTutor
+              ? (characterGender === 'male' ? -1 : 1)
+              : 0;
         resolvedProsodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
 
         const directSSML = pipeline.buildSSML({
@@ -494,7 +506,7 @@ export async function POST(req: NextRequest) {
 
     const cacheKey = crypto
       .createHash('sha256')
-      .update(`v9_institutional_human_96k_r1::${targetVoice}::${characterName || ''}::${role || ''}::${normalizedTextHash}::${targetSSML}`)
+      .update(`v10_pedagogical_math_fluid_96k::${targetVoice}::${characterName || ''}::${role || ''}::${resolvedProsodyRate}::${resolvedProsodyPitch}::${normalizedTextHash}::${targetSSML}`)
       .digest('hex');
 
     const cachedBuffer = getAudioFromCache(cacheKey);
