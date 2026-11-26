@@ -502,6 +502,82 @@ function computeUpperFaceBridgeShift(
   }
 }
 
+/**
+ * Aligns a closed-eye blink sprite against canonical using strictly non-eyelid facial anchors
+ * (upper forehead / brow ridge + nasal tip / upper cheek bridge), preventing eyelid closure
+ * from biasing alignment while eliminating 4–6px vertical blink sprite misalignments.
+ */
+function computeBlinkSpriteBridgeShift(
+  refCanvas: HTMLCanvasElement,
+  blinkCanvas: HTMLCanvasElement,
+  lx: number,
+  ly: number,
+  rx: number,
+  ry: number,
+  mouthCy: number
+): { dx: number; dy: number } | null {
+  try {
+    const rCtx = refCanvas.getContext('2d', { willReadFrequently: true }) || refCanvas.getContext('2d');
+    const bCtx = blinkCanvas.getContext('2d', { willReadFrequently: true }) || blinkCanvas.getContext('2d');
+    if (!rCtx || !bCtx) return null;
+
+    const centerX = (lx + rx) * 0.5;
+    const eyeMidY = (ly + ry) * 0.5;
+    // Lower nasal bridge / cheek strip strictly below lower eyelids and above upper lip
+    const topY = Math.max(0, Math.round(eyeMidY + Math.max(16, (mouthCy - eyeMidY) * 0.34)));
+    const botY = Math.min(1020, Math.max(topY + 24, Math.round(mouthCy - 10)));
+    const patchW = Math.min(220, Math.max(68, Math.round(Math.abs(rx - lx) * 1.48)));
+    const patchH = Math.min(120, Math.max(24, botY - topY));
+    const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
+    const ry0 = topY;
+
+    const maxShift = 12;
+    const searchX0 = Math.max(0, rx0 - maxShift);
+    const searchY0 = Math.max(0, ry0 - maxShift);
+    const searchW = Math.min(1024 - searchX0, patchW + maxShift * 2);
+    const searchH = Math.min(1024 - searchY0, patchH + maxShift * 2);
+
+    const refData = rCtx.getImageData(rx0, ry0, patchW, patchH).data;
+    const tgtData = bCtx.getImageData(searchX0, searchY0, searchW, searchH).data;
+
+    let bestScore = Infinity;
+    let bestDx = 0;
+    let bestDy = 0;
+    const stride = 3;
+
+    for (let dy = -maxShift; dy <= maxShift; dy++) {
+      const tyBase = ry0 + dy - searchY0;
+      if (tyBase < 0 || tyBase + patchH >= searchH) continue;
+      for (let dx = -maxShift; dx <= maxShift; dx++) {
+        const txBase = rx0 + dx - searchX0;
+        if (txBase < 0 || txBase + patchW >= searchW) continue;
+        let sad = 0;
+        for (let py = 0; py < patchH; py += stride) {
+          const rRow = py * patchW;
+          const tRow = (tyBase + py) * searchW + txBase;
+          for (let px = 0; px < patchW; px += stride) {
+            const ri = (rRow + px) * 4;
+            const ti = (tRow + px) * 4;
+            sad +=
+              Math.abs(refData[ri] - tgtData[ti]) +
+              Math.abs(refData[ri + 1] - tgtData[ti + 1]) +
+              Math.abs(refData[ri + 2] - tgtData[ti + 2]);
+          }
+        }
+        const score = sad + (Math.abs(dx) + Math.abs(dy)) * 2.4;
+        if (score < bestScore) {
+          bestScore = score;
+          bestDx = dx;
+          bestDy = dy;
+        }
+      }
+    }
+    return { dx: bestDx, dy: bestDy };
+  } catch {
+    return null;
+  }
+}
+
 function measurePoseMouthAnatomy(
   poseCanvas: HTMLCanvasElement,
   cfg: CharacterAnatomicalMouth,
@@ -820,6 +896,11 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const offscreenRef = useRef<HTMLCanvasElement | null>(null);
   const videoFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Zero-allocation reusable scratch buffers for cinema-grade C2 feathered facial compositing at 60 FPS
+  const blendFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouthPatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const browPatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const eyePatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const poseCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
   const poseEyeOffsetRef = useRef<Map<HTMLCanvasElement, PoseEyeOffset>>(new Map());
   const poseMouthAnatomyRef = useRef<Map<HTMLCanvasElement, PoseMouthAnatomy>>(new Map());
@@ -936,10 +1017,39 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
   const registerPoseEyeAlignment = React.useCallback(
     (poseCanvas: HTMLCanvasElement, isCanonical: boolean, isBlinkSprite: boolean) => {
-      if (isBlinkSprite) return;
       const cfg = resolvedConfig;
       const ctx = poseCanvas.getContext('2d');
       if (!ctx) return;
+
+      if (isBlinkSprite) {
+        if (
+          canonicalPoseCanvasRef.current &&
+          cfg.leftEyeX &&
+          cfg.rightEyeX &&
+          (cfg.leftEyeY || cfg.eyeY)
+        ) {
+          const blinkShift = computeBlinkSpriteBridgeShift(
+            canonicalPoseCanvasRef.current,
+            poseCanvas,
+            cfg.leftEyeX,
+            cfg.leftEyeY ?? cfg.eyeY ?? 260,
+            cfg.rightEyeX,
+            cfg.rightEyeY ?? cfg.eyeY ?? 260,
+            cfg.cy
+          );
+          if (blinkShift) {
+            poseEyeOffsetRef.current.set(poseCanvas, {
+              dxL: blinkShift.dx,
+              dyL: blinkShift.dy,
+              dxR: blinkShift.dx,
+              dyR: blinkShift.dy,
+            });
+            return;
+          }
+        }
+        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        return;
+      }
 
       if (!cfg.leftEyeX || !cfg.rightEyeX || !(cfg.leftEyeY || cfg.eyeY)) {
         poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
@@ -1727,14 +1837,32 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
       spring.gestureImpulse *= Math.max(0, 1 - dt * 5.2);
 
-      // Eye gaze micro-saccades
+      // Eye gaze micro-saccades (physiological amplitude scaled to eye size inside Render Stage 10B)
       if (now >= nextSaccadeAt) {
-        nextSaccadeAt = now + 1150 + Math.random() * 1550;
-        targetSaccadeX = currentGesture === 'point' ? -3.4 + (Math.random() - 0.5) * 2.0 : (Math.random() - 0.5) * 4.2;
-        targetSaccadeY = (Math.random() - 0.5) * 2.2;
+        nextSaccadeAt = now + 1150 + Math.random() * 1650;
+        targetSaccadeX = currentGesture === 'point' ? -0.78 + (Math.random() - 0.5) * 0.35 : (Math.random() - 0.5) * 1.65;
+        targetSaccadeY = (Math.random() - 0.5) * 1.1;
       }
-      spring.saccadeX += (targetSaccadeX - spring.saccadeX) * Math.min(1, dt * 12);
-      spring.saccadeY += (targetSaccadeY - spring.saccadeY) * Math.min(1, dt * 12);
+      spring.saccadeX += (targetSaccadeX - spring.saccadeX) * Math.min(1, dt * 11);
+      spring.saccadeY += (targetSaccadeY - spring.saccadeY) * Math.min(1, dt * 11);
+
+      // Helper for zero-allocation reusable offscreen scratch canvases
+      const ensureScratchCanvas = (
+        ref: React.MutableRefObject<HTMLCanvasElement | null>,
+        w: number,
+        h: number
+      ): HTMLCanvasElement => {
+        if (!ref.current) {
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          ref.current = c;
+        } else if (ref.current.width < w || ref.current.height < h) {
+          ref.current.width = Math.max(ref.current.width, w);
+          ref.current.height = Math.max(ref.current.height, h);
+        }
+        return ref.current;
+      };
 
       // =======================================================================
       // 5. FOREGROUND-DECOUPLED 3D COMPOSITOR (BACKGROUND & HANDS 100% UNDISTORTED)
@@ -1744,9 +1872,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
       if (enableSmartBustCrop && cfg.bustCrop) {
         const { focusX, focusY, zoom } = cfg.bustCrop;
+        // Clamp focus strictly inside zoomed bounds so the portrait fills 100% of the 1024x1024 viewport with zero blank top/side bars
+        const minFocus = zoom > 1 ? 512 / zoom : 512;
+        const maxFocus = zoom > 1 ? 1024 - 512 / zoom : 512;
+        const clampedFocusX = Math.max(minFocus, Math.min(maxFocus, focusX));
+        const clampedFocusY = Math.max(minFocus, Math.min(maxFocus, focusY));
         ctx.translate(512, 512);
         ctx.scale(zoom, zoom);
-        ctx.translate(-focusX, -focusY);
+        ctx.translate(-clampedFocusX, -clampedFocusY);
       }
 
       // IMPORTANT: Never swap the full 1024x1024 body to blinkPoseCanvas (prevents arm/mouth teleportation!)
@@ -1757,10 +1890,10 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       ctx.globalAlpha = 1;
       ctx.drawImage(staticBgRef, 0, 0, 1024, 1024);
 
-      // LAYER 1: Active 3D Video Stream or High-Precision 3D Pose with Smooth 160ms Cross-Dissolve
-      // (Zero 2D limb shearing or background-crossing ellipse strip-warping — 100% undistorted hands & props!)
+      // LAYER 1: Active 3D Video Stream or High-Precision 3D Pose with Unified 200ms Cross-Dissolve
+      // (Composites prevPose + currPose into blendFrameCanvas FIRST so facial rig never ghosts during transitions!)
       const transElapsed = now - transitionStartRef.current;
-      const TRANS_DURATION = 160;
+      const TRANS_DURATION = 200;
       const isCrossDissolving = Boolean(
         prevPoseCanvasRef.current &&
           prevPoseCanvasRef.current !== activeFrameCanvas &&
@@ -1770,16 +1903,30 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       // Subtle 60 FPS organic chest/head breathing on static 3D pose rigs (100% locked to landmarks)
       const subtleBreathY =
         !hasLiveVideoFrame && !isGeographicSiteRef.current
-          ? Math.sin(tSec * (audiblySpeaking ? 2.6 : 1.7)) * (audiblySpeaking ? 1.8 : 1.1)
+          ? Math.sin(tSec * (audiblySpeaking ? 2.4 : 1.55)) * (audiblySpeaking ? 1.55 : 0.95)
           : 0;
 
+      let renderSourceCanvas: HTMLCanvasElement = activeFrameCanvas;
       if (isCrossDissolving && prevPoseCanvasRef.current) {
         const alpha = Math.min(1, Math.max(0, transElapsed / TRANS_DURATION));
         const smoothAlpha = alpha * alpha * (3 - 2 * alpha);
-        ctx.drawImage(prevPoseCanvasRef.current, 0, subtleBreathY, 1024, 1024);
-        ctx.globalAlpha = smoothAlpha;
-        ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
-        ctx.globalAlpha = 1;
+        const blendCanvas = ensureScratchCanvas(blendFrameCanvasRef, 1024, 1024);
+        const bCtx = blendCanvas.getContext('2d');
+        if (bCtx) {
+          bCtx.clearRect(0, 0, 1024, 1024);
+          bCtx.globalAlpha = 1;
+          bCtx.drawImage(prevPoseCanvasRef.current, 0, 0, 1024, 1024);
+          bCtx.globalAlpha = smoothAlpha;
+          bCtx.drawImage(activeFrameCanvas, 0, 0, 1024, 1024);
+          bCtx.globalAlpha = 1;
+          renderSourceCanvas = blendCanvas;
+          ctx.drawImage(blendCanvas, 0, subtleBreathY, 1024, 1024);
+        } else {
+          ctx.drawImage(prevPoseCanvasRef.current, 0, subtleBreathY, 1024, 1024);
+          ctx.globalAlpha = smoothAlpha;
+          ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
+          ctx.globalAlpha = 1;
+        }
       } else {
         ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
       }
@@ -1790,7 +1937,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const headShiftX = 0;
       const headShiftY = subtleBreathY / 0.72;
 
-      // Compute active 3D-tracked facial landmarks for all rigs EXCEPT native-lip-sync 3D videos (Claire) and geographic sites
+      // Compute active 3D-tracked facial landmarks for all rigs EXCEPT native-lip-sync 3D videos and geographic sites
       const shouldRenderFacialRig =
         !isGeographicSiteRef.current &&
         !(hasLiveVideoFrame && videoHasNativeLipSyncRef.current);
@@ -1811,10 +1958,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         const activeHeadOffsetY = headShiftY * 0.72 + avgPoseDy;
         const activeMouthCx = cfg.cx + activeHeadOffsetX;
         const activeMouthCy = cfg.cy + activeHeadOffsetY;
-        const activeChinY = chinY + activeHeadOffsetY;
 
-        // 8 & 9. Unified Piecewise-Continuous Monotonic 3D Mouth & Mandible Shader
-        //        (100% Zero Double-Mouth / Zero Double-Teeth / Zero Collar Warp / Zero Clip Seams)
+        // 8 & 9. Cinema-Grade Feathered Parabolic-Mandible 3D Mouth Shader
+        //        (0.00% Horizontal Beard/Collar Cut Seams, Organic Soft Feathering, Recessed 3D Oral Cavity)
         if (audiblySpeaking) {
           let anatomy = !hasLiveVideoFrame
             ? poseMouthAnatomyRef.current.get(activeFrameCanvas)
@@ -1837,17 +1983,18 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const patchW = patchHalfW * 2;
           const colW = patchW / numCols;
           const srcMouthCx = cfg.cx + avgPoseDx;
+          const srcMouthMidY = cfg.cy + avgPoseDy;
           const srcPatchLeft = srcMouthCx - patchHalfW;
 
           const srcMinLipY = Math.min(cfg.y1, cfg.y2, cfg.cy) + avgPoseDy;
           const srcChinBotY = Math.max(srcMinLipY + 26, chinY + avgPoseDy);
-          const jawSpan = srcChinBotY - (cfg.cy + avgPoseDy);
-          const srcAnchorTopY = Math.max(0, srcMinLipY - Math.max(12, jawSpan * 0.28));
+          const jawSpan = srcChinBotY - srcMouthMidY;
+          const srcAnchorTopY = Math.max(0, srcMinLipY - Math.max(14, jawSpan * 0.30));
           const srcAnchorBotY = Math.min(1022, srcChinBotY);
 
-          const maxGapPx = Math.min(22, Math.max(11, cfg.maxOpening * 1.26, jawSpan * 0.36));
+          const maxGapPx = Math.min(21, Math.max(11, cfg.maxOpening * 1.24, jawSpan * 0.35));
           const desiredCenterGapPx = Math.max(0, Math.min(maxGapPx, spring.open * maxGapPx));
-          const spreadScale = 1 + spring.spread * 0.16;
+          const spreadScale = 1 + spring.spread * 0.15;
 
           const dstColCenterX = new Float32Array(numCols);
           const dstUpperCurveY = new Float32Array(numCols);
@@ -1855,253 +2002,391 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           let firstMouthCol = -1;
           let lastMouthCol = -1;
 
-          // STEP A: Continuous Monotonic Upper-Lip & Lower-Mandible Column Slices
-          //         Completely overwrites Layer 1 in [srcAnchorTopY .. srcAnchorBotY] with 0.00px boundary seams!
-          for (let c = 0; c < numCols; c++) {
-            const u = ((c + 0.5) / numCols) * 2 - 1; // -1 .. +1 across patch
-            const m = u * 1.36; // -1 .. +1 strictly between mouth corners x1..x2
-            const cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.6);
+          // Prepare feathered offscreen mandible scratch buffer in exact 1024-space coordinates
+          const padX = 12;
+          const padY = 10;
+          const patchBoxLeft = Math.floor(activeMouthCx - patchHalfW - padX);
+          const patchBoxTop = Math.floor(srcAnchorTopY + subtleBreathY - padY);
+          const patchBoxW = Math.ceil(patchW + padX * 2);
+          const patchBoxH = Math.ceil(srcAnchorBotY - srcAnchorTopY + padY * 2);
+          const mCanvas = ensureScratchCanvas(mouthPatchCanvasRef, Math.max(256, patchBoxW), Math.max(256, patchBoxH));
+          const mCtx = mCanvas.getContext('2d');
 
-            const srcX = srcPatchLeft + c * colW;
-            const relCenterX = srcX + colW * 0.5 - srcMouthCx;
-            const localScaleX = 1 + (spreadScale - 1) * cheekTaper;
-            const dstW = colW * localScaleX;
-            const dstCenterX = activeMouthCx + relCenterX * localScaleX;
-            const dstX = dstCenterX - dstW * 0.5;
-            dstColCenterX[c] = dstCenterX;
+          if (mCtx) {
+            mCtx.save();
+            mCtx.globalCompositeOperation = 'source-over';
+            mCtx.globalAlpha = 1;
+            mCtx.clearRect(0, 0, patchBoxW, patchBoxH);
+            mCtx.translate(-patchBoxLeft, -patchBoxTop);
 
-            const insideMouth = Math.abs(m) < 0.88;
-            if (insideMouth) {
-              if (firstMouthCol < 0) firstMouthCol = c;
-              lastMouthCol = c;
-            }
+            // Seed scratch buffer with exact unwarped surrounding skin/beard so parabolic taper blends cleanly
+            mCtx.drawImage(
+              renderSourceCanvas,
+              Math.max(0, patchBoxLeft),
+              Math.max(0, patchBoxTop - subtleBreathY),
+              patchBoxW,
+              patchBoxH,
+              Math.max(0, patchBoxLeft),
+              Math.max(0, patchBoxTop),
+              patchBoxW,
+              patchBoxH
+            );
 
-            const normM = m / 0.88;
-            const apertureProfile = insideMouth
-              ? Math.pow(Math.max(0, 1 - normM * normM), 1.08)
-              : 0;
+            // STEP A: Continuous Monotonic Upper-Lip & Parabolic-Jaw Mandible Column Slices
+            //         Parabolic colAnchorBotY(u) tapers upward along the anatomical jawline, NEVER cutting collars or beards!
+            for (let c = 0; c < numCols; c++) {
+              const u = ((c + 0.5) / numCols) * 2 - 1; // -1 .. +1 across patch
+              const m = u * 1.36; // -1 .. +1 strictly between mouth corners x1..x2
+              const cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.65);
+              const jawOval = Math.pow(Math.max(0, 1 - u * u * 0.88), 0.62);
+              const colAnchorTopY = Math.max(0, srcMinLipY - Math.max(12, jawSpan * (0.20 + 0.10 * jawOval)));
+              const colAnchorBotY = Math.min(1022, srcMouthMidY + Math.max(18, jawSpan * (0.48 + 0.52 * jawOval)));
 
-            const sUpperLipY = anatomy.srcUpperLipBotY[c];
-            const sTeethBotY = anatomy.srcTeethBotY[c];
-            const sLowerLipY = anatomy.srcLowerLipY[c];
-            const nativeGap = insideMouth ? Math.max(0, sLowerLipY - sTeethBotY) : 0;
-            const targetGap = desiredCenterGapPx * apertureProfile;
+              const srcX = srcPatchLeft + c * colW;
+              const relCenterX = srcX + colW * 0.5 - srcMouthCx;
+              const localScaleX = 1 + (spreadScale - 1) * cheekTaper;
+              const dstW = colW * localScaleX;
+              const dstCenterX = activeMouthCx + relCenterX * localScaleX;
+              const dstX = dstCenterX - dstW * 0.5;
+              dstColCenterX[c] = dstCenterX;
 
-            let srcUpperEnd: number;
-            let dstUpperEnd: number;
-            let dstLowerStart: number;
+              const insideMouth = Math.abs(m) < 0.88;
+              if (insideMouth) {
+                if (firstMouthCol < 0) firstMouthCol = c;
+                lastMouthCol = c;
+              }
 
-            if (targetGap >= nativeGap) {
-              const extraGap = targetGap - nativeGap;
-              const upperLift = cfg.mustacheCover
-                ? 0
-                : Math.min(2.2, extraGap * 0.12) * apertureProfile;
-              srcUpperEnd = sTeethBotY;
-              dstUpperEnd = sTeethBotY + subtleBreathY - upperLift;
-              dstLowerStart = dstUpperEnd + targetGap;
-            } else {
-              const closeBlend = nativeGap > 0.15
-                ? Math.min(1, (nativeGap - targetGap) / nativeGap)
+              const normM = m / 0.88;
+              const apertureProfile = insideMouth
+                ? Math.pow(Math.max(0, 1 - normM * normM), 1.12)
                 : 0;
-              srcUpperEnd = sTeethBotY * (1 - closeBlend) + sUpperLipY * closeBlend;
-              const meetY = sUpperLipY * 0.42 + sLowerLipY * 0.58 + subtleBreathY;
-              dstUpperEnd =
-                (sTeethBotY + subtleBreathY) * (1 - closeBlend) +
-                (meetY - targetGap * 0.45) * closeBlend;
-              dstLowerStart =
-                (sLowerLipY + subtleBreathY) * (1 - closeBlend) +
-                (meetY + targetGap * 0.55) * closeBlend;
+
+              const sUpperLipY = anatomy.srcUpperLipBotY[c];
+              const sTeethBotY = anatomy.srcTeethBotY[c];
+              const sLowerLipY = anatomy.srcLowerLipY[c];
+              const nativeGap = insideMouth ? Math.max(0, sLowerLipY - sTeethBotY) : 0;
+              const targetGap = desiredCenterGapPx * apertureProfile;
+
+              let srcUpperEnd: number;
+              let dstUpperEnd: number;
+              let dstLowerStart: number;
+
+              if (targetGap >= nativeGap) {
+                const extraGap = targetGap - nativeGap;
+                const upperLift = cfg.mustacheCover
+                  ? 0
+                  : Math.min(2.0, extraGap * 0.11) * apertureProfile;
+                srcUpperEnd = sTeethBotY;
+                dstUpperEnd = sTeethBotY + subtleBreathY - upperLift;
+                dstLowerStart = dstUpperEnd + targetGap;
+              } else {
+                const closeBlend = nativeGap > 0.15
+                  ? Math.min(1, (nativeGap - targetGap) / nativeGap)
+                  : 0;
+                srcUpperEnd = sTeethBotY * (1 - closeBlend) + sUpperLipY * closeBlend;
+                const meetY = sUpperLipY * 0.42 + sLowerLipY * 0.58 + subtleBreathY;
+                dstUpperEnd =
+                  (sTeethBotY + subtleBreathY) * (1 - closeBlend) +
+                  (meetY - targetGap * 0.45) * closeBlend;
+                dstLowerStart =
+                  (sLowerLipY + subtleBreathY) * (1 - closeBlend) +
+                  (meetY + targetGap * 0.55) * closeBlend;
+              }
+
+              // Clamp dstLowerStart strictly above parabolic jawline contour
+              dstLowerStart = Math.min(colAnchorBotY + subtleBreathY - 4, dstLowerStart);
+              dstUpperCurveY[c] = dstUpperEnd;
+              dstLowerCurveY[c] = dstLowerStart;
+
+              const innerOverlap = insideMouth && targetGap > 1.2 ? 1.35 : 0.65;
+
+              // 1. Upper slice: [colAnchorTopY .. srcUpperEnd] -> [colAnchorTopY + breath .. dstUpperEnd + overlap]
+              const srcUpH = Math.max(2, srcUpperEnd - colAnchorTopY);
+              const dstUpTop = colAnchorTopY + subtleBreathY;
+              const dstUpH = Math.max(2, dstUpperEnd + innerOverlap - dstUpTop);
+              mCtx.drawImage(
+                renderSourceCanvas,
+                srcX,
+                colAnchorTopY,
+                colW + 0.9,
+                srcUpH,
+                dstX,
+                dstUpTop,
+                dstW + 0.95,
+                dstUpH
+              );
+
+              // 2. Lower parabolic mandible slice: [sLowerLipY .. colAnchorBotY] -> [dstLowerStart - overlap .. colAnchorBotY + breath]
+              const srcLowH = Math.max(2, colAnchorBotY - sLowerLipY);
+              const dstLowTop = dstLowerStart - innerOverlap;
+              const dstLowBot = colAnchorBotY + subtleBreathY;
+              const dstLowH = Math.max(2, dstLowBot - dstLowTop);
+              mCtx.drawImage(
+                renderSourceCanvas,
+                srcX,
+                sLowerLipY,
+                colW + 0.9,
+                srcLowH,
+                dstX,
+                dstLowTop,
+                dstW + 0.95,
+                dstLowH
+              );
             }
 
-            // Clamp dstLowerStart strictly above collar/chin bottom so lower slice remains monotonic
-            dstLowerStart = Math.min(srcAnchorBotY + subtleBreathY - 4, dstLowerStart);
-            dstUpperCurveY[c] = dstUpperEnd;
-            dstLowerCurveY[c] = dstLowerStart;
+            // STEP B: Hardware Anti-Aliased Smooth Spline Oral Cavity, Upper-Lip AO Shadow, 3D Tongue & Soft Teeth
+            if (firstMouthCol >= 0 && lastMouthCol > firstMouthCol && desiredCenterGapPx > 1.15) {
+              const midCol = Math.floor((firstMouthCol + lastMouthCol) * 0.5);
+              const cavTopMid = dstUpperCurveY[midCol];
+              const cavBotMid = dstLowerCurveY[midCol];
+              const cavSpanH = Math.max(2, cavBotMid - cavTopMid);
+              const activeHalfSpanX = Math.max(
+                10,
+                (dstColCenterX[lastMouthCol] - dstColCenterX[firstMouthCol]) * 0.5
+              );
 
-            const innerOverlap = insideMouth && targetGap > 1.2 ? 1.4 : 0.65;
+              const traceOralSpline = () => {
+                mCtx.beginPath();
+                const leftCornerY = (dstUpperCurveY[firstMouthCol] + dstLowerCurveY[firstMouthCol]) * 0.5;
+                const rightCornerY = (dstUpperCurveY[lastMouthCol] + dstLowerCurveY[lastMouthCol]) * 0.5;
+                mCtx.moveTo(dstColCenterX[firstMouthCol], leftCornerY);
+                for (let c = firstMouthCol + 1; c < lastMouthCol; c++) {
+                  mCtx.lineTo(dstColCenterX[c], dstUpperCurveY[c]);
+                }
+                mCtx.lineTo(dstColCenterX[lastMouthCol], rightCornerY);
+                for (let c = lastMouthCol - 1; c > firstMouthCol; c--) {
+                  mCtx.lineTo(dstColCenterX[c], dstLowerCurveY[c]);
+                }
+                mCtx.closePath();
+              };
 
-            // 1. Upper slice: [srcAnchorTopY .. srcUpperEnd] -> [srcAnchorTopY + breath .. dstUpperEnd + overlap]
-            const srcUpH = Math.max(2, srcUpperEnd - srcAnchorTopY);
-            const dstUpTop = srcAnchorTopY + subtleBreathY;
-            const dstUpH = Math.max(2, dstUpperEnd + innerOverlap - dstUpTop);
-            ctx.drawImage(
-              activeFrameCanvas,
-              srcX,
-              srcAnchorTopY,
-              colW + 0.9,
-              srcUpH,
-              dstX,
-              dstUpTop,
-              dstW + 0.95,
-              dstUpH
-            );
+              mCtx.save();
+              traceOralSpline();
+              mCtx.clip();
 
-            // 2. Lower mandible slice: [sLowerLipY .. srcAnchorBotY] -> [dstLowerStart - overlap .. srcAnchorBotY + breath]
-            const srcLowH = Math.max(2, srcAnchorBotY - sLowerLipY);
-            const dstLowTop = dstLowerStart - innerOverlap;
-            const dstLowBot = srcAnchorBotY + subtleBreathY;
-            const dstLowH = Math.max(2, dstLowBot - dstLowTop);
-            ctx.drawImage(
-              activeFrameCanvas,
-              srcX,
-              sLowerLipY,
-              colW + 0.9,
-              srcLowH,
-              dstX,
-              dstLowTop,
-              dstW + 0.95,
-              dstLowH
-            );
-          }
-
-          // STEP B: Hardware Anti-Aliased Smooth Spline Oral Cavity & 3D Tongue
-          if (firstMouthCol >= 0 && lastMouthCol > firstMouthCol && desiredCenterGapPx > 1.15) {
-            const midCol = Math.floor((firstMouthCol + lastMouthCol) * 0.5);
-            const cavTopMid = dstUpperCurveY[midCol];
-            const cavBotMid = dstLowerCurveY[midCol];
-            const cavSpanH = Math.max(2, cavBotMid - cavTopMid);
-            const activeHalfSpanX = Math.max(
-              10,
-              (dstColCenterX[lastMouthCol] - dstColCenterX[firstMouthCol]) * 0.5
-            );
-
-            const traceOralSpline = () => {
-              ctx.beginPath();
-              const leftCornerY = (dstUpperCurveY[firstMouthCol] + dstLowerCurveY[firstMouthCol]) * 0.5;
-              const rightCornerY = (dstUpperCurveY[lastMouthCol] + dstLowerCurveY[lastMouthCol]) * 0.5;
-              ctx.moveTo(dstColCenterX[firstMouthCol], leftCornerY);
-              for (let c = firstMouthCol + 1; c < lastMouthCol; c++) {
-                ctx.lineTo(dstColCenterX[c], dstUpperCurveY[c]);
-              }
-              ctx.lineTo(dstColCenterX[lastMouthCol], rightCornerY);
-              for (let c = lastMouthCol - 1; c > firstMouthCol; c--) {
-                ctx.lineTo(dstColCenterX[c], dstLowerCurveY[c]);
-              }
-              ctx.closePath();
-            };
-
-            ctx.save();
-            traceOralSpline();
-            ctx.clip();
-
-            const cavGrad = ctx.createRadialGradient(
-              activeMouthCx,
-              (cavTopMid + cavBotMid) * 0.5,
-              1,
-              activeMouthCx,
-              (cavTopMid + cavBotMid) * 0.5,
-              Math.max(activeHalfSpanX, cavSpanH)
-            );
-            cavGrad.addColorStop(0, cfg.cavityDarkColor);
-            cavGrad.addColorStop(0.68, cfg.cavityMidColor);
-            cavGrad.addColorStop(1, cfg.cavityRimColor);
-            ctx.fillStyle = cavGrad;
-            ctx.fillRect(
-              dstColCenterX[firstMouthCol] - 4,
-              cavTopMid - 6,
-              activeHalfSpanX * 2 + 8,
-              cavSpanH + 12
-            );
-
-            // Volumetric 3D Tongue inside lower cavity
-            if (cavSpanH > 3.2) {
-              const tongueW = activeHalfSpanX * (cfg.mustacheCover ? 0.56 : 0.62);
-              const tongueH = cavSpanH * (0.36 + spring.tongue * 0.18);
-              const tongueY = cavBotMid - tongueH * 0.46;
-              const tGrad = ctx.createRadialGradient(
+              const cavGrad = mCtx.createRadialGradient(
                 activeMouthCx,
-                tongueY - tongueH * 0.2,
+                (cavTopMid + cavBotMid) * 0.48,
                 1,
                 activeMouthCx,
-                tongueY,
-                tongueW
+                (cavTopMid + cavBotMid) * 0.52,
+                Math.max(activeHalfSpanX, cavSpanH)
               );
-              tGrad.addColorStop(0, cfg.mustacheCover ? '#7e2d36' : '#c85a64');
-              tGrad.addColorStop(0.68, cfg.mustacheCover ? '#4a151b' : '#943540');
-              tGrad.addColorStop(1, cfg.cavityMidColor);
-
-              ctx.beginPath();
-              ctx.ellipse(activeMouthCx, tongueY, tongueW, tongueH, 0, 0, Math.PI * 2);
-              ctx.fillStyle = tGrad;
-              ctx.fill();
-            }
-
-            // Subtle feathered upper teeth arch ONLY for closed-base portraits that lack native 3D teeth
-            if (!anatomy.hasTeeth && !cfg.mustacheCover && cavSpanH > 4.2) {
-              const teethW = activeHalfSpanX * 0.64;
-              const teethH = Math.min(cavSpanH * 0.24, 4.4);
-              const teethGrad = ctx.createLinearGradient(
-                activeMouthCx - teethW,
-                cavTopMid,
-                activeMouthCx + teethW,
-                cavTopMid
+              cavGrad.addColorStop(0, cfg.cavityDarkColor);
+              cavGrad.addColorStop(0.68, cfg.cavityMidColor);
+              cavGrad.addColorStop(1, cfg.cavityRimColor);
+              mCtx.fillStyle = cavGrad;
+              mCtx.fillRect(
+                dstColCenterX[firstMouthCol] - 4,
+                cavTopMid - 6,
+                activeHalfSpanX * 2 + 8,
+                cavSpanH + 12
               );
-              teethGrad.addColorStop(0, 'rgba(210, 198, 186, 0)');
-              teethGrad.addColorStop(0.22, cfg.teethColor);
-              teethGrad.addColorStop(0.5, '#ffffff');
-              teethGrad.addColorStop(0.78, cfg.teethColor);
-              teethGrad.addColorStop(1, 'rgba(210, 198, 186, 0)');
 
-              ctx.save();
-              ctx.globalAlpha = Math.min(0.62, (cavSpanH - 3.8) / 8.0);
-              ctx.beginPath();
-              ctx.ellipse(activeMouthCx, cavTopMid + teethH * 0.15, teethW, teethH, 0, 0, Math.PI * 2);
-              ctx.fillStyle = teethGrad;
-              ctx.fill();
-              ctx.restore();
+              // Volumetric 3D Tongue inside lower cavity
+              if (cavSpanH > 3.2) {
+                const tongueW = activeHalfSpanX * (cfg.mustacheCover ? 0.54 : 0.60);
+                const tongueH = cavSpanH * (0.35 + spring.tongue * 0.17);
+                const tongueY = cavBotMid - tongueH * 0.46;
+                const tGrad = mCtx.createRadialGradient(
+                  activeMouthCx,
+                  tongueY - tongueH * 0.2,
+                  1,
+                  activeMouthCx,
+                  tongueY,
+                  tongueW
+                );
+                tGrad.addColorStop(0, cfg.mustacheCover ? '#782a33' : '#c65862');
+                tGrad.addColorStop(0.68, cfg.mustacheCover ? '#461319' : '#8f323d');
+                tGrad.addColorStop(1, cfg.cavityMidColor);
+
+                mCtx.beginPath();
+                mCtx.ellipse(activeMouthCx, tongueY, tongueW, tongueH, 0, 0, Math.PI * 2);
+                mCtx.fillStyle = tGrad;
+                mCtx.fill();
+              }
+
+              // Subtle feathered upper teeth arch ONLY for closed-base portraits without native 3D teeth
+              if (!anatomy.hasTeeth && !cfg.mustacheCover && cavSpanH > 4.2) {
+                const teethW = activeHalfSpanX * 0.62;
+                const teethH = Math.min(cavSpanH * 0.24, 4.2);
+                const teethGrad = mCtx.createLinearGradient(
+                  activeMouthCx - teethW,
+                  cavTopMid,
+                  activeMouthCx + teethW,
+                  cavTopMid
+                );
+                teethGrad.addColorStop(0, 'rgba(210, 198, 186, 0)');
+                teethGrad.addColorStop(0.22, cfg.teethColor);
+                teethGrad.addColorStop(0.5, '#fffdf9');
+                teethGrad.addColorStop(0.78, cfg.teethColor);
+                teethGrad.addColorStop(1, 'rgba(210, 198, 186, 0)');
+
+                mCtx.save();
+                mCtx.globalAlpha = Math.min(0.60, (cavSpanH - 3.8) / 8.2);
+                mCtx.beginPath();
+                mCtx.ellipse(activeMouthCx, cavTopMid + teethH * 0.15, teethW, teethH, 0, 0, Math.PI * 2);
+                mCtx.fillStyle = teethGrad;
+                mCtx.fill();
+                mCtx.restore();
+              }
+
+              // 3D Recessed Upper-Lip Ambient Occlusion Shadow (depth cue inside upper oral arch)
+              const aoH = Math.min(5.5, cavSpanH * 0.42);
+              const aoGrad = mCtx.createLinearGradient(0, cavTopMid - 1, 0, cavTopMid + aoH);
+              aoGrad.addColorStop(0, 'rgba(8, 2, 3, 0.72)');
+              aoGrad.addColorStop(1, 'rgba(8, 2, 3, 0)');
+              mCtx.fillStyle = aoGrad;
+              mCtx.fillRect(
+                dstColCenterX[firstMouthCol] - 2,
+                cavTopMid - 1,
+                activeHalfSpanX * 2 + 4,
+                aoH + 1
+              );
+
+              // Soft inner mucosal rim shadow along smooth spline border
+              traceOralSpline();
+              mCtx.globalAlpha = cfg.mustacheCover ? 0.52 : 0.66;
+              mCtx.lineWidth = 1.4;
+              mCtx.strokeStyle = cfg.cavityRimColor;
+              mCtx.stroke();
+              mCtx.restore();
+
+              // Subtle dynamic mentolabial lower-lip depth shadow as jaw opens
+              if (cavSpanH > 3.5 && !cfg.mustacheCover) {
+                const shadowY = cavBotMid + Math.min(11, jawSpan * 0.20);
+                const mlGrad = mCtx.createRadialGradient(
+                  activeMouthCx,
+                  shadowY,
+                  1,
+                  activeMouthCx,
+                  shadowY,
+                  activeHalfSpanX * 0.78
+                );
+                const mlAlpha = Math.min(0.14, (cavSpanH / maxGapPx) * 0.14);
+                mlGrad.addColorStop(0, `rgba(28, 12, 10, ${mlAlpha.toFixed(3)})`);
+                mlGrad.addColorStop(1, 'rgba(28, 12, 10, 0)');
+                mCtx.fillStyle = mlGrad;
+                mCtx.beginPath();
+                mCtx.ellipse(activeMouthCx, shadowY, activeHalfSpanX * 0.78, Math.max(3.5, jawSpan * 0.08), 0, 0, Math.PI * 2);
+                mCtx.fill();
+              }
+            } else if (
+              firstMouthCol >= 0 &&
+              lastMouthCol > firstMouthCol &&
+              desiredCenterGapPx <= 1.15 &&
+              anatomy.poseBaseOpen > 0.05
+            ) {
+              // STEP C: Feathered natural stomion parting line when an open-smile 3D rig seals lips on /m/, /b/, /p/
+              mCtx.save();
+              mCtx.beginPath();
+              for (let c = firstMouthCol; c <= lastMouthCol; c++) {
+                const my = (dstUpperCurveY[c] + dstLowerCurveY[c]) * 0.5;
+                if (c === firstMouthCol) mCtx.moveTo(dstColCenterX[c], my);
+                else mCtx.lineTo(dstColCenterX[c], my);
+              }
+              const sealGrad = mCtx.createLinearGradient(
+                dstColCenterX[firstMouthCol],
+                0,
+                dstColCenterX[lastMouthCol],
+                0
+              );
+              sealGrad.addColorStop(0, 'rgba(62, 18, 24, 0)');
+              sealGrad.addColorStop(0.22, 'rgba(62, 18, 24, 0.44)');
+              sealGrad.addColorStop(0.5, 'rgba(62, 18, 24, 0.54)');
+              sealGrad.addColorStop(0.78, 'rgba(62, 18, 24, 0.44)');
+              sealGrad.addColorStop(1, 'rgba(62, 18, 24, 0)');
+              mCtx.strokeStyle = sealGrad;
+              mCtx.lineWidth = 1.25;
+              mCtx.lineCap = 'round';
+              mCtx.stroke();
+              mCtx.restore();
             }
 
-            // Soft inner mucosal rim shadow along smooth spline border
-            traceOralSpline();
-            ctx.globalAlpha = cfg.mustacheCover ? 0.55 : 0.72;
-            ctx.lineWidth = 1.5;
-            ctx.strokeStyle = cfg.cavityRimColor;
-            ctx.stroke();
-            ctx.restore();
-          } else if (
-            firstMouthCol >= 0 &&
-            lastMouthCol > firstMouthCol &&
-            desiredCenterGapPx <= 1.15 &&
-            anatomy.poseBaseOpen > 0.05
-          ) {
-            // STEP C: Feathered natural stomion parting line when an open-smile 3D rig seals lips on /m/, /b/, /p/
-            ctx.save();
-            ctx.beginPath();
-            for (let c = firstMouthCol; c <= lastMouthCol; c++) {
-              const my = (dstUpperCurveY[c] + dstLowerCurveY[c]) * 0.5;
-              if (c === firstMouthCol) ctx.moveTo(dstColCenterX[c], my);
-              else ctx.lineTo(dstColCenterX[c], my);
+            // STEP D: Soft Feathered Mustache Overhang (ZERO hard elliptical sticker edge!)
+            if (cfg.mustacheCover && desiredCenterGapPx > 1.0) {
+              const mustacheBottomY = cfg.cy + avgPoseDy + subtleBreathY + 1.0;
+              const mustRx = halfW * 1.14;
+              const mustRy = 8.4;
+              const mustW = Math.ceil(mustRx * 2 + 8);
+              const mustH = Math.ceil(mustRy * 2 + 8);
+              const mustLeft = activeMouthCx - mustW * 0.5;
+              const mustTop = mustacheBottomY - 5.8 - mustH * 0.5;
+              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, mustW), Math.max(140, mustH));
+              const eCtx = eScratch.getContext('2d');
+              if (eCtx) {
+                eCtx.save();
+                eCtx.globalCompositeOperation = 'source-over';
+                eCtx.clearRect(0, 0, mustW, mustH);
+                eCtx.drawImage(
+                  renderSourceCanvas,
+                  mustLeft,
+                  mustTop - subtleBreathY,
+                  mustW,
+                  mustH,
+                  0,
+                  0,
+                  mustW,
+                  mustH
+                );
+                // Soft feathered elliptical alpha mask so mustache bristles blend invisibly over cavity shadow
+                eCtx.globalCompositeOperation = 'destination-in';
+                eCtx.save();
+                eCtx.translate(mustW * 0.5, mustH * 0.5);
+                eCtx.scale(mustRx, mustRy);
+                const mMask = eCtx.createRadialGradient(0, 0, 0.45, 0, 0, 1.0);
+                mMask.addColorStop(0, 'rgba(0,0,0,1)');
+                mMask.addColorStop(0.72, 'rgba(0,0,0,0.85)');
+                mMask.addColorStop(1, 'rgba(0,0,0,0)');
+                eCtx.fillStyle = mMask;
+                eCtx.beginPath();
+                eCtx.arc(0, 0, 1, 0, Math.PI * 2);
+                eCtx.fill();
+                eCtx.restore();
+                eCtx.restore();
+
+                mCtx.drawImage(eScratch, 0, 0, mustW, mustH, mustLeft, mustTop, mustW, mustH);
+              }
             }
-            const sealGrad = ctx.createLinearGradient(
-              dstColCenterX[firstMouthCol],
+
+            // FINAL FEATHER PASS: C2 smooth elliptical radial alpha feather around outer cheek/beard/chin boundary
+            // Inner 74% is 100% opaque (full mouth & lower lip), outer 26% smoothly dissolves to 0.00% seam!
+            mCtx.globalCompositeOperation = 'destination-in';
+            const maskCx = activeMouthCx;
+            const maskCy = (srcAnchorTopY + srcAnchorBotY) * 0.5 + subtleBreathY;
+            const maskRx = patchHalfW + padX * 0.5;
+            const maskRy = (srcAnchorBotY - srcAnchorTopY) * 0.5 + padY * 0.45;
+            mCtx.save();
+            mCtx.translate(maskCx, maskCy);
+            mCtx.scale(maskRx, maskRy);
+            const featherGrad = mCtx.createRadialGradient(0, 0, 0.70, 0, 0, 1.0);
+            featherGrad.addColorStop(0, 'rgba(0,0,0,1)');
+            featherGrad.addColorStop(0.55, 'rgba(0,0,0,0.72)');
+            featherGrad.addColorStop(0.85, 'rgba(0,0,0,0.22)');
+            featherGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            mCtx.fillStyle = featherGrad;
+            mCtx.beginPath();
+            mCtx.arc(0, 0, 1, 0, Math.PI * 2);
+            mCtx.fill();
+            mCtx.restore();
+            mCtx.restore();
+
+            // Blit seamless feathered mouth/mandible composite onto main canvas
+            ctx.drawImage(
+              mCanvas,
               0,
-              dstColCenterX[lastMouthCol],
-              0
+              0,
+              patchBoxW,
+              patchBoxH,
+              patchBoxLeft,
+              patchBoxTop,
+              patchBoxW,
+              patchBoxH
             );
-            sealGrad.addColorStop(0, 'rgba(62, 18, 24, 0)');
-            sealGrad.addColorStop(0.22, 'rgba(62, 18, 24, 0.46)');
-            sealGrad.addColorStop(0.5, 'rgba(62, 18, 24, 0.56)');
-            sealGrad.addColorStop(0.78, 'rgba(62, 18, 24, 0.46)');
-            sealGrad.addColorStop(1, 'rgba(62, 18, 24, 0)');
-            ctx.strokeStyle = sealGrad;
-            ctx.lineWidth = 1.25;
-            ctx.lineCap = 'round';
-            ctx.stroke();
-            ctx.restore();
-          }
-
-          if (cfg.mustacheCover && desiredCenterGapPx > 1.0) {
-            const mustacheBottomY = cfg.cy + avgPoseDy + subtleBreathY + 0.5;
-            ctx.save();
-            ctx.beginPath();
-            ctx.ellipse(activeMouthCx, mustacheBottomY - 5.5, halfW * 1.08, 6.2, 0, 0, Math.PI * 2);
-            ctx.clip();
-            ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
-            ctx.restore();
           }
         }
 
-        // 10. Supraorbital Eyebrow Articulation, Micro-Saccades & Periorbital Eyelid Curtain Blinking
+        // 10. Feathered Supraorbital Eyebrow Articulation, Sclera-Locked Micro-Saccades & Bilateral Periorbital Blinking
         if (cfg.leftEyeX && cfg.rightEyeX && (cfg.leftEyeY || cfg.eyeY)) {
           const eRx = cfg.eyeRx ?? cfg.eyeRadius ?? 24;
           const eRy = cfg.eyeRy ?? cfg.eyeRadius ?? 22;
@@ -2110,6 +2395,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
           const eyeSockets = [
             {
+              side: 'L' as const,
               srcEx: cfg.leftEyeX,
               srcEy: srcLeftY,
               poseEx: cfg.leftEyeX + poseOffsets.dxL,
@@ -2119,6 +2405,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               liftMult: 1 - spring.browAsym * 0.35,
             },
             {
+              side: 'R' as const,
               srcEx: cfg.rightEyeX,
               srcEy: srcRightY,
               poseEx: cfg.rightEyeX + poseOffsets.dxR,
@@ -2129,196 +2416,317 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             },
           ];
 
-          // 10A. Supraorbital Eyebrow Gesticulation (source-aligned to poseEx/poseEy so zero forehead seam ever appears)
+          // 10A. Feathered Supraorbital Eyebrow Gesticulation (zero elliptical clip rings on textured foreheads!)
           if (Math.abs(spring.browLift) > 0.04) {
             for (const { poseEx, poseEy, dstEx, dstEy, liftMult } of eyeSockets) {
-              const browW = eRx * 1.58;
-              const browH = eRy * 0.88;
-              const srcBrowTopY = poseEy - eRy * 1.68;
-              const dstBrowTopY = dstEy - eRy * 1.68;
-              const browShiftPx = -spring.browLift * liftMult * Math.max(3.2, eRy * 0.15);
+              const browW = eRx * 1.62;
+              const browH = eRy * 0.96;
+              const srcBrowTopY = poseEy - eRy * 1.72;
+              const dstBrowTopY = dstEy - eRy * 1.72;
+              const browShiftPx = -spring.browLift * liftMult * Math.max(2.6, Math.min(5.0, eRy * 0.14));
+              const bw = Math.ceil(browW + 12);
+              const bh = Math.ceil(browH + 14);
+              const bLeft = dstEx - bw * 0.5;
+              const bTop = dstBrowTopY - 7;
 
-              ctx.save();
-              ctx.beginPath();
-              ctx.ellipse(dstEx, dstBrowTopY + browH * 0.5, browW * 0.48, browH * 0.46, 0, 0, Math.PI * 2);
-              ctx.clip();
+              const bScratch = ensureScratchCanvas(browPatchCanvasRef, Math.max(220, bw), Math.max(140, bh));
+              const bCtx = bScratch.getContext('2d');
+              if (bCtx) {
+                bCtx.save();
+                bCtx.globalCompositeOperation = 'source-over';
+                bCtx.clearRect(0, 0, bw, bh);
+                bCtx.translate(-bLeft, -bTop);
 
-              const bStrips = 7;
-              const bStripH = browH / bStrips;
-              for (let i = 0; i < bStrips; i++) {
-                const normY = (i + 0.5) / bStrips;
-                const bell = Math.pow(Math.sin(normY * Math.PI), 1.8);
-                const srcY = srcBrowTopY + i * bStripH;
-                const dstY = dstBrowTopY + i * bStripH + browShiftPx * bell;
-                ctx.drawImage(
-                  activeFrameCanvas,
-                  poseEx - browW * 0.5,
-                  srcY,
-                  browW,
-                  bStripH + 1.2,
-                  dstEx - browW * 0.5,
-                  dstY,
-                  browW,
-                  bStripH + 1.4
-                );
+                const bStrips = 9;
+                const bStripH = browH / bStrips;
+                for (let i = 0; i < bStrips; i++) {
+                  const normY = (i + 0.5) / bStrips;
+                  const bell = Math.pow(Math.sin(normY * Math.PI), 1.85);
+                  const srcY = srcBrowTopY + i * bStripH;
+                  const dstY = dstBrowTopY + i * bStripH + browShiftPx * bell;
+                  bCtx.drawImage(
+                    renderSourceCanvas,
+                    poseEx - browW * 0.5,
+                    srcY,
+                    browW,
+                    bStripH + 1.2,
+                    dstEx - browW * 0.5,
+                    dstY,
+                    browW,
+                    bStripH + 1.4
+                  );
+                }
+
+                // Soft elliptical radial alpha feather so brow motion dissolves invisibly into forehead texture
+                bCtx.globalCompositeOperation = 'destination-in';
+                bCtx.save();
+                bCtx.translate(dstEx, dstBrowTopY + browH * 0.5);
+                bCtx.scale(browW * 0.48, browH * 0.46);
+                const brMask = bCtx.createRadialGradient(0, 0, 0.50, 0, 0, 1.0);
+                brMask.addColorStop(0, 'rgba(0,0,0,1)');
+                brMask.addColorStop(0.75, 'rgba(0,0,0,0.55)');
+                brMask.addColorStop(1, 'rgba(0,0,0,0)');
+                bCtx.fillStyle = brMask;
+                bCtx.beginPath();
+                bCtx.arc(0, 0, 1, 0, Math.PI * 2);
+                bCtx.fill();
+                bCtx.restore();
+                bCtx.restore();
+
+                ctx.drawImage(bScratch, 0, 0, bw, bh, bLeft, bTop, bw, bh);
               }
-              ctx.restore();
             }
           }
 
-          // 10B. Subtle 60 FPS Iris/Pupil Gaze Micro-Saccades (only when eyes are wide open)
-          if (spring.blink < 0.08 && (Math.abs(spring.saccadeX) > 0.25 || Math.abs(spring.saccadeY) > 0.2)) {
+          // 10B. Sclera-Locked Feathered Iris Micro-Saccades + Corneal Catchlight (NEVER drags eyelid margins!)
+          const scaledSacX = Math.max(-2.1, Math.min(2.1, spring.saccadeX * Math.min(1.65, eRx * 0.068)));
+          const scaledSacY = Math.max(-1.1, Math.min(1.1, spring.saccadeY * Math.min(1.0, eRy * 0.052)));
+          if (spring.blink < 0.08 && (Math.abs(scaledSacX) > 0.16 || Math.abs(scaledSacY) > 0.14)) {
             for (const { poseEx, poseEy, dstEx, dstEy } of eyeSockets) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.ellipse(dstEx, dstEy, eRx * 0.54, eRy * 0.48, 0, 0, Math.PI * 2);
-              ctx.clip();
-              ctx.drawImage(
-                activeFrameCanvas,
-                poseEx - eRx * 0.60,
-                poseEy - eRy * 0.54,
-                eRx * 1.20,
-                eRy * 1.08,
-                dstEx - eRx * 0.60 + spring.saccadeX,
-                dstEy - eRy * 0.54 + spring.saccadeY,
-                eRx * 1.20,
-                eRy * 1.08
-              );
-              ctx.restore();
+              const sacRx = eRx * 0.44;
+              const sacRy = eRy * 0.36;
+              const sw = Math.ceil(sacRx * 2 + 12);
+              const sh = Math.ceil(sacRy * 2 + 12);
+              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, sw), Math.max(140, sh));
+              const eCtx = eScratch.getContext('2d');
+              if (eCtx) {
+                eCtx.save();
+                eCtx.globalCompositeOperation = 'source-over';
+                eCtx.clearRect(0, 0, sw, sh);
+                eCtx.drawImage(
+                  renderSourceCanvas,
+                  poseEx - sw * 0.5 - scaledSacX,
+                  poseEy - sh * 0.5 - scaledSacY,
+                  sw,
+                  sh,
+                  0,
+                  0,
+                  sw,
+                  sh
+                );
+                // Subtle warm corneal specular catchlight (life-like eye sparkle)
+                const glintR = Math.max(1.1, Math.min(2.1, eRy * 0.085));
+                const glintX = sw * 0.5 - eRx * 0.11 + scaledSacX * 0.55;
+                const glintY = sh * 0.5 - eRy * 0.12 + scaledSacY * 0.45;
+                const gGrad = eCtx.createRadialGradient(glintX, glintY, 0, glintX, glintY, glintR * 1.8);
+                gGrad.addColorStop(0, 'rgba(255, 252, 245, 0.24)');
+                gGrad.addColorStop(1, 'rgba(255, 252, 245, 0)');
+                eCtx.fillStyle = gGrad;
+                eCtx.beginPath();
+                eCtx.arc(glintX, glintY, glintR * 1.8, 0, Math.PI * 2);
+                eCtx.fill();
+
+                // Soft feathered iris mask strictly inside sclera (zero eyelid skin dragging!)
+                eCtx.globalCompositeOperation = 'destination-in';
+                eCtx.save();
+                eCtx.translate(sw * 0.5, sh * 0.5);
+                eCtx.scale(sacRx, sacRy);
+                const sMask = eCtx.createRadialGradient(0, 0, 0.52, 0, 0, 1.0);
+                sMask.addColorStop(0, 'rgba(0,0,0,1)');
+                sMask.addColorStop(0.78, 'rgba(0,0,0,0.52)');
+                sMask.addColorStop(1, 'rgba(0,0,0,0)');
+                eCtx.fillStyle = sMask;
+                eCtx.beginPath();
+                eCtx.arc(0, 0, 1, 0, Math.PI * 2);
+                eCtx.fill();
+                eCtx.restore();
+                eCtx.restore();
+
+                ctx.drawImage(eScratch, 0, 0, sw, sh, dstEx - sw * 0.5, dstEy - sh * 0.5, sw, sh);
+              }
             }
           }
 
-          // 10C. Anatomical 60 FPS Periorbital Eyelid Curtain Blinking (Zero Pupil Smearing / Zero Body Teleport!)
+          // 10C. Aligned & Feathered Bilateral Periorbital Eyelid Blinking (85% Upper Lid + 15% Lower Lid Rise)
           const b = spring.blink;
           if (b > 0.04) {
             const blinkUrl = poseCompendiumRef.current?.blink;
             const blinkCanvas = blinkUrl ? poseCacheRef.current.get(blinkUrl) : null;
+            const blinkOffsets = blinkCanvas
+              ? poseEyeOffsetRef.current.get(blinkCanvas) || { dxL: 0, dyL: 0, dxR: 0, dyR: 0 }
+              : { dxL: 0, dyL: 0, dxR: 0, dyR: 0 };
             const skin = eyelidSkinRef.current;
 
-            for (const { srcEx, srcEy, dstEx, dstEy } of eyeSockets) {
-              const creaseRelY = -eRy * 0.80;
-              const openMarginRelY = -eRy * 0.54;
-              const closedMarginRelY = eRy * 0.52;
-              const lowerSocketRelY = eRy * 0.86;
-              const currMarginRelY = openMarginRelY + b * (closedMarginRelY - openMarginRelY);
-              const cornerRelY = openMarginRelY * 0.35 + b * (closedMarginRelY * 0.55);
+            for (const { side, srcEx, srcEy, dstEx, dstEy } of eyeSockets) {
+              const bOffDx = side === 'L' ? blinkOffsets.dxL : blinkOffsets.dxR;
+              const bOffDy = side === 'L' ? blinkOffsets.dyL : blinkOffsets.dyR;
+              const alignedBlinkEx = srcEx + bOffDx;
+              const alignedBlinkEy = srcEy + bOffDy;
 
-              if (blinkCanvas) {
-                // Mode A: High-Precision Periorbital 3D Closed-Eyelid Sprite Curtain
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(dstEx - eRx * 0.98, dstEy + cornerRelY);
-                ctx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.22, dstEx + eRx * 0.98, dstEy + cornerRelY);
-                ctx.quadraticCurveTo(dstEx, dstEy + currMarginRelY * 1.24, dstEx - eRx * 0.98, dstEy + cornerRelY);
-                ctx.closePath();
-                ctx.clip();
+              const creaseRelY = -eRy * 0.84;
+              const openMarginRelY = -eRy * 0.56;
+              // Bilateral human blink: upper lid descends 85% toward meet line, lower lid rises 15%
+              const closedMeetRelY = eRy * 0.36;
+              const openLowerRelY = eRy * 0.62;
+              const currUpperMarginRelY = openMarginRelY + b * (closedMeetRelY - openMarginRelY);
+              const currLowerMarginRelY = openLowerRelY - b * (openLowerRelY - closedMeetRelY) * 0.85;
+              const lowerSocketRelY = eRy * 0.88;
+              const cornerRelY = openMarginRelY * 0.25 + b * (closedMeetRelY * 0.52);
 
-                const lidStrips = 14;
-                const srcSpan = closedMarginRelY - creaseRelY;
-                const dstSpan = Math.max(2, currMarginRelY - creaseRelY);
-                const srcStep = srcSpan / lidStrips;
-                const dstStep = dstSpan / lidStrips;
-                const patchW = eRx * 2.04;
+              const bw = Math.ceil(eRx * 2.36);
+              const bh = Math.ceil(eRy * 2.28);
+              const bLeft = dstEx - bw * 0.5;
+              const bTop = dstEy - bh * 0.5;
+              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, bw), Math.max(140, bh));
+              const eCtx = eScratch.getContext('2d');
 
-                for (let s = 0; s < lidStrips; s++) {
-                  ctx.drawImage(
-                    blinkCanvas,
-                    srcEx - patchW * 0.5,
-                    srcEy + creaseRelY + s * srcStep,
-                    patchW,
-                    srcStep + 1.4,
-                    dstEx - patchW * 0.5,
-                    dstEy + creaseRelY + s * dstStep,
-                    patchW,
-                    dstStep + 1.5
-                  );
-                }
-                ctx.restore();
+              if (eCtx) {
+                eCtx.save();
+                eCtx.globalCompositeOperation = 'source-over';
+                eCtx.clearRect(0, 0, bw, bh);
+                eCtx.translate(-bLeft, -bTop);
 
-                // Seal lower lash shadow smoothly as eyelid reaches complete tarsal closure
-                if (b > 0.65) {
-                  const sealAlpha = Math.min(1, (b - 0.65) / 0.30);
-                  ctx.save();
-                  ctx.globalAlpha = sealAlpha;
-                  ctx.beginPath();
-                  ctx.ellipse(dstEx, dstEy + eRy * 0.04, eRx * 0.96, lowerSocketRelY * 0.96, 0, 0, Math.PI * 2);
-                  ctx.clip();
-                  ctx.drawImage(
-                    blinkCanvas,
-                    srcEx - eRx,
-                    srcEy - eRy * 0.92,
-                    eRx * 2,
-                    eRy * 1.84,
-                    dstEx - eRx,
-                    dstEy - eRy * 0.92,
-                    eRx * 2,
-                    eRy * 1.84
-                  );
-                  ctx.restore();
-                }
+                if (blinkCanvas) {
+                  // Mode A: Aligned & Feathered 3D Closed-Eyelid Sprite Curtain (Zero vertical drift!)
+                  eCtx.save();
+                  eCtx.beginPath();
+                  eCtx.moveTo(dstEx - eRx * 0.98, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.24, dstEx + eRx * 0.98, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + currUpperMarginRelY * 1.22, dstEx - eRx * 0.98, dstEy + cornerRelY);
+                  eCtx.closePath();
+                  eCtx.clip();
 
-                // Crisp anti-aliased curved upper eyelash margin during mid-descent / mid-opening
-                if (b < 0.88) {
-                  ctx.save();
-                  ctx.beginPath();
-                  ctx.moveTo(dstEx - eRx * 0.84, dstEy + cornerRelY + 1.5);
-                  ctx.quadraticCurveTo(
+                  const lidStrips = 14;
+                  const srcSpan = closedMeetRelY + eRy * 0.16 - creaseRelY;
+                  const dstSpan = Math.max(2, currUpperMarginRelY - creaseRelY);
+                  const srcStep = srcSpan / lidStrips;
+                  const dstStep = dstSpan / lidStrips;
+                  const patchW = eRx * 2.08;
+
+                  for (let s = 0; s < lidStrips; s++) {
+                    eCtx.drawImage(
+                      blinkCanvas,
+                      alignedBlinkEx - patchW * 0.5,
+                      alignedBlinkEy + creaseRelY + s * srcStep,
+                      patchW,
+                      srcStep + 1.4,
+                      dstEx - patchW * 0.5,
+                      dstEy + creaseRelY + s * dstStep,
+                      patchW,
+                      dstStep + 1.5
+                    );
+                  }
+                  eCtx.restore();
+
+                  // Seamless full tarsal seal when lid nears complete closure
+                  if (b > 0.58) {
+                    const sealAlpha = Math.min(1, (b - 0.58) / 0.34);
+                    eCtx.save();
+                    eCtx.globalAlpha = sealAlpha;
+                    eCtx.drawImage(
+                      blinkCanvas,
+                      alignedBlinkEx - eRx * 1.06,
+                      alignedBlinkEy - eRy * 0.96,
+                      eRx * 2.12,
+                      eRy * 1.92,
+                      dstEx - eRx * 1.06,
+                      dstEy - eRy * 0.96,
+                      eRx * 2.12,
+                      eRy * 1.92
+                    );
+                    eCtx.restore();
+                  }
+
+                  // Crisp anti-aliased curved upper eyelash margin during descent/opening
+                  if (b < 0.86) {
+                    eCtx.save();
+                    eCtx.beginPath();
+                    eCtx.moveTo(dstEx - eRx * 0.84, dstEy + cornerRelY + 1.2);
+                    eCtx.quadraticCurveTo(
+                      dstEx,
+                      dstEy + currUpperMarginRelY * 1.14,
+                      dstEx + eRx * 0.84,
+                      dstEy + cornerRelY + 1.2
+                    );
+                    eCtx.strokeStyle = 'rgba(24, 14, 12, 0.68)';
+                    eCtx.lineWidth = Math.max(1.6, eRy * 0.072);
+                    eCtx.lineCap = 'round';
+                    eCtx.stroke();
+                    eCtx.restore();
+                  }
+                } else {
+                  // Mode B: Bilateral Anatomical 3D Eyelid Dome + Subtle Lower-Lid Rise (for Historical Portraits)
+                  // 1. Upper Eyelid Dome (85% closure)
+                  eCtx.save();
+                  eCtx.beginPath();
+                  eCtx.moveTo(dstEx - eRx * 0.94, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.18, dstEx + eRx * 0.94, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + currUpperMarginRelY * 1.20, dstEx - eRx * 0.94, dstEy + cornerRelY);
+                  eCtx.closePath();
+                  eCtx.clip();
+
+                  const lidGrad = eCtx.createLinearGradient(
                     dstEx,
-                    dstEy + currMarginRelY * 1.14,
-                    dstEx + eRx * 0.84,
-                    dstEy + cornerRelY + 1.5
+                    dstEy + creaseRelY,
+                    dstEx,
+                    dstEy + currUpperMarginRelY + 2
                   );
-                  ctx.strokeStyle = 'rgba(24, 14, 12, 0.72)';
-                  ctx.lineWidth = Math.max(1.8, eRy * 0.075);
-                  ctx.lineCap = 'round';
-                  ctx.stroke();
-                  ctx.restore();
+                  lidGrad.addColorStop(0, skin.crease);
+                  lidGrad.addColorStop(0.32, skin.highlight);
+                  lidGrad.addColorStop(0.84, skin.base);
+                  lidGrad.addColorStop(1, skin.crease);
+
+                  eCtx.fillStyle = lidGrad;
+                  eCtx.fillRect(
+                    dstEx - eRx,
+                    dstEy + creaseRelY - 2,
+                    eRx * 2,
+                    currUpperMarginRelY - creaseRelY + 8
+                  );
+                  eCtx.restore();
+
+                  // 2. Subtle Lower Eyelid Upward Lift (15% bilateral orbicularis closure)
+                  if (b > 0.25) {
+                    eCtx.save();
+                    eCtx.globalAlpha = Math.min(0.92, (b - 0.20) * 1.15);
+                    eCtx.beginPath();
+                    eCtx.moveTo(dstEx - eRx * 0.88, dstEy + cornerRelY + 1);
+                    eCtx.quadraticCurveTo(dstEx, dstEy + currLowerMarginRelY, dstEx + eRx * 0.88, dstEy + cornerRelY + 1);
+                    eCtx.quadraticCurveTo(dstEx, dstEy + lowerSocketRelY * 1.05, dstEx - eRx * 0.88, dstEy + cornerRelY + 1);
+                    eCtx.closePath();
+                    eCtx.clip();
+                    const lowGrad = eCtx.createLinearGradient(dstEx, dstEy + currLowerMarginRelY, dstEx, dstEy + lowerSocketRelY);
+                    lowGrad.addColorStop(0, skin.base);
+                    lowGrad.addColorStop(1, skin.crease);
+                    eCtx.fillStyle = lowGrad;
+                    eCtx.fillRect(dstEx - eRx, dstEy + currLowerMarginRelY - 2, eRx * 2, lowerSocketRelY - currLowerMarginRelY + 6);
+                    eCtx.restore();
+                  }
+
+                  // 3. Soft Curved Upper Eyelash Margin & Orbital Shadow
+                  eCtx.save();
+                  eCtx.beginPath();
+                  eCtx.moveTo(dstEx - eRx * 0.84, dstEy + cornerRelY + 0.8);
+                  eCtx.quadraticCurveTo(
+                    dstEx,
+                    dstEy + currUpperMarginRelY * 1.16,
+                    dstEx + eRx * 0.84,
+                    dstEy + cornerRelY + 0.8
+                  );
+                  eCtx.strokeStyle = 'rgba(22, 13, 12, 0.78)';
+                  eCtx.lineWidth = Math.max(1.5, eRy * 0.08);
+                  eCtx.lineCap = 'round';
+                  eCtx.stroke();
+                  eCtx.restore();
                 }
-              } else {
-                // Mode B: Sampled Anatomical 3D Eyelid Dome + Curved Lash Line (for Portraits without Blink Sprite)
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(dstEx - eRx * 0.94, dstEy + cornerRelY);
-                ctx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.15, dstEx + eRx * 0.94, dstEy + cornerRelY);
-                ctx.quadraticCurveTo(dstEx, dstEy + currMarginRelY * 1.22, dstEx - eRx * 0.94, dstEy + cornerRelY);
-                ctx.closePath();
-                ctx.clip();
 
-                const lidGrad = ctx.createLinearGradient(
-                  dstEx,
-                  dstEy + creaseRelY,
-                  dstEx,
-                  dstEy + currMarginRelY + 2
-                );
-                lidGrad.addColorStop(0, skin.crease);
-                lidGrad.addColorStop(0.35, skin.highlight);
-                lidGrad.addColorStop(0.88, skin.base);
-                lidGrad.addColorStop(1, skin.crease);
+                // Soft periorbital alpha feathering around outer socket border (ZERO pasted oval rings!)
+                eCtx.globalCompositeOperation = 'destination-in';
+                eCtx.save();
+                eCtx.translate(dstEx, dstEy + eRy * 0.02);
+                eCtx.scale(eRx * 1.08, eRy * 1.04);
+                const orbMask = eCtx.createRadialGradient(0, 0, 0.72, 0, 0, 1.0);
+                orbMask.addColorStop(0, 'rgba(0,0,0,1)');
+                orbMask.addColorStop(0.84, 'rgba(0,0,0,0.68)');
+                orbMask.addColorStop(1, 'rgba(0,0,0,0)');
+                eCtx.fillStyle = orbMask;
+                eCtx.beginPath();
+                eCtx.arc(0, 0, 1, 0, Math.PI * 2);
+                eCtx.fill();
+                eCtx.restore();
+                eCtx.restore();
 
-                ctx.fillStyle = lidGrad;
-                ctx.fillRect(
-                  dstEx - eRx,
-                  dstEy + creaseRelY - 2,
-                  eRx * 2,
-                  currMarginRelY - creaseRelY + 8
-                );
-                ctx.restore();
-
-                // Curved upper eyelash margin
-                ctx.save();
-                ctx.beginPath();
-                ctx.moveTo(dstEx - eRx * 0.86, dstEy + cornerRelY + 1);
-                ctx.quadraticCurveTo(
-                  dstEx,
-                  dstEy + currMarginRelY * 1.16,
-                  dstEx + eRx * 0.86,
-                  dstEy + cornerRelY + 1
-                );
-                ctx.strokeStyle = 'rgba(22, 13, 12, 0.84)';
-                ctx.lineWidth = Math.max(1.8, eRy * 0.085);
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                ctx.restore();
+                ctx.drawImage(eScratch, 0, 0, bw, bh, bLeft, bTop, bw, bh);
               }
             }
           }
