@@ -46,13 +46,24 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
   const AVAILABLE_GROUPS = React.useMemo(() => {
     const schoolGroups = getSchoolGroups(storeGroupsList || [], activeSchoolId, storeCampusesList || []);
     if (schoolGroups.length === 0) return DEFAULT_AVAILABLE_GROUPS;
-    return schoolGroups.map((g) => ({
-      id: g.id,
-      name: `${g.grade || ''} ${g.name || ''}`.trim() || 'Grupo Escolar',
-      grade: g.grade || 'General',
-      subjectId: 'sub-sci',
-      subject: 'Currículum Institucional NEM'
-    }));
+    const levelLabel = (lvl?: string) =>
+      lvl === 'primaria' ? 'Primaria' : lvl === 'secundaria' ? 'Secundaria' : lvl === 'preparatoria' ? 'Preparatoria' : '';
+    return schoolGroups.map((g) => {
+      const grade = (g.grade || '').trim();
+      const rawName = (g.name || '').trim();
+      const base = rawName && grade && rawName.toLowerCase().startsWith(grade.toLowerCase())
+        ? rawName
+        : `${grade} ${rawName}`.trim() || 'Grupo Escolar';
+      const lvl = levelLabel(g.level) || (g.campus_name || '').trim();
+      const displayName = lvl && !base.toLowerCase().includes(lvl.toLowerCase()) ? `${base} • ${lvl}` : base;
+      return {
+        id: g.id,
+        name: displayName,
+        grade: g.grade || 'General',
+        subjectId: 'sub-sci',
+        subject: 'Currículum Institucional NEM'
+      };
+    });
   }, [storeGroupsList, storeCampusesList, activeSchoolId]);
 
   const [selectedGroupId, setSelectedGroupId] = useState<string>(AVAILABLE_GROUPS[0]?.id || DEFAULT_AVAILABLE_GROUPS[0].id);

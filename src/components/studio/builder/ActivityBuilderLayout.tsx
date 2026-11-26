@@ -830,19 +830,30 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
               {(() => {
                 const adminState = useSchoolAdminStore.getState();
                 const schoolGroups = getSchoolGroups(adminState.groupsList, adminState.activeSchoolId, adminState.campusesList);
+                const levelLabel = (lvl?: string) =>
+                  lvl === 'primaria' ? 'Primaria' : lvl === 'secundaria' ? 'Secundaria' : lvl === 'preparatoria' ? 'Preparatoria' : '';
+                const formatGroupLabel = (g: { grade?: string; name?: string; level?: string; campus_name?: string }) => {
+                  const grade = (g.grade || '').trim();
+                  const name = (g.name || '').trim();
+                  const base = name && grade && name.toLowerCase().startsWith(grade.toLowerCase())
+                    ? name
+                    : `${grade} ${name}`.trim() || 'Grupo Escolar';
+                  const lvl = levelLabel(g.level) || (g.campus_name || '').trim();
+                  return lvl && !base.toLowerCase().includes(lvl.toLowerCase()) ? `${base} • ${lvl}` : base;
+                };
                 const opts = schoolGroups.length > 0
-                  ? schoolGroups.map((g) => {
-                      const label = `${g.grade || ''} ${g.name || ''}`.trim();
-                      return { value: label, label };
+                  ? schoolGroups.map((g, idx) => {
+                      const label = formatGroupLabel(g);
+                      return { key: g.id || `${label}-${idx}`, value: label, label };
                     })
                   : [
-                      { value: '1°A Secundaria • Historia (08:00-08:50)', label: '1°A Secundaria • Historia (08:00-08:50)' },
-                      { value: '2°B Secundaria • Historia de México (09:00-09:50)', label: '2°B Secundaria • Historia de México (09:00-09:50)' },
-                      { value: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)', label: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)' },
-                      { value: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)', label: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)' }
+                      { key: 'default-1', value: '1°A Secundaria • Historia (08:00-08:50)', label: '1°A Secundaria • Historia (08:00-08:50)' },
+                      { key: 'default-2', value: '2°B Secundaria • Historia de México (09:00-09:50)', label: '2°B Secundaria • Historia de México (09:00-09:50)' },
+                      { key: 'default-3', value: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)', label: '5°A Primaria • Ética, Naturaleza y Sociedades (10:30-11:20)' },
+                      { key: 'default-4', value: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)', label: '3°A Secundaria • Formación Cívica y Ética (11:30-12:20)' }
                     ];
                 return opts.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <option key={opt.key} value={opt.value}>{opt.label}</option>
                 ));
               })()}
             </select>

@@ -769,11 +769,19 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
               className="px-3 py-2 bg-slate-800 border border-slate-700 hover:border-amber-500/50 rounded-xl text-xs font-bold text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer"
             >
               <option value="all">🌟 Todos los Alumnos ({allNormalizedStudents.length})</option>
-              {groupsList.map(g => (
-                <option key={g.id} value={g.id}>
-                  {g.grade} "{g.name}" - {g.level === 'primaria' ? 'Primaria' : g.level === 'secundaria' ? 'Secundaria' : 'Prepa'}
-                </option>
-              ))}
+              {groupsList.map((g) => {
+                const grade = (g.grade || '').trim();
+                const name = (g.name || '').trim();
+                const base = name && grade && name.toLowerCase().startsWith(grade.toLowerCase())
+                  ? name
+                  : `${grade} "${name}"`.trim();
+                const lvl = g.level === 'primaria' ? 'Primaria' : g.level === 'secundaria' ? 'Secundaria' : 'Preparatoria';
+                return (
+                  <option key={g.id} value={g.id}>
+                    {base} - {lvl}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
