@@ -1744,8 +1744,8 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   if (norm.includes('lovelace') || /\bada\b/.test(norm)) {
     if (is2DPortrait) {
       return {
-        x1: 474, y1: 356, cx: 500, cy: 356, x2: 528, y2: 356,
-        chinY: 404, eyeY: 266, leftEyeX: 458, leftEyeY: 266, rightEyeX: 548, rightEyeY: 266, eyeRadius: 18, baseOpen: 0,
+        x1: 474, y1: 353, cx: 500, cy: 353, x2: 528, y2: 353,
+        chinY: 400, eyeY: 266, leftEyeX: 458, leftEyeY: 266, rightEyeX: 548, rightEyeY: 266, eyeRadius: 18, baseOpen: 0,
         maxOpening: 14, cavityDarkColor: '#1a0408', cavityMidColor: '#380a12', cavityRimColor: '#5e121e',
         lowerLipRimColor: 'rgba(210, 90, 105, 0.94)', teethColor: '#fff6ed'
       };
@@ -1786,7 +1786,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     if (is2DPortrait) {
       return {
         x1: 474, y1: 416, cx: 510, cy: 416, x2: 546, y2: 416,
-        chinY: 488, eyeY: 314, leftEyeX: 456, leftEyeY: 314, rightEyeX: 556, rightEyeY: 314, eyeRadius: 18, baseOpen: 0,
+        chinY: 478, eyeY: 314, leftEyeX: 463, leftEyeY: 314, rightEyeX: 551, rightEyeY: 314, eyeRadius: 17, baseOpen: 0,
         maxOpening: 13, cavityDarkColor: '#0c0203', cavityMidColor: '#240407', cavityRimColor: '#400e12',
         lowerLipRimColor: 'rgba(155, 78, 72, 0.90)', teethColor: '#eae1d2', mustacheCover: true
       };
@@ -1827,7 +1827,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       x1: 458, y1: 374, cx: 512, cy: 380, x2: 562, y2: 368,
       upperLipBottomY: 380, teethBottomY: 386.5, lowerLipTopY: 394.5,
       chinY: 432, eyeY: 273, leftEyeX: 446, leftEyeY: 280, rightEyeX: 573, rightEyeY: 265,
-      eyeRadius: 38, eyeRx: 44, eyeRy: 34, baseOpen: 0.34,
+      eyeRadius: 40, eyeRx: 46, eyeRy: 37, baseOpen: 0.34,
       maxOpening: 17, cavityDarkColor: '#1e0409', cavityMidColor: '#3e0c15', cavityRimColor: '#681622',
       lowerLipRimColor: 'rgba(215, 92, 105, 0.94)', teethColor: '#fff7f0'
     };
@@ -1884,7 +1884,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
-      x1: 500, y1: 371, cx: 522, cy: 371, x2: 544, y2: 371,
+      x1: 502, y1: 370, cx: 522, cy: 370, x2: 542, y2: 370,
       chinY: 406, eyeY: 304, leftEyeX: 491, leftEyeY: 304, rightEyeX: 554, rightEyeY: 304, eyeRadius: 14, eyeRx: 14, eyeRy: 10, baseOpen: 0,
       bustCrop: { focusX: 522, focusY: 342, zoom: 1.38 },
       maxOpening: 14, cavityDarkColor: '#1c0409', cavityMidColor: '#3e0c16', cavityRimColor: '#641624',
@@ -1895,7 +1895,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
-      x1: 484, y1: 282, cx: 512, cy: 282, x2: 540, y2: 282,
+      x1: 484, y1: 285, cx: 512, cy: 285, x2: 540, y2: 285,
       chinY: 334, eyeY: 208, leftEyeX: 474, leftEyeY: 208, rightEyeX: 550, rightEyeY: 208, eyeRadius: 16, baseOpen: 0,
       bustCrop: { focusX: 512, focusY: 270, zoom: 1.30 },
       maxOpening: 15, cavityDarkColor: '#100305', cavityMidColor: '#2a070c', cavityRimColor: '#480e14',
@@ -1989,7 +1989,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.png)
   if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !/\bvictor\b/.test(norm))) {
     return {
-      x1: 490, y1: 268, cx: 513, cy: 268, x2: 536, y2: 268,
+      x1: 490, y1: 271, cx: 513, cy: 271, x2: 536, y2: 271,
       chinY: 304, eyeY: 210, leftEyeX: 480, leftEyeY: 211, rightEyeX: 544, rightEyeY: 210, eyeRadius: 14, eyeRx: 14, eyeRy: 10, baseOpen: 0,
       bustCrop: { focusX: 512, focusY: 260, zoom: 1.25 },
       maxOpening: 13, cavityDarkColor: '#120406', cavityMidColor: '#2a080d', cavityRimColor: '#461117',
@@ -2075,7 +2075,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // 31. LEONA VICARIO (/images/history/leona_vicario_avatar.webp)
   if (norm.includes('leona') || norm.includes('vicario')) {
     return {
-      x1: 458, y1: 572, cx: 511, cy: 573, x2: 564, y2: 572,
+      x1: 458, y1: 570, cx: 511, cy: 571, x2: 564, y2: 570,
       chinY: 642, eyeY: 398, leftEyeX: 427, leftEyeY: 399, rightEyeX: 593, rightEyeY: 398, eyeRadius: 21, eyeRx: 24, eyeRy: 16, baseOpen: 0,
       bustCrop: { focusX: 511, focusY: 485, zoom: 1.30 },
       maxOpening: 15, cavityDarkColor: '#160408', cavityMidColor: '#340810', cavityRimColor: '#54101a',
@@ -2083,10 +2083,10 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (518, 344)
+  // Fallback seguro centrado adaptado a personaje_generico_avatar.png (518, 344, barba hasta 394 sobre cuello/moño)
   return {
     x1: 492, y1: 344, cx: 518, cy: 344, x2: 544, y2: 344,
-    chinY: 416, eyeY: 262, leftEyeX: 478, leftEyeY: 263, rightEyeX: 554, rightEyeY: 262, eyeRadius: 18, baseOpen: 0,
+    chinY: 394, eyeY: 262, leftEyeX: 478, leftEyeY: 263, rightEyeX: 554, rightEyeY: 262, eyeRadius: 17, baseOpen: 0,
     maxOpening: 13, cavityDarkColor: '#140306', cavityMidColor: '#2d0910', cavityRimColor: '#50121a',
     lowerLipRimColor: 'rgba(180, 76, 78, 0.90)', teethColor: '#f2eae0', mustacheCover: true
   };

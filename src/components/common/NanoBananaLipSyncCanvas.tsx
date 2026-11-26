@@ -652,7 +652,7 @@ function measurePoseMouthAnatomy(
     let darkestY = cy;
     let darkestLuma = 999;
 
-    for (let y = Math.round(cy - 6); y <= Math.round(cy + 18); y++) {
+    for (let y = Math.round(cy - 6); y <= Math.round(cy + 22); y++) {
       let lSum = 0;
       let sSum = 0;
       for (let ox = -4; ox <= 4; ox += 2) {
@@ -671,7 +671,7 @@ function measurePoseMouthAnatomy(
         if (y < centerMinTeethY) centerMinTeethY = y;
         if (y > centerMaxTeethY) centerMaxTeethY = y;
       }
-      if (lAvg < 78 && y >= cy - 2 && y <= cy + 18) {
+      if (lAvg < 82 && y >= cy - 2 && y <= cy + 22) {
         if (y < centerMinDarkY) centerMinDarkY = y;
         if (y > centerMaxDarkY) centerMaxDarkY = y;
       }
@@ -728,10 +728,10 @@ function measurePoseMouthAnatomy(
           ? centerMaxTeethY + 1.6
           : cTeethBotY + 3.5;
 
-    // Guarantee cLowerLipY at center is strictly below BOTH dark oral cavity AND any white lower teeth!
-    for (let guard = 0; guard < 10; guard++) {
+    // Guarantee cLowerLipY at center is strictly below BOTH dark oral cavity AND any white lower teeth (handles wide laughs like Marie Curie exclaim!)
+    for (let guard = 0; guard < 15; guard++) {
       const s = sampleLumaAndSat(probeX, cLowerLipY);
-      if (s.luma >= 84 && !isTeethPixel(s.luma, s.sat)) break;
+      if (s.luma >= 86 && !isTeethPixel(s.luma, s.sat)) break;
       cLowerLipY += 0.9;
     }
 
@@ -755,10 +755,10 @@ function measurePoseMouthAnatomy(
 
       // Sub-pixel per-column dark oral slit & lower-teeth guard strictly tapered by arch so labial corner shadows NEVER cause a step/notch!
       if (Math.abs(m) < 0.80) {
-        const maxSteps = Math.max(1, Math.round(9 * Math.max(0, 1 - (m / 0.80) * (m / 0.80))));
+        const maxSteps = Math.max(1, Math.round(14 * Math.max(0, 1 - (m / 0.80) * (m / 0.80))));
         for (let g = 0; g < maxSteps; g++) {
           const s = sampleLumaAndSat(colX, lowerCurveY);
-          if (s.luma >= 84 && !isTeethPixel(s.luma, s.sat)) break;
+          if (s.luma >= 86 && !isTeethPixel(s.luma, s.sat)) break;
           lowerCurveY += 0.85;
         }
       }
@@ -2591,21 +2591,21 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               const alignedBlinkEx = srcEx + bOffDx;
               const alignedBlinkEy = srcEy + bOffDy;
 
-              const creaseRelY = -eRy * 0.84;
-              const openMarginRelY = -eRy * 0.56;
-              // Bilateral human blink: upper lid descends 85% toward meet line, lower lid rises 15%
-              const closedMeetRelY = eRy * 0.36;
-              const openLowerRelY = eRy * 0.62;
+              const creaseRelY = -eRy * 0.88;
+              const openMarginRelY = -eRy * 0.58;
+              // Bilateral human blink: upper lid descends past full pupil center (56% down), lower lid rises smoothly
+              const closedMeetRelY = eRy * 0.54;
+              const openLowerRelY = eRy * 0.68;
               const currUpperMarginRelY = openMarginRelY + b * (closedMeetRelY - openMarginRelY);
               const currLowerMarginRelY = openLowerRelY - b * (openLowerRelY - closedMeetRelY) * 0.85;
-              const lowerSocketRelY = eRy * 0.88;
-              const cornerRelY = openMarginRelY * 0.25 + b * (closedMeetRelY * 0.52);
+              const lowerSocketRelY = eRy * 0.92;
+              const cornerRelY = openMarginRelY * 0.22 + b * (closedMeetRelY * 0.55);
 
-              const bw = Math.ceil(eRx * 2.36);
-              const bh = Math.ceil(eRy * 2.28);
+              const bw = Math.ceil(eRx * 2.52);
+              const bh = Math.ceil(eRy * 2.48);
               const bLeft = dstEx - bw * 0.5;
               const bTop = dstEy - bh * 0.5;
-              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, bw), Math.max(140, bh));
+              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(220, bw), Math.max(180, bh));
               const eCtx = eScratch.getContext('2d');
 
               if (eCtx) {
@@ -2615,21 +2615,21 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                 eCtx.translate(-bLeft, -bTop);
 
                 if (blinkCanvas) {
-                  // Mode A: Aligned & Feathered 3D Closed-Eyelid Sprite Curtain (Zero vertical drift!)
+                  // Mode A: Aligned & Feathered 3D Closed-Eyelid Sprite Curtain (100% pupil occlusion, zero double-lash!)
                   eCtx.save();
                   eCtx.beginPath();
-                  eCtx.moveTo(dstEx - eRx * 0.98, dstEy + cornerRelY);
-                  eCtx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.24, dstEx + eRx * 0.98, dstEy + cornerRelY);
-                  eCtx.quadraticCurveTo(dstEx, dstEy + currUpperMarginRelY * 1.22, dstEx - eRx * 0.98, dstEy + cornerRelY);
+                  eCtx.moveTo(dstEx - eRx * 1.04, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + creaseRelY * 1.24, dstEx + eRx * 1.04, dstEy + cornerRelY);
+                  eCtx.quadraticCurveTo(dstEx, dstEy + currUpperMarginRelY * 1.24, dstEx - eRx * 1.04, dstEy + cornerRelY);
                   eCtx.closePath();
                   eCtx.clip();
 
                   const lidStrips = 14;
-                  const srcSpan = closedMeetRelY + eRy * 0.16 - creaseRelY;
+                  const srcSpan = closedMeetRelY + eRy * 0.18 - creaseRelY;
                   const dstSpan = Math.max(2, currUpperMarginRelY - creaseRelY);
                   const srcStep = srcSpan / lidStrips;
                   const dstStep = dstSpan / lidStrips;
-                  const patchW = eRx * 2.08;
+                  const patchW = eRx * 2.16;
 
                   for (let s = 0; s < lidStrips; s++) {
                     eCtx.drawImage(
@@ -2646,28 +2646,29 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                   }
                   eCtx.restore();
 
-                  // Seamless full tarsal seal when lid nears complete closure
-                  if (b > 0.58) {
-                    const sealAlpha = Math.min(1, (b - 0.58) / 0.34);
+                  // Seamless full tarsal seal when lid nears complete closure (fully covers big Pixar eyes)
+                  if (b > 0.48) {
+                    const sealAlpha = Math.min(1, (b - 0.48) / 0.34);
                     eCtx.save();
                     eCtx.globalAlpha = sealAlpha;
                     eCtx.drawImage(
                       blinkCanvas,
-                      alignedBlinkEx - eRx * 1.06,
-                      alignedBlinkEy - eRy * 0.96,
-                      eRx * 2.12,
-                      eRy * 1.92,
-                      dstEx - eRx * 1.06,
-                      dstEy - eRy * 0.96,
-                      eRx * 2.12,
-                      eRy * 1.92
+                      alignedBlinkEx - eRx * 1.14,
+                      alignedBlinkEy - eRy * 1.06,
+                      eRx * 2.28,
+                      eRy * 2.12,
+                      dstEx - eRx * 1.14,
+                      dstEy - eRy * 1.06,
+                      eRx * 2.28,
+                      eRy * 2.12
                     );
                     eCtx.restore();
                   }
 
-                  // Crisp anti-aliased curved upper eyelash margin during descent/opening
-                  if (b < 0.86) {
+                  // Crisp anti-aliased curved upper eyelash margin during mid-descent / opening only
+                  if (b < 0.72) {
                     eCtx.save();
+                    eCtx.globalAlpha = Math.max(0, (0.72 - b) / 0.35);
                     eCtx.beginPath();
                     eCtx.moveTo(dstEx - eRx * 0.84, dstEy + cornerRelY + 1.2);
                     eCtx.quadraticCurveTo(
@@ -2748,14 +2749,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                   eCtx.restore();
                 }
 
-                // Soft periorbital alpha feathering around outer socket border (ZERO pasted oval rings!)
+                // Soft periorbital alpha feathering strictly outside orbital socket (100% opaque core over full iris/lid!)
                 eCtx.globalCompositeOperation = 'destination-in';
                 eCtx.save();
                 eCtx.translate(dstEx, dstEy + eRy * 0.02);
-                eCtx.scale(eRx * 1.08, eRy * 1.04);
-                const orbMask = eCtx.createRadialGradient(0, 0, 0.72, 0, 0, 1.0);
+                eCtx.scale(eRx * 1.16, eRy * 1.14);
+                const orbMask = eCtx.createRadialGradient(0, 0, 0.78, 0, 0, 1.0);
                 orbMask.addColorStop(0, 'rgba(0,0,0,1)');
-                orbMask.addColorStop(0.84, 'rgba(0,0,0,0.68)');
+                orbMask.addColorStop(0.55, 'rgba(0,0,0,0.68)');
                 orbMask.addColorStop(1, 'rgba(0,0,0,0)');
                 eCtx.fillStyle = orbMask;
                 eCtx.beginPath();
