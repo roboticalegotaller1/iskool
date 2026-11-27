@@ -1225,6 +1225,22 @@ function buildZeroTokenResult(
   };
 }
 
+interface TenantMemoryRow {
+  id: any;
+  tenant_id: any;
+  topic: any;
+  subject: any;
+  academic_cycle: any;
+  content: any;
+}
+
+const TENANT_MEMORY_CACHE_TTL_MS = 60_000;
+const MAX_TENANT_MEMORY_CACHE_SIZE = 200;
+const tenantMemoryCache: Map<string, { memories: TenantMemoryRow[]; timestamp: number }> =
+  (globalThis as any).__iskoolTenantMemoryCache ||
+  ((globalThis as any).__iskoolTenantMemoryCache = new Map());
+const tenantMemoryInFlight = new Map<string, Promise<TenantMemoryRow[]>>();
+
 export class HermeticEmailBrainService {
   private static isRealSupabaseConfigured(): boolean {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -1321,14 +1337,42 @@ export class HermeticEmailBrainService {
     const lowerQuery = queryText.toLowerCase();
     const results: DocumentProvenance[] = [];
 
-    // Intento de consulta en base de datos PostgreSQL con filtro RLS explícito
+    // Intento de consulta en base de datos PostgreSQL con filtro RLS explícito y caché TTL de 60s por tenant
     if (this.isRealSupabaseConfigured()) {
       try {
-        const { data: dbMemories } = await supabase
-          .from('institutional_memory')
-          .select('id, tenant_id, topic, subject, academic_cycle, content')
-          .eq('tenant_id', currentTenantId) // FILTRO OBLIGATORIO DE TENANT
-          .limit(3);
+        let dbMemories: TenantMemoryRow[] | null = null;
+        const cachedEntry = tenantMemoryCache.get(currentTenantId);
+        if (cachedEntry && Date.now() - cachedEntry.timestamp < TENANT_MEMORY_CACHE_TTL_MS) {
+          dbMemories = cachedEntry.memories;
+        } else {
+          let pendingQuery = tenantMemoryInFlight.get(currentTenantId);
+          if (!pendingQuery) {
+            pendingQuery = (async () => {
+              try {
+                const { data } = await supabase
+                  .from('institutional_memory')
+                  .select('id, tenant_id, topic, subject, academic_cycle, content')
+                  .eq('tenant_id', currentTenantId) // FILTRO OBLIGATORIO DE TENANT
+                  .limit(3);
+                const rows: TenantMemoryRow[] = Array.isArray(data) ? data : [];
+                if (tenantMemoryCache.has(currentTenantId)) {
+                  tenantMemoryCache.delete(currentTenantId);
+                } else if (tenantMemoryCache.size >= MAX_TENANT_MEMORY_CACHE_SIZE) {
+                  const oldestKey = tenantMemoryCache.keys().next().value;
+                  if (oldestKey !== undefined) tenantMemoryCache.delete(oldestKey);
+                }
+                tenantMemoryCache.set(currentTenantId, { memories: rows, timestamp: Date.now() });
+                return rows;
+              } catch {
+                return [];
+              } finally {
+                tenantMemoryInFlight.delete(currentTenantId);
+              }
+            })();
+            tenantMemoryInFlight.set(currentTenantId, pendingQuery);
+          }
+          dbMemories = await pendingQuery;
+        }
 
         if (dbMemories && dbMemories.length > 0) {
           for (const mem of dbMemories) {

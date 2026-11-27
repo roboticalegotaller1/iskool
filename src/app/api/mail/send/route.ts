@@ -4,8 +4,13 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { markEmailAsResolvedServer } from '../raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
-import { validateMailTarget } from '@/lib/security/ssrfValidator';
+import { validateMailTargetAsync } from '@/lib/security/ssrfValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import {
+  isSchoolTenantAllowed,
+  resolveCanonicalUserSchoolKey,
+  isMailboxAuthorizedForUser
+} from '@/lib/security/tenantAccess';
 
 const stripCrLf = (val?: string) => (val || '').replace(/[\r\n]+/g, ' ').trim();
 
@@ -44,7 +49,7 @@ const MAX_INLINE_VISUAL_B64_CHARS = 650_000; // Estricto < ~480 KB Base64 (~360 
  * Envío soberano directo por protocolo SMTP sobre TLS (Puerto 465 / 587)
  * Permite despachar correos con Contraseñas de Aplicación sin depender de bibliotecas externas
  */
-function sendViaNativeTlsSmtp(options: {
+async function sendViaNativeTlsSmtp(options: {
   host: string;
   port: number;
   user: string;
@@ -57,12 +62,15 @@ function sendViaNativeTlsSmtp(options: {
   inlineVisualAttachment?: InlineVisualAttachmentPayload;
   inReplyTo?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  return new Promise((resolve) => {
-    const targetCheck = validateMailTarget(options.host, options.port);
-    if (!targetCheck.valid) {
-      return resolve({ success: false, error: targetCheck.reason || 'Servidor SMTP bloqueado por seguridad.' });
-    }
+  const targetCheck = await validateMailTargetAsync(options.host, options.port);
+  if (!targetCheck.valid) {
+    return { success: false, error: targetCheck.reason || 'Servidor SMTP bloqueado por seguridad.' };
+  }
 
+  const safeFrom = options.from.replace(/[<>\r\n\0]/g, '').trim();
+  const safeTo = options.to.replace(/[<>\r\n\0]/g, '').trim();
+
+  return new Promise((resolve) => {
     const timeout = 12000;
     let isFinished = false;
 
@@ -120,10 +128,10 @@ function sendViaNativeTlsSmtp(options: {
       } else if (stage === 4 && code === 235) {
         // Autenticado con éxito
         stage = 5;
-        socket.write(`MAIL FROM:<${options.from}>\r\n`);
+        socket.write(`MAIL FROM:<${safeFrom}>\r\n`);
       } else if (stage === 5 && code === 250) {
         stage = 6;
-        socket.write(`RCPT TO:<${options.to}>\r\n`);
+        socket.write(`RCPT TO:<${safeTo}>\r\n`);
       } else if (stage === 6 && code === 250) {
         stage = 7;
         socket.write(`DATA\r\n`);
@@ -132,8 +140,8 @@ function sendViaNativeTlsSmtp(options: {
         const msgId = `<${Date.now()}.${Math.random().toString(36).slice(2, 9)}@iskool.mx>`;
         const dateStr = new Date().toUTCString();
         const rfc822 = GoogleOAuthService.buildRfc822MimePayload({
-          from: options.from,
-          to: options.to,
+          from: safeFrom,
+          to: safeTo,
           utf8Subject,
           dateHeader: dateStr,
           uniqueMsgId: msgId,
@@ -185,7 +193,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const payload: SendMailRequest = await req.json();
+    const payload = (await req.json().catch(() => null)) as SendMailRequest | null;
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ success: false, error: 'Cuerpo JSON inválido.' }, { status: 400 });
+    }
     const {
       senderEmail,
       recipientEmail: rawRecipientEmail,
@@ -196,9 +207,29 @@ export async function POST(req: NextRequest) {
       inlineVisualAttachment,
       threadId,
       inReplyToMessageId,
-      tenantId = 'ibime',
+      tenantId: rawTenantId,
       smtpConfig
     } = payload;
+
+    const defaultTenant = auth.authenticated && auth.user
+      ? resolveCanonicalUserSchoolKey(auth.user as any)
+      : '';
+    const tenantId = (typeof rawTenantId === 'string' && rawTenantId.trim() ? rawTenantId.trim() : defaultTenant);
+
+    if (auth.authenticated && auth.user && tenantId && !isSchoolTenantAllowed(auth.user as any, tenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: no tiene autorización para despachar correos en otro plantel escolar.' },
+        { status: 403 }
+      );
+    }
+
+    const requestedSenderClean = stripCrLf(senderEmail).toLowerCase();
+    if (auth.authenticated && auth.user && requestedSenderClean && !isMailboxAuthorizedForUser(auth.user as any, requestedSenderClean)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: la cuenta remitente no pertenece a su usuario ni a su plantel autorizado.' },
+        { status: 403 }
+      );
+    }
 
     const recipientEmail = stripCrLf(rawRecipientEmail);
     const recipientName = rawRecipientName ? stripCrLf(rawRecipientName) : undefined;
@@ -250,14 +281,14 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Si el usuario es un docente o rol no directivo, forzar que el remitente sea su propio correo verificado
-    let effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(senderEmail));
+    // Resolver remitente autorizado evitando suplantación o desvío hacia buzones ajenos
+    const rawSenderCandidate = senderEmail || auth.user?.email || '';
+    let effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(rawSenderCandidate));
     if (auth.authenticated && auth.user) {
       const userRole = (auth.user.role || '').toLowerCase();
       const isDirectorOrAdmin = ['admin', 'superadmin', 'director', 'ceo', 'owner'].includes(userRole);
       if (!isDirectorOrAdmin && auth.user.email) {
-        effectiveSender = auth.user.email;
-        effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(effectiveSender));
+        effectiveSender = stripCrLf(GoogleOAuthService.resolveEffectiveGoogleEmail(auth.user.email));
       }
     }
 
@@ -324,7 +355,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Registrar resolución atómica del expediente en el servidor para evitar que vuelva a aparecer
-    if (inReplyToMessageId || subject) {
+    if (tenantId && (inReplyToMessageId || subject)) {
       markEmailAsResolvedServer(tenantId, inReplyToMessageId, subject);
     }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { StudioBlock, ActivityBuilderMetadata, FlowConnection } from '@/types/studioBlocks';
 import { useStudentStore } from '@/store/useStudentStore';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
@@ -14,6 +14,7 @@ import {
   unlockSharedBroadcastAudioContext,
   type StudioBroadcastChain
 } from '@/lib/audio/studioBroadcastMaster';
+import { fetchCachedNeuralTtsBlob } from '@/lib/audio/ttsClientCache';
 import { normalizeSpanishMathAndNegatives } from '@/lib/audio/mathSpeechNormalizer';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import {
@@ -215,13 +216,11 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     blocks[0];
 
   // Cálculo sincrónico garantizado de pares revueltos para Drag & Drop Match
-  const pairsJson = activeBlock?.type === 'drag_drop_match' ? JSON.stringify(activeBlock.data.pairs) : '';
+  const dragDropPairs = activeBlock?.type === 'drag_drop_match' ? activeBlock.data.pairs : undefined;
   const shuffledRightPairs = useMemo<{ originalIndex: number; rightText: string }[]>(() => {
-    if (!activeBlock || activeBlock.type !== 'drag_drop_match') return [];
-    const pairs = activeBlock.data.pairs || [];
-    if (pairs.length === 0) return [];
+    if (!dragDropPairs || dragDropPairs.length === 0) return [];
 
-    const mapped = pairs.map((p, idx) => ({
+    const mapped = dragDropPairs.map((p, idx) => ({
       originalIndex: idx,
       rightText: p.right
     }));
@@ -244,7 +243,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }
 
     return shuffled;
-  }, [activeBlock?.id, activeBlock?.type, pairsJson, shuffleKey]);
+  }, [activeBlock?.id, dragDropPairs, shuffleKey]);
 
   // Sintetizador Web Audio
   const playSound = (type: 'correct' | 'wrong' | 'victory' | 'attack' | 'chest' | 'match' | 'fanfare') => {
@@ -370,23 +369,19 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           ? blockData.voiceGender
           : gender;
 
-      const res = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: abortController.signal,
-        body: JSON.stringify({
+      const cachedTts = await fetchCachedNeuralTtsBlob(
+        {
           text,
           language: lang,
           gender: resolvedGender,
           characterName: resolvedCharacterName,
           role: activeBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
-        })
-      });
+        },
+        abortController.signal
+      );
       if (abortController.signal.aborted) return;
-      if (res.ok) {
-        const blob = await res.blob();
-        if (abortController.signal.aborted) return;
-        const url = URL.createObjectURL(blob);
+      if (cachedTts?.blob) {
+        const url = URL.createObjectURL(cachedTts.blob);
         const audio = new Audio(url);
         activeTtsAudioRef.current = audio;
         activeTtsUrlRef.current = url;
@@ -446,8 +441,14 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     } catch (_) {}
   }, []);
 
-  // Inicializar estado al cambiar de bloque y detener narración anterior
+  const activeBlockRef = useRef<StudioBlock | undefined>(activeBlock);
   useEffect(() => {
+    activeBlockRef.current = activeBlock;
+  }, [activeBlock]);
+
+  // Inicializar estado al cambiar de bloque y detener narración anterior (indexado por ID de bloque)
+  useEffect(() => {
+    const currentBlock = activeBlockRef.current;
     stopNeuralVoice();
     setSelectedOption(null);
     setIsQuestionAnswered(false);
@@ -480,40 +481,41 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     setRoleplayCompleted(false);
     setRubricCompleted(false);
 
-    if (activeBlock) {
-      if (activeBlock.type === 'timed_reading_block') {
-        const limit = activeBlock.data.timeLimitSeconds || 60;
+    if (currentBlock) {
+      if (currentBlock.type === 'timed_reading_block') {
+        const limit = currentBlock.data.timeLimitSeconds || 60;
         setReadingSecondsLeft(limit);
         setReadingTimeTaken(0);
-      } else if (activeBlock.type === 'boss_enemy') {
-        const max = activeBlock.data.maxHp || 1200;
+      } else if (currentBlock.type === 'boss_enemy') {
+        const max = currentBlock.data.maxHp || 1200;
         setBossHp(max);
         setBossMaxHp(max);
         setIsBossDefeated(false);
-        setBattleLog([`⚔️ ¡${activeBlock.data.bossName} (${max} HP) exige demostrar dominio curricular!`]);
-      } else if (activeBlock.type === 'drag_drop_match') {
+        setBattleLog([`⚔️ ¡${currentBlock.data.bossName} (${max} HP) exige demostrar dominio curricular!`]);
+      } else if (currentBlock.type === 'drag_drop_match') {
         setSelectedLeftIndex(null);
         setMatchedPairs({});
         setFailedMatchFeedback(null);
-      } else if (activeBlock.type === 'ordering_sequence') {
-        const shuffled = [...activeBlock.data.stepsInCorrectOrder].sort(() => Math.random() - 0.5);
+      } else if (currentBlock.type === 'ordering_sequence') {
+        const shuffled = [...currentBlock.data.stepsInCorrectOrder].sort(() => Math.random() - 0.5);
         setOrderedList(shuffled);
-      } else if (activeBlock.type === 'languages_socratic_tutor') {
+      } else if (currentBlock.type === 'languages_socratic_tutor') {
         setSocraticMessages([
           {
             role: 'ai',
-            text: activeBlock.data.starterPrompt || "Hello! Let's explore this topic together. What is your perspective?"
+            text: currentBlock.data.starterPrompt || "Hello! Let's explore this topic together. What is your perspective?"
           }
         ]);
-      } else if (activeBlock.type === 'audio_sfx') {
+      } else if (currentBlock.type === 'audio_sfx') {
         playSound('fanfare');
       }
     }
-  }, [currentNodeId, currentStepIndex, activeBlock]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentNodeId, currentStepIndex, activeBlock?.id, stopNeuralVoice]);
 
   // Cronómetro regresivo para lectura cronometrada
   useEffect(() => {
-    if (!activeBlock || activeBlock.type !== 'timed_reading_block' || readingPhase !== 'reading') {
+    if (!activeBlock?.id || activeBlock.type !== 'timed_reading_block' || readingPhase !== 'reading') {
       return;
     }
 
@@ -531,7 +533,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeBlock, readingPhase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBlock?.id, activeBlock?.type, readingPhase]);
 
   // Avanzar al siguiente bloque siguiendo el flujo del grafo (incluyendo Bifurcación Condicional Real >= 70% vs < 70%)
   const handleNextStep = (earnedXp: number = 0, forcedBranchTargetId?: string) => {
@@ -888,6 +891,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
   const progressPercent = Math.round(((currentStepIndex) / blocks.length) * 100);
 
   return (
+    <LazyMotion features={domAnimation}>
     <div className="space-y-5 select-none">
       {/* Barra Superior del Simulador: Progreso + XP + Vidas */}
       <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750">
@@ -932,7 +936,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
       {/* Renderizado Polimórfico del Bloque Activo */}
       <AnimatePresence mode="wait">
-        <motion.div
+        <m.div
           key={activeBlock?.id || currentStepIndex}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -3114,8 +3118,9 @@ export const StudioFlowPlayer: React.FC<Props> = ({
               onComplete={(xp) => handleNextStep(xp)}
             />
           )}
-        </motion.div>
+        </m.div>
       </AnimatePresence>
     </div>
+    </LazyMotion>
   );
 };

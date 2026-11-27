@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useShallow } from 'zustand/react/shallow';
 import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import {
   Building2,
@@ -740,7 +741,20 @@ export default function CEOExecutiveDashboard({
     staffPayroll,
     activeSchoolId,
     schoolSettings
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((state) => ({
+      institutionsList: state.institutionsList,
+      campusesList: state.campusesList,
+      detailedStudents: state.detailedStudents,
+      teachersList: state.teachersList,
+      billingRecords: state.billingRecords,
+      attendanceList: state.attendanceList,
+      groupsList: state.groupsList,
+      staffPayroll: state.staffPayroll,
+      activeSchoolId: state.activeSchoolId,
+      schoolSettings: state.schoolSettings,
+    }))
+  );
 
   // Resolución Dinámica del Holding Escolar para la escuela seleccionada
   const holding = useMemo<OrganizationHolding>(() => {
@@ -1549,6 +1563,7 @@ export default function CEOExecutiveDashboard({
   useEffect(() => {
     if (!isAutonomousActive) return;
     const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       setAutonomousCycle(c => c + 1);
       const now = new Date();
       setLastEvaluationTime(formatCdmxTime(now, true) + ' (CDMX)');

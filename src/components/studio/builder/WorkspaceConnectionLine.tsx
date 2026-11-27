@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
 import { Plus, Sparkles } from 'lucide-react';
@@ -10,7 +11,12 @@ interface Props {
 }
 
 export const WorkspaceConnectionLine: React.FC<Props> = ({ insertIndex }) => {
-  const { addBlock, setIsExtendedMenuOpen } = useActivityBuilderStore();
+  const { addBlock, setIsExtendedMenuOpen } = useActivityBuilderStore(
+    useShallow((state) => ({
+      addBlock: state.addBlock,
+      setIsExtendedMenuOpen: state.setIsExtendedMenuOpen,
+    }))
+  );
   const [isHovered, setIsHovered] = useState(false);
 
   return (

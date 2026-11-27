@@ -3,6 +3,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
 import { BLOCK_META } from './SortableBlockWrapper';
@@ -35,7 +36,22 @@ export const NodeConfigDrawer: React.FC = () => {
     removeBlock,
     addConnection,
     removeConnection
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      blocks: state.blocks,
+      connections: state.connections,
+      selectedBlockId: state.selectedBlockId,
+      startNodeId: state.startNodeId,
+      isNodeConfigDrawerOpen: state.isNodeConfigDrawerOpen,
+      setIsNodeConfigDrawerOpen: state.setIsNodeConfigDrawerOpen,
+      updateBlockTitle: state.updateBlockTitle,
+      setStartNodeId: state.setStartNodeId,
+      duplicateBlock: state.duplicateBlock,
+      removeBlock: state.removeBlock,
+      addConnection: state.addConnection,
+      removeConnection: state.removeConnection,
+    }))
+  );
 
   const [validationError, setValidationError] = React.useState<string | null>(null);
 

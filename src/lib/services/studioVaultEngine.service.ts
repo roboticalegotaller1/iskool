@@ -6,6 +6,13 @@ import type {
   StudioBlock,
 } from '@/types/studioBlocks';
 import { getVaultPlanningsDir, invalidateVaultCache } from '@/lib/vaultMarkdownEngine';
+import {
+  canonicalTopicSlug,
+  extractGradeFromText,
+  extractMeaningfulTopicTokens,
+  normalizeCanonicalGrade,
+  normalizeSearchText,
+} from '@/lib/curriculumNormalizer';
 
 export interface StudioRelatedResource {
   title: string;
@@ -51,12 +58,35 @@ export interface StudioMasterClassResult {
 }
 
 // Tarifas verificadas (USD por 1 millón de tokens) y tipo de cambio real MXN/USD
-const INPUT_USD_PER_1M = 0.50;
-const OUTPUT_USD_PER_1M = 3.00;
+// Perfil principal ligero ($0.25/$1.50); perfil de respaldo ligero ($0.30/$2.50)
+const INPUT_USD_PER_1M = 0.25;
+const OUTPUT_USD_PER_1M = 1.50;
 const FX_MXN_PER_USD = 19.70;
 
 const MANIFEST_START = '<!-- ISKOOL_STUDIO_MANIFEST_START';
 const MANIFEST_END = 'ISKOOL_STUDIO_MANIFEST_END -->';
+
+const STUDIO_VAULT_INDEX_TTL_MS = 60_000;
+
+interface StudioVaultIndexEntry {
+  filePath: string;
+  baseNameLower: string;
+  normalizedKey: string;
+  gradeSlug: string;
+  langKey: string;
+  styleKey: string;
+  topicTokenSignature: string;
+}
+
+let studioVaultIndexCache: {
+  builtAt: number;
+  vaultRoot: string;
+  entries: StudioVaultIndexEntry[];
+} | null = null;
+
+export function invalidateStudioVaultIndex(): void {
+  studioVaultIndexCache = null;
+}
 
 function slugifyKey(raw: string): string {
   return (raw || '')
@@ -68,70 +98,96 @@ function slugifyKey(raw: string): string {
     .slice(0, 72);
 }
 
+function isDefaultSpanish(language?: string): boolean {
+  const norm = normalizeSearchText(language || '');
+  return !norm || norm === 'espanol' || norm === 'es' || norm === 'spanish';
+}
+
+function isDefaultGamificationStyle(style?: string): boolean {
+  const norm = (style || '').trim().toLowerCase();
+  return !norm || norm === 'rpg_adventure';
+}
+
+function stripLeadingSpanishArticles(raw: string): string {
+  const trimmed = (raw || '').trim();
+  const stripped = trimmed.replace(/^(?:el|la|los|las|un|una|unos|unas)\s+/i, '').trim();
+  return stripped.length >= 2 ? stripped : trimmed;
+}
+
+function buildVariantSuffix(language?: string, gamificationStyle?: string): string {
+  const parts: string[] = [];
+  if (!isDefaultSpanish(language)) {
+    const langSlug = slugifyKey(language || '');
+    if (langSlug) parts.push(`lang_${langSlug}`);
+  }
+  if (!isDefaultGamificationStyle(gamificationStyle)) {
+    const styleSlug = slugifyKey(gamificationStyle || '');
+    if (styleSlug) parts.push(`style_${styleSlug}`);
+  }
+  return parts.length > 0 ? `__${parts.join('__')}` : '';
+}
+
 export function parseTopicAndGrade(
   rawTopic: string,
   explicitGrade?: string,
-  explicitFase?: string
+  explicitFase?: string,
+  language?: string,
+  gamificationStyle?: string
 ): {
   cleanTopic: string;
   gradeLabel: string;
-  faseNem: 'Fase 3' | 'Fase 4' | 'Fase 5' | 'Fase 6';
+  faseNem: 'Fase 2' | 'Fase 3' | 'Fase 4' | 'Fase 5' | 'Fase 6';
   canonicalKey: string;
 } {
   let text = (rawTopic || '').trim();
   let gradeLabel = (explicitGrade || '').trim();
 
-  if (!gradeLabel) {
-    const gradeRegex =
-      /(?:,|\s+en\s+|\s+para\s+|\s+de\s+|\s*-\s*)?\b(1(?:er|ro|º|°)?|2(?:do|º|°)?|3(?:er|ro|º|°)?|4(?:to|º|°)?|5(?:to|º|°)?|6(?:to|º|°)?)\s*(?:grado\s*)?(?:de\s*)?(primaria|secundaria|preparatoria|bachillerato)\b/i;
-    const m = text.match(gradeRegex);
-    if (m) {
-      const num = m[1].replace(/[^1-6]/g, '');
-      const levelRaw = m[2].toLowerCase();
-      const level =
-        levelRaw === 'primaria'
-          ? 'Primaria'
-          : levelRaw === 'secundaria'
-            ? 'Secundaria'
-            : 'Preparatoria';
-      gradeLabel = `${num}º de ${level}`;
-      text = text.replace(m[0], ' ').replace(/[,\s-]+$/g, '').replace(/^[,\s-]+/g, '').trim();
+  let canonicalGrade = gradeLabel ? normalizeCanonicalGrade(gradeLabel) : null;
+  const extractedFromTopic = extractGradeFromText(text);
+
+  if (!canonicalGrade && extractedFromTopic.grade) {
+    canonicalGrade = extractedFromTopic.grade;
+    if (extractedFromTopic.remainingText) {
+      text = extractedFromTopic.remainingText;
     }
+  } else if (
+    canonicalGrade &&
+    extractedFromTopic.grade &&
+    extractedFromTopic.grade.canonicalSlug === canonicalGrade.canonicalSlug &&
+    extractedFromTopic.remainingText
+  ) {
+    text = extractedFromTopic.remainingText;
   }
 
-  // Normalizar expresiones como "2do de secundaria" -> "2º de Secundaria"
-  if (gradeLabel) {
-    const gm = gradeLabel.match(/([1-6])(?:er|ro|do|to|º|°)?\s*(?:de\s*)?(primaria|secundaria|preparatoria|bachillerato)/i);
-    if (gm) {
-      const levelRaw = gm[2].toLowerCase();
-      const level =
-        levelRaw === 'primaria'
-          ? 'Primaria'
-          : levelRaw === 'secundaria'
-            ? 'Secundaria'
-            : 'Preparatoria';
-      gradeLabel = `${gm[1]}º de ${level}`;
-    }
-  }
-
-  let faseNem: 'Fase 3' | 'Fase 4' | 'Fase 5' | 'Fase 6' = 'Fase 5';
-  const gl = gradeLabel.toLowerCase();
-  if (gl.includes('secundaria') || gl.includes('preparatoria') || explicitFase === 'Fase 6') {
-    faseNem = 'Fase 6';
-    if (!gradeLabel) gradeLabel = '2º de Secundaria';
-  } else if (gl.includes('1º de primaria') || gl.includes('2º de primaria') || explicitFase === 'Fase 3') {
-    faseNem = 'Fase 3';
-    if (!gradeLabel) gradeLabel = '2º de Primaria';
-  } else if (gl.includes('3º de primaria') || gl.includes('4º de primaria') || explicitFase === 'Fase 4') {
-    faseNem = 'Fase 4';
-    if (!gradeLabel) gradeLabel = '4º de Primaria';
+  let faseNem: 'Fase 2' | 'Fase 3' | 'Fase 4' | 'Fase 5' | 'Fase 6' = 'Fase 5';
+  if (canonicalGrade) {
+    gradeLabel = canonicalGrade.displayLabel;
+    faseNem = canonicalGrade.faseNemShort;
   } else {
-    faseNem = 'Fase 5';
-    if (!gradeLabel) gradeLabel = '5º de Primaria';
+    const gl = gradeLabel.toLowerCase();
+    if (gl.includes('preescolar') || gl.includes('kinder') || explicitFase === 'Fase 2') {
+      faseNem = 'Fase 2';
+      if (!gradeLabel) gradeLabel = '3º de Preescolar';
+    } else if (gl.includes('secundaria') || gl.includes('preparatoria') || explicitFase === 'Fase 6') {
+      faseNem = 'Fase 6';
+      if (!gradeLabel) gradeLabel = '2º de Secundaria';
+    } else if (gl.includes('1º de primaria') || gl.includes('2º de primaria') || explicitFase === 'Fase 3') {
+      faseNem = 'Fase 3';
+      if (!gradeLabel) gradeLabel = '2º de Primaria';
+    } else if (gl.includes('3º de primaria') || gl.includes('4º de primaria') || explicitFase === 'Fase 4') {
+      faseNem = 'Fase 4';
+      if (!gradeLabel) gradeLabel = '4º de Primaria';
+    } else {
+      faseNem = 'Fase 5';
+      if (!gradeLabel) gradeLabel = '5º de Primaria';
+    }
   }
 
-  const cleanTopic = text || rawTopic.trim();
-  const canonicalKey = `${slugifyKey(cleanTopic)}__${slugifyKey(gradeLabel)}`;
+  const strippedTopic = stripLeadingSpanishArticles(text || rawTopic.trim());
+  const cleanTopic = strippedTopic || rawTopic.trim();
+  const gradeSlug = canonicalGrade ? canonicalGrade.canonicalSlug : slugifyKey(gradeLabel);
+  const variantSuffix = buildVariantSuffix(language, gamificationStyle);
+  const canonicalKey = `${slugifyKey(cleanTopic)}__${gradeSlug}${variantSuffix}`;
   return { cleanTopic, gradeLabel, faseNem, canonicalKey };
 }
 
@@ -345,37 +401,123 @@ function resolveCuratedDiagramAndLab(topic: string, gradeLabel: string): {
   };
 }
 
+function buildStudioVaultIndex(vaultRoot: string): StudioVaultIndexEntry[] {
+  const now = Date.now();
+  if (
+    studioVaultIndexCache &&
+    studioVaultIndexCache.vaultRoot === vaultRoot &&
+    now - studioVaultIndexCache.builtAt < STUDIO_VAULT_INDEX_TTL_MS
+  ) {
+    return studioVaultIndexCache.entries;
+  }
+
+  const entries: StudioVaultIndexEntry[] = [];
+  if (!fs.existsSync(vaultRoot)) {
+    studioVaultIndexCache = { builtAt: now, vaultRoot, entries };
+    return entries;
+  }
+
+  const walk = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.toLowerCase() === 'escape_rooms') continue;
+        walk(full);
+      } else if (entry.name.endsWith('.md') && !entry.name.startsWith('MOC_')) {
+        const baseNameLower = entry.name.replace(/\.md$/i, '').toLowerCase();
+        const parts = baseNameLower.split('__');
+        const topicPart = parts[0] || '';
+        const rawGradePart = parts[1] || '';
+        const canonicalGradeFromPart = normalizeCanonicalGrade(rawGradePart.replace(/_/g, ' '));
+        const gradeSlug = canonicalGradeFromPart ? canonicalGradeFromPart.canonicalSlug : rawGradePart;
+
+        let langKey = '';
+        let styleKey = '';
+        for (const extra of parts.slice(2)) {
+          if (extra.startsWith('lang_')) langKey = extra.slice(5);
+          else if (extra.startsWith('style_')) styleKey = extra.slice(6);
+        }
+
+        const topicSlug = canonicalTopicSlug(topicPart.replace(/_/g, ' '));
+        const topicTokens = extractMeaningfulTopicTokens(topicPart.replace(/_/g, ' '));
+        const topicTokenSignature = Array.from(new Set(topicTokens)).sort().join('|');
+        const variantSuffix =
+          (langKey ? `__lang_${langKey}` : '') + (styleKey ? `__style_${styleKey}` : '');
+        const normalizedKey = `${topicSlug}__${gradeSlug}${variantSuffix}`;
+
+        entries.push({
+          filePath: full,
+          baseNameLower,
+          normalizedKey,
+          gradeSlug,
+          langKey,
+          styleKey,
+          topicTokenSignature,
+        });
+      }
+    }
+  };
+
+  try {
+    walk(vaultRoot);
+  } catch (err) {
+    console.warn('No se pudo indexar la Bóveda Curricular de Estudio Interactivo:', err);
+  }
+
+  studioVaultIndexCache = { builtAt: now, vaultRoot, entries };
+  return entries;
+}
+
 /**
- * Busca primero en la Bóveda Curricular (Vault-First / 0 Tokens)
+ * Busca primero en la Bóveda Curricular (Vault-First / 0 Tokens) usando índice en memoria con TTL.
+ * Mantiene compatibilidad exacta con archivos existentes y añade búsqueda normalizada por tokens.
  */
 export function findStudioMasterClassInVault(
   rawTopic: string,
   explicitGrade?: string,
-  explicitFase?: string
+  explicitFase?: string,
+  language?: string,
+  gamificationStyle?: string
 ): StudioMasterClassResult | null {
-  const { cleanTopic, gradeLabel, faseNem, canonicalKey } = parseTopicAndGrade(
+  const { cleanTopic, gradeLabel, canonicalKey } = parseTopicAndGrade(
     rawTopic,
     explicitGrade,
-    explicitFase
+    explicitFase,
+    language,
+    gamificationStyle
   );
   const vaultRoot = path.join(getVaultPlanningsDir(), 'Estudio_Interactivo');
-  if (!fs.existsSync(vaultRoot)) return null;
+  const entries = buildStudioVaultIndex(vaultRoot);
+  if (entries.length === 0) return null;
 
-  const candidateFiles: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name.endsWith('.md') && !entry.name.startsWith('MOC_')) {
-        candidateFiles.push(full);
-      }
-    }
-  };
-  walk(vaultRoot);
+  const targetExact = canonicalKey.toLowerCase();
+  const canonicalGrade = normalizeCanonicalGrade(gradeLabel);
+  const gradeSlug = canonicalGrade ? canonicalGrade.canonicalSlug : slugifyKey(gradeLabel);
+  const langKey = isDefaultSpanish(language) ? '' : slugifyKey(language || '');
+  const styleKey = isDefaultGamificationStyle(gamificationStyle) ? '' : slugifyKey(gamificationStyle || '');
+  const variantSuffix =
+    (langKey ? `__lang_${langKey}` : '') + (styleKey ? `__style_${styleKey}` : '');
 
-  const targetBase = `${canonicalKey}.md`;
-  const matchedFile = candidateFiles.find((f) => path.basename(f).toLowerCase() === targetBase.toLowerCase());
-  if (!matchedFile) return null;
+  const targetNormalizedKey = `${canonicalTopicSlug(cleanTopic)}__${gradeSlug}${variantSuffix}`;
+  const queryTokenSignature = Array.from(new Set(extractMeaningfulTopicTokens(cleanTopic)))
+    .sort()
+    .join('|');
+
+  const matchedEntry =
+    entries.find((e) => e.baseNameLower === targetExact) ||
+    entries.find((e) => e.normalizedKey === targetNormalizedKey) ||
+    (queryTokenSignature
+      ? entries.find(
+          (e) =>
+            e.gradeSlug === gradeSlug &&
+            e.langKey === langKey &&
+            e.styleKey === styleKey &&
+            e.topicTokenSignature === queryTokenSignature
+        )
+      : undefined);
+
+  if (!matchedEntry) return null;
+  const matchedFile = matchedEntry.filePath;
 
   try {
     const rawMd = fs.readFileSync(matchedFile, 'utf8');
@@ -436,12 +578,17 @@ export function findStudioMasterClassInVault(
  * Persiste la Clase Maestra completa en la Bóveda Curricular (.md con YAML, [[wikilinks]] y manifiesto JSON)
  */
 export function saveStudioMasterClassToVault(
-  result: Omit<StudioMasterClassResult, 'vaultRelativePath' | 'planeacionViewerUrl' | 'persistedInVault'>
+  result: Omit<StudioMasterClassResult, 'vaultRelativePath' | 'planeacionViewerUrl' | 'persistedInVault'>,
+  variantOptions?: { language?: string; gamificationStyle?: string }
 ): { vaultRelativePath: string; planeacionViewerUrl: string; persistedInVault: boolean } {
+  const effectiveLanguage = variantOptions?.language || result.metadata.language;
+  const effectiveStyle = variantOptions?.gamificationStyle;
   const { cleanTopic, gradeLabel, faseNem, canonicalKey } = parseTopicAndGrade(
     result.cleanTopic,
     result.gradeLabel,
-    result.metadata.faseNem
+    result.metadata.faseNem,
+    effectiveLanguage,
+    effectiveStyle
   );
   const targetDir = getStudioVaultDir(faseNem);
   fs.mkdirSync(targetDir, { recursive: true });
@@ -464,6 +611,8 @@ export function saveStudioMasterClassToVault(
     cleanTopic,
     gradeLabel,
     faseNem,
+    language: effectiveLanguage || 'Español',
+    gamificationStyle: effectiveStyle || 'rpg_adventure',
     metadata: result.metadata,
     blocks: result.blocks,
     connections: result.connections,
@@ -480,6 +629,7 @@ export function saveStudioMasterClassToVault(
     `tema: "${cleanTopic.replace(/"/g, "'")}"`,
     `grado: "${gradeLabel}"`,
     `fase: "${faseNem}"`,
+    `idioma: "${(effectiveLanguage || 'Español').replace(/"/g, "'")}"`,
     `asignatura: "${(result.metadata.subject || 'Matemáticas').replace(/"/g, "'")}"`,
     `campo_formativo: "${(result.metadata.campoFormativo || 'Saberes y Pensamiento Científico').replace(/"/g, "'")}"`,
     `pda: "${safePda}"`,
@@ -572,6 +722,7 @@ export function saveStudioMasterClassToVault(
     }
   }
 
+  invalidateStudioVaultIndex();
   invalidateVaultCache();
 
   return {
@@ -581,41 +732,7 @@ export function saveStudioMasterClassToVault(
   };
 }
 
-/**
- * Genera una Clase Interactiva Maestra completa con Tokens Reales y la resguarda en Bóveda Curricular.
- */
-export async function generateOrFetchStudioMasterClass(params: {
-  topic: string;
-  grade?: string;
-  faseNem?: string;
-  gamificationStyle?: 'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament';
-  language?: string;
-  forceRegenerate?: boolean;
-}): Promise<StudioMasterClassResult> {
-  const { cleanTopic, gradeLabel, faseNem } = parseTopicAndGrade(
-    params.topic,
-    params.grade,
-    params.faseNem
-  );
-  const language = params.language || 'Español';
-  const gamificationStyle = params.gamificationStyle || 'rpg_adventure';
-
-  // 1. VAULT-FIRST (0 TOKENS): Si ya existe en Bóveda Curricular y no se fuerza regeneración
-  if (!params.forceRegenerate) {
-    const cached = findStudioMasterClassInVault(cleanTopic, gradeLabel, faseNem);
-    if (cached) {
-      return cached;
-    }
-  }
-
-  const curated = resolveCuratedDiagramAndLab(cleanTopic, gradeLabel);
-  const apiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || '';
-
-  const masterPrompt = `Eres un Diseñador Instruccional Senior y Especialista en Pedagogía NEM 2024 (SEP México) de clase mundial.
-Debes crear una CLASE INTERACTIVA MAESTRA completa y rigurosa en ${language} para:
-- Tema: "${cleanTopic}"
-- Grado escolar: "${gradeLabel}" (${faseNem})
-- Dinámica: "${gamificationStyle}"
+const STUDIO_MASTER_SYSTEM_INSTRUCTION = `Eres un Diseñador Instruccional Senior y Especialista en Pedagogía NEM 2024 (SEP México) de clase mundial para la plataforma ISkool.
 
 REQUISITOS DE MÁXIMO RIGOR PEDAGÓGICO (ESTÁNDARES INTERNACIONALES):
 1. Explicación de clase maestra completa (350–500 palabras bien estructuradas con subtítulos): definición formal exacta, por qué importa en la vida real, ejemplo numérico o práctico resuelto paso a paso, y 2 errores frecuentes que cometen los alumnos y cómo evitarlos.
@@ -635,7 +752,7 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
   "description": "Resumen pedagógico en 2 líneas",
   "subject": "Asignatura exacta (ej. Matemáticas)",
   "campoFormativo": "Saberes y Pensamiento Científico | Lenguajes | Ética, Naturaleza y Sociedades | De lo Humano y lo Comunitario",
-  "pdaNem": "PDA oficial NEM 2024 redactado formalmente para ${gradeLabel}",
+  "pdaNem": "PDA oficial NEM 2024 redactado formalmente para el grado solicitado",
   "masterExplanation": "Explicación magistral completa con estructura clara, ejemplo paso a paso y errores frecuentes",
   "diagramTitle": "Título del diagrama interactivo",
   "diagramInstructions": "Instrucción clara para explorar los puntos del diagrama",
@@ -643,8 +760,8 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
     { "label": "Etiqueta exacta", "hint": "Explicación pedagógica concisa", "distractors": ["Distractor 1", "Distractor 2"] }
   ],
   "mathLabChallengeTitle": "Título del laboratorio interactivo",
-  "mathLabFormula": "Expresión principal (ej. y = x² - 4x + 3)",
-  "mathLabPrompt": "Consigna concreta para experimentar en el graficador",
+  "mathLabFormula": "Expresión o modelo principal del tema",
+  "mathLabPrompt": "Consigna concreta para experimentar en el simulador",
   "orderingInstructions": "Instrucción para ordenar el algoritmo o proceso",
   "orderingSteps": ["Paso 1 exacto", "Paso 2 exacto", "Paso 3 exacto", "Paso 4 exacto"],
   "matchingInstructions": "Instrucción para emparejar conceptos",
@@ -671,106 +788,22 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
   "badgeName": "Insignia de Maestría"
 }`;
 
-  const endpoints = [
-    {
-      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGUtcHJldmlldzpnZW5lcmF0ZUNvbnRlbnQ=', 'base64').toString('ascii'),
-      inputRate: 0.25,
-      outputRate: 1.50,
-    },
-    {
-      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
-      inputRate: 0.30,
-      outputRate: 2.50,
-    },
-    {
-      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy1mbGFzaC1wcmV2aWV3OmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-      inputRate: 0.50,
-      outputRate: 3.00,
-    },
-    {
-      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
-      inputRate: 0.25,
-      outputRate: 1.50,
-    },
-    {
-      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktZmxhc2gtbGF0ZXN0OmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-      inputRate: 0.50,
-      outputRate: 3.00,
-    },
-  ];
+function buildTopicAwareFallbackMasterClass(
+  cleanTopic: string,
+  gradeLabel: string,
+  curated: ReturnType<typeof resolveCuratedDiagramAndLab>
+) {
+  const norm = slugifyKey(cleanTopic);
+  const isQuadratic =
+    norm.includes('segundo_grado') ||
+    norm.includes('cuadratic') ||
+    norm.includes('parabola');
 
-  let parsedAi: any = null;
-  let promptTokens = 0;
-  let outputTokens = 0;
-  let thoughtsTokens = 0;
-  let totalTokens = 0;
-  let usedInputRate = INPUT_USD_PER_1M;
-  let usedOutputRate = OUTPUT_USD_PER_1M;
-  let engineLabel = 'Motor de IA Pedagógica (Tokens Reales)';
-
-  if (apiKey) {
-    const raceController = new AbortController();
-    const raceTimeout = setTimeout(() => raceController.abort(), 30000);
-    try {
-      const winner = await Promise.any(
-        endpoints.slice(0, 3).map(async (ep) => {
-          const res = await fetch(ep.url, {
-            method: 'POST',
-            signal: raceController.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey,
-            },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: masterPrompt }] }],
-              generationConfig: {
-                temperature: 0.35,
-                maxOutputTokens: 8192,
-                responseMimeType: 'application/json',
-              },
-            }),
-          });
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-          }
-          const data = await res.json();
-          const usage = data.usageMetadata || {};
-          let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          rawText = rawText.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
-          const firstBrace = rawText.indexOf('{');
-          const lastBrace = rawText.lastIndexOf('}');
-          if (firstBrace !== -1 && lastBrace > firstBrace) {
-            rawText = rawText.slice(firstBrace, lastBrace + 1);
-          }
-          const json = JSON.parse(rawText);
-          if (!json || !json.masterExplanation || !Array.isArray(json.questions)) {
-            throw new Error('Esquema incompleto');
-          }
-          return { json, usage, ep };
-        })
-      );
-      raceController.abort();
-      parsedAi = winner.json;
-      promptTokens = Number(winner.usage.promptTokenCount || 0);
-      outputTokens = Number(winner.usage.candidatesTokenCount || 0);
-      thoughtsTokens = Number(winner.usage.thoughtsTokenCount || 0);
-      totalTokens = Number(winner.usage.totalTokenCount || promptTokens + outputTokens + thoughtsTokens);
-      usedInputRate = winner.ep.inputRate;
-      usedOutputRate = winner.ep.outputRate;
-    } catch (err) {
-      console.warn('Motor IA en Studio (carrera hedged):', err instanceof Error ? err.message : err);
-    } finally {
-      clearTimeout(raceTimeout);
-    }
-  }
-
-  // Fallback estructurado de alta precisión solo si la red/API no estuviera disponible
-  if (!parsedAi) {
-    engineLabel = 'Motor Pedagógico Determinista de Respaldo (0 Tokens)';
-    parsedAi = {
+  if (isQuadratic) {
+    return {
       title: `Clase Maestra Interactiva: ${cleanTopic} (${gradeLabel})`,
       description: `Secuencia integral NEM 2024 con explicación guiada, diagrama interactivo, laboratorio STEM, preguntas formativas y monitoreo docente sobre ${cleanTopic}.`,
-      subject: slugifyKey(cleanTopic).includes('ecuacion') ? 'Matemáticas' : 'Saberes y Pensamiento Científico',
+      subject: 'Matemáticas',
       campoFormativo: 'Saberes y Pensamiento Científico',
       pdaNem: `Resuelve y modela problemas relacionados con ${cleanTopic} en ${gradeLabel}, interpretando sus representaciones algebraicas y gráficas.`,
       masterExplanation: `## ¿Qué es ${cleanTopic}?\nUna ecuación de segundo grado (o cuadrática) tiene la forma general ax² + bx + c = 0 con a ≠ 0. Su gráfica en el plano cartesiano es una parábola.\n\n## Ejemplo resuelto paso a paso\nResolvamos x² - 4x + 3 = 0:\n1. Identificamos coeficientes: a = 1, b = -4, c = 3.\n2. Calculamos el discriminante Δ = (-4)² - 4(1)(3) = 16 - 12 = 4 (> 0, hay 2 soluciones reales).\n3. Aplicamos la fórmula general x = (4 ± √4) / 2 = (4 ± 2) / 2.\n4. Obtenemos x₁ = 1 y x₂ = 3; vértice en V(2, -1).\n\n## Errores frecuentes a evitar\n- Olvidar el signo negativo de -b cuando b ya es negativo.\n- Dividir solo la raíz entre 2a en lugar de toda la expresión (-b ± √Δ).`,
@@ -838,6 +871,271 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
       bossName: 'Guardián de la Parábola Cuadrática',
       badgeName: `Maestro en ${cleanTopic}`,
     };
+  }
+
+  // Fallback contextualizado por tema para evitar contaminación de contenido cuadrático en temas no relacionados
+  const isHistoryOrCivics =
+    norm.includes('historia') ||
+    norm.includes('revolucion') ||
+    norm.includes('independencia') ||
+    norm.includes('guerra') ||
+    norm.includes('constitucion') ||
+    norm.includes('civica') ||
+    norm.includes('geografia');
+  const isLanguages =
+    norm.includes('espanol') ||
+    norm.includes('lectura') ||
+    norm.includes('escritura') ||
+    norm.includes('poesia') ||
+    norm.includes('gramatica') ||
+    norm.includes('ingles') ||
+    norm.includes('frances') ||
+    norm.includes('literatura');
+
+  const inferredSubject = isHistoryOrCivics
+    ? 'Historia y Ciencias Sociales'
+    : isLanguages
+      ? 'Lenguajes y Comunicación'
+      : 'Saberes y Pensamiento Científico';
+  const inferredCampo = isHistoryOrCivics
+    ? 'Ética, Naturaleza y Sociedades'
+    : isLanguages
+      ? 'Lenguajes'
+      : 'Saberes y Pensamiento Científico';
+
+  return {
+    title: `Clase Maestra Interactiva: ${cleanTopic} (${gradeLabel})`,
+    description: `Secuencia didáctica NEM 2024 de respaldo local sobre ${cleanTopic} para ${gradeLabel}, con explicación estructurada, diagrama conceptual, reactivos formativos y monitoreo docente.`,
+    subject: inferredSubject,
+    campoFormativo: inferredCampo,
+    pdaNem: `Analiza, comprende y aplica los fundamentos esenciales de ${cleanTopic} en ${gradeLabel}, vinculando evidencias con situaciones de su entorno comunitario.`,
+    masterExplanation: `## ¿Qué es ${cleanTopic}?\nEl estudio de **${cleanTopic}** en ${gradeLabel} permite comprender los principios, procesos y relaciones clave que explican este fenómeno dentro del campo de ${inferredCampo}.\n\n## Aplicación paso a paso\n1. **Identificación del concepto central:** Define los elementos y variables principales presentes en ${cleanTopic}.\n2. **Análisis de relaciones y causas:** Examina cómo interactúan sus componentes en un caso concreto.\n3. **Modelado y contrastación:** Aplica los criterios de ${cleanTopic} a una situación cotidiana verificable.\n4. **Verificación crítica:** Comprueba la validez de tus conclusiones contrastándolas con fuentes confiables.\n\n## Errores frecuentes a evitar\n- Memorizar definiciones aisladas sobre ${cleanTopic} sin explicar el porqué de sus relaciones.\n- Omitir la comprobación de evidencias antes de formular una conclusión final.`,
+    diagramTitle: `Mapa Conceptual Interactivo: ${cleanTopic}`,
+    diagramInstructions: `Explora cada pin numerado del diagrama para dominar las dimensiones esenciales de ${cleanTopic}.`,
+    hotspots: curated.hotspotsDefault.map((h) => ({ label: h.correctLabel, hint: h.hint, distractors: h.distractorLabels })),
+    mathLabChallengeTitle: `Explorador Interactivo: ${cleanTopic}`,
+    mathLabFormula: curated.formulaExpression,
+    mathLabPrompt: `Experimenta con las variables del simulador para representar y comprobar relaciones vinculadas con ${cleanTopic}.`,
+    orderingInstructions: `Ordena secuencialmente las 4 etapas metodológicas para analizar y aplicar ${cleanTopic}:`,
+    orderingSteps: [
+      `Identificar los elementos fundamentales y el contexto inicial de ${cleanTopic}.`,
+      `Analizar las relaciones de causa, estructura o procedimiento dentro de ${cleanTopic}.`,
+      `Aplicar el conocimiento de ${cleanTopic} a un caso práctico o problema del entorno.`,
+      `Verificar la coherencia de los resultados y sintetizar conclusiones fundamentadas.`,
+    ],
+    matchingInstructions: `Relaciona cada dimensión clave de ${cleanTopic} con su función dentro del aprendizaje:`,
+    matchingPairs: [
+      { left: `Concepto central de ${cleanTopic}`, right: 'Define los principios rectores y vocabulario esencial del tema' },
+      { left: 'Procedimiento analítico', right: 'Secuencia lógica para examinar evidencias y resolver casos prácticos' },
+      { left: 'Aplicación comunitaria', right: 'Conexión tangible del tema con problemas de la vida cotidiana' },
+      { left: 'Verificación crítica', right: 'Comprobación rigurosa que descarta suposiciones sin sustento' },
+    ],
+    questions: [
+      {
+        level: 'Comprensión',
+        question: `Al estudiar ${cleanTopic} en ${gradeLabel}, ¿cuál es el primer paso indispensable para construir una comprensión sólida?`,
+        options: [
+          `Identificar los conceptos fundamentales y las relaciones principales que estructuran ${cleanTopic}`,
+          'Memorizar datos aislados sin analizar cómo se conectan entre sí',
+          'Ignorar los ejemplos prácticos para enfocarse solo en títulos generales',
+          'Responder por intuición sin revisar el contexto del planteamiento',
+        ],
+        correctIndex: 0,
+        explanation: `Comprender ${cleanTopic} exige distinguir sus elementos clave y las relaciones lógicas entre ellos antes de aplicarlos.`,
+      },
+      {
+        level: 'Aplicación',
+        question: `¿Cómo se demuestra de forma efectiva el dominio práctico de ${cleanTopic} ante una situación real?`,
+        options: [
+          `Aplicando sus principios paso a paso en un caso concreto y verificando la coherencia del resultado`,
+          'Repitiendo una definición textual sin relacionarla con los datos del problema',
+          'Omitiendo la etapa de comprobación para ahorrar tiempo',
+          'Separando el tema de cualquier evidencia o contexto verificable',
+        ],
+        correctIndex: 0,
+        explanation: 'La transferencia real ocurre cuando se aplica el procedimiento de manera ordenada y se valida el resultado obtenido.',
+      },
+      {
+        level: 'Análisis',
+        question: `¿Qué error metodológico suele provocar conclusiones incorrectas al analizar ${cleanTopic}?`,
+        options: [
+          'Aceptar una afirmación sin contrastar evidencias ni revisar sus causas y condiciones',
+          'Organizar el análisis en etapas secuenciales verificables',
+          'Relacionar los fundamentos teóricos con observaciones comprobadas',
+          'Comprobar la consistencia de la respuesta frente al planteamiento inicial',
+        ],
+        correctIndex: 0,
+        explanation: 'Saltarse el contraste de evidencias y el análisis causal conduce a interpretaciones incompletas o erróneas.',
+      },
+    ],
+    cornellCues: [
+      `¿Cuáles son los elementos indispensables que definen ${cleanTopic}?`,
+      `¿Qué procedimiento paso a paso permite aplicar ${cleanTopic} correctamente?`,
+      `¿Dónde observas la importancia real de ${cleanTopic} en tu comunidad?`,
+    ],
+    cornellKeywords: [cleanTopic, 'Fundamento conceptual', 'Procedimiento', 'Aplicación práctica', 'Verificación'],
+    cornellTemplate: `Resume en 3 líneas las ideas centrales de ${cleanTopic}, un ejemplo concreto y cómo comprobar tu resultado.`,
+    exitTicketPrompt: `Boleto de Salida 3-2-1 · ${cleanTopic} (${gradeLabel}): escribe 3 aprendizajes, 2 dudas y 1 aplicación real.`,
+    bossName: `Guardián del Saber: ${cleanTopic}`,
+    badgeName: `Dominio en ${cleanTopic}`,
+  };
+}
+
+/**
+ * Genera una Clase Interactiva Maestra completa con Tokens Reales y la resguarda en Bóveda Curricular.
+ */
+export async function generateOrFetchStudioMasterClass(params: {
+  topic: string;
+  grade?: string;
+  faseNem?: string;
+  gamificationStyle?: 'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament';
+  language?: string;
+  forceRegenerate?: boolean;
+}): Promise<StudioMasterClassResult> {
+  const language = params.language || 'Español';
+  const gamificationStyle = params.gamificationStyle || 'rpg_adventure';
+  const { cleanTopic, gradeLabel, faseNem } = parseTopicAndGrade(
+    params.topic,
+    params.grade,
+    params.faseNem,
+    language,
+    gamificationStyle
+  );
+
+  // 1. VAULT-FIRST (0 TOKENS): Si ya existe en Bóveda Curricular y no se fuerza regeneración
+  if (!params.forceRegenerate) {
+    const cached = findStudioMasterClassInVault(
+      cleanTopic,
+      gradeLabel,
+      faseNem,
+      language,
+      gamificationStyle
+    );
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const curated = resolveCuratedDiagramAndLab(cleanTopic, gradeLabel);
+  const apiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || '';
+
+  const userPrompt = `Genera una CLASE INTERACTIVA MAESTRA completa y rigurosa estrictamente en ${language} para:
+- Tema: "${cleanTopic}"
+- Grado escolar: "${gradeLabel}" (${faseNem})
+- Dinámica: "${gamificationStyle}"`;
+
+  // Cascada secuencial limpia de 2 niveles (cero facturación paralela):
+  // 1) Perfil principal ligero ($0.25/$1.50) -> 2) Perfil de respaldo ligero ($0.30/$2.50) solo en 429/5xx/red
+  const endpoints = [
+    {
+      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
+      inputRate: 0.25,
+      outputRate: 1.50,
+      thinkingConfig: { thinkingBudget: 0 } as Record<string, unknown>,
+    },
+    {
+      url: Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
+      inputRate: 0.30,
+      outputRate: 2.50,
+      thinkingConfig: { thinkingLevel: 'MINIMAL' } as Record<string, unknown>,
+    },
+  ];
+
+  const basePayload = {
+    systemInstruction: {
+      parts: [{ text: STUDIO_MASTER_SYSTEM_INSTRUCTION }],
+    },
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: userPrompt }],
+      },
+    ],
+  };
+
+  let parsedAi: any = null;
+  let promptTokens = 0;
+  let outputTokens = 0;
+  let thoughtsTokens = 0;
+  let totalTokens = 0;
+  let usedInputRate = INPUT_USD_PER_1M;
+  let usedOutputRate = OUTPUT_USD_PER_1M;
+  let engineLabel = 'Motor de IA Pedagógica (Tokens Reales)';
+  let usedFallback = false;
+
+  if (apiKey) {
+    for (let i = 0; i < endpoints.length; i++) {
+      const ep = endpoints[i];
+      try {
+        const requestBody = JSON.stringify({
+          ...basePayload,
+          generationConfig: {
+            temperature: 0.35,
+            maxOutputTokens: 3500,
+            responseMimeType: 'application/json',
+            thinkingConfig: ep.thinkingConfig,
+          },
+        });
+        const res = await fetch(ep.url, {
+          method: 'POST',
+          signal: AbortSignal.timeout(22000),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
+          body: requestBody,
+        });
+
+        if (!res.ok) {
+          const status = res.status;
+          // Fast-fail inmediato en 400/401/403: nunca escalar a respaldo por error de clave o payload
+          if (status === 400 || status === 401 || status === 403) {
+            console.warn(`Motor de IA Pedagógica en Estudio rechazó la solicitud (HTTP ${status}); abortando cascada.`);
+            break;
+          }
+          // Solo continuar a respaldo en 429 o 5xx
+          if (status === 429 || status >= 500) {
+            continue;
+          }
+          break;
+        }
+
+        const data = await res.json();
+        const usage = data.usageMetadata || {};
+        let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        rawText = rawText.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+        const firstBrace = rawText.indexOf('{');
+        const lastBrace = rawText.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          rawText = rawText.slice(firstBrace, lastBrace + 1);
+        }
+        const json = JSON.parse(rawText);
+        if (!json || !json.masterExplanation || !Array.isArray(json.questions)) {
+          continue;
+        }
+
+        parsedAi = json;
+        promptTokens = Number(usage.promptTokenCount || 0);
+        outputTokens = Number(usage.candidatesTokenCount || 0);
+        thoughtsTokens = Number(usage.thoughtsTokenCount || 0);
+        totalTokens = Number(usage.totalTokenCount || promptTokens + outputTokens + thoughtsTokens);
+        usedInputRate = ep.inputRate;
+        usedOutputRate = ep.outputRate;
+        break;
+      } catch (err) {
+        console.warn(
+          `Motor de IA Pedagógica en Estudio (intento ${i + 1}):`,
+          err instanceof Error ? err.message : err
+        );
+      }
+    }
+  }
+
+  // Fallback estructurado contextualizado solo si la red/API no estuviera disponible (NUNCA se persiste en Bóveda)
+  if (!parsedAi) {
+    usedFallback = true;
+    engineLabel = 'Motor Pedagógico Determinista de Respaldo (0 Tokens)';
+    parsedAi = buildTopicAwareFallbackMasterClass(cleanTopic, gradeLabel, curated);
   }
 
   // Cálculo transparente y exacto en USD y MXN (output incluye reasoning/thoughts tokens)
@@ -942,9 +1240,9 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
           Array.isArray(parsedAi.matchingPairs) && parsedAi.matchingPairs.length >= 3
             ? parsedAi.matchingPairs.slice(0, 4)
             : [
-                { left: 'Forma general', right: 'ax² + bx + c = 0' },
-                { left: 'Discriminante', right: 'b² - 4ac' },
-                { left: 'Vértice', right: 'Punto mínimo o máximo' },
+                { left: `Fundamento de ${cleanTopic}`, right: 'Concepto rector y estructura base' },
+                { left: 'Procedimiento', right: 'Secuencia lógica paso a paso' },
+                { left: 'Verificación', right: 'Comprobación del resultado en contexto real' },
               ],
         timeLimitSeconds: 90,
       },
@@ -1097,11 +1395,33 @@ Responde EXCLUSIVAMENTE con JSON válido siguiendo este esquema exacto:
     cleanTopic,
   };
 
-  // 2. PERSISTENCIA INMEDIATA EN BÓVEDA CURRICULAR (para que futuras peticiones cuesten 0 tokens)
-  const vaultSaved = saveStudioMasterClassToVault(baseResult);
+  // 2. ANTI-ENVENENAMIENTO DE BÓVEDA: Nunca persistir plantillas de respaldo local como si fueran clases maestras IA
+  if (usedFallback) {
+    return {
+      ...baseResult,
+      vaultRelativePath: '',
+      planeacionViewerUrl: '',
+      persistedInVault: false,
+    };
+  }
 
-  return {
-    ...baseResult,
-    ...vaultSaved,
-  };
+  // 3. PERSISTENCIA INMEDIATA EN BÓVEDA CURRICULAR (para que futuras peticiones cuesten 0 tokens)
+  try {
+    const vaultSaved = saveStudioMasterClassToVault(baseResult, {
+      language,
+      gamificationStyle,
+    });
+    return {
+      ...baseResult,
+      ...vaultSaved,
+    };
+  } catch (err) {
+    console.warn('No se pudo persistir la Clase Maestra en disco (entorno de solo lectura):', err);
+    return {
+      ...baseResult,
+      vaultRelativePath: '',
+      planeacionViewerUrl: '',
+      persistedInVault: false,
+    };
+  }
 }

@@ -1,5 +1,3 @@
-"use client";
-
 import React from 'react';
 import UnifiedLoginView from '@/components/auth/UnifiedLoginView';
 

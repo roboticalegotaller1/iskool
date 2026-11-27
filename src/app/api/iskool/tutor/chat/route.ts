@@ -19,9 +19,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const { sessionId, studentId, grade = 'high_school_1', message } = body;
-    if ((auth.user.role || '').toLowerCase() === 'student' && studentId && studentId !== auth.user.id) {
+    const isStudent = (auth.user.role || '').toLowerCase() === 'student';
+    if (isStudent && studentId && studentId !== auth.user.id) {
       return NextResponse.json(
         { error: 'No autorizado para interactuar en nombre de otro estudiante.' },
         { status: 403 }
@@ -72,7 +79,16 @@ export async function POST(req: NextRequest) {
 
     // 4. Obtención o inicialización de la sesión pedagógica
     let session = sessionId ? await IskoolCore.Tutor.getSession(sessionId) : null;
-    const effectiveStudentId = session ? session.student_id : (studentId || 'std_anonymous');
+    if (isStudent && session && session.student_id !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'No autorizado para acceder a la sesión de tutoría de otro estudiante.' },
+        { status: 403 }
+      );
+    }
+    const effectiveStudentId = isStudent
+      ? auth.user.id
+      : (session ? session.student_id : (studentId || 'std_anonymous'));
+    let isNewSession = false;
 
     if (!session) {
       // Iniciar sesión nueva guiada por el objetivo de la lección
@@ -81,12 +97,15 @@ export async function POST(req: NextRequest) {
         primaryLearningOutcome: 'Express and defend viewpoints using formal connectors',
         knowledgeTargetIds: ['node_hs1_spk_opinion_01']
       });
-      await IskoolCore.Tutor.saveSession(session);
+      isNewSession = true;
     }
 
-    // 5. Cargar perfil académico adaptativo y competencias (Zero PII)
-    const profile = await IskoolCore.Adaptive.getProfile(effectiveStudentId, grade);
-    const comps = await IskoolCore.Adaptive.getCompetenciesMap(effectiveStudentId);
+    // 5. Cargar perfil académico adaptativo y competencias en paralelo (Zero PII)
+    const [profile, comps] = await Promise.all([
+      IskoolCore.Adaptive.getProfile(effectiveStudentId, grade),
+      IskoolCore.Adaptive.getCompetenciesMap(effectiveStudentId),
+      isNewSession ? IskoolCore.Tutor.saveSession(session) : Promise.resolve()
+    ]);
 
     // 6. Ejecutar el turno conversacional socrático
     const result = await IskoolCore.Tutor.processTurn(session, sanitized.cleanText, profile, comps);
@@ -106,7 +125,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     return NextResponse.json(
-      { error: 'Error procesando turno de tutoría socrática', details: err.message },
+      {
+        error: 'Error procesando turno de tutoría socrática',
+        ...(process.env.NODE_ENV !== 'production' ? { details: err?.message } : {})
+      },
       { status: 500 }
     );
   }

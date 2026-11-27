@@ -40,7 +40,8 @@ import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { SmartBookNotebookModal } from '@/components/books/SmartBookNotebookModal';
 import { SchoolDigitalBook } from '@/types/schoolBooks';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { useTenantBranding } from '@/components/branding/TenantBrandingProvider';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 
 // ==========================================
 // BASE DE DATOS CURRICULAR DE LA NEM 2022
@@ -832,9 +833,20 @@ export function PlanningTab({
   });
 
   // --- Estados de Ejecución/IA ---
+  const { isIbime: isIbimeTenant } = useTenantBranding();
   const [isGenerating, setIsGenerating] = useState(false);
   const [bypassVault, setBypassVault] = useState(false);
   const [generationStep, setGenerationStep] = useState(0);
+  const generationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (generationIntervalRef.current) {
+        clearInterval(generationIntervalRef.current);
+        generationIntervalRef.current = null;
+      }
+    };
+  }, []);
   const generationSteps = [
     'Analizando texto e insumos...',
     'Buscando correspondencia en el plan de estudios NEM...',
@@ -982,26 +994,63 @@ export function PlanningTab({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const sizeMB = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-    const type: 'image' | 'pdf' = file.type.includes('pdf') ? 'pdf' : 'image';
-    
-    setUploadedFile({
-      name: file.name,
-      type,
-      size: sizeMB
-    });
+    if (isSvgFile(file)) {
+      alert('Por seguridad y compresión obligatoria, no se permiten archivos SVG. Sube una imagen PNG, JPG, WebP o un PDF.');
+      e.target.value = '';
+      return;
+    }
 
-    if (type === 'image') {
-      const processed = file.type.startsWith('image/')
-        ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
-        : file;
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf && !isRasterImageFile(file)) {
+      alert('Formato no permitido. Selecciona una imagen (PNG, JPG, WebP) o un archivo PDF.');
+      e.target.value = '';
+      return;
+    }
+
+    if (isPdf) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('El archivo PDF excede el límite máximo permitido de 10 MB.');
+        e.target.value = '';
+        return;
+      }
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      setUploadedFile({
+        name: file.name,
+        type: 'pdf',
+        size: sizeMB
+      });
+      setImagePreview(null);
+    } else {
+      let processed: File;
+      try {
+        processed = await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 });
+        if (processed.size > 400 * 1024) {
+          alert('La imagen comprimida supera el límite institucional de 400 KB.');
+          e.target.value = '';
+          return;
+        }
+      } catch (err: any) {
+        alert(err?.message || 'No se pudo comprimir la imagen por debajo del límite institucional de 400 KB.');
+        e.target.value = '';
+        return;
+      }
+
+      const sizeLabel =
+        processed.size >= 1024 * 1024
+          ? (processed.size / (1024 * 1024)).toFixed(2) + ' MB'
+          : Math.max(1, Math.round(processed.size / 1024)) + ' KB';
+
+      setUploadedFile({
+        name: processed.name,
+        type: 'image',
+        size: sizeLabel
+      });
+
       const reader = new FileReader();
       reader.onload = (event) => {
         setImagePreview(event.target?.result as string);
       };
       reader.readAsDataURL(processed);
-    } else {
-      setImagePreview(null);
     }
 
     // Auto-rellenar input con el nombre del archivo solo si es un nombre descriptivo (no un nombre genérico de cámara)
@@ -1060,18 +1109,25 @@ export function PlanningTab({
     setGenerationStep(0);
     setActivePlanning(null); // Limpiar resultado previo para garantizar que no se mezcle estado anterior
 
-    // Animación de pasos de IA
-    const interval = setInterval(() => {
+    // Animación de pasos de IA (rastreada en ref para limpieza garantizada en desmontaje o finally)
+    if (generationIntervalRef.current) {
+      clearInterval(generationIntervalRef.current);
+    }
+    generationIntervalRef.current = setInterval(() => {
       setGenerationStep(prev => {
         if (prev < generationSteps.length - 1) {
           return prev + 1;
         }
-        clearInterval(interval);
+        if (generationIntervalRef.current) {
+          clearInterval(generationIntervalRef.current);
+          generationIntervalRef.current = null;
+        }
         return prev;
       });
     }, 1000);
 
     let resultPlanning: any = null;
+    try {
     let foundInVault = false;
     const currentSubjectObj = displaySubjects.find(s => s.id === selectedSubject);
     const currKey = mapSubjectToCurriculumKey(selectedSubject, currentSubjectObj?.name || '');
@@ -1085,7 +1141,7 @@ export function PlanningTab({
           authHeaders['Authorization'] = `Bearer ${sessionData.session.access_token}`;
         }
 
-        const obsRes = await fetch(`/api/vault?q=${encodeURIComponent(inputText.trim())}&level=${encodeURIComponent(selectedLevel)}&subject=${encodeURIComponent(currKey)}&sessions=${encodeURIComponent(sessionCount.toString())}&_t=${Date.now()}`, {
+        const obsRes = await fetch(`/api/vault?q=${encodeURIComponent(inputText.trim())}&level=${encodeURIComponent(selectedLevel)}${selectedGroupLabel ? `&grade=${encodeURIComponent(selectedGroupLabel)}` : ''}&subject=${encodeURIComponent(currKey)}&sessions=${encodeURIComponent(sessionCount.toString())}&_t=${Date.now()}`, {
           cache: 'no-store',
           headers: authHeaders
         });
@@ -1203,9 +1259,15 @@ export function PlanningTab({
       // Step 4: Integración Automática 360° con todo el Ecosistema iSkool
       integratePlanningIntoISkool360(resultPlanning, 0);
     }
+    } finally {
+      if (generationIntervalRef.current) {
+        clearInterval(generationIntervalRef.current);
+        generationIntervalRef.current = null;
+      }
+      setIsGenerating(false);
+    }
 
-    clearInterval(interval);
-    setIsGenerating(false);
+    if (!resultPlanning) return;
 
     // Guardar en Historial y seleccionar
     const updatedHistory = [resultPlanning, ...planningsHistory.filter(p => p.id !== resultPlanning.id)];
@@ -2019,7 +2081,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/*,application/pdf"
+            accept="image/png,image/jpeg,image/webp,application/pdf"
             className="hidden"
           />
 
@@ -2034,7 +2096,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               </div>
               <div className="text-center">
                 <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Seleccionar imagen o PDF</p>
-                <p className="text-[9px] text-zinc-400 mt-0.5">Formatos aceptados: JPG, PNG, PDF (Máx. 10MB)</p>
+                <p className="text-[9px] text-zinc-400 mt-0.5">Formatos aceptados: JPG, PNG, WebP, PDF (Máx. 10MB)</p>
               </div>
             </button>
           ) : (
@@ -2475,7 +2537,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
               {/* Membrete Oficial */}
               {(() => {
-                const isIbimeTeacher = currentTeacher?.school_id === 'sch-ibime' || (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime'));
+                const isIbimeTeacher = currentTeacher?.school_id === 'sch-ibime' || isIbimeTenant;
                 const officialSchoolName = isIbimeTeacher ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ANGLO MEXICANO';
                 const officialCct = isIbimeTeacher ? 'CCT: 15PPR3322G' : 'CCT: 09PPR1234Z';
 

@@ -257,7 +257,7 @@ function resolveCharacter3DRig(
   return CHARACTER_3D_RIGS.arthur;
 }
 
-export const HumanGesticulatingAvatar: React.FC<Props> = ({
+const HumanGesticulatingAvatarInner: React.FC<Props> = ({
   gender,
   name,
   language,
@@ -428,8 +428,11 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     };
   }, []);
 
-  // Análisis de energía acústica cuando está hablando (con throttle ~15fps y pausa en segundo plano / reduced-motion)
+  // Análisis de energía acústica cuando está hablando (omitido en variant 'stage', throttle ~15fps y pausa real en segundo plano)
   useEffect(() => {
+    if (variant === 'stage') {
+      return;
+    }
     if (!isPlaying) {
       setAudioEnergy(0.05);
       return;
@@ -446,16 +449,17 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     const bufferLength = analyserRef.current ? analyserRef.current.frequencyBinCount : 0;
     const dataArray = bufferLength > 0 ? new Uint8Array(bufferLength) : null;
     let lastUpdateMs = 0;
+    let isDisposed = false;
 
     const renderLoop = (now: number) => {
-      if (typeof document !== 'undefined' && document.hidden) {
-        animationFrameRef.current = requestAnimationFrame(renderLoop);
+      if (isDisposed || (typeof document !== 'undefined' && document.hidden)) {
+        animationFrameRef.current = null;
         return;
       }
 
       if (now - lastUpdateMs >= 66) {
         lastUpdateMs = now;
-        if (analyserRef.current && dataArray && isPlaying) {
+        if (analyserRef.current && dataArray) {
           analyserRef.current.getByteFrequencyData(dataArray);
           let sum = 0;
           for (let i = 0; i < dataArray.length; i++) {
@@ -470,11 +474,42 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
       animationFrameRef.current = requestAnimationFrame(renderLoop);
     };
 
-    animationFrameRef.current = requestAnimationFrame(renderLoop);
-    return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    const startLoop = () => {
+      if (isDisposed || animationFrameRef.current !== null) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
+      animationFrameRef.current = requestAnimationFrame(renderLoop);
     };
-  }, [isPlaying]);
+
+    const stopLoop = () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (typeof document === 'undefined') return;
+      if (document.hidden) {
+        stopLoop();
+      } else {
+        lastUpdateMs = 0;
+        startLoop();
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+    startLoop();
+
+    return () => {
+      isDisposed = true;
+      stopLoop();
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      }
+    };
+  }, [isPlaying, variant]);
 
   const languageLabel = language === 'fr' ? 'Français' : 'English';
   const languageFlag = language === 'fr' ? '🇫🇷' : '🇬🇧';
@@ -774,3 +809,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     </div>
   );
 };
+
+export const HumanGesticulatingAvatar = React.memo(HumanGesticulatingAvatarInner);
+HumanGesticulatingAvatar.displayName = 'HumanGesticulatingAvatar';

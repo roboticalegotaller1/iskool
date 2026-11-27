@@ -27,6 +27,7 @@ import {
   IBIME_SUBJECTS,
   IBIME_PAYROLL
 } from '@/lib/curriculum/ibimeCatalogService';
+import { useShallow } from 'zustand/react/shallow';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { DETAILED_STUDENTS_SEED } from '@/store/seeds';
 import {
@@ -433,7 +434,23 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
     schedulesList,
     studentDeletionAuditLogs,
     activeSchoolId
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((state) => ({
+      institutionsList: state.institutionsList,
+      campusesList: state.campusesList,
+      detailedStudents: state.detailedStudents,
+      teachersList: state.teachersList,
+      groupsList: state.groupsList,
+      subjectsList: state.subjectsList,
+      billingRecords: state.billingRecords,
+      attendanceList: state.attendanceList,
+      staffPayroll: state.staffPayroll,
+      parentMessages: state.parentMessages,
+      schedulesList: state.schedulesList,
+      studentDeletionAuditLogs: state.studentDeletionAuditLogs,
+      activeSchoolId: state.activeSchoolId,
+    }))
+  );
 
   // Catálogo unificado y enriquecido de Alumnos (combina Store + Seeds + IBIME_STUDENTS con calificaciones, alergias, pagos y notas)
   const studentsCatalog = useMemo<DetailedStudent[]>(() => {
@@ -1762,6 +1779,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
             let speechFramesCount = 0;
             analyserIntervalRef.current = setInterval(() => {
               if (isStoppingVoiceRef.current) return;
+              if (typeof document !== 'undefined' && document.hidden) return;
               if (audioCtx.state === 'suspended') {
                 audioCtx.resume().catch(() => {});
               }
@@ -1782,7 +1800,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
               if (visualLevel >= 16) {
                 speechFramesCount++;
                 lastSpeechActivityAtRef.current = Date.now();
-                if (speechFramesCount >= 5) {
+                if (speechFramesCount >= 3) {
                   hasDetectedSpeechEnergyRef.current = true;
                 }
               } else if (
@@ -1793,7 +1811,7 @@ export const SofiaCopilotConsole: React.FC<SofiaCopilotConsoleProps> = ({
               ) {
                 stopAndProcessVoice();
               }
-            }, 60);
+            }, 100);
           } catch {}
         }
       }

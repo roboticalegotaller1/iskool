@@ -117,30 +117,36 @@ export async function POST(request: NextRequest) {
       )
     );
 
-    // 2. Consulta de memorias existentes en la Bóveda Curricular
+    // 2. Consulta única de memorias por grado y asignatura en la Bóveda Curricular (filtrado estricto + relajado en memoria)
     const topicSearchTerm = cleanKeywords.join(' ');
-    const memories = await InstitutionalMemoryService.queryMemoriesAsync({
+    const scopedMemories = await InstitutionalMemoryService.queryMemoriesAsync({
       grade: normalizedGrade,
-      subject: normalizedSubject,
-      topic: topicSearchTerm || undefined
+      subject: normalizedSubject
     });
 
-    // Si la búsqueda estricta no arrojó resultados y hay palabras clave, buscar por palabras clave individuales
-    let matchedMemories = memories;
-    if (matchedMemories.length === 0 && cleanKeywords.length > 0) {
-      const allMemories = await InstitutionalMemoryService.queryMemoriesAsync({
-        grade: normalizedGrade,
-        subject: normalizedSubject
+    let matchedMemories = scopedMemories;
+    if (topicSearchTerm) {
+      const cleanTop = normalizeText(topicSearchTerm);
+      const topicWords = cleanTop.split(/\s+/).filter(w => w.length > 2);
+
+      // Primero aplicar coincidencia estricta equivalente sobre el tema
+      matchedMemories = scopedMemories.filter(doc => {
+        const docTop = normalizeText(doc.frontmatter.topic);
+        const matchesAnyWord = topicWords.some(w => docTop.includes(w));
+        return docTop.includes(cleanTop) || matchesAnyWord;
       });
 
-      matchedMemories = allMemories.filter(doc => {
-        const docTopic = normalizeText(doc.frontmatter.topic);
-        const docSubject = normalizeText(doc.frontmatter.subject);
-        const docTags = (doc.frontmatter.tags || []).map(t => normalizeText(t));
-        return cleanKeywords.some(kw =>
-          docTopic.includes(kw) || docSubject.includes(kw) || docTags.some(t => t.includes(kw))
-        );
-      });
+      // Si la búsqueda estricta no arrojó resultados y hay palabras clave, aplicar filtro relajado en memoria
+      if (matchedMemories.length === 0 && cleanKeywords.length > 0) {
+        matchedMemories = scopedMemories.filter(doc => {
+          const docTopic = normalizeText(doc.frontmatter.topic);
+          const docSubject = normalizeText(doc.frontmatter.subject);
+          const docTags = (doc.frontmatter.tags || []).map(t => normalizeText(t));
+          return cleanKeywords.some(kw =>
+            docTopic.includes(kw) || docSubject.includes(kw) || docTags.some(t => t.includes(kw))
+          );
+        });
+      }
     }
 
     // 3. Si no hay coincidencias

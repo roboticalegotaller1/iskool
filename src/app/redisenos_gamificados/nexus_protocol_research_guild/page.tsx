@@ -148,7 +148,7 @@ const RESEARCHER_CATALOG: ResearcherGear[] = [
     category: 'Indumentaria Base',
     stats: '+15% Rigor en Análisis de Muestras',
     description: 'Bata blanca de fibra antiestática con bolsillos blindados para instrumentos de precisión y credencial biométrica de laboratorio.',
-    image: '/redisenos_assets/nexus_guild/investigador_base_pedestal.jpg',
+    image: '/redisenos_assets/nexus_guild/investigador_base_pedestal.webp',
     rarity: 'Investigador',
     badgeColor: 'from-slate-600 to-slate-800'
   },
@@ -158,7 +158,7 @@ const RESEARCHER_CATALOG: ResearcherGear[] = [
     category: 'Toga de Maestría',
     stats: '+45% Reputación en Comités Doctorales',
     description: 'Túnica de gala bordada con constelaciones astronómicas y filamentos conductores que simbolizan la unión entre ciencia y humanismo.',
-    image: '/redisenos_assets/nexus_guild/investigador_capa_academica.jpg',
+    image: '/redisenos_assets/nexus_guild/investigador_capa_academica.webp',
     rarity: 'Magíster',
     badgeColor: 'from-indigo-600 to-violet-800'
   },
@@ -168,7 +168,7 @@ const RESEARCHER_CATALOG: ResearcherGear[] = [
     category: 'Óptica Neural',
     stats: '+30% Enfoque en Tensores y Cálculo',
     description: 'Corona de sincronización bioeléctrica con sensores EEG que monitorea la fatiga cognitiva y optimiza las horas de supercómputo.',
-    image: '/redisenos_assets/nexus_guild/investigador_neural_band.jpg',
+    image: '/redisenos_assets/nexus_guild/investigador_neural_band.webp',
     rarity: 'Catedrático',
     badgeColor: 'from-purple-600 to-fuchsia-800'
   },
@@ -178,7 +178,7 @@ const RESEARCHER_CATALOG: ResearcherGear[] = [
     category: 'Artefacto Cuántico',
     stats: '+50% Aceleración en Simulaciones Monte Carlo',
     description: 'Esfera de confinamiento magnético que preserva un estado de superposición cuántica para calibrar algoritmos de criptografía.',
-    image: '/redisenos_assets/nexus_guild/investigador_relicario_cuantico.jpg',
+    image: '/redisenos_assets/nexus_guild/investigador_relicario_cuantico.webp',
     rarity: 'Singularidad',
     badgeColor: 'from-emerald-600 to-teal-800'
   }
@@ -622,7 +622,7 @@ export default function NexusProtocolResearchGuildPage() {
             
             {/* IMAGEN MAESTRA DE FONDO OFICIAL (16:9) */}
             <img 
-              src="/redisenos_assets/gamification_preparatoria_nexus_protocol_1792732922568.jpg"
+              src="/redisenos_assets/gamification_preparatoria_nexus_protocol_1792732922568.webp"
               alt="Nexus Protocol Guild Dashboard 16:9"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.01]"
             />
@@ -1171,7 +1171,7 @@ export default function NexusProtocolResearchGuildPage() {
               >
                 <div className="flex items-center gap-3.5">
                   <img 
-                    src="/redisenos_assets/torneo_tcg/tcg_card_marie_curie.jpg"
+                    src="/redisenos_assets/torneo_tcg/tcg_card_marie_curie.webp"
                     alt="Marie Curie"
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-400/60 shadow-md"
                   />
@@ -1393,7 +1393,7 @@ export default function NexusProtocolResearchGuildPage() {
                   
                   {customizerMode === '3d_renders' ? (
                     <img
-                      src={RESEARCHER_CATALOG.find(i => i.id === selectedResearcherItem)?.image || '/redisenos_assets/nexus_guild/investigador_base_pedestal.jpg'}
+                      src={RESEARCHER_CATALOG.find(i => i.id === selectedResearcherItem)?.image || '/redisenos_assets/nexus_guild/investigador_base_pedestal.webp'}
                       alt="Investigador Nexus 3D"
                       className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
                     />

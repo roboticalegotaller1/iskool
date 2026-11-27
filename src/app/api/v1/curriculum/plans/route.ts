@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
 import { resolveTenantFromHostOrHeader, TenantId } from '@/lib/auth/multiTenantSession';
@@ -5,6 +6,18 @@ import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederati
 import { CreateOrExtendPlanInput, UserAuditContext } from '@/lib/curriculum/types';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
+
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+const CURRICULUM_CACHE_CONTROL = 'private, max-age=60, stale-while-revalidate=300';
+
+function matchesIfNoneMatch(ifNoneMatch: string | null, etag: string): boolean {
+  if (!ifNoneMatch) return false;
+  const trimmed = ifNoneMatch.trim();
+  if (trimmed === '*') return true;
+  const normalize = (tag: string) => tag.trim().replace(/^W\//i, '');
+  const target = normalize(etag);
+  return trimmed.split(',').some((candidate) => normalize(candidate) === target);
+}
 
 /**
  * Endpoint REST: /api/v1/curriculum/plans
@@ -18,7 +31,7 @@ export async function GET(req: NextRequest) {
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: authResult.error || 'Autenticación requerida para consultar planeaciones curriculares.' },
-        { status: 401 }
+        { status: 401, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -36,17 +49,35 @@ export async function GET(req: NextRequest) {
 
     // Consulta federada con resolución de Overlays
     const plans = await CurriculumFederationService.getPlansForTenant(tenantId, filter);
-
-    return NextResponse.json({
+    const payload = {
       success: true,
       tenant: tenantId,
       total: plans.length,
       plans
+    };
+    const bodyJson = JSON.stringify(payload);
+    const etag = `W/"${crypto.createHash('sha256').update(bodyJson).digest('base64url').slice(0, 22)}"`;
+    const cacheHeaders = {
+      'Cache-Control': CURRICULUM_CACHE_CONTROL,
+      Vary: 'Cookie, Authorization',
+      ETag: etag
+    };
+
+    if (matchesIfNoneMatch(req.headers.get('if-none-match'), etag)) {
+      return new NextResponse(null, { status: 304, headers: cacheHeaders });
+    }
+
+    return new NextResponse(bodyJson, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        ...cacheHeaders
+      }
     });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || 'Error consultando catálogo de planeaciones.' },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }
@@ -57,7 +88,7 @@ export async function POST(req: NextRequest) {
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: authResult.error || 'Autenticación requerida para registrar planeaciones.' },
-        { status: 401 }
+        { status: 401, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -66,7 +97,7 @@ export async function POST(req: NextRequest) {
     if (!allowedRoles.includes(authResult.user.role || '')) {
       return NextResponse.json(
         { error: 'Acceso denegado: El rol de usuario no tiene permisos para crear o modificar planeaciones.' },
-        { status: 403 }
+        { status: 403, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -74,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!body || !body.title || !body.subject_code || !body.sessions || !body.evaluation_rubric) {
       return NextResponse.json(
         { error: 'Datos incompletos: title, subject_code, sessions y evaluation_rubric son obligatorios.' },
-        { status: 400 }
+        { status: 400, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -99,33 +130,39 @@ export async function POST(req: NextRequest) {
         title: body.title,
         payload: { subject_code: body.subject_code },
       });
-      return NextResponse.json({
-        success: true,
-        demoSandbox: true,
-        persistedInVault: false,
-        message: 'Modo Demo Sandbox: planeación simulada en memoria sin guardar en Bóveda Curricular.',
-        plan: {
-          id: eph.id,
-          ...body,
-          created_at: new Date().toISOString(),
+      return NextResponse.json(
+        {
+          success: true,
+          demoSandbox: true,
+          persistedInVault: false,
+          message: 'Modo Demo Sandbox: planeación simulada en memoria sin guardar en Bóveda Curricular.',
+          plan: {
+            id: eph.id,
+            ...body,
+            created_at: new Date().toISOString(),
+          },
         },
-      });
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     const savedPlan = await CurriculumFederationService.saveOrExtendPlan(body, userContext);
 
-    return NextResponse.json({
-      success: true,
-      message: savedPlan.is_custom_overlay
-        ? 'Planeación personalizada registrada exitosamente en el namespace de IBIME.'
-        : 'Planeación registrada exitosamente.',
-      plan: savedPlan
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        message: savedPlan.is_custom_overlay
+          ? 'Planeación personalizada registrada exitosamente en el namespace de IBIME.'
+          : 'Planeación registrada exitosamente.',
+        plan: savedPlan
+      },
+      { status: 201, headers: NO_STORE_HEADERS }
+    );
   } catch (err: any) {
     const status = err.name === 'PedagogicalPrivacyViolationError' ? 422 : 500;
     return NextResponse.json(
       { error: err.message || 'Error registrando planeación curricular.' },
-      { status }
+      { status, headers: NO_STORE_HEADERS }
     );
   }
 }

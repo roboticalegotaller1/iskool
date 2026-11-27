@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 import { z } from 'zod';
@@ -53,16 +54,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
     }
 
-    // 2. Control de Autorización: Solo personal directivo o superadmin puede ejecutar reasignación masiva
-    const allowedRoles = ['superadmin', 'admin', 'director'];
-    if (!allowedRoles.includes(auth.user.role || '')) {
+    // 2. Control de Autorización: Exclusivo para Super Usuarios de Plataforma (previene sobrescritura masiva cross-school)
+    if (!isPlatformSuperUser(auth.user)) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Acceso denegado: Privilegios insuficientes para reasignar planeaciones en la Bóveda Curricular.' 
+        error: 'Acceso denegado: Se requieren privilegios de Super Usuario de plataforma para reasignar planeaciones en la Bóveda Curricular.' 
       }, { status: 403 });
     }
 
-    const body = await req.json().catch(() => ({}));
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({
+        success: false,
+        error: 'Cuerpo JSON inválido o malformado.'
+      }, { status: 400 });
+    }
     const parsed = ReassignSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ 
@@ -72,14 +78,6 @@ export async function POST(req: NextRequest) {
     }
 
     const { schoolId, masterTeacherName, masterTeacherId } = parsed.data;
-
-    // Si no es superadmin, restringir al colegio propio
-    if (auth.user.role !== 'superadmin' && auth.user.school_id && schoolId && schoolId !== auth.user.school_id) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Acceso denegado: No puedes reasignar contenidos de otro colegio.' 
-      }, { status: 403 });
-    }
 
     if (
       isDemoSandboxContext({

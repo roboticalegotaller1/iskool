@@ -92,31 +92,31 @@ describe('🎭 AVATAR 3D EN VIVO (60 FPS) — PARPADEO ANATÓMICO Y COMPENDIO DE
 
   it('4. Calibración anatómica sub-píxel de ojos y boca para mentores y los 7 personajes históricos 3D', () => {
     const claireCfg = getHistoricalMouthConfig('claire');
-    expect(claireCfg.leftEyeX).toBe(448);
-    expect(claireCfg.leftEyeY).toBe(281);
-    expect(claireCfg.rightEyeX).toBe(572);
-    expect(claireCfg.rightEyeY).toBe(266);
-    expect(claireCfg.eyeRx).toBe(48);
-    expect(claireCfg.eyeRy).toBe(39);
+    expect(claireCfg.leftEyeX).toBe(446);
+    expect(claireCfg.leftEyeY).toBe(280);
+    expect(claireCfg.rightEyeX).toBe(573);
+    expect(claireCfg.rightEyeY).toBe(265);
+    expect(claireCfg.eyeRx).toBe(46);
+    expect(claireCfg.eyeRy).toBe(37);
     expect(claireCfg.lowerLipTopY).toBe(394.5);
 
     const arthurCfg = getHistoricalMouthConfig('arthur');
     expect(arthurCfg.leftEyeX).toBe(408);
-    expect(arthurCfg.leftEyeY).toBe(207);
+    expect(arthurCfg.leftEyeY).toBe(204);
     expect(arthurCfg.rightEyeX).toBe(486);
-    expect(arthurCfg.rightEyeY).toBe(209);
-    expect(arthurCfg.eyeRx).toBe(34);
-    expect(arthurCfg.eyeRy).toBe(27);
+    expect(arthurCfg.rightEyeY).toBe(207);
+    expect(arthurCfg.eyeRx).toBe(26);
+    expect(arthurCfg.eyeRy).toBe(18);
     expect(arthurCfg.lowerLipTopY).toBe(307.5);
 
     const expectedHistoricalEyes: Array<[string, number, number, number, number, number, number]> = [
-      ['ada_lovelace', 461, 293, 568, 294, 38, 28],
-      ['shakespeare', 471, 229, 548, 230, 28, 22],
-      ['abraham_lincoln', 474, 197, 550, 196, 22, 15],
-      ['marie_curie', 482, 206, 538, 204, 20, 15],
-      ['napoleon', 476, 230, 540, 229, 20, 14],
-      ['victor_hugo', 451, 315, 565, 316, 30, 18],
-      ['jeanne_darc', 454, 319, 564, 319, 40, 27],
+      ['ada_lovelace', 460, 292, 569, 293, 36, 26],
+      ['shakespeare', 471, 227, 548, 228, 25, 18],
+      ['abraham_lincoln', 477, 193, 550, 192, 19, 12],
+      ['marie_curie', 485, 204, 540, 202, 17, 13],
+      ['napoleon', 481, 227, 540, 226, 17, 12],
+      ['victor_hugo', 450, 315, 569, 316, 26, 15],
+      ['jeanne_darc', 450, 318, 570, 318, 36, 24],
     ];
 
     for (const [id, lx, ly, rx, ry, erx, ery] of expectedHistoricalEyes) {

@@ -1,6 +1,5 @@
 "use client";
 
-import QRCode from 'qrcode';
 import type { PocketRemoteCommand } from '@/app/api/languages/pocket-remote/route';
 
 export interface TeacherRemoteIdentity {
@@ -112,6 +111,7 @@ export function buildTeacherRemoteIdentity(params: {
  */
 export async function generateTeacherQrDataUrl(url: string): Promise<string> {
   try {
+    const QRCode = (await import('qrcode')).default;
     return await QRCode.toDataURL(url, {
       errorCorrectionLevel: 'M',
       margin: 2,

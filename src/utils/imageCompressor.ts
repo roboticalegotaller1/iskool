@@ -8,18 +8,30 @@
 export interface ImageCompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
-  quality?: number; // 0.1 a 1.0 (default: 0.85)
+  quality?: number; // 0.1 a 1.0 (default: 0.84)
   format?: 'image/webp' | 'image/jpeg' | 'image/png';
   maxSizeBytes?: number; // Límite objetivo en bytes (default: 400KB)
 }
 
+const HARD_FALLBACK_MAX_BYTES = 400 * 1024; // 400 KB máximo institucional
+const MIN_DOWNSCALE_DIMENSION = 320;
+const DOWNSCALE_FACTOR = 0.82;
+const QUALITY_LADDER = [0.84, 0.76, 0.68, 0.6, 0.52];
+
+const RASTER_IMAGE_EXT_RE = /\.(png|jpe?g|webp|bmp|avif)$/i;
+const SAFE_COMPRESSED_EXT_RE = /\.(webp|jpe?g)$/i;
+const SVG_EXT_RE = /\.svgz?$/i;
+
 const DEFAULT_OPTIONS: Required<ImageCompressionOptions> = {
   maxWidth: 1280,
   maxHeight: 1280,
-  quality: 0.85,
+  quality: 0.84,
   format: 'image/webp',
-  maxSizeBytes: 400 * 1024 // 400 KB
+  maxSizeBytes: HARD_FALLBACK_MAX_BYTES
 };
+
+const SVG_REJECT_ERROR =
+  'Por seguridad e integridad visual, no se permiten archivos SVG. Sube una imagen en formato PNG, JPG o WebP.';
 
 /**
  * Valida que el archivo no contenga extensiones ejecutables maliciosas (PHP, CGI, etc.)
@@ -33,6 +45,61 @@ export function isSafeUploadFileName(fileName: string): boolean {
 }
 
 /**
+ * Detecta si un archivo corresponde a SVG (por MIME o por extensión)
+ */
+export function isSvgFile(file: Pick<File, 'name' | 'type'>): boolean {
+  const mime = (file.type || '').toLowerCase().trim();
+  return mime === 'image/svg+xml' || SVG_EXT_RE.test(file.name || '');
+}
+
+/**
+ * Determina si un archivo es una imagen rasterizada comprimible, con respaldo por extensión
+ * para dispositivos móviles donde `file.type` llega vacío o como `application/octet-stream`.
+ */
+export function isRasterImageFile(file: Pick<File, 'name' | 'type'>): boolean {
+  if (isSvgFile(file)) return false;
+  const mime = (file.type || '').toLowerCase().trim();
+  if (mime.startsWith('image/')) return true;
+  if (mime === '' || mime === 'application/octet-stream') {
+    return RASTER_IMAGE_EXT_RE.test(file.name || '');
+  }
+  return false;
+}
+
+function buildQualitySteps(initialQuality: number): number[] {
+  const clamped = Math.min(0.92, Math.max(0.4, initialQuality));
+  return Array.from(
+    new Set([clamped, ...QUALITY_LADDER].filter((q) => q <= clamped + 0.001 && q >= 0.4))
+  ).sort((a, b) => b - a);
+}
+
+function canSafelyFallbackFile(file: File, maxBytes: number): boolean {
+  const safeLimit = Math.min(maxBytes, HARD_FALLBACK_MAX_BYTES);
+  if (file.size > safeLimit) return false;
+  const mime = (file.type || '').toLowerCase().trim();
+  if (mime === 'image/webp' || mime === 'image/jpeg') return true;
+  if (mime === '' || mime === 'application/octet-stream') {
+    return SAFE_COMPRESSED_EXT_RE.test(file.name || '');
+  }
+  return false;
+}
+
+function estimateDataUrlBytes(dataUrl: string): number {
+  const commaIdx = dataUrl.indexOf(',');
+  if (commaIdx === -1) return dataUrl.length;
+  const payload = dataUrl.slice(commaIdx + 1);
+  const padding = payload.endsWith('==') ? 2 : payload.endsWith('=') ? 1 : 0;
+  return Math.max(0, Math.floor((payload.length * 3) / 4) - padding);
+}
+
+function canSafelyFallbackDataUrl(dataUrl: string, maxBytes: number): boolean {
+  const safeLimit = Math.min(maxBytes, HARD_FALLBACK_MAX_BYTES);
+  const isCompressedRaster =
+    dataUrl.startsWith('data:image/webp') || dataUrl.startsWith('data:image/jpeg');
+  return isCompressedRaster && estimateDataUrlBytes(dataUrl) <= safeLimit;
+}
+
+/**
  * Comprime un archivo de imagen (File) antes de ser enviado al servidor
  */
 export async function compressImageFile(
@@ -40,30 +107,59 @@ export async function compressImageFile(
   customOptions?: ImageCompressionOptions
 ): Promise<File> {
   const options = { ...DEFAULT_OPTIONS, ...customOptions };
+  const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
 
   // 1. Blindaje contra inyección de nombres ejecutables (PHP, Web Shells)
   if (!isSafeUploadFileName(file.name)) {
     throw new Error('Nombre de archivo o extensión no permitida por directivas de seguridad.');
   }
 
-  // Si no es un tipo de imagen comprimible o es SVG, retornar intacto
-  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+  // 2. Bloqueo explícito de SVG (prevención XSS y evasión de compresión rasterizada)
+  if (isSvgFile(file)) {
+    throw new Error(SVG_REJECT_ERROR);
+  }
+
+  // 3. Si no es una imagen rasterizada (incluso con respaldo de extensión en móvil), retornar intacto
+  if (!isRasterImageFile(file)) {
     return file;
   }
 
   return new Promise((resolve, reject) => {
-    const objectUrl = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
-      ? URL.createObjectURL(file)
-      : null;
+    const objectUrl =
+      typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+        ? URL.createObjectURL(file)
+        : null;
+
+    const failOrSafeFallback = (reason?: string) => {
+      if (canSafelyFallbackFile(file, maxBytes)) {
+        resolve(file);
+        return;
+      }
+      reject(
+        new Error(
+          reason ||
+            `No fue posible comprimir la imagen por debajo del límite institucional de ${Math.round(
+              Math.min(maxBytes, HARD_FALLBACK_MAX_BYTES) / 1024
+            )} KB. Sube una imagen válida en formato PNG, JPG o WebP.`
+        )
+      );
+    };
 
     const handleLoadedImage = (img: HTMLImageElement, revokeOnFinish: boolean) => {
       const cleanup = () => {
         if (revokeOnFinish && objectUrl) {
-          try { URL.revokeObjectURL(objectUrl); } catch {}
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch {}
         }
       };
 
-      const renderScaledBlob = (maxW: number, maxH: number, format: string, quality: number): Promise<Blob | null> => {
+      const renderScaledBlob = (
+        maxW: number,
+        maxH: number,
+        format: 'image/webp' | 'image/jpeg' | 'image/png',
+        quality: number
+      ): Promise<Blob | null> => {
         return new Promise((resBlob) => {
           const { width, height } = calculateOptimalDimensions(img.width, img.height, maxW, maxH);
           const canvas = document.createElement('canvas');
@@ -74,6 +170,10 @@ export async function compressImageFile(
             resBlob(null);
             return;
           }
+          if (format === 'image/jpeg') {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+          }
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = 'high';
           ctx.drawImage(img, 0, 0, width, height);
@@ -83,60 +183,98 @@ export async function compressImageFile(
 
       (async () => {
         try {
-          const targetFormat = options.format;
-          const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
-          const qualitySteps = Array.from(
-            new Set([options.quality, 0.74, 0.64, 0.54].filter((q) => q <= options.quality + 0.01 && q >= 0.4))
-          );
+          let activeFormat: 'image/webp' | 'image/jpeg' | 'image/png' = options.format;
+          const qualitySteps = buildQualitySteps(options.quality);
 
-          let bestBlob = await renderScaledBlob(options.maxWidth, options.maxHeight, targetFormat, options.quality);
-          if (bestBlob && bestBlob.size > maxBytes) {
-            for (const q of qualitySteps.slice(1)) {
-              const candidate = await renderScaledBlob(options.maxWidth, options.maxHeight, targetFormat, q);
-              if (candidate && candidate.size < bestBlob.size) {
-                bestBlob = candidate;
+          const encodeCandidate = async (
+            maxW: number,
+            maxH: number,
+            quality: number
+          ): Promise<{ blob: Blob; format: 'image/webp' | 'image/jpeg' | 'image/png' } | null> => {
+            let blob = await renderScaledBlob(maxW, maxH, activeFormat, quality);
+            if (!blob) return null;
+
+            // Detectar respaldo silencioso a PNG cuando el navegador no soporta codificación WebP
+            if (activeFormat === 'image/webp' && blob.type !== 'image/webp') {
+              activeFormat = 'image/jpeg';
+              blob = await renderScaledBlob(maxW, maxH, 'image/jpeg', quality);
+              if (!blob) return null;
+            }
+
+            return { blob, format: activeFormat };
+          };
+
+          let bestBlob: Blob | null = null;
+          let bestFormat: 'image/webp' | 'image/jpeg' | 'image/png' = activeFormat;
+          let curMaxW = options.maxWidth;
+          let curMaxH = options.maxHeight;
+
+          for (let scaleIter = 0; scaleIter < 8; scaleIter++) {
+            for (const q of qualitySteps) {
+              const encoded = await encodeCandidate(curMaxW, curMaxH, q);
+              if (encoded && (!bestBlob || encoded.blob.size < bestBlob.size)) {
+                bestBlob = encoded.blob;
+                bestFormat = encoded.format;
               }
               if (bestBlob && bestBlob.size <= maxBytes) break;
             }
-          }
-          if (bestBlob && bestBlob.size > maxBytes) {
-            const smaller = await renderScaledBlob(
-              Math.round(options.maxWidth * 0.78),
-              Math.round(options.maxHeight * 0.78),
-              targetFormat,
-              0.62
-            );
-            if (smaller && smaller.size < bestBlob.size) {
-              bestBlob = smaller;
+
+            if (bestBlob && bestBlob.size <= maxBytes) break;
+
+            const currentDims = calculateOptimalDimensions(img.width, img.height, curMaxW, curMaxH);
+            if (Math.max(currentDims.width, currentDims.height) <= MIN_DOWNSCALE_DIMENSION) {
+              break;
             }
+
+            curMaxW = Math.max(MIN_DOWNSCALE_DIMENSION, Math.round(currentDims.width * DOWNSCALE_FACTOR));
+            curMaxH = Math.max(MIN_DOWNSCALE_DIMENSION, Math.round(currentDims.height * DOWNSCALE_FACTOR));
           }
 
           cleanup();
 
           if (!bestBlob) {
+            failOrSafeFallback();
+            return;
+          }
+
+          if (bestBlob.size > maxBytes) {
+            reject(
+              new Error(
+                `La imagen procesada supera el límite institucional de ${Math.round(
+                  maxBytes / 1024
+                )} KB incluso tras la compresión progresiva. Intenta con una imagen más ligera.`
+              )
+            );
+            return;
+          }
+
+          const originalMatchesFormat =
+            file.type === bestFormat ||
+            ((!file.type || file.type === 'application/octet-stream') &&
+              ((bestFormat === 'image/webp' && /\.webp$/i.test(file.name)) ||
+                (bestFormat === 'image/jpeg' && /\.jpe?g$/i.test(file.name))));
+
+          if (bestBlob.size >= file.size && file.size <= maxBytes && originalMatchesFormat) {
             resolve(file);
             return;
           }
 
-          if (bestBlob.size >= file.size && file.type === targetFormat) {
-            resolve(file);
-            return;
-          }
-
-          const cleanBaseName = file.name
-            .replace(/\.[^/.]+$/, '')
-            .replace(/[^a-zA-Z0-9_-]/g, '_')
-            .slice(0, 60) || 'imagen_optimizada';
-          const ext = targetFormat === 'image/webp' ? '.webp' : targetFormat === 'image/png' ? '.png' : '.jpg';
+          const cleanBaseName =
+            file.name
+              .replace(/\.[^/.]+$/, '')
+              .replace(/[^a-zA-Z0-9_-]/g, '_')
+              .slice(0, 60) || 'imagen_optimizada';
+          const ext =
+            bestFormat === 'image/webp' ? '.webp' : bestFormat === 'image/png' ? '.png' : '.jpg';
           const compressedFile = new File([bestBlob], `${cleanBaseName}${ext}`, {
-            type: targetFormat,
+            type: bestFormat,
             lastModified: Date.now()
           });
           resolve(compressedFile);
         } catch (err) {
           cleanup();
-          console.warn('Error en compresión de imagen, usando original:', err);
-          resolve(file);
+          console.warn('Error en compresión de imagen:', err);
+          failOrSafeFallback();
         }
       })();
     };
@@ -145,8 +283,12 @@ export async function compressImageFile(
       const img = new Image();
       img.onload = () => handleLoadedImage(img, true);
       img.onerror = () => {
-        try { URL.revokeObjectURL(objectUrl); } catch {}
-        resolve(file);
+        try {
+          URL.revokeObjectURL(objectUrl);
+        } catch {}
+        failOrSafeFallback(
+          'No se pudo decodificar la imagen seleccionada. Asegúrate de subir un archivo PNG, JPG o WebP válido.'
+        );
       };
       img.src = objectUrl;
       return;
@@ -156,10 +298,13 @@ export async function compressImageFile(
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => handleLoadedImage(img, false);
-      img.onerror = () => resolve(file);
+      img.onerror = () =>
+        failOrSafeFallback(
+          'No se pudo decodificar la imagen seleccionada. Asegúrate de subir un archivo PNG, JPG o WebP válido.'
+        );
       img.src = e.target?.result as string;
     };
-    reader.onerror = () => reject(new Error('No se pudo leer el archivo de imagen para compresión'));
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo de imagen para compresión.'));
     reader.readAsDataURL(file);
   });
 }
@@ -172,55 +317,132 @@ export async function compressImageDataUrl(
   customOptions?: ImageCompressionOptions
 ): Promise<string> {
   const options = { ...DEFAULT_OPTIONS, ...customOptions };
+  const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
 
-  if (!dataUrl || !dataUrl.startsWith('data:image') || dataUrl.startsWith('data:image/svg+xml')) {
+  if (!dataUrl) {
     return dataUrl;
   }
 
-  return new Promise((resolve) => {
+  if (dataUrl.startsWith('data:image/svg+xml')) {
+    throw new Error(SVG_REJECT_ERROR);
+  }
+
+  if (!dataUrl.startsWith('data:image/')) {
+    return dataUrl;
+  }
+
+  return new Promise((resolve, reject) => {
+    const failOrSafeFallback = (reason?: string) => {
+      if (canSafelyFallbackDataUrl(dataUrl, maxBytes)) {
+        resolve(dataUrl);
+        return;
+      }
+      reject(
+        new Error(
+          reason ||
+            `No fue posible comprimir la imagen por debajo del límite institucional de ${Math.round(
+              Math.min(maxBytes, HARD_FALLBACK_MAX_BYTES) / 1024
+            )} KB.`
+        )
+      );
+    };
+
     const img = new Image();
     img.onload = () => {
       try {
-        const { width, height } = calculateOptimalDimensions(
-          img.width,
-          img.height,
-          options.maxWidth,
-          options.maxHeight
-        );
+        let activeFormat: 'image/webp' | 'image/jpeg' | 'image/png' = options.format;
+        const qualitySteps = buildQualitySteps(options.quality);
 
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        const renderDataUrl = (
+          maxW: number,
+          maxH: number,
+          format: 'image/webp' | 'image/jpeg' | 'image/png',
+          quality: number
+        ): string | null => {
+          const { width, height } = calculateOptimalDimensions(img.width, img.height, maxW, maxH);
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return null;
+          if (format === 'image/jpeg') {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+          }
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+          return canvas.toDataURL(format, quality);
+        };
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
+        let bestUrl: string | null = null;
+        let bestBytes = Number.POSITIVE_INFINITY;
+        let curMaxW = options.maxWidth;
+        let curMaxH = options.maxHeight;
+
+        for (let scaleIter = 0; scaleIter < 8; scaleIter++) {
+          for (const q of qualitySteps) {
+            let candidate = renderDataUrl(curMaxW, curMaxH, activeFormat, q);
+            if (!candidate) continue;
+
+            // Detectar respaldo silencioso a PNG cuando el navegador no soporta WebP
+            if (activeFormat === 'image/webp' && !candidate.startsWith('data:image/webp')) {
+              activeFormat = 'image/jpeg';
+              candidate = renderDataUrl(curMaxW, curMaxH, 'image/jpeg', q);
+              if (!candidate) continue;
+            }
+
+            const candidateBytes = estimateDataUrlBytes(candidate);
+            if (candidateBytes < bestBytes) {
+              bestUrl = candidate;
+              bestBytes = candidateBytes;
+            }
+            if (bestBytes <= maxBytes) break;
+          }
+
+          if (bestBytes <= maxBytes) break;
+
+          const currentDims = calculateOptimalDimensions(img.width, img.height, curMaxW, curMaxH);
+          if (Math.max(currentDims.width, currentDims.height) <= MIN_DOWNSCALE_DIMENSION) {
+            break;
+          }
+
+          curMaxW = Math.max(MIN_DOWNSCALE_DIMENSION, Math.round(currentDims.width * DOWNSCALE_FACTOR));
+          curMaxH = Math.max(MIN_DOWNSCALE_DIMENSION, Math.round(currentDims.height * DOWNSCALE_FACTOR));
+        }
+
+        if (!bestUrl) {
+          failOrSafeFallback();
+          return;
+        }
+
+        if (bestBytes > maxBytes) {
+          reject(
+            new Error(
+              `La imagen procesada supera el límite institucional de ${Math.round(
+                maxBytes / 1024
+              )} KB tras la compresión progresiva.`
+            )
+          );
+          return;
+        }
+
+        const originalBytes = estimateDataUrlBytes(dataUrl);
+        const originalMatchesFormat = dataUrl.startsWith(`data:${activeFormat}`);
+        if (bestBytes >= originalBytes && originalBytes <= maxBytes && originalMatchesFormat) {
           resolve(dataUrl);
           return;
         }
 
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const maxBytes = options.maxSizeBytes || DEFAULT_OPTIONS.maxSizeBytes;
-        const maxChars = Math.ceil((maxBytes * 4) / 3) + 64;
-        const qualitySteps = Array.from(new Set([options.quality, 0.74, 0.62, 0.5]));
-        let compressedDataUrl = canvas.toDataURL(options.format, options.quality);
-        for (const q of qualitySteps.slice(1)) {
-          if (compressedDataUrl.length <= maxChars) break;
-          const nextUrl = canvas.toDataURL(options.format, q);
-          if (nextUrl.length < compressedDataUrl.length) {
-            compressedDataUrl = nextUrl;
-          }
-        }
-        resolve(compressedDataUrl.length < dataUrl.length ? compressedDataUrl : dataUrl);
+        resolve(bestUrl);
       } catch (err) {
-        console.warn('Error en compresión de DataURL, usando original:', err);
-        resolve(dataUrl);
+        console.warn('Error en compresión de DataURL:', err);
+        failOrSafeFallback();
       }
     };
 
-    img.onerror = () => resolve(dataUrl);
+    img.onerror = () =>
+      failOrSafeFallback('No se pudo decodificar la imagen proporcionada para su compresión.');
     img.src = dataUrl;
   });
 }
@@ -234,16 +456,16 @@ export function calculateOptimalDimensions(
   maxWidth: number,
   maxHeight: number
 ): { width: number; height: number } {
-  let width = srcWidth;
-  let height = srcHeight;
+  let width = Math.max(1, srcWidth);
+  let height = Math.max(1, srcHeight);
 
   if (width > maxWidth) {
-    height = Math.round((height * maxWidth) / width);
+    height = Math.max(1, Math.round((height * maxWidth) / width));
     width = maxWidth;
   }
 
   if (height > maxHeight) {
-    width = Math.round((width * maxHeight) / height);
+    width = Math.max(1, Math.round((width * maxHeight) / height));
     height = maxHeight;
   }
 

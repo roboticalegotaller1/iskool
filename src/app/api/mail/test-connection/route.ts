@@ -228,7 +228,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload: TestConnectionPayload = await req.json();
+    const payload = (await req.json().catch(() => null)) as TestConnectionPayload | null;
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Cuerpo JSON inválido.' },
+        { status: 400 }
+      );
+    }
 
     if (!payload.email || !payload.email.includes('@')) {
       return NextResponse.json(

@@ -113,7 +113,7 @@ Complejo agrícola donde me retiré a la vida civil en 1920 con mis antiguos com
 **Duración**: 12 segundos
 
 **Guion**:
-Momento clave de la historia insurgente narrado con emoción.
+Soy el General Francisco Villa, El Centauro del Norte. Al frente de mi División del Norte cabalgué por los desiertos de Chihuahua, Durango y Zacatecas para derribar la tiranía y conquistar tierra, justicia y escuelas para los hijos del pueblo.
 
 
 ## Registro de Preguntas y Respuestas (Caché Bóveda Curricular - 0 Tokens)

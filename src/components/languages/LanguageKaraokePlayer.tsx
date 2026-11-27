@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { KaraokePhrase, LanguageCode, AvatarGender, useLanguagesStore } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from './HumanGesticulatingAvatar';
 import { playUniversalIskoolVoice, prefetchUniversalIskoolVoice, stopAllIskoolAudio, UniversalAudioController } from '@/lib/historicalVoiceEngine';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Mic, 
   MicOff, 
@@ -169,6 +170,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const isRecordingRef = useRef<boolean>(false);
   const isTestingMicLiveRef = useRef<boolean>(false);
   const canUseSpeechRecognitionRef = useRef<boolean>(true);
+  const recordedAudioUrlRef = useRef<string | null>(null);
+
+  const replaceRecordedAudioUrl = useCallback((nextUrl: string | null) => {
+    const prev = recordedAudioUrlRef.current;
+    if (prev && prev !== nextUrl) {
+      try { URL.revokeObjectURL(prev); } catch {}
+    }
+    recordedAudioUrlRef.current = nextUrl;
+    setRecordedAudioUrl(nextUrl);
+  }, []);
 
   // Variables de control de voz reactiva y buffer acumulado
   const voiceStateRef = useRef<{
@@ -196,58 +207,62 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     return phrase.targetText.split(/\s+/).filter(Boolean);
   }, [phrase.targetText]);
 
-  // Sintetizador Web Audio nativo para efectos de sonido
+  // Sintetizador Web Audio nativo sobre contexto compartido (evita agotar el pool de AudioContext del navegador)
   const playSfx = useCallback((type: 'correct' | 'wrong' | 'victory' | 'start') => {
     if (typeof window === 'undefined') return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
 
       if (type === 'start') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
+        osc.start(now);
+        osc.stop(now + 0.15);
       } else if (type === 'correct') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.frequency.setValueAtTime(587.33, now);
+        osc.frequency.setValueAtTime(880, now + 0.08);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
       } else if (type === 'wrong') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, ctx.currentTime);
-        osc.frequency.setValueAtTime(160, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.setValueAtTime(160, now + 0.15);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
       } else if (type === 'victory') {
         [440, 554.37, 659.25, 880].forEach((freq, i) => {
           const o = ctx.createOscillator();
           const g = ctx.createGain();
           o.type = 'sine';
-          o.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
-          g.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.1);
-          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.45);
+          o.frequency.setValueAtTime(freq, now + i * 0.1);
+          g.gain.setValueAtTime(0.2, now + i * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.45);
           o.connect(g);
           g.connect(ctx.destination);
-          o.start(ctx.currentTime + i * 0.1);
-          o.stop(ctx.currentTime + i * 0.1 + 0.45);
+          o.start(now + i * 0.1);
+          o.stop(now + i * 0.1 + 0.45);
         });
       }
     } catch {}
@@ -316,10 +331,31 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   // Reiniciar estado al cambiar de frase y pre-calentar voz modelo en caché
   useEffect(() => {
     setIsRecording(false);
+    isRecordingRef.current = false;
     setIsCompleted(false);
     setActiveWordIndex(0);
+    setCompletedIndices([]);
+    setErrorIndices([]);
+    setCompletedWords([]);
+    setErrorWordsList([]);
+    setAccuracyScore(0);
+    setEvaluationSource(null);
+    setGeneratedAdvice(null);
+    setFeedbackAlert(null);
+    replaceRecordedAudioUrl(null);
+    setIsUserSpeakingNow(false);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    let prefetchTimer: ReturnType<typeof setTimeout> | null = null;
     if (phrase?.targetText) {
-      const t = setTimeout(() => {
+      prefetchTimer = setTimeout(() => {
         void prefetchUniversalIskoolVoice({
           text: phrase.targetText,
           characterName: avatarName,
@@ -329,21 +365,107 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           rate: speechRate,
         });
       }, 45);
-      return () => clearTimeout(t);
     }
-    setCompletedIndices([]);
-    setErrorIndices([]);
-    setCompletedWords([]);
-    setErrorWordsList([]);
-    setAccuracyScore(0);
-    setEvaluationSource(null);
-    setGeneratedAdvice(null);
-    setFeedbackAlert(null);
-    setRecordedAudioUrl(null);
-    setIsUserSpeakingNow(false);
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-  }, [phrase.id]);
+
+    return () => {
+      if (prefetchTimer) clearTimeout(prefetchTimer);
+    };
+  }, [phrase.id, replaceRecordedAudioUrl]);
+
+  // Limpieza integral de hardware, timers, rAFs, SpeechRecognition y Blob URLs al desmontar
+  useEffect(() => {
+    return () => {
+      isRecordingRef.current = false;
+      isTestingMicLiveRef.current = false;
+
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+      if (testAnimRef.current) {
+        cancelAnimationFrame(testAnimRef.current);
+        testAnimRef.current = null;
+      }
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+
+      if (mediaRecorderRef.current) {
+        try {
+          mediaRecorderRef.current.ondataavailable = null;
+          mediaRecorderRef.current.onstop = null;
+          if (mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+          }
+        } catch {}
+        mediaRecorderRef.current = null;
+      }
+
+      if (audioStreamRef.current) {
+        try {
+          audioStreamRef.current.getTracks().forEach(t => t.stop());
+        } catch {}
+        audioStreamRef.current = null;
+      }
+      if (testStreamRef.current) {
+        try {
+          testStreamRef.current.getTracks().forEach(t => t.stop());
+        } catch {}
+        testStreamRef.current = null;
+      }
+
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        try { audioContextRef.current.close().catch(() => {}); } catch {}
+        audioContextRef.current = null;
+      }
+      if (testAudioCtxRef.current && testAudioCtxRef.current.state !== 'closed') {
+        try { testAudioCtxRef.current.close().catch(() => {}); } catch {}
+        testAudioCtxRef.current = null;
+      }
+
+      if (speechRecRef.current) {
+        try {
+          speechRecRef.current.onresult = null;
+          speechRecRef.current.onend = null;
+          speechRecRef.current.onerror = null;
+          speechRecRef.current.stop();
+        } catch {}
+        speechRecRef.current = null;
+      }
+      if (testSpeechRecRef.current) {
+        try {
+          testSpeechRecRef.current.onresult = null;
+          testSpeechRecRef.current.onend = null;
+          testSpeechRecRef.current.onerror = null;
+          testSpeechRecRef.current.stop();
+        } catch {}
+        testSpeechRecRef.current = null;
+      }
+
+      if (modelAudioCtrlRef.current) {
+        try { modelAudioCtrlRef.current.stop(); } catch {}
+        modelAudioCtrlRef.current = null;
+      }
+      if (audioRef.current) {
+        try { audioRef.current.pause(); } catch {}
+        audioRef.current = null;
+      }
+      if (studentAudioPlayerRef.current) {
+        try {
+          studentAudioPlayerRef.current.pause();
+          studentAudioPlayerRef.current.onended = null;
+          studentAudioPlayerRef.current.onerror = null;
+        } catch {}
+        studentAudioPlayerRef.current = null;
+      }
+
+      if (recordedAudioUrlRef.current) {
+        try { URL.revokeObjectURL(recordedAudioUrlRef.current); } catch {}
+        recordedAudioUrlRef.current = null;
+      }
+    };
+  }, []);
 
   // Generador de Consejos Pedagógicos
   const generateAdvice = (errors: string[], acc: number) => {
@@ -469,11 +591,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       speechRecRef.current = null;
     }
 
-    // Detener MediaRecorder y recolectar el audio físico completo
+    // Detener MediaRecorder y recolectar el audio físico completo (sin duplicar URL.createObjectURL)
     let recordedBlob: Blob | null = null;
     const mr = mediaRecorderRef.current;
     if (mr && mr.state !== 'inactive') {
       try {
+        mr.onstop = null;
         recordedBlob = await new Promise<Blob | null>((resolve) => {
           mr.addEventListener('stop', () => {
             if (audioChunksRef.current.length > 0) {
@@ -497,19 +620,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
     if (recordedBlob && recordedBlob.size > 0) {
       const audioUrl = URL.createObjectURL(recordedBlob);
-      setRecordedAudioUrl((prev) => {
-        if (prev && prev !== audioUrl) {
-          try { URL.revokeObjectURL(prev); } catch {}
-        }
-        return audioUrl;
-      });
+      replaceRecordedAudioUrl(audioUrl);
     }
 
     if (audioStreamRef.current) {
       audioStreamRef.current.getTracks().forEach(t => t.stop());
+      audioStreamRef.current = null;
     }
     if (audioContextRef.current) {
-      try { audioContextRef.current.close(); } catch {}
+      try { audioContextRef.current.close().catch(() => {}); } catch {}
+      audioContextRef.current = null;
     }
 
     let finalCorrectIndices: number[] = [];
@@ -660,7 +780,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     if (onComplete) {
       onComplete({ accuracy: calculatedAcc, correctCount: finalCorrectIndices.length, errorWords: finalErrorWords });
     }
-  }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx, detectedSpeechText]);
+  }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx, detectedSpeechText, replaceRecordedAudioUrl]);
 
   // Reproductor de muestras de entonación con voz humana neuronal (Québec vs Francia)
   const playIntonationSample = useCallback((dialect: 'fr-CA' | 'fr-FR', word: string = 'né') => {
@@ -1024,7 +1144,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       isTestingMicLiveRef.current = false;
     }
 
-    // 2. Crear / reanudar AudioContext sincrónicamente dentro del gesto de usuario (click / touch)
+    // 2. Cerrar contexto previo si existía y crear/reanudar AudioContext sincrónicamente dentro del gesto
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      try { audioContextRef.current.close().catch(() => {}); } catch {}
+      audioContextRef.current = null;
+    }
     let localCtx: AudioContext | null = createUniversalAudioContext();
     if (localCtx) {
       audioContextRef.current = localCtx;
@@ -1044,7 +1168,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setAccuracyScore(0);
     setEvaluationSource(null);
     setFeedbackAlert(null);
-    setRecordedAudioUrl(null);
+    replaceRecordedAudioUrl(null);
     setIsUserSpeakingNow(false);
     setDetectedSpeechText('');
     audioChunksRef.current = [];
@@ -1073,6 +1197,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       const micResult = await getMicrophoneStream();
       stream = micResult.stream;
       if (!stream) {
+        if (localCtx && localCtx.state !== 'closed') {
+          try { localCtx.close().catch(() => {}); } catch {}
+          if (audioContextRef.current === localCtx) audioContextRef.current = null;
+          localCtx = null;
+        }
         setKaraokeMode('interactive');
         if (!micResult.isSecureContext) {
           setFeedbackAlert('📱 Conexión HTTP detectada en móvil/tablet: Los sistemas móviles bloquean el micrófono físico en HTTP sin cifrar. El Modo Guiado está activo para que practiques tocando palabras.');
@@ -1080,6 +1209,10 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           setFeedbackAlert(`ℹ️ ${micResult.error || 'El hardware no entregó señal'}. La práctica continúa activa en Modo Guiado.`);
         }
       }
+    } else if (localCtx && localCtx.state !== 'closed') {
+      try { localCtx.close().catch(() => {}); } catch {}
+      if (audioContextRef.current === localCtx) audioContextRef.current = null;
+      localCtx = null;
     }
 
     if (stream) {
@@ -1120,6 +1253,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
           const freqData = new Uint8Array(analyser.frequencyBinCount);
           const timeData = new Uint8Array(analyser.fftSize);
+          let lastUiCommitMs = 0;
+          const UI_COMMIT_INTERVAL_MS = 75; // ~13 Hz para eliminar tormenta de 60 re-renders/s
 
           const analyzeAudio = () => {
             if (!isRecordingRef.current) return;
@@ -1129,7 +1264,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             }
 
             if (analyserRef.current) {
-              // 1. Medición de RMS y Decibeles Verdaderos (dBFS)
+              // 1. Medición de RMS y Decibeles Verdaderos (dBFS) para VAD continuo
               analyserRef.current.getByteTimeDomainData(timeData);
               let sumSquare = 0;
               for (let i = 0; i < timeData.length; i++) {
@@ -1139,27 +1274,10 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               const rms = Math.sqrt(sumSquare / timeData.length) * (micGainValue / 2.0);
               const { dBFS, percentage, label } = calculateDecibelsFromRms(rms);
 
-              setDecibelValue(dBFS);
-              setDecibelLabel(label);
-              setAudioLevel(percentage);
-
-              // 2. Ecualizador visual espectral de 16 bandas
-              analyserRef.current.getByteFrequencyData(freqData);
-              const bars: number[] = [];
-              const maxBin = Math.min(freqData.length, 64);
-              const step = Math.max(1, Math.floor(maxBin / 16));
-              for (let b = 0; b < 16; b++) {
-                const val = freqData[b * step] || 0;
-                bars.push(Math.min(100, Math.max(6, Math.round((val / 255) * 100))));
-              }
-              setFrequencyBars(bars);
-
               const now = performance.now();
               const state = voiceStateRef.current;
               // Detección vocal: requiere potencia vocal real (>= -30 dBFS y nivel >= 20%)
               const isVoiceActive = dBFS >= -30 && percentage >= 20;
-
-              setIsUserSpeakingNow(isVoiceActive);
 
               if (isVoiceActive) {
                 state.voicedFramesCount++;
@@ -1178,6 +1296,24 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     state.silenceStartTime = 0;
                   }
                 }
+              }
+
+              // 2. Commits de estado React acotados a ~13 Hz (cuando la pestaña está visible)
+              if (!document.hidden && now - lastUiCommitMs >= UI_COMMIT_INTERVAL_MS) {
+                lastUiCommitMs = now;
+                analyserRef.current.getByteFrequencyData(freqData);
+                const bars: number[] = new Array(16);
+                const maxBin = Math.min(freqData.length, 64);
+                const step = Math.max(1, Math.floor(maxBin / 16));
+                for (let b = 0; b < 16; b++) {
+                  const val = freqData[b * step] || 0;
+                  bars[b] = Math.min(100, Math.max(6, Math.round((val / 255) * 100)));
+                }
+                setDecibelValue(dBFS);
+                setDecibelLabel(label);
+                setAudioLevel(percentage);
+                setFrequencyBars(bars);
+                setIsUserSpeakingNow(isVoiceActive);
               }
             }
             animFrameRef.current = requestAnimationFrame(analyzeAudio);
@@ -1250,13 +1386,10 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         mediaRecorder.onstop = () => {
           const finalMime = supportedMime || mediaRecorder.mimeType || 'audio/mp4';
           const audioBlob = new Blob(audioChunksRef.current, { type: finalMime });
-          const nextUrl = URL.createObjectURL(audioBlob);
-          setRecordedAudioUrl((prev) => {
-            if (prev && prev !== nextUrl) {
-              try { URL.revokeObjectURL(prev); } catch {}
-            }
-            return nextUrl;
-          });
+          if (audioBlob.size > 0) {
+            const nextUrl = URL.createObjectURL(audioBlob);
+            replaceRecordedAudioUrl(nextUrl);
+          }
         };
         mediaRecorder.start(100);
       } catch (e) {
@@ -1327,7 +1460,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setTestDetectedSpeechText('');
     setTestMicError(null);
 
-    // Crear AudioContext inmediatamente dentro del click
+    // Cerrar contexto de prueba previo si existía y crear AudioContext dentro del gesto
+    if (testAudioCtxRef.current && testAudioCtxRef.current.state !== 'closed') {
+      try { testAudioCtxRef.current.close().catch(() => {}); } catch {}
+      testAudioCtxRef.current = null;
+    }
     let localCtx: AudioContext | null = createUniversalAudioContext();
     if (localCtx) {
       testAudioCtxRef.current = localCtx;
@@ -1339,6 +1476,13 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       const micResult = await getMicrophoneStream();
       const stream = micResult.stream;
       if (!stream) {
+        if (localCtx && localCtx.state !== 'closed') {
+          try { localCtx.close().catch(() => {}); } catch {}
+          if (testAudioCtxRef.current === localCtx) testAudioCtxRef.current = null;
+          localCtx = null;
+        }
+        isTestingMicLiveRef.current = false;
+        setIsTestingMicLive(false);
         setHardwareMicAvailable(false);
         setTestMicError(micResult.error || 'El navegador o sistema no entregó señal de audio.');
         return;
@@ -1375,39 +1519,46 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
         const freqData = new Uint8Array(analyser.frequencyBinCount);
         const timeData = new Uint8Array(analyser.fftSize);
+        let lastTestUiCommitMs = 0;
+        const TEST_UI_COMMIT_INTERVAL_MS = 75; // ~13 Hz para suavidad visual sin tormenta de re-renders
 
         const testLoop = () => {
           if (!isTestingMicLiveRef.current) return;
 
-          if (testAudioCtxRef.current?.state === 'suspended') {
-            testAudioCtxRef.current.resume().catch(() => {});
-          }
+          const now = performance.now();
+          if (!document.hidden && now - lastTestUiCommitMs >= TEST_UI_COMMIT_INTERVAL_MS) {
+            lastTestUiCommitMs = now;
 
-          // 1. Decibeles verdaderos y nivel RMS
-          analyser.getByteTimeDomainData(timeData);
-          let sumSquare = 0;
-          for (let i = 0; i < timeData.length; i++) {
-            const val = (timeData[i] - 128) / 128;
-            sumSquare += val * val;
-          }
-          const rms = Math.sqrt(sumSquare / timeData.length) * (micGainValue / 2.0);
-          const { dBFS, percentage, label } = calculateDecibelsFromRms(rms);
+            if (testAudioCtxRef.current?.state === 'suspended') {
+              testAudioCtxRef.current.resume().catch(() => {});
+            }
 
-          setDecibelValue(dBFS);
-          setDecibelLabel(label);
-          setAudioLevel(percentage);
-          setIsUserSpeakingNow(dBFS >= -30 && percentage >= 20);
+            // 1. Decibeles verdaderos y nivel RMS
+            analyser.getByteTimeDomainData(timeData);
+            let sumSquare = 0;
+            for (let i = 0; i < timeData.length; i++) {
+              const val = (timeData[i] - 128) / 128;
+              sumSquare += val * val;
+            }
+            const rms = Math.sqrt(sumSquare / timeData.length) * (micGainValue / 2.0);
+            const { dBFS, percentage, label } = calculateDecibelsFromRms(rms);
 
-          // 2. Bandas de frecuencia en vivo
-          analyser.getByteFrequencyData(freqData);
-          const bars: number[] = [];
-          const maxBin = Math.min(freqData.length, 64);
-          const step = Math.max(1, Math.floor(maxBin / 16));
-          for (let b = 0; b < 16; b++) {
-            const val = freqData[b * step] || 0;
-            bars.push(Math.min(100, Math.max(6, Math.round((val / 255) * 100))));
+            // 2. Bandas de frecuencia en vivo
+            analyser.getByteFrequencyData(freqData);
+            const bars: number[] = new Array(16);
+            const maxBin = Math.min(freqData.length, 64);
+            const step = Math.max(1, Math.floor(maxBin / 16));
+            for (let b = 0; b < 16; b++) {
+              const val = freqData[b * step] || 0;
+              bars[b] = Math.min(100, Math.max(6, Math.round((val / 255) * 100)));
+            }
+
+            setDecibelValue(dBFS);
+            setDecibelLabel(label);
+            setAudioLevel(percentage);
+            setIsUserSpeakingNow(dBFS >= -30 && percentage >= 20);
+            setFrequencyBars(bars);
           }
-          setFrequencyBars(bars);
 
           testAnimRef.current = requestAnimationFrame(testLoop);
         };

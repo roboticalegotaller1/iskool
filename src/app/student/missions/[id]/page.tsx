@@ -6,7 +6,7 @@ import { useGamificationStore } from '@/store/useGamificationStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { Header } from '@/components/Header';
 import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import { Loader } from '@/components/Loader';
 import { useHydration } from '@/hooks/useHydration';
 import { 
@@ -284,28 +284,59 @@ function MissionPageContent({ params }: MissionPageContentProps) {
   const [evidenceDesc, setEvidenceDesc] = useState('');
   const [evidenceReflection, setEvidenceReflection] = useState('');
   const [mockFile, setMockFile] = useState<{ url: string, type: string, name?: string } | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSubmissionFinished, setIsSubmissionFinished] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleRealFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError(null);
 
-    const isAudio = file.type.startsWith('audio');
-    const processed = !isAudio && file.type.startsWith('image/')
-      ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
-      : file;
+    try {
+      if (isSvgFile(file)) {
+        setUploadError('Por seguridad e integridad visual, no se permiten archivos SVG. Sube una imagen PNG, JPG o WebP.');
+        return;
+      }
 
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const url = evt.target?.result as string;
-      setMockFile({
-        url: url,
-        type: isAudio ? 'audio' : 'image',
-        name: processed.name
-      });
-    };
-    reader.readAsDataURL(processed);
+      const mime = (file.type || '').toLowerCase();
+      const isAudio = mime.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|webm)$/i.test(file.name || '');
+
+      if (!isAudio && !isRasterImageFile(file)) {
+        setUploadError('Formato no soportado. Adjunta una imagen rasterizada (PNG, JPG o WebP) o un archivo de audio válido.');
+        return;
+      }
+
+      let processed: File = file;
+      if (!isAudio) {
+        processed = await compressImageFile(file, {
+          maxWidth: 1280,
+          maxHeight: 1280,
+          maxSizeBytes: 300 * 1024,
+        });
+        if (processed.size > 400 * 1024) {
+          setUploadError('La imagen comprimida supera el límite institucional de 400 KB. Intenta con una captura más ligera.');
+          return;
+        }
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const url = evt.target?.result as string;
+        setMockFile({
+          url,
+          type: isAudio ? 'audio' : 'image',
+          name: processed.name,
+        });
+      };
+      reader.readAsDataURL(processed);
+    } catch (err: any) {
+      setUploadError(
+        err?.message || 'No fue posible comprimir la imagen para su carga segura. Sube un archivo PNG, JPG o WebP válido.'
+      );
+    } finally {
+      e.target.value = '';
+    }
   };
 
 
@@ -1046,19 +1077,27 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                                 </div>
                                 <div className="text-left">
                                   <p className="text-xs font-bold text-zinc-100">
-                                    {mockFile.type === 'image' ? 'boceto_fraccionamiento.png' : 'grabacion_poema.mp3'}
+                                    {mockFile.name || (mockFile.type === 'image' ? 'boceto_fraccionamiento.webp' : 'grabacion_poema.mp3')}
                                   </p>
                                   <p className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">{mockFile.type === 'image' ? 'Imagen adjuntada' : 'Audio grabado'}</p>
                                 </div>
                               </div>
                               <button
                                 type="button"
-                                onClick={() => setMockFile(null)}
+                                onClick={() => {
+                                  setMockFile(null);
+                                  setUploadError(null);
+                                }}
                                 className="text-xs text-rose-500 hover:text-rose-400 hover:underline font-bold"
                               >
                                 Remover
                               </button>
                             </div>
+                          )}
+                          {uploadError && (
+                            <p role="alert" className="text-[11px] font-bold text-rose-400 mt-1">
+                              {uploadError}
+                            </p>
                           )}
                         </div>
 
@@ -1067,7 +1106,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                           type="file" 
                           ref={fileInputRef} 
                           onChange={handleRealFileChange} 
-                          accept="image/*,audio/*" 
+                          accept="image/png,image/jpeg,image/webp,audio/*" 
                           className="hidden" 
                         />
 

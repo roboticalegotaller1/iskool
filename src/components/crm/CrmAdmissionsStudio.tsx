@@ -9,7 +9,7 @@
  */
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import {
   Search, Plus, ChevronLeft, X, Phone, Mail, Calendar, Clock,
   CheckCircle2, AlertCircle, ArrowRight, Users, Target, TrendingUp,
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useCrmStore, getFilteredLeads, getLeadsByStage, getLeadCandidates, getLeadActivities, getLeadDocuments, getPendingTasks, getOverdueTasks, calculateDashboardSummary, calculateFunnelMetrics, calculateChannelEffectiveness, getSchoolLeads, getPipelineLeads } from '@/store/useCrmStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import type { CrmLead, CrmActivity, PipelineType, CrmStageKey, CrmAuthorizedRole, LeadPriority } from '@/types/crm';
 import {
@@ -48,7 +49,12 @@ export default function CrmAdmissionsStudio({
   onSwitchToOperational,
 }: CrmAdmissionsStudioProps = {}) {
   const { user, loading: authLoading } = useAuth();
-  const { activeSchoolId, institutionsList } = useSchoolAdminStore();
+  const { activeSchoolId, institutionsList } = useSchoolAdminStore(
+    useShallow((state) => ({
+      activeSchoolId: state.activeSchoolId,
+      institutionsList: state.institutionsList,
+    }))
+  );
   const school = institutionsList.find((s: { id: string }) => s.id === activeSchoolId);
 
   // Soporte para selección de perfiles autorizados (Dueño, Directivo, Administración y Ventas)
@@ -1287,14 +1293,14 @@ export default function CrmAdmissionsStudio({
 
     return (
       <AnimatePresence>
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex justify-end"
           onClick={() => setSelectedLeadId(null)}
         >
-          <motion.div
+          <m.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -1631,8 +1637,8 @@ export default function CrmAdmissionsStudio({
                 </div>
               </section>
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       </AnimatePresence>
     );
   };
@@ -1994,7 +2000,7 @@ export default function CrmAdmissionsStudio({
     if (!isAddLeadModalOpen) return null;
     return (
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
@@ -2208,7 +2214,7 @@ export default function CrmAdmissionsStudio({
               </button>
             </div>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     );
   };
@@ -2218,7 +2224,7 @@ export default function CrmAdmissionsStudio({
     const activityOptions = ACTIVITY_TYPES.filter(t => !['stage_change', 'assignment_change', 'enrollment_completed', 'document_uploaded', 'document_verified', 'scholarship_approved'].includes(t.key));
     return (
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col"
@@ -2305,7 +2311,7 @@ export default function CrmAdmissionsStudio({
               </button>
             </div>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     );
   };
@@ -2314,7 +2320,7 @@ export default function CrmAdmissionsStudio({
     if (!isDeclineModalOpen || !selectedLeadId) return null;
     return (
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6"
@@ -2366,7 +2372,7 @@ export default function CrmAdmissionsStudio({
               Confirmar Declinación
             </button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     );
   };
@@ -2376,7 +2382,7 @@ export default function CrmAdmissionsStudio({
     if (!isCandidateModalOpen) return null;
     return (
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200"
@@ -2505,7 +2511,7 @@ export default function CrmAdmissionsStudio({
               </button>
             </div>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     );
   };
@@ -2515,7 +2521,7 @@ export default function CrmAdmissionsStudio({
     if (!isEditTutorModalOpen || !selectedLeadId) return null;
     return (
       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-200"
@@ -2616,7 +2622,7 @@ export default function CrmAdmissionsStudio({
               </button>
             </div>
           </form>
-        </motion.div>
+        </m.div>
       </div>
     );
   };
@@ -2898,6 +2904,7 @@ export default function CrmAdmissionsStudio({
   // RENDER PRINCIPAL
   // ============================================================
   return (
+    <LazyMotion features={domAnimation}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 p-4 md:p-8 font-sans">
       <div className="max-w-[1600px] mx-auto">
         {renderHeader()}
@@ -2905,7 +2912,7 @@ export default function CrmAdmissionsStudio({
         {renderFilterBar()}
         {renderTabs()}
 
-        <motion.div
+        <m.div
           key={activeTab}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -2916,7 +2923,7 @@ export default function CrmAdmissionsStudio({
           {activeTab === 'directory' && renderDirectory()}
           {activeTab === 'dashboard' && renderDashboard()}
           {activeTab === 'tasks' && renderTasks()}
-        </motion.div>
+        </m.div>
       </div>
 
       {renderLeadDrawer()}
@@ -2929,5 +2936,6 @@ export default function CrmAdmissionsStudio({
       {renderCfdiModal()}
       {renderToast()}
     </div>
+    </LazyMotion>
   );
 }

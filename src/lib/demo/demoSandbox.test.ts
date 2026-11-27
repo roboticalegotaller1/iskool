@@ -105,7 +105,7 @@ describe('Ecosistema Cuentas Demo (CCT 0001) & Cero Escritura en Bóveda', () =>
     expect(unified.nonOrgStaffCount).toBe(0);
   });
 
-  it('deduplicates legacy empty CCT 0001 / Cuentas demo institution into canonical sch-demo-0001 with 3 campuses, 650 students, 45 teachers, 36 billing and 10 payroll items', () => {
+  it('deduplicates legacy empty CCT 0001 / Cuentas demo institution into canonical sch-demo-0001 with 3 campuses, 650 students, 45 teachers, 36 billing and 50 payroll items', () => {
     const legacyId = 'sch-legacy-999';
     useSchoolAdminStore.setState((state) => ({
       activeSchoolId: legacyId,
@@ -173,7 +173,7 @@ describe('Ecosistema Cuentas Demo (CCT 0001) & Cero Escritura en Bóveda', () =>
     expect(demoBilling.filter((b) => b.status === 'paid')).toHaveLength(18);
     expect(demoBilling.filter((b) => b.status === 'pending')).toHaveLength(9);
     expect(demoBilling.filter((b) => b.status === 'overdue')).toHaveLength(9);
-    expect(demoPayroll).toHaveLength(10);
+    expect(demoPayroll).toHaveLength(50);
   });
 
   it('scopes 15 CRM admissions leads and candidates to sch-demo-0001 without polluting IBIME metrics', () => {

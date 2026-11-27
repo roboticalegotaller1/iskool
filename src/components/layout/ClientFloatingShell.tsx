@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useAuth } from '@/context/AuthContext';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 const DemoGuidedTourDock = dynamic(
   () => import('@/components/demo/DemoGuidedTourDock').then((m) => m.DemoGuidedTourDock),
@@ -13,9 +15,19 @@ const GlobalHelpFab = dynamic(
 );
 
 export function ClientFloatingShell() {
+  const { user } = useAuth();
+  const isDemoUser = Boolean(
+    user &&
+      isDemoSandboxContext({
+        email: user.email,
+        schoolId: user.school_id,
+        userId: user.id,
+      })
+  );
+
   return (
     <>
-      <DemoGuidedTourDock />
+      {isDemoUser && <DemoGuidedTourDock />}
       <GlobalHelpFab />
     </>
   );

@@ -31,7 +31,7 @@ import {
 import { BackButton } from '@/components/navigation/BackButton';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import { isISkoolHouseBrand, isISkoolOwnLogo, ISKOOL_THEME_TOKENS } from '@/lib/branding/tenantThemeTokens';
-import { compressImageDataUrl } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 
 // Paleta de Presets Institucionales Recomendados
 const COLOR_PRESETS = [
@@ -94,45 +94,56 @@ export default function WhiteLabelAdminPage() {
     applyWhiteLabelCssVariables(newHex);
   };
 
-  // Carga directa de archivo de imagen local con compresión automática (Regla No Negociable 3)
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Carga directa de archivo de imagen local con compresión previa en File (evita pico de RAM en FileReader)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      alert('Por favor selecciona un archivo de imagen válido (PNG, JPG o WebP).');
-      return;
-    }
-
-    // Seguridad SVG & Regla 3: bloquear SVG crudo ejecutable o rasterizar/comprimir por debajo de 400 KB
-    if (file.type === 'image/svg+xml') {
+    // Seguridad SVG & Regla 3: bloquear SVG crudo ejecutable antes de leer en memoria
+    if (isSvgFile(file)) {
       alert('Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP (se optimizará automáticamente a WebP).');
       e.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        try {
-          const compressed = await compressImageDataUrl(result, {
-            maxWidth: 512,
-            maxHeight: 512,
-            quality: 0.85,
-            format: 'image/webp'
-          });
-          if (!compressed || compressed.length > 560 * 1024) {
-            alert('La imagen procesada supera el límite institucional de 400 KB tras la compresión.');
-            return;
-          }
-          setLogoUrl(compressed);
-        } catch {
-          alert('No se pudo comprimir la imagen por debajo del límite permitido (400 KB).');
-        }
+    if (!isRasterImageFile(file)) {
+      alert('Por favor selecciona un archivo de imagen válido (PNG, JPG o WebP).');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const compressed = await compressImageFile(file, {
+        maxWidth: 512,
+        maxHeight: 512,
+        quality: 0.84,
+        format: 'image/webp',
+        maxSizeBytes: 300 * 1024
+      });
+
+      if (compressed.size > 400 * 1024) {
+        alert('La imagen procesada supera el límite institucional de 400 KB tras la compresión.');
+        return;
       }
-    };
-    reader.readAsDataURL(file);
+
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('No se pudo leer la imagen optimizada.'));
+        reader.readAsDataURL(compressed);
+      });
+
+      if (!dataUrl || dataUrl.length > 560 * 1024) {
+        alert('La imagen procesada supera el límite institucional de 400 KB tras la compresión.');
+        return;
+      }
+
+      setLogoUrl(dataUrl);
+    } catch (err: any) {
+      alert(err?.message || 'No se pudo comprimir la imagen por debajo del límite permitido (400 KB).');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   // Guardar configuración en Zustand y persistir opcionalmente en Supabase
@@ -280,7 +291,7 @@ export default function WhiteLabelAdminPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1.5">
-                    URL de la Imagen (PNG, SVG o JPG)
+                    URL de la Imagen (PNG, JPG o WebP)
                   </label>
                   <input aria-label="https://tu-colegio.edu.mx/logo.png"
                     type="url"
@@ -297,7 +308,7 @@ export default function WhiteLabelAdminPage() {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileUpload}
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="hidden"
                   />
                   <button

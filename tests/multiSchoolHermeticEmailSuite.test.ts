@@ -46,7 +46,7 @@ describe('🏛️ SUITE DE CORREO INSTITUCIONAL HERMÉTICO & MULTI-COLEGIO (CEO 
     });
 
     it('debe incluir acceso directo desde las tarjetas del Directorio de Colegios', () => {
-      expect(adminContent).toContain('Abrir Email Institucional, Triage Cognitivo y Conexión Google para');
+      expect(adminContent).toContain('Abrir Email Institucional, Triage Cognitivo y Sincronización Institucional para');
     });
 
     it('debe renderizar CEOEmailCommunicationsModal vinculado a la institución activa', () => {

@@ -1,5 +1,3 @@
-"use client";
-
 import React, { Suspense } from 'react';
 import { RoleGuard } from '@/components/auth/RoleGuard';
 

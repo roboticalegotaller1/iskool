@@ -12,6 +12,7 @@ import {
   resetActiveVoiceFormantLevels,
   StudioBroadcastChain,
 } from './audio/studioBroadcastMaster';
+import { fetchCachedNeuralTtsBlob } from './audio/ttsClientCache';
 import {
   getLanguagePipeline,
   resolveTargetLocale,
@@ -1031,14 +1032,31 @@ export interface UniversalAudioController {
   isPlaying: () => boolean;
 }
 
-// Caché en memoria para URLs de audio ya sintetizadas (latencia 0 ms en repeticiones y pre-calentamiento)
+// Caché en memoria LRU para URLs de audio ya sintetizadas (respaldada por Cache Storage persistente)
 const universalAudioBlobCache = new Map<string, string>();
 const inFlightUniversalVoicePromises = new Map<string, Promise<string>>();
-const MAX_UNIVERSAL_AUDIO_BLOB_CACHE = 160;
+const MAX_UNIVERSAL_AUDIO_BLOB_CACHE = 60;
 let activePrefetchCount = 0;
 
+function getUniversalAudioBlob(cacheKey: string): string | undefined {
+  const hit = universalAudioBlobCache.get(cacheKey);
+  if (!hit) return undefined;
+  // Promover a más reciente (LRU real)
+  universalAudioBlobCache.delete(cacheKey);
+  universalAudioBlobCache.set(cacheKey, hit);
+  return hit;
+}
+
 function storeUniversalAudioBlob(cacheKey: string, audioUrl: string): void {
-  if (universalAudioBlobCache.has(cacheKey)) return;
+  const existing = universalAudioBlobCache.get(cacheKey);
+  if (existing) {
+    if (existing !== audioUrl) {
+      try { URL.revokeObjectURL(existing); } catch {}
+    }
+    universalAudioBlobCache.delete(cacheKey);
+    universalAudioBlobCache.set(cacheKey, audioUrl);
+    return;
+  }
   if (universalAudioBlobCache.size >= MAX_UNIVERSAL_AUDIO_BLOB_CACHE) {
     const oldestKey = universalAudioBlobCache.keys().next().value;
     if (oldestKey) {
@@ -1125,7 +1143,7 @@ export function prefetchUniversalIskoolVoice(
   const spec = buildUniversalVoiceCacheSpec(options);
   if (!spec.cleanText) return Promise.resolve(null);
 
-  const cached = universalAudioBlobCache.get(spec.cacheKey);
+  const cached = getUniversalAudioBlob(spec.cacheKey);
   if (cached) return Promise.resolve(cached);
 
   const existingPromise = inFlightUniversalVoicePromises.get(spec.cacheKey);
@@ -1136,28 +1154,24 @@ export function prefetchUniversalIskoolVoice(
   }
 
   activePrefetchCount++;
-  const promise = fetch('/api/ai/tts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({
-      text: spec.cleanText,
-      characterName: spec.characterName,
-      historicalAge: spec.historicalAge,
-      birthDeathDates: spec.birthDeathDates,
-      variantIndex: spec.variantIndex,
-      role: spec.role,
-      narratorMode: spec.narratorMode,
-      voice: spec.voiceId,
-      language: spec.effectiveLang,
-      rate: spec.rate,
-      pitch: spec.pitch,
-    }),
+  const promise = fetchCachedNeuralTtsBlob({
+    text: spec.cleanText,
+    characterName: spec.characterName,
+    historicalAge: spec.historicalAge,
+    birthDeathDates: spec.birthDeathDates,
+    variantIndex: spec.variantIndex,
+    role: spec.role,
+    narratorMode: spec.narratorMode,
+    voice: spec.voiceId,
+    language: spec.effectiveLang,
+    rate: spec.rate,
+    pitch: spec.pitch,
   })
-    .then(async (res) => {
-      if (!res.ok) throw new Error(`Prefetch TTS HTTP ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+    .then((result) => {
+      if (!result?.blob) throw new Error('Prefetch TTS sin datos');
+      const existingUrl = getUniversalAudioBlob(spec.cacheKey);
+      if (existingUrl) return existingUrl;
+      const url = URL.createObjectURL(result.blob);
       storeUniversalAudioBlob(spec.cacheKey, url);
       return url;
     })
@@ -1327,9 +1341,9 @@ export async function playUniversalIskoolVoice(
 
   const wFlag = window as unknown as { __iskoolVoiceSynthesisPending?: boolean };
 
-  // Intentar primero con el motor neural de alta fidelidad (conectando con prefetch en vuelo si existe)
+  // Intentar primero con el motor neural de alta fidelidad (caché RAM -> Cache Storage persistente -> red)
   try {
-    let audioUrl = universalAudioBlobCache.get(cacheKey);
+    let audioUrl = getUniversalAudioBlob(cacheKey);
 
     if (!audioUrl) {
       wFlag.__iskoolVoiceSynthesisPending = true;
@@ -1338,12 +1352,8 @@ export async function playUniversalIskoolVoice(
         if (pendingPrefetch) {
           audioUrl = await pendingPrefetch;
         } else {
-          const fetchPromise = fetch('/api/ai/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            signal: abortController.signal,
-            body: JSON.stringify({
+          const fetchPromise = fetchCachedNeuralTtsBlob(
+            {
               text: cleanText,
               characterName,
               historicalAge,
@@ -1355,13 +1365,18 @@ export async function playUniversalIskoolVoice(
               language: effectiveLang,
               rate,
               pitch,
-            }),
-          }).then(async (response) => {
-            if (!response.ok) {
-              throw new Error(`TTS server HTTP ${response.status}`);
+            },
+            abortController.signal
+          ).then((result) => {
+            if (abortController.signal.aborted) {
+              throw new DOMException('Aborted', 'AbortError');
             }
-            const blob = await response.blob();
-            const createdUrl = URL.createObjectURL(blob);
+            if (!result?.blob) {
+              throw new Error('TTS server sin datos de audio');
+            }
+            const existingUrl = getUniversalAudioBlob(cacheKey);
+            if (existingUrl) return existingUrl;
+            const createdUrl = URL.createObjectURL(result.blob);
             storeUniversalAudioBlob(cacheKey, createdUrl);
             return createdUrl;
           });

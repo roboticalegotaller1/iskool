@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 
 export interface CorrectionPayload {
   school_id: string;
@@ -11,10 +11,7 @@ export interface CorrectionPayload {
 
 export class ShadowModeLearningService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   // 1. REGISTRAR CORRECCIÓN HUMANA
@@ -23,32 +20,32 @@ export class ShadowModeLearningService {
 
     const { data: matter } = await supabase
       .from('inbox_matters')
-      .select('*')
+      .select('destination, assigned_role, category, status')
       .eq('id', payload.matter_id)
       .single();
 
     if (!matter) throw new Error('Asunto no encontrado.');
 
-    // Registrar en auditoría de aprendizaje
-    await supabase.from('inbox_director_feedback').insert({
-      school_id: payload.school_id,
-      matter_id: payload.matter_id,
-      user_id: payload.user_id,
-      original_destination: matter.destination,
-      corrected_destination: payload.corrected_destination,
-      original_assigned_role: matter.assigned_role,
-      corrected_assigned_role: payload.corrected_assigned_role,
-      feedback_notes: payload.feedback_notes,
-      rule_proposed: `Derivar categoría "${matter.category}" siempre a ${payload.corrected_assigned_role || payload.corrected_destination}`
-    });
-
-    // Actualizar el asunto con la decisión humana
-    await supabase.from('inbox_matters').update({
-      destination: payload.corrected_destination,
-      assigned_role: payload.corrected_assigned_role ?? matter.assigned_role,
-      status: payload.corrected_destination === 'DELEGAR' ? 'DELEGADO' : matter.status,
-      updated_at: new Date().toISOString()
-    }).eq('id', payload.matter_id);
+    // Registrar en auditoría de aprendizaje y actualizar el asunto en paralelo
+    await Promise.all([
+      supabase.from('inbox_director_feedback').insert({
+        school_id: payload.school_id,
+        matter_id: payload.matter_id,
+        user_id: payload.user_id,
+        original_destination: matter.destination,
+        corrected_destination: payload.corrected_destination,
+        original_assigned_role: matter.assigned_role,
+        corrected_assigned_role: payload.corrected_assigned_role,
+        feedback_notes: payload.feedback_notes,
+        rule_proposed: `Derivar categoría "${matter.category}" siempre a ${payload.corrected_assigned_role || payload.corrected_destination}`
+      }),
+      supabase.from('inbox_matters').update({
+        destination: payload.corrected_destination,
+        assigned_role: payload.corrected_assigned_role ?? matter.assigned_role,
+        status: payload.corrected_destination === 'DELEGAR' ? 'DELEGADO' : matter.status,
+        updated_at: new Date().toISOString()
+      }).eq('id', payload.matter_id)
+    ]);
 
     // Evaluar si corresponde proponer regla automática
     return this.evaluateRuleProposal(payload.school_id, matter.category);
@@ -60,7 +57,7 @@ export class ShadowModeLearningService {
 
     const { data: feedbackHistory } = await supabase
       .from('inbox_director_feedback')
-      .select('*')
+      .select('corrected_assigned_role')
       .eq('school_id', schoolId)
       .order('created_at', { ascending: false })
       .limit(10);

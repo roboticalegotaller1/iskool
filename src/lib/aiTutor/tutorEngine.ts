@@ -150,9 +150,9 @@ export class AITutorEngine {
       state.hints_used_count += 1;
     }
 
-    // 4. VERIFICACIÓN DE FALLBACK A PRERREQUISITOS
-    const graph = AcademicGraph.build(KnowledgeVaultLoader.loadAll());
+    // 4. VERIFICACIÓN DE FALLBACK A PRERREQUISITOS (carga perezosa del grafo solo cuando se necesita)
     if (state.consecutive_errors >= 2 && !state.temporary_support_target_id) {
+      const graph = AcademicGraph.build(KnowledgeVaultLoader.loadAll());
       const mainNode = graph.getNode(state.main_target_id);
       if (mainNode) {
         const prereqs = [...mainNode.prerequisites, ...mainNode.builds_on];
@@ -163,17 +163,21 @@ export class AITutorEngine {
       }
     }
 
-    // 5. CONSTRUCCIÓN DE CONTEXTO Y PROMPT
-    const { contextDto, promptText } = AITutorContextBuilder.build(
+    // 5. CONSTRUCCIÓN DE CONTEXTO Y PROMPT SEPARADO (SYSTEM INSTRUCTION ESTÁTICO + TURNO DINÁMICO)
+    const { contextDto } = AITutorContextBuilder.build(
       session,
       profile,
       competenciesMap,
       6
     );
 
-    const fullPrompt = AITutorPromptBuilder.build(contextDto, cleanInput, evaluation.decision);
+    const { systemInstruction, userPrompt } = AITutorPromptBuilder.buildParts(
+      contextDto,
+      cleanInput,
+      evaluation.decision
+    );
 
-    // 6. INVOCACIÓN AL MOTOR DE IA PEDAGÓGICA (vía BaseAcademicGenerator)
+    // 6. INVOCACIÓN AL MOTOR DE IA PEDAGÓGICA (vía BaseAcademicGenerator con presupuesto acotado y caché de prefijo)
     class TempTutorGenerator extends BaseAcademicGenerator<TutorResponseOutput> {
       protected parseOutput(raw: string): TutorResponseOutput {
         try {
@@ -191,17 +195,25 @@ export class AITutorEngine {
       protected validateOutput(): any {
         return { valid: true, errors: [], warnings: [], mismatches: [] };
       }
-      public async call(prompt: string): Promise<string> {
-        return this.callModel(prompt, BaseAcademicGenerator.DEFAULT_MODEL);
+      public async call(prompt: string, staticSystemInstruction: string): Promise<string> {
+        return this.callModel(prompt, BaseAcademicGenerator.DEFAULT_MODEL, undefined, {
+          maxOutputTokens: 400,
+          systemInstruction: staticSystemInstruction,
+        });
       }
     }
 
     const generator = new TempTutorGenerator();
-    const rawResponse = await generator.call(fullPrompt);
+    const rawResponse = await generator.call(userPrompt, systemInstruction);
 
     let parsedOutput: TutorResponseOutput;
     try {
-      const clean = rawResponse.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+      let clean = rawResponse.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+      const firstBrace = clean.indexOf('{');
+      const lastBrace = clean.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        clean = clean.slice(firstBrace, lastBrace + 1);
+      }
       parsedOutput = JSON.parse(clean);
     } catch {
       parsedOutput = {

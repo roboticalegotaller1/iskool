@@ -146,7 +146,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'companions',
     price: 500,
     icon: '🔥',
-    image: '/redisenos_assets/guardianes/store_phoenix_chick.jpg',
+    image: '/redisenos_assets/guardianes/store_phoenix_chick.webp',
     description: 'Compañero ígneo que otorga +10% de maná en desafíos aritméticos.',
     avatarItemKey: 'mascota_fenix'
   },
@@ -156,7 +156,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'companions',
     price: 450,
     icon: '🤖',
-    image: '/redisenos_assets/guardianes/store_baby_robot.jpg',
+    image: '/redisenos_assets/guardianes/store_baby_robot.webp',
     description: 'Asistente de lógica que sugiere patrones en ecuaciones complejas.',
     avatarItemKey: 'bebe_robot'
   },
@@ -166,7 +166,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'companions',
     price: 400,
     icon: '🐼',
-    image: '/redisenos_assets/guardianes/store_clay_panda.jpg',
+    image: '/redisenos_assets/guardianes/store_clay_panda.webp',
     description: 'Símbolo de calma y concentración durante los exámenes de comprensión.',
     avatarItemKey: 'panda_barro'
   },
@@ -178,7 +178,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'skins',
     price: 750,
     icon: '🔥',
-    image: '/redisenos_assets/guardianes/store_flame_cloak.jpg',
+    image: '/redisenos_assets/guardianes/store_flame_cloak.webp',
     description: 'Manto tejido con fuego arcano que ondea con energía elemental.',
     avatarItemKey: 'capa_fuego'
   },
@@ -188,7 +188,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'skins',
     price: 650,
     icon: '🧥',
-    image: '/redisenos_assets/guardianes/store_cyber_jacket.jpg',
+    image: '/redisenos_assets/guardianes/store_cyber_jacket.webp',
     description: 'Estilo contemporáneo con circuitos de neón para guardianes de la era digital.',
     avatarItemKey: 'chaqueta_cyber'
   },
@@ -198,7 +198,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'skins',
     price: 550,
     icon: '🥼',
-    image: '/redisenos_assets/guardianes/store_lab_coat.jpg',
+    image: '/redisenos_assets/guardianes/store_lab_coat.webp',
     description: 'Atuendo ceremonial para maestros de ciencias experimentales.',
     avatarItemKey: 'bata_laboratorio'
   },
@@ -210,7 +210,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'powerups',
     price: 300,
     icon: '⏳',
-    image: '/redisenos_assets/guardianes/store_hourglass.jpg',
+    image: '/redisenos_assets/guardianes/store_hourglass.webp',
     description: 'Otorga 30 segundos adicionales para reflexionar sin presión.',
     avatarItemKey: 'escudo_tactico'
   },
@@ -220,7 +220,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'powerups',
     price: 250,
     icon: '🧪',
-    image: '/redisenos_assets/guardianes/store_mana_potion.jpg',
+    image: '/redisenos_assets/guardianes/store_mana_potion.webp',
     description: 'Elimina 1 opción incorrecta en la arena de combate didáctico.',
     avatarItemKey: 'pocion_mana'
   },
@@ -230,7 +230,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'powerups',
     price: 200,
     icon: '🛡️',
-    image: '/redisenos_assets/guardianes/store_streak_shield.jpg',
+    image: '/redisenos_assets/guardianes/store_streak_shield.webp',
     description: 'Protege tu multiplicador de racha si cometes un desliz.',
     avatarItemKey: 'escudo_tactico'
   },
@@ -242,7 +242,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'badges',
     price: 1000,
     icon: '🏅',
-    image: '/redisenos_assets/guardianes/store_badge_scholar.jpg',
+    image: '/redisenos_assets/guardianes/store_badge_scholar.webp',
     description: 'Acreditación SEP al completar todas las misiones del bimestre.',
     avatarItemKey: 'corona_100'
   },
@@ -252,7 +252,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'badges',
     price: 900,
     icon: '💻',
-    image: '/redisenos_assets/guardianes/store_badge_coding.jpg',
+    image: '/redisenos_assets/guardianes/store_badge_coding.webp',
     description: 'Habilidad demostrada en pensamiento computacional algorítmico.',
     avatarItemKey: 'chaqueta_cyber'
   },
@@ -262,7 +262,7 @@ const REWARD_STORE_ITEMS: StoreItem[] = [
     category: 'badges',
     price: 800,
     icon: '🤝',
-    image: '/redisenos_assets/guardianes/store_badge_leader.jpg',
+    image: '/redisenos_assets/guardianes/store_badge_leader.webp',
     description: 'Reconocimiento por colaboración y ayuda a compañeros de aula.',
     avatarItemKey: 'corona_100'
   }
@@ -360,28 +360,28 @@ export default function GuardianesElementalesPage() {
     const key = overrideKey || selectedHeroItem;
     switch (key) {
       case 'capa_fuego':
-        return '/redisenos_assets/guardianes/liam_capa_fuego.jpg';
+        return '/redisenos_assets/guardianes/liam_capa_fuego.webp';
       case 'baculo_sabiduria':
-        return '/redisenos_assets/guardianes/liam_baculo_sabiduria.jpg';
+        return '/redisenos_assets/guardianes/liam_baculo_sabiduria.webp';
       case 'mascota_fenix':
-        return '/redisenos_assets/guardianes/liam_mascota_fenix.jpg';
+        return '/redisenos_assets/guardianes/liam_mascota_fenix.webp';
       case 'corona_100':
-        return '/redisenos_assets/guardianes/liam_corona_100.jpg';
+        return '/redisenos_assets/guardianes/liam_corona_100.webp';
       case 'bebe_robot':
-        return '/redisenos_assets/guardianes/liam_bebe_robot.jpg';
+        return '/redisenos_assets/guardianes/liam_bebe_robot.webp';
       case 'panda_barro':
-        return '/redisenos_assets/guardianes/liam_panda_barro.jpg';
+        return '/redisenos_assets/guardianes/liam_panda_barro.webp';
       case 'chaqueta_cyber':
-        return '/redisenos_assets/guardianes/liam_chaqueta_cyber.jpg';
+        return '/redisenos_assets/guardianes/liam_chaqueta_cyber.webp';
       case 'bata_laboratorio':
-        return '/redisenos_assets/guardianes/liam_bata_laboratorio.jpg';
+        return '/redisenos_assets/guardianes/liam_bata_laboratorio.webp';
       case 'escudo_tactico':
-        return '/redisenos_assets/guardianes/liam_escudo_tactico.jpg';
+        return '/redisenos_assets/guardianes/liam_escudo_tactico.webp';
       case 'pocion_mana':
-        return '/redisenos_assets/guardianes/liam_pocion_mana.jpg';
+        return '/redisenos_assets/guardianes/liam_pocion_mana.webp';
       case 'base':
       default:
-        return '/redisenos_assets/guardianes/liam_base_pedestal.jpg';
+        return '/redisenos_assets/guardianes/liam_base_pedestal.webp';
     }
   };
 
@@ -795,7 +795,7 @@ export default function GuardianesElementalesPage() {
               <div className="lg:col-span-6 relative rounded-3xl overflow-hidden border-4 border-amber-800 shadow-2xl bg-slate-900 aspect-[4/3] flex items-center justify-center">
                 {/* Imagen del Mapa Overworld Oficial */}
                 <Image
-                  src="/redisenos_assets/guardianes/mapa_guardianes_overworld.jpg"
+                  src="/redisenos_assets/guardianes/mapa_guardianes_overworld.webp"
                   alt="Mapa Overworld Guardianes Elementales"
                   fill
                   className="object-cover"
@@ -1491,7 +1491,7 @@ export default function GuardianesElementalesPage() {
             
             {/* Imagen de Fondo de la Batalla Oficial */}
             <Image
-              src={isGolemDefeated ? "/redisenos_assets/guardianes/forest_golem_purificado.jpg" : "/redisenos_assets/guardianes/batalla_forest_golem.jpg"}
+              src={isGolemDefeated ? "/redisenos_assets/guardianes/forest_golem_purificado.webp" : "/redisenos_assets/guardianes/batalla_forest_golem.webp"}
               alt="Arena de Combate Forest Golem"
               fill
               priority

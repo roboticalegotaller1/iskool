@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export const runtime = 'nodejs';
 
 /**
- * Endpoint oficial de revocación de credenciales Google OAuth (RFC 7009).
- * Requisito indispensable para Google Cloud Verification y certificación CASA Tier 2/3.
- * Desvincula la cuenta escolar, invoca https://oauth2.googleapis.com/revoke y purga datos locales.
+ * Endpoint oficial de revocación de credenciales OAuth (RFC 7009).
+ * Desvincula la cuenta escolar, invoca el endpoint oficial de revocación y purga datos locales.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -19,14 +20,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json().catch(() => ({}));
-    const requestedEmail = (body.email || auth.user?.email || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+    if (
+      auth.authenticated &&
+      auth.user &&
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: auth.user.school_id,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Operación restringida en cuentas de demostración.' },
+        { status: 403 }
+      );
+    }
 
-    // Verificación de propiedad (Anti-IDOR)
+    const body = await req.json().catch(() => null);
+    if (body !== null && typeof body !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Cuerpo JSON inválido.' },
+        { status: 400 }
+      );
+    }
+
+    const requestedEmail = String(body?.email || auth.user?.email || '').trim().toLowerCase();
+    if (!requestedEmail) {
+      return NextResponse.json(
+        { success: false, error: 'Se requiere especificar el correo electrónico de la cuenta a revocar.' },
+        { status: 400 }
+      );
+    }
+
+    // Verificación estricta de propiedad (Anti-IDOR): únicamente Super Usuario puede revocar cuentas ajenas
     if (auth.authenticated && auth.user) {
-      const isSuperUser = auth.user.role === 'superadmin' || auth.user.role === 'admin' || auth.user.role === 'director' || auth.user.role === 'owner';
+      const isSuperUser = isPlatformSuperUser(auth.user as any);
       const currentUserEmail = (auth.user.email || '').toLowerCase().trim();
-      if (!isSuperUser && currentUserEmail && currentUserEmail !== requestedEmail) {
+      if (!isSuperUser && (!currentUserEmail || currentUserEmail !== requestedEmail)) {
         return NextResponse.json(
           { success: false, error: 'Acceso no autorizado: No cuenta con permisos para revocar credenciales de otra cuenta.' },
           { status: 403 }
@@ -46,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Credenciales de Google OAuth para ${targetEmail} revocadas exitosamente y eliminadas del sistema.`,
+      message: `Credenciales OAuth para ${targetEmail} revocadas exitosamente y eliminadas del sistema.`,
       revokedAt: new Date().toISOString()
     });
   } catch (error: any) {

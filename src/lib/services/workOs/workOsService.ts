@@ -335,7 +335,7 @@ export class WorkOsService {
       uploadedEvidence?: {
         fileName: string;
         fileSize: number;
-        fileType: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx';
+        fileType: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
         dataUrl?: string;
         notes?: string;
       }[];
@@ -432,7 +432,7 @@ export class WorkOsService {
       uploadedEvidence?: {
         fileName: string;
         fileSize: number;
-        fileType: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx';
+        fileType: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
         dataUrl?: string;
         notes?: string;
       }[];

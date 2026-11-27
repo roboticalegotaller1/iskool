@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
+
+const PatchMagicLinkStatusSchema = z.enum(['opened', 'signed']);
 
 export interface MagicLinkRecord {
   token: string;
+  schoolId?: string;
   studentId: string;
   studentName: string;
   groupLabel: string;
@@ -108,20 +113,32 @@ const DEFAULT_SEED_LINKS: MagicLinkRecord[] = [
   },
 ];
 
+let magicLinksStoreCache: { mtimeMs: number; records: MagicLinkRecord[] } | null = null;
+
 function readMagicLinksStore(): MagicLinkRecord[] {
   try {
-    if (!fs.existsSync(/*turbopackIgnore: true*/ CACHE_DIR)) {
-      fs.mkdirSync(/*turbopackIgnore: true*/ CACHE_DIR, { recursive: true });
-    }
     if (!fs.existsSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE)) {
+      if (!fs.existsSync(/*turbopackIgnore: true*/ CACHE_DIR)) {
+        fs.mkdirSync(/*turbopackIgnore: true*/ CACHE_DIR, { recursive: true });
+      }
       fs.writeFileSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE, JSON.stringify(DEFAULT_SEED_LINKS, null, 2), 'utf-8');
+      const seededStat = fs.statSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE);
+      magicLinksStoreCache = { mtimeMs: seededStat.mtimeMs, records: [...DEFAULT_SEED_LINKS] };
       return [...DEFAULT_SEED_LINKS];
     }
+
+    const stat = fs.statSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE);
+    if (magicLinksStoreCache && magicLinksStoreCache.mtimeMs === stat.mtimeMs) {
+      return [...magicLinksStoreCache.records];
+    }
+
     const raw = fs.readFileSync(/*turbopackIgnore: true*/ MAGIC_LINKS_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
+      magicLinksStoreCache = { mtimeMs: stat.mtimeMs, records: parsed };
+      return [...parsed];
     }
+    magicLinksStoreCache = { mtimeMs: stat.mtimeMs, records: [...DEFAULT_SEED_LINKS] };
     return [...DEFAULT_SEED_LINKS];
   } catch {
     return [...DEFAULT_SEED_LINKS];
@@ -129,6 +146,7 @@ function readMagicLinksStore(): MagicLinkRecord[] {
 }
 
 function writeMagicLinksStore(records: MagicLinkRecord[]): void {
+  magicLinksStoreCache = null;
   try {
     if (!fs.existsSync(/*turbopackIgnore: true*/ CACHE_DIR)) {
       fs.mkdirSync(/*turbopackIgnore: true*/ CACHE_DIR, { recursive: true });
@@ -145,12 +163,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const token = searchParams.get('token');
   const studentId = searchParams.get('student_id');
-  const auth = await validateApiAuth(req);
 
-  const records = readMagicLinksStore();
-
-  // Acceso directo por token firmado/secreto específico (sin fallback enumerador por student_id)
+  // Acceso directo por token firmado/secreto específico (público, sin fallback enumerador por student_id)
   if (token) {
+    const records = readMagicLinksStore();
     const found = records.find((r) => r.token === token);
     if (found) {
       return NextResponse.json({ ok: true, record: found });
@@ -159,6 +175,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Consulta administrativa de listado: requiere sesión autenticada de personal autorizado
+  const auth = await validateApiAuth(req);
   if (!auth.authenticated || !auth.user) {
     return NextResponse.json(
       { ok: false, error: 'Autenticación o token de enlace requerido' },
@@ -173,6 +190,11 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const allRecords = readMagicLinksStore();
+  const isSuper = isPlatformSuperUser(auth.user);
+  const records = isSuper
+    ? allRecords
+    : allRecords.filter((r) => Boolean(auth.user?.school_id && r.schoolId === auth.user.school_id));
   if (studentId) {
     const filtered = records.filter((r) => r.studentId === studentId);
     return NextResponse.json({ ok: true, records: filtered });
@@ -198,7 +220,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { ok: false, error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const records = readMagicLinksStore();
 
     const now = new Date();
@@ -214,9 +242,14 @@ export async function POST(req: NextRequest) {
     // Token criptográfico generado estrictamente en el servidor (mínimo 192 bits de entropía)
     const token = `ml_${crypto.randomBytes(24).toString('base64url')}`;
     const studentId = String(body.studentId || 's1');
+    const isSuper = isPlatformSuperUser(auth.user);
+    const resolvedSchoolId = isSuper
+      ? (typeof body.schoolId === 'string' && body.schoolId.trim() ? body.schoolId.trim() : auth.user.school_id)
+      : auth.user.school_id;
 
     const newRecord: MagicLinkRecord = {
       token,
+      schoolId: resolvedSchoolId,
       studentId,
       studentName: String(body.studentName || 'Alumno ISkool'),
       groupLabel: String(body.groupLabel || '1°A Secundaria'),
@@ -244,7 +277,11 @@ export async function POST(req: NextRequest) {
     const updated = [newRecord, ...records.filter((r) => r.token !== token)];
     writeMagicLinksStore(updated);
 
-    return NextResponse.json({ ok: true, record: newRecord, records: updated });
+    const visibleRecords = isSuper
+      ? updated
+      : updated.filter((r) => Boolean(auth.user?.school_id && r.schoolId === auth.user.school_id));
+
+    return NextResponse.json({ ok: true, record: newRecord, records: visibleRecords });
   } catch (error) {
     console.error('[MagicLink API POST]', error);
     return NextResponse.json({ ok: false, error: 'Error al registrar Magic Link' }, { status: 500 });
@@ -253,13 +290,29 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ ok: false, error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
+    }
     const { token, status, signedBy, parentReply } = body;
 
     if (!token || typeof token !== 'string' || token.trim().length < 12) {
       return NextResponse.json({ ok: false, error: 'Token válido requerido' }, { status: 400 });
     }
 
+    const parsedStatus =
+      status === undefined
+        ? { success: true as const, data: 'signed' as const }
+        : PatchMagicLinkStatusSchema.safeParse(status);
+
+    if (!parsedStatus.success) {
+      return NextResponse.json(
+        { ok: false, error: 'Estado inválido. Solo se permite "opened" o "signed".' },
+        { status: 400 }
+      );
+    }
+
+    const validatedStatus = parsedStatus.data;
     const records = readMagicLinksStore();
     let updatedRecord: MagicLinkRecord | null = null;
 
@@ -267,8 +320,8 @@ export async function PATCH(req: NextRequest) {
       if (rec.token === token.trim()) {
         updatedRecord = {
           ...rec,
-          status: status || 'signed',
-          signedAt: (status || 'signed') === 'signed' ? new Date().toISOString() : rec.signedAt,
+          status: validatedStatus,
+          signedAt: validatedStatus === 'signed' ? new Date().toISOString() : rec.signedAt,
           signedBy: signedBy ? String(signedBy).slice(0, 120) : rec.tutorName,
           parentReply: parentReply !== undefined ? String(parentReply).slice(0, 500) : rec.parentReply,
         };

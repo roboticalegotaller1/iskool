@@ -23,12 +23,26 @@ import {
 import { FormattedDate } from '@/components/FormattedDate';
 import dynamic from 'next/dynamic';
 import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile, Group } from '@/types';
-import { TeacherMasterCopilot } from '@/components/teacher/TeacherMasterCopilot';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 
-// Carga diferida de pestañas y modales pesados bajo demanda
+// Carga diferida de pestañas, consolas y modales pesados bajo demanda
+const TeacherMasterCopilot = dynamic(
+  () => import('@/components/teacher/TeacherMasterCopilot').then((mod) => mod.TeacherMasterCopilot),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full min-h-[420px] rounded-2xl sm:rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-slate-800/80 p-8 flex flex-col items-center justify-center gap-3">
+        <div className="h-9 w-9 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+        <p className="text-xs font-bold text-slate-600 dark:text-zinc-300 tracking-wide">
+          Cargando Consola Docente Avanzada...
+        </p>
+      </div>
+    ),
+  }
+);
+
 const PlanningTab = dynamic(
   () => import('./PlanningTab').then((mod) => mod.PlanningTab),
   { ssr: false }
@@ -69,7 +83,13 @@ const RosterImporterModal = dynamic(
   { ssr: false }
 );
 
-import { IndependentTeacherGroupManagerModal } from '@/components/teacher/IndependentTeacherGroupManagerModal';
+const IndependentTeacherGroupManagerModal = dynamic(
+  () =>
+    import('@/components/teacher/IndependentTeacherGroupManagerModal').then(
+      (mod) => mod.IndependentTeacherGroupManagerModal
+    ),
+  { ssr: false }
+);
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { TeacherThreeStepAutopilotBar } from '@/components/ergonomics/TeacherThreeStepAutopilotBar';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
@@ -186,7 +206,6 @@ const RUBRIC_CRITERIA = [
 
 import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
 import { useTeacherSocialLoopStream } from '@/hooks/useTeacherSocialLoopStream';
 
 function TeacherDashboardContent() {
@@ -533,6 +552,23 @@ function TeacherDashboardContent() {
   const [mockEvidenceFileUrl, setMockEvidenceFileUrl] = useState('');
   const [mockEvidenceFileType, setMockEvidenceFileType] = useState<'image' | 'audio' | 'video' | 'pdf'>('image');
 
+  // Cierre accesible por tecla Escape (WCAG 2.2 AA) para los modales del portal docente
+  useEffect(() => {
+    if (!isLinkModalOpen && !isNotifyModalOpen && !selectedStudent) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (selectedStudent) {
+        setSelectedStudent(null);
+      } else if (isNotifyModalOpen) {
+        setIsNotifyModalOpen(false);
+      } else if (isLinkModalOpen) {
+        setIsLinkModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLinkModalOpen, isNotifyModalOpen, selectedStudent]);
+
   // Estados para Diseño de Exámenes (NEM + RPG Boss)
   const [isCreateExamFormOpen, setIsCreateExamFormOpen] = useState(false);
   const [designExamTitle, setDesignExamTitle] = useState('');
@@ -671,6 +707,7 @@ function TeacherDashboardContent() {
         
         if (queryWords.length > 0) {
           const word = queryWords[0];
+          const { supabase } = await import('@/lib/supabaseClient');
           const { data } = await supabase
             .from('nem_pdas')
             .select('description')
@@ -3137,7 +3174,12 @@ function TeacherDashboardContent() {
 
       {/* ----------------- MODAL DE VINCULAR EVIDENCIA ----------------- */}
       {isLinkModalOpen && linkingStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 text-left">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Vincular evidencia a tarea"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 text-left"
+        >
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 gap-4 animate-in fade-in zoom-in-95 duration-200 max-h-[90vh]">
             <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-850 pb-3">
               <h3 className="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2">
@@ -3314,7 +3356,12 @@ function TeacherDashboardContent() {
 
       {/* ----------------- MODAL DE NOTIFICACIÓN A TUTORES ----------------- */}
       {isNotifyModalOpen && notifyingStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 text-left">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Enviar alerta escolar a tutor"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-300 text-left"
+        >
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col p-6 gap-4 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-850 pb-3">
               <h3 className="text-sm font-black text-zinc-900 dark:text-white flex items-center gap-2">
@@ -3420,7 +3467,12 @@ function TeacherDashboardContent() {
 
       {/* Modal de Detalle de Alumno */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-md transition-opacity duration-300 text-left">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Detalle del alumno ${selectedStudent.first_name} ${selectedStudent.last_name_1}`}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 backdrop-blur-md transition-opacity duration-300 text-left"
+        >
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             
             {/* Cabecera del Modal */}
@@ -3969,7 +4021,7 @@ function TeacherDashboardContent() {
               <span className="text-cyan-400 font-black">+{latestMilestone.teacherXpReward} XP Docente</span>
             </div>
           </div>
-          <button onClick={clearMilestone} className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
+          <button type="button" aria-label="Cerrar notificación de Teacher Social Loop" onClick={clearMilestone} className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
         </div>
       )}
 
@@ -3982,12 +4034,12 @@ function TeacherDashboardContent() {
               ¡El alumno <strong className="text-yellow-400">{realtimeToast.studentName}</strong> ha derrotado a <strong className="text-indigo-400">{realtimeToast.questTitle}</strong>!
             </p>
           </div>
-          <button onClick={() => setRealtimeToast(null)} className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
+          <button type="button" aria-label="Cerrar alerta de combate académico" onClick={() => setRealtimeToast(null)} className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
         </div>
       )}
 
       {/* Modal de Creación y Administración Autónoma de Grupos y Alumnos */}
-      {isIndependentTeacher && currentTeacher && (
+      {isIndependentTeacher && currentTeacher && isGroupManagerOpen && (
         <IndependentTeacherGroupManagerModal
           isOpen={isGroupManagerOpen}
           onClose={() => setIsGroupManagerOpen(false)}

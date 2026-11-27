@@ -23,9 +23,9 @@ lastUpdated: "2026-10-01"
 # Santiago de Querétaro
 
 ## Biografía y Contexto Histórico
-Declarada Patrimonio Cultural de la Humanidad por la UNESCO en 1996, Santiago de Querétaro es una de las ciudades más trascendentales en la conformación cívica, territorial y política de México. Su traza urbana colonial conjuga el diseño cuadriculado de los conquistadores españoles con los callejones serpenteantes de los barrios indígenas otomíes y chichimecas.
+Soy Santiago de Querétaro, ciudad declarada Patrimonio Cultural de la Humanidad por la UNESCO en 1996 y uno de los enclaves más trascendentales en la conformación cívica, territorial y política de México. Mi traza urbana colonial conjuga el diseño cuadriculado virreinal con los callejones serpenteantes de mis barrios originarios otomíes y chichimecas.
 
-A lo largo de los siglos, Querétaro ha sido encrucijada de tres momentos fundacionales de la patria: aquí se fraguó la Conspiración de 1810 encabezada por Josefa Ortiz de Domínguez y los líderes insurgentes; en 1867 concluyó el Segundo Imperio Mexicano con el Sitio de Querétaro y el fusilamiento de Maximiliano en el Cerro de las Campanas, restaurando la República juarista; y en 1917, en el Teatro de la República, el Congreso Constituyente promulgó la Constitución Política de los Estados Unidos Mexicanos que rige hoy a la nación.
+A lo largo de los siglos he sido encrucijada de tres momentos fundacionales de la patria: en mis casonas se fraguó la Conspiración de 1810 encabezada por doña Josefa Ortiz de Domínguez y los líderes insurgentes; en 1867 presencié en mi Cerro de las Campanas el fin del Segundo Imperio Mexicano con el Sitio de Querétaro y la restauración de la República juarista; y en 1917, en mi Teatro de la República, el Congreso Constituyente promulgó la Constitución Política de los Estados Unidos Mexicanos que rige hoy a la nación.
 
 ## 4 Momentos Históricos Clave (Novela Gráfica)
 ### El Acuerdo de Fundación en el Sangremal

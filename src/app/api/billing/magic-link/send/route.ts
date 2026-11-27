@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { magicLinkService } from '@/lib/magicLinkService';
 import { formatWhatsAppPaymentNotification, formatEmailPaymentNotification } from '@/lib/notificationFormatter';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 
 /**
  * Generador y Despachador de Recordatorios de Cobro con Magic Links
@@ -25,7 +26,13 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({
+        success: false,
+        error: 'Cuerpo JSON inválido o malformado.'
+      }, { status: 400 });
+    }
     const { 
       invoiceId, 
       parentId, 
@@ -39,11 +46,12 @@ export async function POST(req: NextRequest) {
       schoolName 
     } = body;
 
-    const resolvedSchoolId = auth.user.role === 'superadmin'
+    const isSuper = isPlatformSuperUser(auth.user);
+    const resolvedSchoolId = isSuper
       ? (schoolId || auth.user.school_id || 'sch-001')
       : (auth.user.school_id || 'sch-001');
 
-    if (auth.user.role !== 'superadmin' && schoolId && auth.user.school_id && schoolId !== auth.user.school_id) {
+    if (!isSuper && schoolId && auth.user.school_id && schoolId !== auth.user.school_id) {
       return NextResponse.json({
         success: false,
         error: 'Acceso denegado: no puedes emitir enlaces de cobro para otro colegio.'
@@ -103,6 +111,13 @@ export async function POST(req: NextRequest) {
       emailPlainText: emailData.plainText
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Error interno al generar enlace de pago.',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
+      { status: 500 }
+    );
   }
 }

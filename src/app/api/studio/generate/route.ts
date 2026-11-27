@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { generateGamifiedProject } from '@/services/pedagogicalProjectEngine';
-import { generateOrFetchStudioMasterClass } from '@/lib/services/studioVaultEngine.service';
+import {
+  findStudioMasterClassInVault,
+  generateOrFetchStudioMasterClass,
+  parseTopicAndGrade,
+} from '@/lib/services/studioVaultEngine.service';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 const StudioGenerateSchema = z.object({
   topic: z.string().trim().min(2, 'El parámetro "topic" debe tener al menos 2 caracteres').max(200, 'El tema es demasiado largo'),
@@ -91,9 +97,154 @@ export async function POST(req: NextRequest) {
     const isEscapeRoom = template_type === 'escape_room' || templateType === 'escape_room' || rawStyle === 'escape_room';
     const gamificationStyle = isEscapeRoom ? 'escape_room' : rawStyle;
     const fase = inputFaseNem || ageGroup || 'Fase 5';
+    const isDemoSandbox = isDemoSandboxContext({
+      email: auth.user.email,
+      schoolId: auth.user.school_id,
+      userId: auth.user.id,
+      tenantId: auth.user.tenant_id,
+    });
 
     // MODO CLASE INTERACTIVA MAESTRA (Vault-First 0 Tokens + Tokens Reales + Persistencia Bóveda Curricular)
     if (!isEscapeRoom) {
+      if (isDemoSandbox) {
+        // Modo Cuentas Demo: lectura Vault-First permitida, 0 escrituras en disco de producción
+        const cached = !forceRegenerate
+          ? findStudioMasterClassInVault(topic, grade, fase, language, gamificationStyle)
+          : null;
+        if (cached) {
+          const cachedQuestions = cached.blocks
+            .filter((b) => b.type === 'quiz_question')
+            .map((b: any) => ({
+              question: b.data.question,
+              options: b.data.options,
+              correctIndex: b.data.correctIndex,
+              explanation: b.data.explanation,
+              timeLimitSeconds: b.data.timeLimitSeconds,
+            }));
+          return NextResponse.json({
+            success: true,
+            demoSandbox: true,
+            title: cached.metadata.title,
+            description: cached.metadata.description,
+            language,
+            template_type: template_type || templateType || 'master_class',
+            metadata: cached.metadata,
+            blocks: cached.blocks,
+            connections: cached.connections,
+            startNodeId: cached.startNodeId,
+            questions: cachedQuestions,
+            relatedResources: cached.relatedResources,
+            teacherMonitoringRubric: cached.teacherMonitoringRubric,
+            tokenTelemetry: cached.tokenTelemetry,
+            vaultRelativePath: cached.vaultRelativePath,
+            planeacionViewerUrl: cached.planeacionViewerUrl,
+            persistedInVault: false,
+            fromVault: true,
+            gradeLabel: cached.gradeLabel,
+            cleanTopic: cached.cleanTopic,
+          });
+        }
+
+        const parsedMeta = parseTopicAndGrade(topic, grade, fase, language, gamificationStyle);
+        const ts = Date.now();
+        const eph = recordEphemeralVaultItem('planning', {
+          actorEmail: auth.user.email,
+          title: `Estudio Demo: ${parsedMeta.cleanTopic}`,
+          payload: { grade: parsedMeta.gradeLabel, faseNem: parsedMeta.faseNem, language },
+        });
+        const demoQuestions = [
+          {
+            question: `¿Cuál es el concepto clave que profundizamos sobre ${parsedMeta.cleanTopic}?`,
+            options: [
+              `El análisis crítico y la comprensión de causas fundamentales de ${parsedMeta.cleanTopic}`,
+              'La memorización mecánica sin contexto',
+              'La dispersión de conceptos no relacionados',
+              'El descarte de evidencias comprobadas'
+            ],
+            correctIndex: 0,
+            explanation: `El aprendizaje significativo en ${parsedMeta.cleanTopic} requiere articular causas y efectos reales.`,
+            timeLimitSeconds: 60,
+          },
+        ];
+        const demoBlocks: any[] = [
+          {
+            id: `demo-class-${ts}-1`,
+            type: 'text_narrative',
+            title: `1. Clase Maestra Demo: ${parsedMeta.cleanTopic}`,
+            badgeLabel: 'MODO CUENTAS DEMO',
+            isStartNode: true,
+            position: { x: 60, y: 120 },
+            data: {
+              content: `Sesión interactiva efímera generada en Modo Cuentas Demo sobre **${parsedMeta.cleanTopic}** (${parsedMeta.gradeLabel} · ${parsedMeta.faseNem}). Ningún archivo fue escrito en la Bóveda Curricular de producción.`,
+              style: 'instruction',
+              speakerName: `Guía Docente · ${parsedMeta.gradeLabel}`,
+            },
+          },
+          {
+            id: `demo-quiz-${ts}-2`,
+            type: 'quiz_question',
+            title: '2. Reactivo Formativo Demo',
+            badgeLabel: 'PREGUNTA 1',
+            position: { x: 390, y: 120 },
+            data: demoQuestions[0],
+          },
+        ];
+        const demoConnections = [
+          { id: `demo-conn-${ts}-1`, sourceNodeId: demoBlocks[0].id, targetNodeId: demoBlocks[1].id, label: 'next' },
+        ];
+        return NextResponse.json({
+          success: true,
+          demoSandbox: true,
+          ephemeralId: eph.id,
+          title: `Clase Interactiva Demo: ${parsedMeta.cleanTopic} (${parsedMeta.gradeLabel})`,
+          description: `Actividad efímera generada en sesión Demo Sandbox para ${parsedMeta.cleanTopic} sin modificar la Bóveda Curricular.`,
+          language,
+          template_type: template_type || templateType || 'master_class',
+          metadata: {
+            title: `Clase Interactiva Demo: ${parsedMeta.cleanTopic} (${parsedMeta.gradeLabel})`,
+            description: `Actividad efímera generada en sesión Demo Sandbox para ${parsedMeta.cleanTopic}.`,
+            subject: campoFormativo || 'Saberes y Pensamiento Científico',
+            targetAge: parsedMeta.gradeLabel,
+            campoFormativo: campoFormativo || 'Saberes y Pensamiento Científico',
+            faseNem: parsedMeta.faseNem,
+            pdaNem: `Explora y aplica los fundamentos de ${parsedMeta.cleanTopic} en ${parsedMeta.gradeLabel}.`,
+            totalTimeLimit: 1800,
+            livesCount: 3,
+            streakMultiplier: true,
+            language,
+          },
+          blocks: demoBlocks,
+          connections: demoConnections,
+          startNodeId: demoBlocks[0].id,
+          questions: demoQuestions,
+          relatedResources: [],
+          teacherMonitoringRubric: {
+            checkpoints: ['Lectura de Clase Demo', 'Reactivo Formativo'],
+            alertThresholdPercent: 70,
+            linkedPlanningTitle: parsedMeta.cleanTopic,
+          },
+          tokenTelemetry: {
+            fromVault: false,
+            promptTokens: 0,
+            outputTokens: 0,
+            thoughtsTokens: 0,
+            totalTokens: 0,
+            costUsd: 0,
+            costMxn: 0,
+            fxRateMxnPerUsd: 19.7,
+            inputRateUsdPer1M: 0.25,
+            outputRateUsdPer1M: 1.5,
+            engineLabel: 'Modo Cuentas Demo (Sesión Efímera · 0 Escrituras en Bóveda)',
+          },
+          vaultRelativePath: '',
+          planeacionViewerUrl: '',
+          persistedInVault: false,
+          fromVault: false,
+          gradeLabel: parsedMeta.gradeLabel,
+          cleanTopic: parsedMeta.cleanTopic,
+        });
+      }
+
       const master = await generateOrFetchStudioMasterClass({
         topic,
         grade,
@@ -133,6 +284,76 @@ export async function POST(req: NextRequest) {
         fromVault: master.tokenTelemetry.fromVault,
         gradeLabel: master.gradeLabel,
         cleanTopic: master.cleanTopic,
+      });
+    }
+
+    if (isDemoSandbox) {
+      const readingText = getEscapeRoomReadingText(topic, language);
+      const ts = Date.now();
+      const eph = recordEphemeralVaultItem('planning', {
+        actorEmail: auth.user.email,
+        title: `Escape Room Demo: ${topic}`,
+        payload: { faseNem: fase, language, template_type: 'escape_room' },
+      });
+      const demoEscapeQuestions = [
+        {
+          question: `A partir del texto de lectura, ¿por qué el estudio de ${topic} constituye un pilar fundamental?`,
+          options: [
+            'Porque permite comprender causas primarias, evolución conceptual y repercusiones directas',
+            'Porque promueve la memorización mecánica sin contexto',
+            'Porque descarta evidencias documentales',
+            'Porque evita el pensamiento crítico'
+          ],
+          correctIndex: 0,
+          explanation: `El análisis de causas primarias y evolución conceptual fundamenta el dominio de ${topic}.`,
+          timeLimitSeconds: 60,
+        },
+      ];
+      const demoBlocks: any[] = [
+        {
+          id: `demo-esc-narr-${ts}-1`,
+          type: 'text_narrative',
+          title: `Misión Escape Room Demo: ${topic}`,
+          badgeLabel: 'MODO CUENTAS DEMO',
+          isStartNode: true,
+          position: { x: 60, y: 120 },
+          data: { content: readingText, style: 'mystery', speakerName: 'Guía del Escape Room' },
+        },
+        {
+          id: `demo-esc-quiz-${ts}-2`,
+          type: 'quiz_question',
+          title: 'Candado Analítico 1',
+          badgeLabel: 'CANDADO 1',
+          position: { x: 390, y: 120 },
+          data: demoEscapeQuestions[0],
+        },
+      ];
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        persistedInVault: false,
+        ephemeralId: eph.id,
+        title: `Escape Room Demo: ${topic}`,
+        description: `Aventura efímera generada en Modo Cuentas Demo sobre ${topic} (0 escrituras en Bóveda Curricular).`,
+        language,
+        readingText,
+        template_type: 'escape_room',
+        metadata: {
+          title: `Escape Room Demo: ${topic}`,
+          description: `Aventura efímera generada en Modo Cuentas Demo sobre ${topic}.`,
+          subject: campoFormativo || 'Saberes y Pensamiento Científico',
+          targetAge: grade || fase,
+          campoFormativo: campoFormativo || 'Saberes y Pensamiento Científico',
+          faseNem: fase,
+          language,
+          readingText,
+        },
+        blocks: demoBlocks,
+        connections: [
+          { id: `demo-esc-conn-${ts}-1`, sourceNodeId: demoBlocks[0].id, targetNodeId: demoBlocks[1].id, label: 'next' },
+        ],
+        startNodeId: demoBlocks[0].id,
+        questions: demoEscapeQuestions,
       });
     }
 

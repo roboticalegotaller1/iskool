@@ -8,7 +8,7 @@ import {
 } from '@/lib/services/workOs/workOsTypes';
 import { WorkOsService } from '@/lib/services/workOs/workOsService';
 import { EvidencePreviewModal } from './EvidencePreviewModal';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import {
   X,
   CheckCircle2,
@@ -68,7 +68,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
   const [resolutionDocs, setResolutionDocs] = useState<{
     fileName: string;
     fileSize: number;
-    fileType: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx';
+    fileType: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
     dataUrl?: string;
     notes?: string;
   }[]>([]);
@@ -89,7 +89,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
   const [inProgressDocs, setInProgressDocs] = useState<{
     fileName: string;
     fileSize: number;
-    fileType: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx';
+    fileType: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
     dataUrl?: string;
     notes?: string;
   }[]>([]);
@@ -112,7 +112,7 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
     activeTab === 'resolver' ? 100 : progressPercent
   );
 
-  // Manejo de carga de archivos (PDF, JPG, JPEG, DOC) con compresión WebP automática en imágenes
+  // Manejo de carga de archivos (PDF, DOC/DOCX <= 5 MB; imágenes comprimidas a WebP <= 300 KB)
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
     mode: 'resolver' | 'en_proceso'
@@ -120,18 +120,53 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const MAX_DOC_BYTES = 5 * 1024 * 1024; // 5 MB máximo para documentos PDF/DOC/DOCX
+
     for (let i = 0; i < files.length; i++) {
       const originalFile = files[i];
-      const ext = originalFile.name.split('.').pop()?.toLowerCase();
-      
-      let validExt: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx' = 'pdf';
-      if (ext === 'jpg' || ext === 'jpeg') validExt = ext;
-      else if (ext === 'doc' || ext === 'docx') validExt = ext;
-      else validExt = 'pdf';
+      const ext = originalFile.name.split('.').pop()?.toLowerCase() || '';
 
-      const processed = originalFile.type.startsWith('image/')
-        ? await compressImageFile(originalFile, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => originalFile)
-        : originalFile;
+      if (isSvgFile(originalFile)) {
+        onTriggerToast('⚠️ Por seguridad e integridad visual, no se permiten archivos SVG. Usa PNG, JPG, WebP, PDF o DOC/DOCX.');
+        continue;
+      }
+
+      let processed = originalFile;
+      let validExt: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
+
+      if (isRasterImageFile(originalFile)) {
+        try {
+          processed = await compressImageFile(originalFile, {
+            maxWidth: 1280,
+            maxHeight: 1280,
+            maxSizeBytes: 300 * 1024
+          });
+          if (processed.size > 400 * 1024) {
+            onTriggerToast(`⚠️ La imagen "${originalFile.name}" supera el límite institucional de 400 KB tras la compresión.`);
+            continue;
+          }
+        } catch (err: any) {
+          onTriggerToast(`⚠️ ${err?.message || `No se pudo comprimir "${originalFile.name}" por debajo de 400 KB.`}`);
+          continue;
+        }
+
+        if (processed.type === 'image/webp' || processed.name.toLowerCase().endsWith('.webp')) {
+          validExt = 'webp';
+        } else if (processed.type === 'image/jpeg' || /\.jpe?g$/i.test(processed.name)) {
+          validExt = 'jpg';
+        } else {
+          validExt = 'webp';
+        }
+      } else if (ext === 'pdf' || ext === 'doc' || ext === 'docx') {
+        if (originalFile.size > MAX_DOC_BYTES) {
+          onTriggerToast(`⚠️ El documento "${originalFile.name}" supera el límite máximo permitido de 5 MB.`);
+          continue;
+        }
+        validExt = ext;
+      } else {
+        onTriggerToast(`⚠️ Formato no permitido en "${originalFile.name}". Adjunta PDF, DOC, DOCX, PNG, JPG o WebP.`);
+        continue;
+      }
 
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -151,6 +186,8 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
       };
       reader.readAsDataURL(processed);
     }
+
+    e.target.value = '';
   };
 
   // 1. Confirmar Resolución (100%)
@@ -476,14 +513,14 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                   <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Evidencias y Documentos Probatorios (Opcional)
                   </label>
-                  <span className="text-[10px] text-slate-400">Formatos permitidos: PDF, JPG, JPEG, DOC</span>
+                  <span className="text-[10px] text-slate-400">Formatos permitidos: PDF, DOC/DOCX (máx. 5 MB), PNG, JPG, WebP</span>
                 </div>
 
                 <div className="p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-center cursor-pointer relative">
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.jpg,.jpeg,.doc,.docx"
+                    accept=".pdf,.doc,.docx,image/png,image/jpeg,image/webp"
                     onChange={(e) => handleFileUpload(e, 'resolver')}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                   />
@@ -658,14 +695,14 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                   <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Documentos de Avance o Acuerdos Preliminares
                   </label>
-                  <span className="text-[10px] text-slate-400">PDF, JPG, JPEG, DOC</span>
+                  <span className="text-[10px] text-slate-400">PDF, DOC/DOCX (máx. 5 MB), PNG, JPG, WebP</span>
                 </div>
 
                 <div className="p-4 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-center cursor-pointer relative">
                   <input
                     type="file"
                     multiple
-                    accept=".pdf,.jpg,.jpeg,.doc,.docx"
+                    accept=".pdf,.doc,.docx,image/png,image/jpeg,image/webp"
                     onChange={(e) => handleFileUpload(e, 'en_proceso')}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                   />

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
-import { resolveTenantFromHostOrHeader, TenantId } from '@/lib/auth/multiTenantSession';
+import { TenantId } from '@/lib/auth/multiTenantSession';
 import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederationService';
 import { CurriculumExportPackage, UserAuditContext } from '@/lib/curriculum/types';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
@@ -14,11 +14,8 @@ import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 
 export async function POST(req: NextRequest) {
   try {
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-    const headerTenantId = req.headers.get('x-tenant-id');
-    const expectedTenant = resolveTenantFromHostOrHeader({ host, headerTenantId });
-
-    const authResult = await validateApiAuth(req, { expectedTenant });
+    // Autenticación Zero-Trust: validar credenciales directamente desde el token sin inferir tenant por Host
+    const authResult = await validateApiAuth(req);
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: 'Autenticación requerida para importar paquetes curriculares.' },
@@ -27,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     const allowedRoles = ['coordinator', 'director', 'superadmin', 'admin', 'owner'];
-    if (!allowedRoles.includes(authResult.user.role || '')) {
+    if (!allowedRoles.includes((authResult.user.role || '').toLowerCase())) {
       return NextResponse.json(
         { error: 'Acceso denegado: Se requieren privilegios de coordinación o dirección académica para importar planes.' },
         { status: 403 }
@@ -47,7 +44,7 @@ export async function POST(req: NextRequest) {
       name: `${authResult.user.first_name || ''} ${authResult.user.last_name || ''}`.trim() || 'Coordinador Académico',
       email: authResult.user.email || 'coordinacion@institucion.mx',
       role: authResult.user.role || 'coordinator',
-      tenant_id: (authResult.user.tenant_id || expectedTenant) as TenantId
+      tenant_id: (authResult.user.tenant_id || 'iskool') as TenantId
     };
 
     if (

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { useShallow } from 'zustand/react/shallow';
 import { 
   Sparkles, Clock, Users, CheckCircle2, AlertCircle, BookOpen, Send, Zap, 
   Play, Pause, SkipForward, Palette, Layers, Search, Filter, ArrowRight, 
@@ -239,6 +240,57 @@ interface TeacherMasterCopilotProps {
   onOpenEmergency?: () => void;
 }
 
+// Hoja aislada de cuenta regresiva de participación (evita re-renderizar todo el copiloto docente cada 1s)
+const ParticipationCountdownBadge = React.memo(function ParticipationCountdownBadge({
+  deadlineMs,
+  onExpire,
+  variant,
+}: {
+  deadlineMs: number | null;
+  onExpire: () => void;
+  variant: 'inline' | 'pill';
+}) {
+  const [secondsLeft, setSecondsLeft] = useState<number>(() =>
+    deadlineMs ? Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000)) : 0
+  );
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => {
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
+
+  useEffect(() => {
+    if (!deadlineMs) {
+      setSecondsLeft(0);
+      return;
+    }
+    const updateRemaining = () => {
+      const next = Math.max(0, Math.ceil((deadlineMs - Date.now()) / 1000));
+      setSecondsLeft(next);
+      if (next <= 0) {
+        onExpireRef.current();
+      }
+    };
+    updateRemaining();
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      updateRemaining();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadlineMs]);
+
+  if (!deadlineMs || secondsLeft <= 0) return null;
+
+  if (variant === 'inline') {
+    return <span className="text-amber-600 font-mono font-black">{secondsLeft}s</span>;
+  }
+
+  return (
+    <div className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 font-mono font-black text-sm">
+      Tiempo de Respuesta: {secondsLeft}s
+    </div>
+  );
+});
+
 export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
   teacher,
   students,
@@ -248,7 +300,13 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
   onOpenEmergency
 }) => {
   const router = useRouter();
-  const { saveAttendanceList, schedulesList, subjectsList } = useSchoolAdminStore();
+  const { saveAttendanceList, schedulesList, subjectsList } = useSchoolAdminStore(
+    useShallow((state) => ({
+      saveAttendanceList: state.saveAttendanceList,
+      schedulesList: state.schedulesList,
+      subjectsList: state.subjectsList,
+    }))
+  );
   const { reviewPortfolioItem } = usePortfolioStore();
   const { addCampaign } = usePlanningStore();
   const effectiveSubjects = useMemo(
@@ -1538,7 +1596,10 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
       window.addEventListener('storage', onStorage);
     }
 
-    const pollInterval = setInterval(fetchAuditTrail, 5000);
+    const pollInterval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      fetchAuditTrail();
+    }, 5000);
 
     return () => {
       if (bc) bc.close();
@@ -1810,8 +1871,11 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
   // -------------------------------------------------------------
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedSpotlightStudent, setSelectedSpotlightStudent] = useState<DetailedStudent | null>(students[0] || null);
-  const [timerSeconds, setTimerSeconds] = useState(30);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timerDeadlineMs, setTimerDeadlineMs] = useState<number | null>(null);
+
+  const handleTimerExpire = useCallback(() => {
+    setTimerDeadlineMs(null);
+  }, []);
 
   const handleSpinWheel = () => {
     if (isSpinning || students.length === 0) return;
@@ -1820,24 +1884,9 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
       const randomIndex = Math.floor(Math.random() * students.length);
       setSelectedSpotlightStudent(students[randomIndex]);
       setIsSpinning(false);
-      setTimerSeconds(30);
-      setIsTimerRunning(true);
+      setTimerDeadlineMs(Date.now() + 30_000);
     }, 1400);
   };
-
-  useEffect(() => {
-    if (!isTimerRunning) return;
-    const interval = setInterval(() => {
-      setTimerSeconds(prev => {
-        if (prev <= 1) {
-          setTimeout(() => setIsTimerRunning(false), 0);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
 
   // Total de alumnos presentes y sellados
   const presentCount = useMemo(() => {
@@ -2729,7 +2778,11 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                   <div className={`p-3.5 rounded-xl border ${themeClasses.surfaceMuted} space-y-2`}>
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-black">Turno de Participación:</span>
-                      {isTimerRunning && <span className="text-amber-600 font-mono font-black">{timerSeconds}s</span>}
+                      <ParticipationCountdownBadge
+                        deadlineMs={timerDeadlineMs}
+                        onExpire={handleTimerExpire}
+                        variant="inline"
+                      />
                     </div>
 
                     {selectedSpotlightStudent && (
@@ -4598,11 +4651,11 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                 </p>
               </div>
 
-              {isTimerRunning && (
-                <div className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 font-mono font-black text-sm">
-                  Tiempo de Respuesta: {timerSeconds}s
-                </div>
-              )}
+              <ParticipationCountdownBadge
+                deadlineMs={timerDeadlineMs}
+                onExpire={handleTimerExpire}
+                variant="pill"
+              />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -2,16 +2,24 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { createSafeLocalStorage } from '@/utils/safeLocalStorage';
 
+export interface SchoolThemeHsl {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
+
 export interface WhiteLabelState {
   logoUrl: string;
   primaryColor: string; // Hexadecimal string, p. ej. '#2563EB'
   schoolName: string;
   isCustomized: boolean;
+  schoolThemeHsl: SchoolThemeHsl;
 
   // Acciones
   setLogoUrl: (url: string) => void;
   setPrimaryColor: (hexColor: string) => void;
   setSchoolName: (name: string) => void;
+  setSchoolThemeHsl: (colors?: Partial<SchoolThemeHsl> | null) => void;
   setWhiteLabelConfig: (config: { logoUrl?: string; primaryColor?: string; schoolName?: string }) => void;
   resetWhiteLabel: () => void;
   applyTheme: () => void;
@@ -115,7 +123,12 @@ export const DEFAULT_WHITE_LABEL_CONFIG = {
   logoUrl: '',
   primaryColor: '#2563EB', // Azul Zafiro Institucional Predeterminado
   schoolName: '',
-  isCustomized: false
+  isCustomized: false,
+  schoolThemeHsl: {
+    primary: '221 83% 53%',
+    secondary: '268 85% 58%',
+    accent: '158 72% 40%',
+  },
 };
 
 function isCustomBrandConfig(logoUrl: string, schoolName: string, primaryColor: string): boolean {
@@ -164,6 +177,28 @@ export const useWhiteLabelStore = create<WhiteLabelState>()(
         set({ 
           schoolName: trimmed,
           isCustomized: isCustomBrandConfig(get().logoUrl, trimmed, get().primaryColor)
+        });
+      },
+
+      setSchoolThemeHsl: (colors) => {
+        if (!colors) return;
+        const current = get().schoolThemeHsl || DEFAULT_WHITE_LABEL_CONFIG.schoolThemeHsl;
+        const nextPrimary = colors.primary ?? current.primary;
+        const nextSecondary = colors.secondary ?? current.secondary;
+        const nextAccent = colors.accent ?? current.accent;
+        if (
+          nextPrimary === current.primary &&
+          nextSecondary === current.secondary &&
+          nextAccent === current.accent
+        ) {
+          return;
+        }
+        set({
+          schoolThemeHsl: {
+            primary: nextPrimary,
+            secondary: nextSecondary,
+            accent: nextAccent,
+          },
         });
       },
 

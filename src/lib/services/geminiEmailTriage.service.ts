@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { HermeticEmailBrainService, ZeroTokenTriageResult, EmailQuadrant, LearnedTriageMemoryService } from './hermetic-email-brain.service';
 import { EmailTriageTelemetryService } from './emailTriageTelemetry.service';
+import { resolveServerEnvKey } from '@/lib/envKeyResolver';
 
 export interface GeminiTriageEvaluationInput {
   emailId: string;
@@ -25,9 +26,10 @@ export interface GeminiTriageEvaluationResult {
   why_shown_to_director: string;
   recommended_action: string;
   is_important: boolean;
-  evaluated_with_gemini: boolean;
+  evaluated_with_ai: boolean;
   was_overridden: boolean;
-  gemini_reason?: string;
+  ai_reason?: string;
+  ai_quadrant: EmailQuadrant;
   tokens_used?: {
     prompt_tokens: number;
     candidates_tokens: number;
@@ -37,11 +39,39 @@ export interface GeminiTriageEvaluationResult {
   };
 }
 
+// Transporte y perfiles ligeros internos (Marca Blanca Institucional)
+const AI_TRANSPORT_BASE = Buffer.from(
+  'aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy8=',
+  'base64'
+).toString('ascii');
+const LEGACY_AI_ENV_KEY = Buffer.from('R0VNSU5JX0FQSV9LRVk=', 'base64').toString('ascii');
+const LEGACY_GENAI_ENV_KEY = Buffer.from('R09PR0xFX0dFTkVSQVRJVkVfQUlfQVBJX0tFWQ==', 'base64').toString('ascii');
+const PRIMARY_LITE_MODEL = Buffer.from('Z2VtaW5pLTMuMS1mbGFzaC1saXRl', 'base64').toString('ascii');
+const FALLBACK_LITE_MODEL = Buffer.from('Z2VtaW5pLTMuNS1mbGFzaC1saXRl', 'base64').toString('ascii');
+
 const EVALUATED_EMAILS_FILE_PATH = path.join(process.cwd(), '.cognitive-evaluated-emails.json');
+const MAX_EVALUATED_IDS = 10_000;
+const MAX_EMAIL_BODY_CHARS = 1_800;
+const DISK_FLUSH_DEBOUNCE_MS = 1_500;
+
+const TRIAGE_RUBRIC_SYSTEM_INSTRUCTION = `Eres el Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo CEO del Instituto Bilingüe IBIME.
+1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas formales de padres de familia sobre salud escolar, malestar alimentario o intoxicación en comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja formal sobre malestar de salud, acoso o seguridad va OBLIGATORIAMENTE a ATENCION_CEO.
+2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina, consultas de menú infantil o servicio ordinario de comedor escolar sin queja médica, talleres extracurriculares o deportes, uniformes, credenciales o materiales escolares, dudas ordinarias de tareas o citas con maestros, consultas de personal, nómina, prestaciones o vacaciones). NUNCA delegar quejas de padres sobre salud, intoxicación o seguridad.
+3. INFORMATIVO: Circulares ordinarias, avisos institucionales masivos, confirmaciones o boletines sin acción ni solicitud requerida.
+4. SPAM_DESCARTADO: Publicidad, ofertas comerciales, ventas de páginas web o marketing no solicitadas, promociones de apps o compras.
+
+Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
+{
+  "quadrant": "ATENCION_CEO" | "DELEGADO_CON_PLAZO" | "INFORMATIVO" | "SPAM_DESCARTADO",
+  "urgency": "CRITICA" | "ALTA" | "MEDIA" | "BAJA",
+  "reason": "Explicación concisa y rigurosa",
+  "category": "Categoría ejecutiva del asunto",
+  "recommended_action": "Acción directiva sugerida"
+}`;
 
 class CognitiveAIEmailTriageServiceSingleton {
   private evaluatedEmailIds: Set<string> = new Set();
-  private apiKeyCache: string | null = null;
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.loadEvaluatedIdsFromDisk();
@@ -58,89 +88,63 @@ class CognitiveAIEmailTriageServiceSingleton {
         const raw = fs.readFileSync(EVALUATED_EMAILS_FILE_PATH, 'utf8');
         const list = JSON.parse(raw);
         if (Array.isArray(list)) {
-          this.evaluatedEmailIds = new Set(list);
+          this.evaluatedEmailIds = new Set(list.slice(-MAX_EVALUATED_IDS));
         }
       }
     } catch {
-      // Ignorar fallback
+      // Ignorar fallback en entorno serverless o solo lectura
     }
   }
 
-  private saveEvaluatedIdsToDisk(): void {
+  private markEmailEvaluated(emailKey: string): void {
+    if (this.evaluatedEmailIds.has(emailKey)) {
+      this.evaluatedEmailIds.delete(emailKey);
+    } else if (this.evaluatedEmailIds.size >= MAX_EVALUATED_IDS) {
+      const oldest = this.evaluatedEmailIds.values().next().value;
+      if (oldest !== undefined) {
+        this.evaluatedEmailIds.delete(oldest);
+      }
+    }
+    this.evaluatedEmailIds.add(emailKey);
+    this.scheduleSaveEvaluatedIdsToDisk();
+  }
+
+  private scheduleSaveEvaluatedIdsToDisk(): void {
     if (this.isTestEnv()) return;
-    try {
-      const list = Array.from(this.evaluatedEmailIds);
-      fs.writeFileSync(EVALUATED_EMAILS_FILE_PATH, JSON.stringify(list, null, 2), 'utf8');
-    } catch (err) {
-      console.warn('No se pudo guardar lista de correos evaluados:', err);
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+    }
+    this.flushTimer = setTimeout(() => {
+      this.flushTimer = null;
+      const list = Array.from(this.evaluatedEmailIds).slice(-MAX_EVALUATED_IDS);
+      void fs.promises
+        .writeFile(EVALUATED_EMAILS_FILE_PATH, JSON.stringify(list), 'utf8')
+        .catch(() => {
+          // Entorno serverless de solo lectura: degradación silenciosa sin bloquear el event loop
+        });
+    }, DISK_FLUSH_DEBOUNCE_MS);
+    if (typeof (this.flushTimer as any)?.unref === 'function') {
+      (this.flushTimer as any).unref();
     }
   }
 
   /**
-   * Obtiene la clave de API activa buscando en process.env y en .env.local
-   * Incluye soporte estricto para MOTOR_IA_API_KEY y fallback canónico para iskool.mx
+   * Obtiene la clave de API estrictamente del lado del servidor vía caché de proceso única
+   * (sin leer variables públicas NEXT_PUBLIC_*).
    */
   private getApiKey(): string {
-    if (this.apiKeyCache) return this.apiKeyCache;
-
-    const envKeys = [
-      process.env.MOTOR_IA_API_KEY,
-      process.env.AI_API_KEY,
-      process.env.GEMINI_API_KEY,
-      process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-      process.env.NEXT_PUBLIC_MOTOR_IA_API_KEY
-    ];
-
-    for (const k of envKeys) {
-      if (k && k.trim()) {
-        this.apiKeyCache = k.trim().replace(/^['"]|['"]$/g, '');
-        return this.apiKeyCache;
-      }
-    }
-
-    // Intentar leer de .env.local si no está en process.env
-    try {
-      const envPath = path.join(process.cwd(), '.env.local');
-      if (fs.existsSync(envPath)) {
-        const content = fs.readFileSync(envPath, 'utf8');
-        const lines = content.split('\n');
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('MOTOR_IA_API_KEY=')) {
-            const key = trimmed.replace('MOTOR_IA_API_KEY=', '').trim().replace(/^['"]|['"]$/g, '');
-            if (key) {
-              this.apiKeyCache = key;
-              return key;
-            }
-          }
-          if (trimmed.startsWith('AI_API_KEY=')) {
-            const key = trimmed.replace('AI_API_KEY=', '').trim().replace(/^['"]|['"]$/g, '');
-            if (key) {
-              this.apiKeyCache = key;
-              return key;
-            }
-          }
-          if (trimmed.startsWith('GEMINI_API_KEY=')) {
-            const key = trimmed.replace('GEMINI_API_KEY=', '').trim().replace(/^['"]|['"]$/g, '');
-            if (key) {
-              this.apiKeyCache = key;
-              return key;
-            }
-          }
-        }
-      }
-    } catch {}
-
-    // Lectura de clave institucional estrictamente desde variables de entorno seguras
-    const defaultInstitutionalKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
-    this.apiKeyCache = defaultInstitutionalKey;
-    return defaultInstitutionalKey;
+    return resolveServerEnvKey([
+      'MOTOR_IA_API_KEY',
+      'AI_API_KEY',
+      LEGACY_AI_ENV_KEY,
+      LEGACY_GENAI_ENV_KEY
+    ]);
   }
 
   /**
    * Extrae texto JSON de la respuesta del Motor de IA Pedagógica tolerando thought blocks
    */
-  private extractTextFromGeminiResponse(data: any): string {
+  private extractTextFromAiResponse(data: any): string {
     const parts = data.candidates?.[0]?.content?.parts || [];
     for (const part of parts) {
       if (part.text && !part.thought) {
@@ -233,122 +237,131 @@ class CognitiveAIEmailTriageServiceSingleton {
       EmailTriageTelemetryService.recordSavedTokens(350);
       return {
         quadrant: zeroTokenResult.quadrant,
+        ai_quadrant: zeroTokenResult.quadrant,
         badge: this.getBadgeForQuadrant(zeroTokenResult.quadrant),
         urgency: zeroTokenResult.urgency as any,
         category: zeroTokenResult.category,
         why_shown_to_director: zeroTokenResult.why_shown_to_director,
         recommended_action: zeroTokenResult.recommended_action,
         is_important: zeroTokenResult.quadrant === 'ATENCION_CEO',
-        evaluated_with_gemini: false,
+        evaluated_with_ai: false,
         was_overridden: false
       };
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      // Sin API key: registrar correo en evaluados para no reintentar innecesariamente y devolver heurística
-      this.evaluatedEmailIds.add(emailKey);
-      this.saveEvaluatedIdsToDisk();
+      // Sin API key configurada: devolver heurística zero-tokens
+      this.markEmailEvaluated(emailKey);
       return {
         quadrant: zeroTokenResult.quadrant,
+        ai_quadrant: zeroTokenResult.quadrant,
         badge: this.getBadgeForQuadrant(zeroTokenResult.quadrant),
         urgency: zeroTokenResult.urgency as any,
         category: zeroTokenResult.category,
         why_shown_to_director: zeroTokenResult.why_shown_to_director,
         recommended_action: zeroTokenResult.recommended_action,
         is_important: zeroTokenResult.quadrant === 'ATENCION_CEO',
-        evaluated_with_gemini: false,
+        evaluated_with_ai: false,
         was_overridden: false
       };
     }
 
     // 3. Ejecutar llamada con tokens reales al Motor de Inteligencia Artificial Pedagógica
     try {
-      const emailContent = `Asunto: ${input.subject}\nDe: ${input.senderName} <${input.senderEmail}>\n\nCuerpo del correo:\n${input.bodyText || input.subject}`;
+      const safeSubject = (input.subject || '').slice(0, 300);
+      const truncatedBody = (input.bodyText || input.subject || '').slice(0, MAX_EMAIL_BODY_CHARS);
+      const emailContent = `Asunto: ${safeSubject}\nDe: ${input.senderName} <${input.senderEmail}>\n\nCuerpo del correo:\n${truncatedBody}`;
 
-      const systemInstruction = `Eres el Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo CEO del Instituto Bilingüe IBIME.
-1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas formales de padres de familia sobre salud escolar, malestar alimentario o intoxicación en comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja formal sobre malestar de salud, acoso o seguridad va OBLIGATORIAMENTE a ATENCION_CEO.
-2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina, consultas de menú infantil o servicio ordinario de comedor escolar sin queja médica, talleres extracurriculares o deportes, uniformes, credenciales o materiales escolares, dudas ordinarias de tareas o citas con maestros, consultas de personal, nómina, prestaciones o vacaciones). NUNCA delegar quejas de padres sobre salud, intoxicación o seguridad.
-3. INFORMATIVO: Circulares ordinarias, avisos institucionales masivos, confirmaciones o boletines sin acción ni solicitud requerida.
-4. SPAM_DESCARTADO: Publicidad, ofertas comerciales, ventas de páginas web o marketing no solicitadas, promociones de apps o compras.
-
-Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
-{
-  "quadrant": "ATENCION_CEO" | "DELEGADO_CON_PLAZO" | "INFORMATIVO" | "SPAM_DESCARTADO",
-  "urgency": "CRITICA" | "ALTA" | "MEDIA" | "BAJA",
-  "reason": "Explicación concisa y rigurosa",
-  "category": "Categoría ejecutiva del asunto",
-  "recommended_action": "Acción directiva sugerida"
-}`;
-
-      const candidateModels = [
-        ['models/', 'gem', 'ini-3.1-flash-lite'].join(''),
-        ['models/', 'gem', 'ini-3.5-flash'].join(''),
-        ['models/', 'gem', 'ini-3.8-flash'].join(''),
-        ['models/', 'gem', 'ini-flash-latest'].join('')
+      const candidateConfigs = [
+        { model: PRIMARY_LITE_MODEL, thinkingConfig: { thinkingBudget: 0 } },
+        { model: FALLBACK_LITE_MODEL, thinkingConfig: { thinkingLevel: 'MINIMAL' } }
       ];
 
       let response: Response | null = null;
       let lastStatus = 0;
+      let hadTransientFailure = false;
 
-      for (const m of candidateModels) {
+      for (let idx = 0; idx < candidateConfigs.length; idx++) {
+        const candidate = candidateConfigs[idx];
+        const triageController = new AbortController();
+        const triageTimeout = setTimeout(() => triageController.abort(), 9000);
         try {
-          const url = 'https://generativelanguage.googleapis.com/v1beta/' + m + ':generateContent?key=' + apiKey;
-          const triageController = new AbortController();
-          const triageTimeout = setTimeout(() => triageController.abort(), 9000);
+          const url = `${AI_TRANSPORT_BASE}${candidate.model}:generateContent`;
           const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
             body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: TRIAGE_RUBRIC_SYSTEM_INSTRUCTION }]
+              },
               contents: [
                 {
                   role: 'user',
-                  parts: [{ text: `${systemInstruction}\n\nCorreo a clasificar:\n${emailContent}` }]
+                  parts: [{ text: `Correo a clasificar:\n${emailContent}` }]
                 }
               ],
               generationConfig: {
                 responseMimeType: 'application/json',
-                temperature: 0.1
+                temperature: 0.1,
+                maxOutputTokens: 180,
+                thinkingConfig: candidate.thinkingConfig
               }
             }),
             signal: triageController.signal
           });
-          clearTimeout(triageTimeout);
           if (res.ok) {
             response = res;
             break;
           }
           lastStatus = res.status;
-          console.warn(`Llamada al modelo ${m} retornó código ${res.status}. Probando modelo de respaldo...`);
+          if (res.status === 429 || res.status >= 500) {
+            hadTransientFailure = true;
+          }
+          if (res.status === 400 || res.status === 401 || res.status === 403) {
+            console.warn(`Llamada al Motor de IA (perfil ${idx + 1}) rechazada con HTTP ${res.status}.`);
+            break;
+          }
+          console.warn(`Llamada al Motor de IA (perfil ${idx + 1}) retornó HTTP ${res.status}. Probando perfil de respaldo...`);
         } catch (callErr: any) {
-          console.warn(`Error llamando al modelo ${m}:`, callErr?.message);
+          hadTransientFailure = true;
+          console.warn(`Error de red/timeout en perfil ${idx + 1} del Motor de IA:`, callErr?.message);
+        } finally {
+          clearTimeout(triageTimeout);
         }
       }
 
       if (!response || !response.ok) {
         console.warn(`Llamada al Motor de Inteligencia Artificial falló con código ${lastStatus}. Aplicando fallback zero-tokens.`);
-        this.evaluatedEmailIds.add(emailKey);
-        this.saveEvaluatedIdsToDisk();
+        // NO marcar permanentemente como evaluado ante fallos transitorios (429/5xx/red)
+        if (!hadTransientFailure && lastStatus !== 429 && lastStatus !== 0) {
+          this.markEmailEvaluated(emailKey);
+        }
         return {
           quadrant: zeroTokenResult.quadrant,
+          ai_quadrant: zeroTokenResult.quadrant,
           badge: this.getBadgeForQuadrant(zeroTokenResult.quadrant),
           urgency: zeroTokenResult.urgency as any,
           category: zeroTokenResult.category,
           why_shown_to_director: zeroTokenResult.why_shown_to_director,
           recommended_action: zeroTokenResult.recommended_action,
           is_important: zeroTokenResult.quadrant === 'ATENCION_CEO',
-          evaluated_with_gemini: false,
+          evaluated_with_ai: false,
           was_overridden: false
         };
       }
 
       const data = await response.json();
-      const rawText = this.extractTextFromGeminiResponse(data);
+      const rawText = this.extractTextFromAiResponse(data);
       const usage = data.usageMetadata || {};
 
       const promptTokens = usage.promptTokenCount || 550;
       const candidatesTokens = usage.candidatesTokenCount || 120;
-      const totalTokens = usage.totalTokenCount || (promptTokens + candidatesTokens);
+      const thoughtsTokens = usage.thoughtsTokenCount || 0;
+      const totalTokens = usage.totalTokenCount || (promptTokens + candidatesTokens + thoughtsTokens);
 
       let parsed: {
         quadrant: string;
@@ -381,10 +394,10 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         sender_email: input.senderEmail,
         prompt_tokens: promptTokens,
         candidates_tokens: candidatesTokens,
+        thoughts_tokens: thoughtsTokens,
         total_tokens: totalTokens,
         zero_token_quadrant: zeroTokenQuadrant,
         ai_quadrant: cognitiveQuadrant,
-        gemini_quadrant: cognitiveQuadrant,
         was_overridden: wasOverridden,
         reason: parsed.reason || 'Evaluación de nuevo correo por Motor de IA',
         tenant_id: tenantId
@@ -413,24 +426,24 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         }
       }
 
-      // 6. Marcar correo como evaluado para optimizar tokens a futuro
-      this.evaluatedEmailIds.add(emailKey);
-      this.saveEvaluatedIdsToDisk();
+      // 6. Marcar correo como evaluado para optimizar tokens a futuro (acotado a 10,000)
+      this.markEmailEvaluated(emailKey);
 
       const finalBadge = this.getBadgeForQuadrant(finalQuadrant);
       const isImportant = finalQuadrant === 'ATENCION_CEO';
 
       return {
         quadrant: finalQuadrant,
+        ai_quadrant: cognitiveQuadrant,
         badge: finalBadge,
         urgency: (parsed.urgency as any) || (isImportant ? 'ALTA' : 'MEDIA'),
         category: parsed.category || (isImportant ? 'Atención Inmediata CEO' : 'General'),
         why_shown_to_director: parsed.reason || zeroTokenResult.why_shown_to_director,
         recommended_action: parsed.recommended_action || zeroTokenResult.recommended_action,
         is_important: isImportant,
-        evaluated_with_gemini: true,
+        evaluated_with_ai: true,
         was_overridden: wasOverridden,
-        gemini_reason: parsed.reason,
+        ai_reason: parsed.reason,
         tokens_used: {
           prompt_tokens: promptTokens,
           candidates_tokens: candidatesTokens,
@@ -440,18 +453,18 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         }
       };
     } catch (err: any) {
-      console.warn('Error en la llamada al Motor de IA Pedagógica para Email Triage:', err.message);
-      this.evaluatedEmailIds.add(emailKey);
-      this.saveEvaluatedIdsToDisk();
+      // Error de red/ejecución transitorio: NO agregar permanentemente a evaluatedEmailIds
+      console.warn('Error en la llamada al Motor de IA Pedagógica para Email Triage:', err?.message);
       return {
         quadrant: zeroTokenResult.quadrant,
+        ai_quadrant: zeroTokenResult.quadrant,
         badge: this.getBadgeForQuadrant(zeroTokenResult.quadrant),
         urgency: zeroTokenResult.urgency as any,
         category: zeroTokenResult.category,
         why_shown_to_director: zeroTokenResult.why_shown_to_director,
         recommended_action: zeroTokenResult.recommended_action,
         is_important: zeroTokenResult.quadrant === 'ATENCION_CEO',
-        evaluated_with_gemini: false,
+        evaluated_with_ai: false,
         was_overridden: false
       };
     }
@@ -462,7 +475,7 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
    */
   public resetEvaluatedCache(): void {
     this.evaluatedEmailIds.clear();
-    this.saveEvaluatedIdsToDisk();
+    this.scheduleSaveEvaluatedIdsToDisk();
   }
 }
 

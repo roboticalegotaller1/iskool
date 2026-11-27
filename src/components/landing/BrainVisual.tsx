@@ -275,20 +275,41 @@ export function BrainVisual({ pillars }: { pillars: readonly string[] }) {
             <filter id="isk-soft" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="3.4" />
             </filter>
-            <filter id="isk-haze" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="34" />
-            </filter>
+            <radialGradient id="isk-aura-sky" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" style={stop('sky', 1)} />
+              <stop offset="0.45" style={stop('sky', 0.72)} />
+              <stop offset="0.75" style={stop('sky', 0.24)} />
+              <stop offset="1" style={stop('sky', 0)} />
+            </radialGradient>
+            <radialGradient id="isk-aura-violet" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" style={stop('violet', 1)} />
+              <stop offset="0.45" style={stop('violet', 0.72)} />
+              <stop offset="0.75" style={stop('violet', 0.24)} />
+              <stop offset="1" style={stop('violet', 0)} />
+            </radialGradient>
+            <radialGradient id="isk-aura-magenta" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" style={stop('magenta', 1)} />
+              <stop offset="0.45" style={stop('magenta', 0.72)} />
+              <stop offset="0.75" style={stop('magenta', 0.24)} />
+              <stop offset="1" style={stop('magenta', 0)} />
+            </radialGradient>
+            <radialGradient id="isk-aura-cyan" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" style={stop('cyan', 1)} />
+              <stop offset="0.45" style={stop('cyan', 0.72)} />
+              <stop offset="0.75" style={stop('cyan', 0.24)} />
+              <stop offset="1" style={stop('cyan', 0)} />
+            </radialGradient>
             <path id="isk-outline" d={OUTLINES} />
             <path id="isk-edges" d={EDGES} />
             <ellipse id="isk-rim" cx={PODIUM.cx} cy={PODIUM.cy} rx={PODIUM.rx} ry={PODIUM.ry} />
           </defs>
 
-          {/* Halo de color detrás del cerebro */}
-          <g filter="url(#isk-haze)">
-            <ellipse className="lp-brain-aura fill-lp-sky" cx="170" cy="190" rx="130" ry="120" opacity="0.5" />
-            <ellipse className="lp-brain-aura fill-lp-violet" style={delay(-3)} cx="430" cy="180" rx="130" ry="120" opacity="0.45" />
-            <ellipse className="lp-brain-aura fill-lp-magenta" style={delay(-5)} cx="420" cy="320" rx="90" ry="70" opacity="0.3" />
-            <ellipse className="lp-brain-aura fill-lp-cyan" style={delay(-1.5)} cx="190" cy="330" rx="90" ry="60" opacity="0.3" />
+          {/* Halo de color detrás del cerebro (gradientes radiales suavizados sin convolución GaussianBlur por cuadro) */}
+          <g>
+            <ellipse className="lp-brain-aura" fill="url(#isk-aura-sky)" cx="170" cy="190" rx="130" ry="120" opacity="0.5" />
+            <ellipse className="lp-brain-aura" fill="url(#isk-aura-violet)" style={delay(-3)} cx="430" cy="180" rx="130" ry="120" opacity="0.45" />
+            <ellipse className="lp-brain-aura" fill="url(#isk-aura-magenta)" style={delay(-5)} cx="420" cy="320" rx="90" ry="70" opacity="0.3" />
+            <ellipse className="lp-brain-aura" fill="url(#isk-aura-cyan)" style={delay(-1.5)} cx="190" cy="330" rx="90" ry="60" opacity="0.3" />
           </g>
 
           {/* Conexiones que entran y salen */}

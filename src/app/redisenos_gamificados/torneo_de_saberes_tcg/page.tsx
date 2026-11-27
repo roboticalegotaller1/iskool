@@ -131,7 +131,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 7,
     redStat: 3,
     hp: 3,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_isaac_newton.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_isaac_newton.webp',
     voiceQuote: 'Formulé la ley de gravitación universal al observar cómo todos los cuerpos celestes y terrenales se atraen mutuamente.',
     rarity: 'Legendaria'
   },
@@ -144,7 +144,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 6,
     redStat: 4,
     hp: 4,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_marie_curie.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_marie_curie.webp',
     voiceQuote: 'Aislé en mi laboratorio el radio y el polonio, abriendo la era de la física nuclear y la medicina radiológica.',
     rarity: 'Legendaria'
   },
@@ -157,7 +157,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 9,
     redStat: 2,
     hp: 2,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_albert_einstein.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_albert_einstein.webp',
     voiceQuote: 'Demostré que el espacio y el tiempo forman un tejido continuo que la gravedad curva con la energía.',
     rarity: 'Legendaria'
   },
@@ -170,7 +170,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 8,
     redStat: 9,
     hp: 9,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_leonardo_davinci.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_leonardo_davinci.webp',
     voiceQuote: 'Combiné la observación de la naturaleza, el dibujo anatómico y los engranajes para proyectar el vuelo humano.',
     rarity: 'Épica'
   },
@@ -183,7 +183,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 8,
     redStat: 5,
     hp: 5,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_galileo_galilei.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_galileo_galilei.webp',
     voiceQuote: 'Apunté mi telescopio hacia el firmamento y descubrí las lunas de Júpiter, confirmando que la Tierra gira alrededor del Sol.',
     rarity: 'Épica'
   },
@@ -196,7 +196,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 7,
     redStat: 3,
     hp: 3,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_nikola_tesla.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_nikola_tesla.webp',
     voiceQuote: 'Ideé los generadores de corriente alterna y las bobinas de inducción que electrifican el mundo moderno.',
     rarity: 'Legendaria'
   },
@@ -209,7 +209,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 5,
     redStat: 6,
     hp: 6,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_charles_darwin.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_charles_darwin.webp',
     voiceQuote: 'Navegué en el HMS Beagle observando a las especies en Galápagos para comprender cómo la vida se adapta y evoluciona.',
     rarity: 'Épica'
   },
@@ -222,7 +222,7 @@ const THINKER_CARDS: ThinkerCard[] = [
     greenStat: 8,
     redStat: 7,
     hp: 7,
-    image: '/redisenos_assets/torneo_tcg/tcg_card_hypatia_alexandria.jpg',
+    image: '/redisenos_assets/torneo_tcg/tcg_card_hypatia_alexandria.webp',
     voiceQuote: 'Enseñé matemáticas y astronomía en el Museo de Alejandría, trazando secciones cónicas y perfeccionando el astrolabio.',
     rarity: 'Legendaria'
   }
@@ -592,14 +592,14 @@ export default function TorneoDeSaberesTcgPage() {
   const getDuelistRender = () => {
     switch (selectedDuelistItem) {
       case 'capa':
-        return '/redisenos_assets/torneo_tcg/duelista_capa_campeon.jpg';
+        return '/redisenos_assets/torneo_tcg/duelista_capa_campeon.webp';
       case 'visor':
-        return '/redisenos_assets/torneo_tcg/duelista_visor_tactico.jpg';
+        return '/redisenos_assets/torneo_tcg/duelista_visor_tactico.webp';
       case 'guante':
-        return '/redisenos_assets/torneo_tcg/duelista_guante_dragon.jpg';
+        return '/redisenos_assets/torneo_tcg/duelista_guante_dragon.webp';
       case 'base':
       default:
-        return '/redisenos_assets/torneo_tcg/duelista_base_pedestal.jpg';
+        return '/redisenos_assets/torneo_tcg/duelista_base_pedestal.webp';
     }
   };
 
@@ -1077,7 +1077,7 @@ export default function TorneoDeSaberesTcgPage() {
           
           {/* Ilustración de Fondo Original (1600x893) */}
           <img 
-            src="/redisenos_assets/torneo_tcg/torneo_hub_master_scene.jpg" 
+            src="/redisenos_assets/torneo_tcg/torneo_hub_master_scene.webp" 
             alt="Torneo de Saberes - Estadio de Duelos y Archivador de Cartas"
             className="w-full h-full object-fill select-none"
           />
@@ -2121,7 +2121,7 @@ export default function TorneoDeSaberesTcgPage() {
             {/* Lienzo del Álbum y Duelista */}
             <div className="relative w-full aspect-[16/9] overflow-hidden">
               <img 
-                src="/redisenos_assets/torneo_tcg/torneo_album_duelist_custom.jpg" 
+                src="/redisenos_assets/torneo_tcg/torneo_album_duelist_custom.webp" 
                 alt="Álbum y Personalizador de Duelista"
                 className="w-full h-full object-cover"
               />
@@ -2805,7 +2805,7 @@ export default function TorneoDeSaberesTcgPage() {
             </div>
 
             <div className="relative w-full aspect-[21/9] overflow-hidden">
-              <img src="/redisenos_assets/torneo_tcg/torneo_teacher_studio.jpg" alt="Estudio Docente Creador de Cartas" className="w-full h-full object-cover" />
+              <img src="/redisenos_assets/torneo_tcg/torneo_teacher_studio.webp" alt="Estudio Docente Creador de Cartas" className="w-full h-full object-cover" />
             </div>
 
             <div className="p-4 bg-slate-900 border-t border-slate-800 space-y-3">

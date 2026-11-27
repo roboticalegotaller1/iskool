@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { MISSIONS_SEED } from '@/store/seeds';
 import { broadcastTeacherMilestone } from '@/lib/teacherMilestoneBroadcaster';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const { questId, studentId, answers } = body;
 
     if (!questId || !studentId) {
@@ -34,11 +41,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (auth.user.role === 'student' && auth.user.id !== studentId) {
-      return NextResponse.json(
-        { error: 'No autorizado: No puedes enviar cuestionarios para otro alumno.' },
-        { status: 403 }
-      );
+    const isSuper = isPlatformSuperUser(auth.user);
+    if (studentId !== auth.user.id && !isSuper) {
+      const roleLower = (auth.user.role || '').toLowerCase();
+      const isStaffOrParent = ['teacher', 'coordinator', 'director', 'owner', 'ceo', 'parent', 'tutor'].includes(roleLower);
+      if (!isStaffOrParent || !auth.user.school_id) {
+        return NextResponse.json(
+          { error: 'No autorizado: No puedes enviar cuestionarios para otro alumno.' },
+          { status: 403 }
+        );
+      }
+      if (body.schoolId && body.schoolId !== auth.user.school_id) {
+        return NextResponse.json(
+          { error: 'No autorizado: El alumno pertenece a otro plantel.' },
+          { status: 403 }
+        );
+      }
+      try {
+        const { data: targetProfile } = await supabase
+          .from('profiles')
+          .select('school_id')
+          .eq('id', studentId)
+          .maybeSingle();
+        if (targetProfile?.school_id && targetProfile.school_id !== auth.user.school_id) {
+          return NextResponse.json(
+            { error: 'No autorizado: El alumno pertenece a otro plantel.' },
+            { status: 403 }
+          );
+        }
+      } catch {
+        // Continuar en modo offline/seed
+      }
     }
 
     // 1. Localizar la definición oficial y verificada del reto (en BD o catálogo base)
@@ -155,6 +188,7 @@ export async function POST(req: NextRequest) {
     if (isPassed) {
       try {
         broadcastTeacherMilestone({
+          schoolId: auth.user.school_id,
           studentId,
           studentName: `Alumno ${studentId.substring(0, 7)}`,
           milestoneType: verifiedScore === 100 ? 'perfect_score' : 'quest_completed',
@@ -192,7 +226,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error en endpoint submit-quiz:', error);
     return NextResponse.json(
-      { error: 'Error interno del servidor procesando el reto', details: error.message },
+      {
+        error: 'Error interno del servidor procesando el reto',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
       { status: 500 }
     );
   }

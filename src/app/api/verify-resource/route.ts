@@ -5,6 +5,45 @@ import { isPrivateOrReservedIp } from '@/lib/security/ssrfValidator';
 
 export const runtime = 'nodejs';
 
+// Limitador de tasa acotado en memoria por IP (30 req/min, mapa <= 1000 IPs)
+const VERIFY_RATE_LIMIT_MAX_REQ = 30;
+const VERIFY_RATE_LIMIT_WINDOW_MS = 60_000;
+const VERIFY_RATE_LIMIT_MAX_KEYS = 1000;
+const verifyRateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function extractClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return req.headers.get('x-real-ip')?.trim() || 'local-client';
+}
+
+function checkVerifyRateLimit(ip: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  if (verifyRateLimitBuckets.size >= VERIFY_RATE_LIMIT_MAX_KEYS && !verifyRateLimitBuckets.has(ip)) {
+    for (const [k, v] of verifyRateLimitBuckets) {
+      if (v.resetAt <= now) verifyRateLimitBuckets.delete(k);
+    }
+    while (verifyRateLimitBuckets.size >= VERIFY_RATE_LIMIT_MAX_KEYS) {
+      const oldestKey = verifyRateLimitBuckets.keys().next().value;
+      if (!oldestKey) break;
+      verifyRateLimitBuckets.delete(oldestKey);
+    }
+  }
+  const existing = verifyRateLimitBuckets.get(ip);
+  if (!existing || existing.resetAt <= now) {
+    verifyRateLimitBuckets.set(ip, { count: 1, resetAt: now + VERIFY_RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfterSec: 0 };
+  }
+  if (existing.count >= VERIFY_RATE_LIMIT_MAX_REQ) {
+    return { allowed: false, retryAfterSec: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)) };
+  }
+  existing.count += 1;
+  return { allowed: true, retryAfterSec: 0 };
+}
+
 /**
  * Validador anti-SSRF para peticiones de verificación de recursos.
  * Bloquea esquemas no HTTP/HTTPS, loopback, metadatos en la nube y rangos privados RFC 1918.
@@ -61,12 +100,23 @@ function isSafeUrl(rawUrl: string): { safe: boolean; reason?: string; parsed?: U
  */
 export async function POST(req: NextRequest) {
   try {
+    const rateLimit = checkVerifyRateLimit(extractClientIp(req));
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de solicitudes de verificación de recursos excedido temporalmente. Intenta en unos segundos.' },
+        { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSec) } }
+      );
+    }
+
     const auth = await validateApiAuth(req);
     if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
+    }
     const rawUrls: string[] = Array.isArray(body.urls) ? body.urls : (body.url ? [body.url] : []);
     const urls: string[] = rawUrls
       .filter((u): u is string => typeof u === 'string' && u.trim().length > 0)
@@ -229,7 +279,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Error interno en la verificación' },
+      {
+        error: 'Error interno en la verificación',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
       { status: 500 }
     );
   }

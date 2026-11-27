@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { InstitutionalBrainService } from './institutional-brain.service';
 
 export interface EmailIngestDTO {
@@ -18,10 +18,7 @@ export interface EmailIngestDTO {
 
 export class CognitiveTriageService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   static async ingestEmail(dto: EmailIngestDTO) {
@@ -88,22 +85,25 @@ export class CognitiveTriageService {
 
     if (targetMatter) {
       // Agrupar en el mismo ASUNTO (Ej: 17 correos -> 1 asunto)
-      await supabase.from('matter_email_links').insert({
-        matter_id: targetMatter.id,
-        email_message_id: email.id
-      });
-
       const updatedCount = (targetMatter.reincidence_count || 1) + 1;
-      await supabase.from('inbox_matters').update({
-        reincidence_count: updatedCount,
-        last_activity_at: new Date().toISOString(),
-        why_shown_to_director: updatedCount >= 3 
-          ? `Reincidencia elevada: ${updatedCount} comunicaciones acumuladas en torno a este mismo asunto.`
-          : targetMatter.why_shown_to_director,
-        urgency: updatedCount >= 5 ? 'ALTA' : targetMatter.urgency
-      }).eq('id', targetMatter.id);
+      const nowIso = new Date().toISOString();
 
-      await supabase.from('email_messages').update({ is_processed: true, processed_at: new Date().toISOString() }).eq('id', email.id);
+      await Promise.all([
+        supabase.from('matter_email_links').insert({
+          matter_id: targetMatter.id,
+          email_message_id: email.id
+        }),
+        supabase.from('inbox_matters').update({
+          reincidence_count: updatedCount,
+          last_activity_at: nowIso,
+          why_shown_to_director: updatedCount >= 3
+            ? `Reincidencia elevada: ${updatedCount} comunicaciones acumuladas en torno a este mismo asunto.`
+            : targetMatter.why_shown_to_director,
+          urgency: updatedCount >= 5 ? 'ALTA' : targetMatter.urgency
+        }).eq('id', targetMatter.id),
+        supabase.from('email_messages').update({ is_processed: true, processed_at: nowIso }).eq('id', email.id)
+      ]);
+
       return targetMatter;
     }
 
@@ -147,12 +147,14 @@ export class CognitiveTriageService {
 
     if (error) throw error;
 
-    await supabase.from('matter_email_links').insert({
-      matter_id: newMatter.id,
-      email_message_id: email.id
-    });
+    await Promise.all([
+      supabase.from('matter_email_links').insert({
+        matter_id: newMatter.id,
+        email_message_id: email.id
+      }),
+      supabase.from('email_messages').update({ is_processed: true, processed_at: new Date().toISOString() }).eq('id', email.id)
+    ]);
 
-    await supabase.from('email_messages').update({ is_processed: true, processed_at: new Date().toISOString() }).eq('id', email.id);
     return newMatter;
   }
 

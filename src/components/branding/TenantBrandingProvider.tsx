@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
-import { TenantId } from '@/lib/auth/multiTenantSession';
+import type { TenantId } from '@/lib/auth/multiTenantSession';
 import {
   TenantThemeTokens,
   getTokensForTenant,

@@ -555,10 +555,19 @@ export async function synthesizeDirectInstitutionalNeural(options: {
     ? 'audio-24khz-48kbitrate-mono-mp3'
     : 'audio-24khz-96kbitrate-mono-mp3';
 
-  const turnBuffers = await Promise.all(
-    turns.map(async (turnText) => {
+  // Pool acotado a máximo 3 conexiones WebSocket simultáneas por solicitud preservando el orden exacto de los bloques
+  const MAX_CONCURRENT_WS_TURNS = 3;
+  const turnBuffers = new Array<Buffer>(turns.length);
+  let nextTurnIndex = 0;
+  let hasFailed = false;
+
+  const runWorker = async () => {
+    while (!hasFailed) {
+      const currentIdx = nextTurnIndex++;
+      if (currentIdx >= turns.length) return;
+      const turnText = turns[currentIdx];
       try {
-        return await synthesizeSingleTurnWs(
+        turnBuffers[currentIdx] = await synthesizeSingleTurnWs(
           turnText,
           voiceId,
           rate,
@@ -567,21 +576,29 @@ export async function synthesizeDirectInstitutionalNeural(options: {
           perTurnTimeoutMs
         );
       } catch (firstErr: any) {
-        // Reintento único inmediato ajustando reloj (403) o con bitrate estándar 48kbps
-        const fallbackFmt = firstErr?.statusCode === 403
-          ? primaryFormat
-          : 'audio-24khz-48kbitrate-mono-mp3';
-        return await synthesizeSingleTurnWs(
-          turnText,
-          voiceId,
-          rate,
-          pitch,
-          fallbackFmt,
-          Math.min(6000, perTurnTimeoutMs)
-        );
+        try {
+          // Reintento único inmediato ajustando reloj (403) o con bitrate estándar 48kbps
+          const fallbackFmt = firstErr?.statusCode === 403
+            ? primaryFormat
+            : 'audio-24khz-48kbitrate-mono-mp3';
+          turnBuffers[currentIdx] = await synthesizeSingleTurnWs(
+            turnText,
+            voiceId,
+            rate,
+            pitch,
+            fallbackFmt,
+            Math.min(6000, perTurnTimeoutMs)
+          );
+        } catch (retryErr) {
+          hasFailed = true;
+          throw retryErr;
+        }
       }
-    })
-  );
+    }
+  };
+
+  const workerCount = Math.min(MAX_CONCURRENT_WS_TURNS, turns.length);
+  await Promise.all(Array.from({ length: workerCount }, () => runWorker()));
 
   return Buffer.concat(turnBuffers);
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   generateDraftWithRealTokens,
   searchSimilarDraftInVault,
@@ -8,11 +9,62 @@ import {
 } from '@/lib/services/workOsAiDraftVault.service';
 import { EmailTriageTelemetryService } from '@/lib/services/emailTriageTelemetry.service';
 import { validateApiAuth } from '@/lib/authValidator';
-import { isPlatformSuperUser } from '@/types';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 export const dynamic = 'force-dynamic';
 
 const WORKOS_EXECUTIVE_ROLES = new Set(['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator']);
+
+// Limitador de tasa acotado en memoria (30 req/min, máx 2,000 entradas)
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_RATE_LIMIT_ENTRIES = 2_000;
+const draftRateLimits = new Map<string, { count: number; resetAt: number }>();
+
+function checkDraftRateLimit(clientKey: string): boolean {
+  const now = Date.now();
+  if (draftRateLimits.size > 500) {
+    for (const [k, rec] of draftRateLimits.entries()) {
+      if (now > rec.resetAt) {
+        draftRateLimits.delete(k);
+      }
+    }
+  }
+  const existing = draftRateLimits.get(clientKey);
+  if (!existing || now > existing.resetAt) {
+    if (!existing && draftRateLimits.size >= MAX_RATE_LIMIT_ENTRIES) {
+      const oldestKey = draftRateLimits.keys().next().value;
+      if (oldestKey !== undefined) draftRateLimits.delete(oldestKey);
+    }
+    draftRateLimits.set(clientKey, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (existing.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  existing.count += 1;
+  return true;
+}
+
+const WorkOsDraftPostSchema = z.object({
+  subject: z
+    .string()
+    .trim()
+    .min(1, 'Se requiere un asunto o consulta para generar el borrador.')
+    .max(300, 'El asunto excede el límite máximo permitido (300 caracteres).'),
+  tenantId: z.string().max(100).optional(),
+  tone: z
+    .enum(['formal_empathetic', 'resolutive_concise', 'urgent_firm', 'pedagogic_close'])
+    .optional()
+    .default('formal_empathetic'),
+  audience: z
+    .enum(['parents', 'students', 'teachers', 'authorities'])
+    .optional()
+    .default('parents'),
+  whiteLabelShield: z.boolean().optional().default(true),
+  autoIncludeSignature: z.boolean().optional().default(true),
+  forceRegenerate: z.boolean().optional().default(false)
+});
 
 /**
  * GET /api/admin/workos/draft
@@ -35,15 +87,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const clientIp = (req.headers.get('x-forwarded-for') || auth.user?.id || 'local-client').split(',')[0].trim();
+    if (!checkDraftRateLimit(`get:${clientIp}`)) {
+      return NextResponse.json(
+        { success: false, error: 'Límite de consultas de borradores por minuto excedido. Intenta en breve.' },
+        { status: 429 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
-    const q = searchParams.get('q') || '';
-    const userTenant = auth.user?.tenant_id || auth.user?.school_id || '';
-    const requestedTenant = searchParams.get('tenantId') || userTenant || 'e1000000-0000-0000-0000-000000000001';
+    const q = (searchParams.get('q') || '').slice(0, 300);
+    const userTenant = resolveCanonicalUserSchoolKey(auth.user as any);
+    const requestedTenant = (searchParams.get('tenantId') || userTenant || 'e1000000-0000-0000-0000-000000000001').slice(0, 100);
     if (
       auth.authenticated &&
-      !isPlatformSuperUser(auth.user as any) &&
-      userTenant &&
-      requestedTenant !== userTenant
+      !isSchoolTenantAllowed(auth.user as any, requestedTenant)
     ) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
@@ -108,15 +166,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
-    const subject = (body.subject || '').trim();
-    const userTenant = auth.user?.tenant_id || auth.user?.school_id || '';
-    const requestedTenant = body.tenantId || userTenant || 'e1000000-0000-0000-0000-000000000001';
+    const clientIp = (req.headers.get('x-forwarded-for') || auth.user?.id || 'local-client').split(',')[0].trim();
+    if (!checkDraftRateLimit(`post:${clientIp}`)) {
+      return NextResponse.json(
+        { success: false, error: 'Límite de generación de borradores por minuto excedido. Intenta en breve.' },
+        { status: 429 }
+      );
+    }
+
+    const rawBody = await req.json().catch(() => null);
+    const parsed = WorkOsDraftPostSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.issues[0]?.message || 'Parámetros de borrador inválidos.' },
+        { status: 400 }
+      );
+    }
+
+    const {
+      subject,
+      tenantId: bodyTenantId,
+      tone,
+      audience,
+      whiteLabelShield,
+      autoIncludeSignature,
+      forceRegenerate
+    } = parsed.data;
+
+    const userTenant = resolveCanonicalUserSchoolKey(auth.user as any);
+    const requestedTenant = bodyTenantId || userTenant || 'e1000000-0000-0000-0000-000000000001';
     if (
       auth.authenticated &&
-      !isPlatformSuperUser(auth.user as any) &&
-      userTenant &&
-      requestedTenant !== userTenant
+      !isSchoolTenantAllowed(auth.user as any, requestedTenant)
     ) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
@@ -124,18 +205,6 @@ export async function POST(req: NextRequest) {
       );
     }
     const tenantId = requestedTenant;
-    const tone = body.tone || 'formal_empathetic';
-    const audience = body.audience || 'parents';
-    const whiteLabelShield = body.whiteLabelShield ?? true;
-    const autoIncludeSignature = body.autoIncludeSignature ?? true;
-    const forceRegenerate = body.forceRegenerate === true;
-
-    if (!subject) {
-      return NextResponse.json(
-        { success: false, error: 'Se requiere un asunto o consulta para generar el borrador.' },
-        { status: 400 }
-      );
-    }
 
     // PASO 1: Consulta Prioritaria en Bóveda Curricular (Vault-First / Cache-First)
     // Solo si el usuario no solicita explícitamente forzar nueva generación con tokens reales
@@ -176,12 +245,16 @@ export async function POST(req: NextRequest) {
       forceRegenerate
     });
 
+    const isFallbackDraft = (newDraft.tokensUsed?.totalTokens || 0) === 0;
+
     return NextResponse.json({
       success: true,
       fromVault: false,
       draft: newDraft,
       tokensUsed: newDraft.tokensUsed,
-      message: `Borrador generado con ${newDraft.tokensUsed.totalTokens} tokens reales y resguardado en la Bóveda Curricular.`
+      message: isFallbackDraft
+        ? 'Borrador institucional de contingencia generado localmente (0 tokens consumidos).'
+        : `Borrador generado con ${newDraft.tokensUsed.totalTokens} tokens reales y resguardado en la Bóveda Curricular.`
     });
   } catch (err: any) {
     console.error('Error en POST /api/admin/workos/draft:', err);

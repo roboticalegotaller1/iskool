@@ -55,21 +55,20 @@ export const DemoGuidedTourDock: React.FC = () => {
     });
   }, [user?.email, user?.school_id, user?.id, activeSchoolId]);
 
-  // Pre-calentar las 7 rutas del recorrido y chunks pesados (Consola CEO) para transiciones SPA en 0ms
+  // Pre-calentar únicamente las rutas compatibles con el rol activo (sin prefetches cruzados no autorizados)
   useEffect(() => {
-    if (!isDemoSession) return;
+    if (!isDemoSession || !user?.role) return;
+    const currentRole = user.role;
     DEMO_STORYLINE_STEPS.forEach((st) => {
+      const persona = DEMO_PERSONAS.find((p) => p.id === st.personaId);
+      if (!persona || persona.authRole !== currentRole) return;
       try {
         router.prefetch(st.targetRoute);
       } catch {
         // Ignorar si prefetch no está disponible en entorno de test
       }
     });
-    const warmTimer = setTimeout(() => {
-      import('@/components/admin/CEOExecutiveDashboard').catch(() => {});
-    }, 250);
-    return () => clearTimeout(warmTimer);
-  }, [isDemoSession, router]);
+  }, [isDemoSession, user?.role, router]);
 
   // Liberar escudo de transición instantáneamente en cuanto aterriza la nueva ruta (0ms tiempos muertos)
   useEffect(() => {

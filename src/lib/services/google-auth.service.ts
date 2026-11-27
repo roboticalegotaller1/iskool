@@ -1,7 +1,7 @@
 import { OAuth2Client } from 'googleapis-common';
-import { oauth2 as googleOauth2 } from 'googleapis/build/src/apis/oauth2';
-import { gmail as googleGmail } from 'googleapis/build/src/apis/gmail';
-import { createClient } from '@supabase/supabase-js';
+import { oauth2 as googleOauth2 } from 'googleapis/build/src/apis/oauth2/index.js';
+import { gmail as googleGmail } from 'googleapis/build/src/apis/gmail/index.js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { encryptToken, decryptToken } from '@/lib/security/tokenCipher';
 import { signOAuthState, verifyOAuthState } from '@/lib/security/oauthState';
 import { GOOGLE_DIRECTOR_WORKSPACE_SCOPES } from './googleOAuthService';
@@ -55,10 +55,7 @@ export class GoogleAuthService {
       throw new Error('No se pudo obtener la dirección de correo de Google.');
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = getServiceSupabaseClient();
 
     const { data, error } = await supabase
       .from('email_accounts')
@@ -82,14 +79,11 @@ export class GoogleAuthService {
   }
 
   static async getAuthenticatedGmailClient(accountId: string) {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = getServiceSupabaseClient();
 
     const { data: account, error } = await supabase
       .from('email_accounts')
-      .select('*')
+      .select('id, access_token_encrypted, refresh_token_encrypted, token_expires_at')
       .eq('id', accountId)
       .single();
 

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
 import { StudioCategoryIcon, StudioBlockIcon } from './StudioPremiumBlockIcon';
@@ -54,7 +55,13 @@ interface ToolItem {
 }
 
 export const ExtendedToolsDrawer: React.FC = () => {
-  const { isExtendedMenuOpen, setIsExtendedMenuOpen, addBlock } = useActivityBuilderStore();
+  const { isExtendedMenuOpen, setIsExtendedMenuOpen, addBlock } = useActivityBuilderStore(
+    useShallow((state) => ({
+      isExtendedMenuOpen: state.isExtendedMenuOpen,
+      setIsExtendedMenuOpen: state.setIsExtendedMenuOpen,
+      addBlock: state.addBlock,
+    }))
+  );
   const [activeTab, setActiveTab] = useState<'all' | 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 

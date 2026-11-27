@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFiscalPacAdapter } from '@/lib/fiscal/pacAdapter';
-import { CfdiCancelRequest } from '@/types';
+import { CfdiCancelRequest, isPlatformSuperUser } from '@/types';
 import { validateApiAuth } from '@/lib/authValidator';
 
 /**
@@ -25,9 +25,15 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const body: CfdiCancelRequest = await req.json();
+    const body = (await req.json().catch(() => null)) as CfdiCancelRequest | null;
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({
+        success: false,
+        error: 'Cuerpo JSON inválido o malformado.'
+      }, { status: 400 });
+    }
 
-    if (!body || !body.uuid || !body.motivo || !body.rfcEmisor) {
+    if (!body.uuid || !body.motivo || !body.rfcEmisor) {
       return NextResponse.json({
         success: false,
         error: 'Petición de cancelación incompleta. Se requiere uuid, motivo y rfcEmisor.'
@@ -38,11 +44,9 @@ export async function POST(req: NextRequest) {
     const { getAllStampedCfdis } = await import('@/lib/fiscal/pacAdapter');
     const stored = getAllStampedCfdis().find((c: any) => c.uuid === body.uuid);
     if (
-      (auth.user.role || '').toLowerCase() !== 'superadmin' &&
+      !isPlatformSuperUser(auth.user) &&
       stored &&
-      (stored as any).schoolId &&
-      auth.user.school_id &&
-      (stored as any).schoolId !== auth.user.school_id
+      (!auth.user.school_id || !(stored as any).schoolId || (stored as any).schoolId !== auth.user.school_id)
     ) {
       return NextResponse.json({
         success: false,

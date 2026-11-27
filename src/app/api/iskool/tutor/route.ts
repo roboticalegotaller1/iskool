@@ -5,16 +5,28 @@ import { validateApiAuth } from '@/lib/authValidator';
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para acceder al Tutor Pedagógico.' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
+    }
     const { action, sessionId, studentId, grade, targetKnowledgeId, primaryLearningOutcome, message } = body;
+    const isStudent = (auth.user.role || '').toLowerCase() === 'student';
+
+    if (isStudent && studentId && studentId !== auth.user.id) {
+      return NextResponse.json(
+        { error: 'No autorizado para acceder o iniciar tutorías de otro estudiante.' },
+        { status: 403 }
+      );
+    }
 
     // 1. Iniciar sesión nueva
     if (action === 'start') {
-      if (!studentId || !targetKnowledgeId) {
+      const effectiveStudentId = isStudent ? auth.user.id : studentId;
+      if (!effectiveStudentId || !targetKnowledgeId) {
         return NextResponse.json(
           { error: 'Faltan parámetros requeridos (studentId, targetKnowledgeId)' },
           { status: 400 }
@@ -22,7 +34,7 @@ export async function POST(req: NextRequest) {
       }
 
       const session = IskoolCore.Tutor.startSession({
-        studentId,
+        studentId: effectiveStudentId,
         primaryLearningOutcome: primaryLearningOutcome || 'Express personal opinions with reasons',
         knowledgeTargetIds: [targetKnowledgeId]
       });
@@ -57,8 +69,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 });
       }
 
-      const profile = await IskoolCore.Adaptive.getProfile(session.student_id, grade);
-      const comps = await IskoolCore.Adaptive.getCompetenciesMap(session.student_id);
+      if (isStudent && session.student_id !== auth.user.id) {
+        return NextResponse.json(
+          { error: 'No autorizado para interactuar con la sesión de tutoría de otro estudiante.' },
+          { status: 403 }
+        );
+      }
+
+      const [profile, comps] = await Promise.all([
+        IskoolCore.Adaptive.getProfile(session.student_id, grade),
+        IskoolCore.Adaptive.getCompetenciesMap(session.student_id)
+      ]);
 
       const result = await IskoolCore.Tutor.processTurn(session, message, profile, comps);
       await IskoolCore.Tutor.saveSession(result.session);
@@ -69,7 +90,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Acción no soportada' }, { status: 400 });
   } catch (err: any) {
     return NextResponse.json(
-      { error: 'Error procesando solicitud del AI Tutor', details: err.message },
+      {
+        error: 'Error procesando solicitud del AI Tutor',
+        ...(process.env.NODE_ENV !== 'production' ? { details: err?.message } : {})
+      },
       { status: 500 }
     );
   }

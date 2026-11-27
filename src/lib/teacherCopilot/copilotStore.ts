@@ -13,6 +13,29 @@ import {
 } from './types';
 import { supabase } from '../supabaseClient';
 
+const MAX_CACHE_ENTRIES = 1000;
+
+function getLruEntry<K, V>(map: Map<K, V>, key: K): V | undefined {
+  const value = map.get(key);
+  if (value !== undefined) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+}
+
+function setLruEntry<K, V>(map: Map<K, V>, key: K, value: V): void {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
 export class TeacherCopilotStore {
   private static sessions: Map<string, TeacherCopilotSessionEntity> = new Map();
   private static interactions: Map<string, TeacherCopilotInteractionEntity> = new Map();
@@ -26,7 +49,8 @@ export class TeacherCopilotStore {
 
   // --- SESIONES ---
   static async saveSession(session: TeacherCopilotSessionEntity): Promise<TeacherCopilotSessionEntity> {
-    this.sessions.set(session.id, { ...session, updated_at: new Date().toISOString() });
+    const updatedSession: TeacherCopilotSessionEntity = { ...session, updated_at: new Date().toISOString() };
+    setLruEntry(this.sessions, session.id, updatedSession);
 
     try {
       if (supabase) {
@@ -43,23 +67,23 @@ export class TeacherCopilotStore {
           status: session.status,
           settings: { constraints: session.constraints, preferences: session.preferences },
           metadata: session.metadata,
-          updated_at: new Date().toISOString()
+          updated_at: updatedSession.updated_at
         });
       }
     } catch {
       // Degradar silenciosamente a memoria local
     }
 
-    return this.sessions.get(session.id)!;
+    return updatedSession;
   }
 
   static async getSession(id: string): Promise<TeacherCopilotSessionEntity | null> {
-    return this.sessions.get(id) || null;
+    return getLruEntry(this.sessions, id) || null;
   }
 
   // --- INTERACCIONES Y AUDIT TRAIL ---
   static async logInteraction(interaction: TeacherCopilotInteractionEntity): Promise<TeacherCopilotInteractionEntity> {
-    this.interactions.set(interaction.id, interaction);
+    setLruEntry(this.interactions, interaction.id, interaction);
 
     try {
       if (supabase) {
@@ -94,18 +118,19 @@ export class TeacherCopilotStore {
     action: TeacherActionType,
     feedback?: string
   ): Promise<TeacherCopilotInteractionEntity | null> {
-    const item = this.interactions.get(interactionId);
+    const item = getLruEntry(this.interactions, interactionId);
     if (!item) return null;
 
     item.teacher_action = action;
     if (feedback) item.teacher_feedback = feedback;
-    this.interactions.set(interactionId, item);
+    setLruEntry(this.interactions, interactionId, item);
     return item;
   }
 
   // --- ARTEFACTOS GENERADOS (DRAFT -> APPROVED) ---
   static async saveArtifact(artifact: TeacherGeneratedArtifactEntity): Promise<TeacherGeneratedArtifactEntity> {
-    this.artifacts.set(artifact.id, { ...artifact, updated_at: new Date().toISOString() });
+    const updatedArtifact: TeacherGeneratedArtifactEntity = { ...artifact, updated_at: new Date().toISOString() };
+    setLruEntry(this.artifacts, artifact.id, updatedArtifact);
 
     try {
       if (supabase) {
@@ -119,18 +144,18 @@ export class TeacherCopilotStore {
           content: artifact.content,
           version: artifact.version,
           curriculum_locked: artifact.curriculum_locked,
-          updated_at: new Date().toISOString()
+          updated_at: updatedArtifact.updated_at
         });
       }
     } catch {
       // Degradar silenciosamente a memoria local
     }
 
-    return this.artifacts.get(artifact.id)!;
+    return updatedArtifact;
   }
 
   static async getArtifact(id: string): Promise<TeacherGeneratedArtifactEntity | null> {
-    return this.artifacts.get(id) || null;
+    return getLruEntry(this.artifacts, id) || null;
   }
 
   static async getArtifactsBySession(sessionId: string): Promise<TeacherGeneratedArtifactEntity[]> {
@@ -142,7 +167,7 @@ export class TeacherCopilotStore {
     newStatus: ArtifactStatus,
     modifiedContent?: Record<string, unknown>
   ): Promise<TeacherGeneratedArtifactEntity | null> {
-    const art = this.artifacts.get(artifactId);
+    const art = getLruEntry(this.artifacts, artifactId);
     if (!art) return null;
 
     art.status = newStatus;
@@ -151,7 +176,7 @@ export class TeacherCopilotStore {
       art.version = art.version + 1;
     }
     art.updated_at = new Date().toISOString();
-    this.artifacts.set(artifactId, art);
+    setLruEntry(this.artifacts, artifactId, art);
 
     return art;
   }

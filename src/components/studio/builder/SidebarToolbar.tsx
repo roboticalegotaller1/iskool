@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
 import { StudioCategoryIcon, StudioBlockIcon } from './StudioPremiumBlockIcon';
@@ -546,13 +547,21 @@ export interface SidebarToolbarProps {
 
 export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) => {
   const router = useRouter();
-  const { 
-    blocks, 
-    addBlock, 
+  const {
+    blocks,
+    addBlock,
     setDraggedNewBlockType,
     isNodeConfigDrawerOpen,
     isExtendedMenuOpen
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      blocks: state.blocks,
+      addBlock: state.addBlock,
+      setDraggedNewBlockType: state.setDraggedNewBlockType,
+      isNodeConfigDrawerOpen: state.isNodeConfigDrawerOpen,
+      isExtendedMenuOpen: state.isExtendedMenuOpen,
+    }))
+  );
 
   // Estados de categorías desplegadas (acordeón múltiple o individual)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({

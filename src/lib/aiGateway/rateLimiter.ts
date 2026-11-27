@@ -12,6 +12,19 @@ export class AIGatewayRateLimiter {
   private static readonly WINDOW_MS = 60_000;
   private static readonly MAX_CALLS_PER_USER = 60;
   private static readonly MAX_CALLS_PER_SCHOOL = 300;
+  private static readonly SWEEP_THRESHOLD = 500;
+
+  private static sweepStaleWindows(map: Map<string, number[]>, now: number): void {
+    if (map.size <= this.SWEEP_THRESHOLD) return;
+    for (const [key, timestamps] of map.entries()) {
+      const active = timestamps.filter(t => now - t < this.WINDOW_MS);
+      if (active.length === 0) {
+        map.delete(key);
+      } else {
+        map.set(key, active);
+      }
+    }
+  }
 
   /**
    * Verifica si el usuario y la escuela están dentro del límite de frecuencia permitido.
@@ -21,10 +34,13 @@ export class AIGatewayRateLimiter {
     schoolId: string
   ): { allowed: boolean; retryAfterMs?: number; reason?: string } {
     const now = Date.now();
+    this.sweepStaleWindows(this.userWindows, now);
+    this.sweepStaleWindows(this.schoolWindows, now);
 
     // 1. Limpieza de llamadas fuera de la ventana para el usuario
     const userTimestamps = (this.userWindows.get(userId) || []).filter(t => now - t < this.WINDOW_MS);
     if (userTimestamps.length >= this.MAX_CALLS_PER_USER) {
+      this.userWindows.set(userId, userTimestamps);
       const oldest = userTimestamps[0];
       const retryAfterMs = this.WINDOW_MS - (now - oldest);
       return {
@@ -37,6 +53,7 @@ export class AIGatewayRateLimiter {
     // 2. Limpieza de llamadas fuera de la ventana para la escuela
     const schoolTimestamps = (this.schoolWindows.get(schoolId) || []).filter(t => now - t < this.WINDOW_MS);
     if (schoolTimestamps.length >= this.MAX_CALLS_PER_SCHOOL) {
+      this.schoolWindows.set(schoolId, schoolTimestamps);
       const oldest = schoolTimestamps[0];
       const retryAfterMs = this.WINDOW_MS - (now - oldest);
       return {

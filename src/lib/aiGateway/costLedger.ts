@@ -10,6 +10,7 @@ import { supabase } from '../supabaseClient';
 import { getServiceSupabaseClient } from '../supabaseServer';
 
 export class AIGatewayCostLedger {
+  private static readonly MAX_LEDGER_ENTRIES = 2_000;
   private static ledgers: AICostLedgerEntry[] = [];
   private static budgets = new Map<string, SchoolAIBudgetEntity>();
 
@@ -18,6 +19,9 @@ export class AIGatewayCostLedger {
    */
   static async recordUsage(entry: AICostLedgerEntry): Promise<void> {
     this.ledgers.push(entry);
+    if (this.ledgers.length > this.MAX_LEDGER_ENTRIES) {
+      this.ledgers.splice(0, this.ledgers.length - this.MAX_LEDGER_ENTRIES);
+    }
 
     // 1. Persistencia opcional en base de datos con cliente de servicio
     try {

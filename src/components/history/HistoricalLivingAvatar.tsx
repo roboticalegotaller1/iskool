@@ -24,6 +24,7 @@ import {
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { getSupportedRecordingMimeType } from '@/lib/audioEngine';
 import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
+import { fetchCachedNeuralTtsBlob } from '@/lib/audio/ttsClientCache';
 import { 
   configureHistoricalUtterance, 
   getPersonaGender, 
@@ -148,8 +149,14 @@ type IdleGesture = 'look_left' | 'look_right' | 'subtle_nod' | 'deep_breath' | '
 const historicalAvatarAudioBlobCache = new Map<string, string>();
 const inFlightHistoricalTts = new Map<string, Promise<string>>();
 
-function storeHistoricalAudioBlob(key: string, url: string): void {
-  if (historicalAvatarAudioBlobCache.has(key)) return;
+function storeHistoricalAudioBlob(key: string, url: string): string {
+  const existing = historicalAvatarAudioBlobCache.get(key);
+  if (existing) {
+    if (existing !== url) {
+      try { URL.revokeObjectURL(url); } catch {}
+    }
+    return existing;
+  }
   if (historicalAvatarAudioBlobCache.size >= 120) {
     const oldest = historicalAvatarAudioBlobCache.keys().next().value;
     if (oldest) {
@@ -161,6 +168,7 @@ function storeHistoricalAudioBlob(key: string, url: string): void {
     }
   }
   historicalAvatarAudioBlobCache.set(key, url);
+  return url;
 }
 
 export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
@@ -186,7 +194,6 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   // Estados de animación del avatar
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [currentSpokenText, setCurrentSpokenText] = useState<string>('');
-  const [isBlinking, setIsBlinking] = useState(false);
   const [mouthOpenRatio, setMouthOpenRatio] = useState(0);
   const [mouthWidthRatio, setMouthWidthRatio] = useState(0.5); // Bifactorial F2 (sonrisa / ancho)
   const [chestLift, setChestLift] = useState(false); // Elevación torácica por respiración (1.5px)
@@ -333,26 +340,19 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             voicePitch: voicePitch || profile.prosodyPitch,
             birthOrDeathDates: birthDeathDates
           });
-          const p = fetch('/api/ai/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              ssml: ssmlPayload,
-              characterName,
-              historicalAge: effectiveAge,
-              birthDeathDates,
-              variantIndex,
-              text: cleanGreeting,
-              voice: resolvedVoiceId
-            })
+          const p = fetchCachedNeuralTtsBlob({
+            ssml: ssmlPayload,
+            characterName,
+            historicalAge: effectiveAge,
+            birthDeathDates,
+            variantIndex,
+            text: cleanGreeting,
+            voice: resolvedVoiceId
           })
-            .then(async (r) => {
-              if (!r.ok) throw new Error('prefetch failed');
-              const b = await r.blob();
-              const u = URL.createObjectURL(b);
-              storeHistoricalAudioBlob(histCacheKey, u);
-              return u;
+            .then((result) => {
+              if (!result?.blob) throw new Error('prefetch failed');
+              const u = URL.createObjectURL(result.blob);
+              return storeHistoricalAudioBlob(histCacheKey, u);
             })
             .finally(() => {
               inFlightHistoricalTts.delete(histCacheKey);
@@ -394,10 +394,42 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const animFrameRef = useRef<number | null>(null);
   const ttsAbortRef = useRef<AbortController | null>(null);
   const ttsSeqRef = useRef<number>(0);
+  const isMountedRef = useRef<boolean>(true);
+  const trackedTimersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const reusableFormantRef = useRef({
+    rms: 0,
+    open: 0,
+    spread: 0,
+    rounded: 0,
+    alveolar: false,
+    bilabial: false,
+  });
+
+  const scheduleTrackedTimeout = useCallback((fn: () => void, delayMs: number): ReturnType<typeof setTimeout> => {
+    const id = setTimeout(() => {
+      trackedTimersRef.current.delete(id);
+      if (!isMountedRef.current) return;
+      fn();
+    }, delayMs);
+    trackedTimersRef.current.add(id);
+    return id;
+  }, []);
+
+  const clearTrackedTimeout = useCallback((id: ReturnType<typeof setTimeout> | null | undefined) => {
+    if (id !== null && id !== undefined) {
+      clearTimeout(id);
+      trackedTimersRef.current.delete(id);
+    }
+  }, []);
 
   // Limpieza al desmontar
   useEffect(() => {
+    isMountedRef.current = true;
+    const trackedTimers = trackedTimersRef.current;
     return () => {
+      isMountedRef.current = false;
+      trackedTimers.forEach((id) => clearTimeout(id));
+      trackedTimers.clear();
       ttsSeqRef.current++;
       if (ttsAbortRef.current) {
         try { ttsAbortRef.current.abort(); } catch {}
@@ -446,25 +478,28 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   // GESTOS ALEATORIOS CADA 15-20 SEGUNDOS CUANDO ESTÁ INACTIVO (REGLA 4)
   // =========================================================================
   useEffect(() => {
-    let idleTimer: NodeJS.Timeout;
+    let effectActive = true;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    let gestureResetTimer: ReturnType<typeof setTimeout> | null = null;
 
     const scheduleNextIdleGesture = () => {
+      if (!effectActive) return;
       // Intervalo aleatorio entre 15 y 20 segundos
       const nextDelayMs = Math.floor(15000 + Math.random() * 5000);
 
-      idleTimer = setTimeout(() => {
+      idleTimer = scheduleTrackedTimeout(() => {
+        idleTimer = null;
+        if (!effectActive) return;
         if (!isSpeaking) {
           const gestures: IdleGesture[] = ['look_left', 'look_right', 'subtle_nod', 'deep_breath', 'brow_focus'];
           // Selección aleatoria para que nunca haya un patrón repetitivo
           const chosen = gestures[Math.floor(Math.random() * gestures.length)];
           setActiveGesture(chosen);
 
-          // Pestañeo sutil acompañando el gesto
-          setIsBlinking(true);
-          setTimeout(() => setIsBlinking(false), 240);
-
           // Duración del gesto: 2.2 a 3.0 segundos
-          setTimeout(() => {
+          gestureResetTimer = scheduleTrackedTimeout(() => {
+            gestureResetTimer = null;
+            if (!effectActive) return;
             setActiveGesture(null);
             scheduleNextIdleGesture();
           }, 2600);
@@ -477,21 +512,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     scheduleNextIdleGesture();
 
     return () => {
-      clearTimeout(idleTimer);
+      effectActive = false;
+      clearTrackedTimeout(idleTimer);
+      clearTrackedTimeout(gestureResetTimer);
     };
-  }, [lastInteractionTime, isSpeaking]);
-
-  // Pestañeo natural periódico (cada 4-7 segundos)
-  useEffect(() => {
-    const blinkInterval = setInterval(() => {
-      if (!isBlinking) {
-        setIsBlinking(true);
-        setTimeout(() => setIsBlinking(false), 180);
-      }
-    }, Math.floor(4000 + Math.random() * 3000));
-
-    return () => clearInterval(blinkInterval);
-  }, [isBlinking]);
+  }, [lastInteractionTime, isSpeaking, scheduleTrackedTimeout, clearTrackedTimeout]);
 
   // Sincronización de labios (Lip-sync simulado armónico de respaldo)
   const startLipSyncAnimation = useCallback(() => {
@@ -617,12 +642,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         if (pending) {
           audioUrl = await pending;
         } else {
-          const reqPromise = fetch('/api/ai/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            signal: abortController.signal,
-            body: JSON.stringify({
+          const reqPromise = fetchCachedNeuralTtsBlob(
+            {
               ssml: ssmlPayload,
               characterName,
               historicalAge: effectiveAge,
@@ -630,13 +651,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               variantIndex,
               text: cleanText,
               voice: resolvedVoiceId
-            })
-          }).then(async (ttsRes) => {
-            if (!ttsRes.ok) throw new Error(`Historical TTS HTTP ${ttsRes.status}`);
-            const audioBlob = await ttsRes.blob();
-            const created = URL.createObjectURL(audioBlob);
-            storeHistoricalAudioBlob(histCacheKey, created);
-            return created;
+            },
+            abortController.signal
+          ).then((result) => {
+            if (!result?.blob) throw new Error('Historical TTS failed');
+            const created = URL.createObjectURL(result.blob);
+            return storeHistoricalAudioBlob(histCacheKey, created);
           });
           inFlightHistoricalTts.set(histCacheKey, reqPromise);
           try {
@@ -716,17 +736,17 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               const f2Ratio = avgF1 > 4 ? Math.min(1, Math.max(0.1, (avgF2 / (avgF1 + 0.1)) * 0.95)) : 0.5;
               smoothedF2 = smoothedF2 * 0.72 + f2Ratio * 0.28;
 
-              // Publicar niveles formánticos en tiempo real a 60 FPS sin re-renderizar el árbol React
+              // Publicar niveles formánticos en tiempo real a 60 FPS sin re-renderizar el árbol React ni asignar objetos
               if (typeof window !== 'undefined') {
                 const rmsNorm = Math.min(1, (avgF1 + avgF2) / 140);
-                (window as any).__iskoolActiveFormantLevels = {
-                  rms: rmsNorm,
-                  open: smoothedF1,
-                  spread: (smoothedF2 - 0.5) * 1.4,
-                  rounded: smoothedF1 > 0.25 && smoothedF2 < 0.42 ? (0.45 - smoothedF2) * 1.6 : 0,
-                  alveolar: avgF2 > avgF1 * 0.72 && avgF2 > 28,
-                  bilabial: rmsNorm > 0.02 && avgF1 < 18 && avgF2 < 12,
-                };
+                const formants = reusableFormantRef.current;
+                formants.rms = rmsNorm;
+                formants.open = smoothedF1;
+                formants.spread = (smoothedF2 - 0.5) * 1.4;
+                formants.rounded = smoothedF1 > 0.25 && smoothedF2 < 0.42 ? (0.45 - smoothedF2) * 1.6 : 0;
+                formants.alveolar = avgF2 > avgF1 * 0.72 && avgF2 > 28;
+                formants.bilabial = rmsNorm > 0.02 && avgF1 < 18 && avgF2 < 12;
+                (window as any).__iskoolActiveFormantLevels = formants;
               }
 
               // Detección de silencios y pausas dramáticas de respiración (<break>)
@@ -741,19 +761,15 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                   // Micro-respiración foley + elevación sincronizada de 1.5px en el pecho
                   playSyntheticMicroBreath(ctx, ctx.destination, () => {
                     setChestLift(true);
-                    setTimeout(() => setChestLift(false), 260);
+                    scheduleTrackedTimeout(() => setChestLift(false), 260);
                   });
-
-                  // Micro-parpadeo reflexivo ante la pausa oratoria
-                  setIsBlinking(true);
-                  setTimeout(() => setIsBlinking(false), 160);
 
                   // Gesto de reflexión oratoria
                   if (!activeGesture) {
                     const oratoryPauseGestures: IdleGesture[] = ['brow_focus', 'subtle_nod'];
                     const chosen = oratoryPauseGestures[Math.floor(Math.random() * oratoryPauseGestures.length)];
                     setActiveGesture(chosen);
-                    setTimeout(() => setActiveGesture(null), 1400);
+                    scheduleTrackedTimeout(() => setActiveGesture(null), 1400);
                   }
                 }
               } else {
@@ -772,7 +788,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               // Micro-inhalación foley de inicio sincronizada con elevación torácica
               playSyntheticMicroBreath(ctx, ctx.destination, () => {
                 setChestLift(true);
-                setTimeout(() => setChestLift(false), 260);
+                scheduleTrackedTimeout(() => setChestLift(false), 260);
               });
               checkAudioLevel();
             };
@@ -814,7 +830,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           }
           audioContextRef.current = null;
           stopLipSyncAnimation();
+          const failedBlobUrl = historicalAvatarAudioBlobCache.get(histCacheKey);
           historicalAvatarAudioBlobCache.delete(histCacheKey);
+          if (failedBlobUrl) {
+            try { URL.revokeObjectURL(failedBlobUrl); } catch {}
+          }
           currentAudioRef.current = null;
           fallbackSpeechSynthesis(cleanText, onPlaybackStart);
         };
@@ -831,7 +851,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
     if (mySeq !== ttsSeqRef.current) return;
     fallbackSpeechSynthesis(cleanText, onPlaybackStart);
-  }, [audioEnabled, characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, voiceRate, voicePitch, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
+  }, [audioEnabled, characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, voiceRate, voicePitch, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis, scheduleTrackedTimeout]);
 
   // Envío de pregunta al avatar
   const handleSendMessage = async (textToSend?: string) => {
@@ -901,15 +921,15 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         };
 
         // Salvaguarda: si el audio tarda más de 1.4s o está silenciado, mostrar el texto de inmediato
-        const safetyTimer = setTimeout(revealSynchronized, 1400);
+        const safetyTimer = scheduleTrackedTimeout(revealSynchronized, 1400);
 
         if (audioEnabled) {
           speakText(data.answer, () => {
-            clearTimeout(safetyTimer);
+            clearTrackedTimeout(safetyTimer);
             revealSynchronized();
           });
         } else {
-          clearTimeout(safetyTimer);
+          clearTrackedTimeout(safetyTimer);
           revealSynchronized();
         }
       } else {
@@ -1226,7 +1246,6 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               externalMouthSpread={mouthWidthRatio - 0.5}
               fallbackImageSrc="/images/history/josefa_ortiz_avatar.png"
               enableSmartBustCrop={true}
-              className="filter contrast-105 brightness-95"
             />
 
             {/* Sombra de época y velo dramático */}

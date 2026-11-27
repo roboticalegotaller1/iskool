@@ -12,11 +12,14 @@ const nextConfig: NextConfig = {
     '/api/mail/**/*': ['./Correo/**/*'],
     '/api/portal/ceo/**/*': ['./Correo/**/*'],
     '/api/iskool/**/*': ['./knowledge/**/*'],
-    '/api/vault': ['./planeaciones/**/*', './knowledge/**/*'],
-    '/api/vault/**/*': ['./planeaciones/**/*', './knowledge/**/*'],
-    '/api/v1/curriculum/**/*': ['./planeaciones/**/*', './knowledge/**/*'],
-    '/api/ai/planning': ['./planeaciones/**/*', './knowledge/**/*'],
-    '/api/ai/assistant': ['./planeaciones/**/*', './knowledge/**/*'],
+    '/api/vault': ['./planeaciones/**/*'],
+    '/api/vault/reassign': ['./planeaciones/**/*'],
+    '/api/vault/memory': ['./planeaciones/Memorias_Institucionales/**/*'],
+    '/api/vault/pedagogical-insights': ['./planeaciones/Memorias_Institucionales/**/*'],
+    '/api/vault/reconcile': ['./planeaciones/Memorias_Institucionales/**/*'],
+    '/api/vault/protocol': ['./planeaciones/Protocolos_Institucionales/**/*'],
+    '/api/ai/planning': ['./planeaciones/Memorias_Institucionales/**/*'],
+    '/api/studio/generate': ['./planeaciones/Estudio_Interactivo/**/*'],
     '/planeaciones': ['./planeaciones/**/*'],
     '/planeaciones/**/*': ['./planeaciones/**/*'],
     '/api/ai/tts': ['./node_modules/ws/**/*'],
@@ -58,6 +61,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverSourceMaps: false,
     turbopackFileSystemCacheForBuild: process.env.CI ? false : true,
+    turbopackLazyDynamicImports: true,
     optimizePackageImports: [
       "lucide-react",
       "framer-motion",
@@ -75,7 +79,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 86400,
   },
   // Motor gráfico WebGL opera únicamente en navegador; paquetes binarios, DOM y transporte permanecen externos en servidor
-  serverExternalPackages: ["pixi.js", "sharp", "ws", "nodemailer", "isomorphic-dompurify", "jsdom"],
+  serverExternalPackages: ["pixi.js", "sharp", "ws", "nodemailer", "isomorphic-dompurify", "jsdom", "googleapis", "googleapis-common", "@google/genai"],
   typescript: {
     // Type safety is strictly verified across the entire repository (0 errors).
     ignoreBuildErrors: false,
@@ -87,6 +91,24 @@ const nextConfig: NextConfig = {
       ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com"
       : "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com";
     return [
+      {
+        source: "/(images|brand|icons)/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        source: "/redisenos_assets/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=2592000",
+          },
+        ],
+      },
       {
         source: "/fonts/(.*)",
         headers: [
@@ -102,24 +124,6 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-      {
-        source: "/redisenos_assets/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, stale-while-revalidate=2592000",
-          },
-        ],
-      },
-      {
-        source: "/(images|brand|icons|fonts)/(.*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
       },

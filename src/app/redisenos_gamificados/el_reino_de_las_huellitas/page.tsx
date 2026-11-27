@@ -149,58 +149,58 @@ export default function ElReinoDeLasHuellitasPage() {
 
     if (companionSpecies === 'zorro') {
       if (hat === 'gorra_detective' || (hat === 'gorra_detective' && scarf) || scarf === 'bufanda_colores') {
-        return '/redisenos_assets/huellitas/zorro_detective_bufanda.jpg';
+        return '/redisenos_assets/huellitas/zorro_detective_bufanda.webp';
       }
       if (hat === 'gorrito_fiesta') {
-        return '/redisenos_assets/huellitas/zorro_gorrito_fiesta.jpg';
+        return '/redisenos_assets/huellitas/zorro_gorrito_fiesta.webp';
       }
       if (hat === 'corona_real') {
-        return '/redisenos_assets/huellitas/zorro_corona_real.jpg';
+        return '/redisenos_assets/huellitas/zorro_corona_real.webp';
       }
       if (hat === 'gorro_chef') {
-        return '/redisenos_assets/huellitas/zorro_gorro_chef.jpg';
+        return '/redisenos_assets/huellitas/zorro_gorro_chef.webp';
       }
       if (hat === 'gorro_dinosaurio') {
-        return '/redisenos_assets/huellitas/zorro_gorro_dinosaurio.jpg';
+        return '/redisenos_assets/huellitas/zorro_gorro_dinosaurio.webp';
       }
       if (hat === 'gorro_osito') {
-        return '/redisenos_assets/huellitas/zorro_gorro_osito.jpg';
+        return '/redisenos_assets/huellitas/zorro_gorro_osito.webp';
       }
       if (wings) {
-        return '/redisenos_assets/huellitas/zorro_alas_mariposa.jpg';
+        return '/redisenos_assets/huellitas/zorro_alas_mariposa.webp';
       }
       if (bells) {
-        return '/redisenos_assets/huellitas/zorro_cascabeles.jpg';
+        return '/redisenos_assets/huellitas/zorro_cascabeles.webp';
       }
-      return '/redisenos_assets/huellitas/zorro_base_pedestal.jpg';
+      return '/redisenos_assets/huellitas/zorro_base_pedestal.webp';
     }
 
     // Modalidad Oso Amigo
     if (hat === 'gorra_detective' || (hat === 'gorra_detective' && scarf) || scarf === 'bufanda_colores') {
-      return '/redisenos_assets/huellitas/oso_detective_bufanda.jpg';
+      return '/redisenos_assets/huellitas/oso_detective_bufanda.webp';
     }
     if (hat === 'gorrito_fiesta') {
-      return '/redisenos_assets/huellitas/oso_gorrito_fiesta.jpg';
+      return '/redisenos_assets/huellitas/oso_gorrito_fiesta.webp';
     }
     if (hat === 'corona_real') {
-      return '/redisenos_assets/huellitas/oso_corona_real.jpg';
+      return '/redisenos_assets/huellitas/oso_corona_real.webp';
     }
     if (hat === 'gorro_chef') {
-      return '/redisenos_assets/huellitas/oso_gorro_chef.jpg';
+      return '/redisenos_assets/huellitas/oso_gorro_chef.webp';
     }
     if (hat === 'gorro_dinosaurio') {
-      return '/redisenos_assets/huellitas/oso_gorro_dinosaurio.jpg';
+      return '/redisenos_assets/huellitas/oso_gorro_dinosaurio.webp';
     }
     if (hat === 'gorro_osito') {
-      return '/redisenos_assets/huellitas/oso_gorro_osito.jpg';
+      return '/redisenos_assets/huellitas/oso_gorro_osito.webp';
     }
     if (wings) {
-      return '/redisenos_assets/huellitas/oso_alas_mariposa.jpg';
+      return '/redisenos_assets/huellitas/oso_alas_mariposa.webp';
     }
     if (bells) {
-      return '/redisenos_assets/huellitas/oso_cascabeles.jpg';
+      return '/redisenos_assets/huellitas/oso_cascabeles.webp';
     }
-    return '/redisenos_assets/huellitas/oso_base_pedestal.jpg';
+    return '/redisenos_assets/huellitas/oso_base_pedestal.webp';
   };
 
   // Síntesis de voz femenina neuronal humana en español
@@ -434,7 +434,7 @@ export default function ElReinoDeLasHuellitasPage() {
           
           {/* Ilustración de Fondo Original (Imagen 3) */}
           <img 
-            src="/redisenos_assets/huellitas/reino_huellitas_main_scene.jpg" 
+            src="/redisenos_assets/huellitas/reino_huellitas_main_scene.webp" 
             alt="El Reino de las Huellitas - Hub Principal"
             className="w-full h-full object-cover"
           />
@@ -681,7 +681,7 @@ export default function ElReinoDeLasHuellitasPage() {
             <div className="relative w-full aspect-[16/9] overflow-hidden group">
               
               <img 
-                src="/redisenos_assets/huellitas/reino_huellitas_tablet_challenge.jpg" 
+                src="/redisenos_assets/huellitas/reino_huellitas_tablet_challenge.webp" 
                 alt="Desafío Tablet - ¿Cuál es la fruta roja?"
                 className="w-full h-full object-cover"
               />
@@ -863,7 +863,7 @@ export default function ElReinoDeLasHuellitasPage() {
             <div className="relative w-full aspect-[16/9] overflow-hidden">
               
               <img 
-                src="/redisenos_assets/huellitas/reino_huellitas_companion_customizer.jpg" 
+                src="/redisenos_assets/huellitas/reino_huellitas_companion_customizer.webp" 
                 alt="¡Crea tu Compañero! - Vestidor Montessori"
                 className="w-full h-full object-cover"
               />
@@ -1051,7 +1051,7 @@ export default function ElReinoDeLasHuellitasPage() {
             
             <div className="w-48 h-48 mx-auto rounded-2xl overflow-hidden shadow-lg border-2 border-amber-200">
               <img 
-                src="/redisenos_assets/huellitas/oso_5_manzanas.jpg" 
+                src="/redisenos_assets/huellitas/oso_5_manzanas.webp" 
                 alt="Osezno con 5 Manzanas"
                 className="w-full h-full object-cover"
               />
@@ -1134,7 +1134,7 @@ export default function ElReinoDeLasHuellitasPage() {
             
             <div className="w-48 h-48 mx-auto rounded-2xl overflow-hidden shadow-lg border-2 border-sky-200">
               <img 
-                src="/redisenos_assets/huellitas/elefantito_musica.jpg" 
+                src="/redisenos_assets/huellitas/elefantito_musica.webp" 
                 alt="Elefantito con Notas Musicales"
                 className="w-full h-full object-cover"
               />

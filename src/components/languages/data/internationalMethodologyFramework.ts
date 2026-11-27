@@ -1003,7 +1003,7 @@ export const LANGUAGE_PROGRAM_ARCHITECTURES = {
             {
                 title: '1. Calibration Neuro-Acoustique des Voyelles Nasales, de la Liaison et du /ʁ/ Uvulaire à 60 FPS',
                 description:
-                    'Le français présente une distance phonético-orthographique élevée (lettres muettes, élisions, liaisons obligatoires et 4 voyelles nasales). Le moteur Nano Banana 2.1 modélise à 60 FPS l’arrondissement labial (/y/ vs /u/ vs /ø/) et l’ouverture mandibulaire nasale en temps réel.',
+                    'Le français présente une distance phonético-orthographique élevée (lettres muettes, élisions, liaisons obligatoires et 4 voyelles nasales). Le moteur neuro-phonétique ISkool modélise à 60 FPS l’arrondissement labial (/y/ vs /u/ vs /ø/) et l’ouverture mandibulaire nasale en temps réel.',
             },
             {
                 title: '2. Perspective Actionnelle & Dialogue Historique à la 1re Personne (Alliance Française + Berlitz)',

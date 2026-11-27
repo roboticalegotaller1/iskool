@@ -20,8 +20,6 @@ import {
   BarChart3,
   Cpu
 } from 'lucide-react';
-import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { normalizeLatinHistoricalPhonetics, playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 
@@ -81,6 +79,7 @@ export const ExecutiveOracleDashboard: React.FC = () => {
 
   const [activeVoiceText, setActiveVoiceText] = useState<string>('');
   const [forensicMarkdown, setForensicMarkdown] = useState<string>('');
+  const [renderedForensic, setRenderedForensic] = useState<{ markdown: string; html: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Referencias para reconocimiento y síntesis de voz
@@ -231,20 +230,43 @@ export const ExecutiveOracleDashboard: React.FC = () => {
     }
   };
 
-  // Renderizador seguro de Markdown nativo con lista blanca estricta XSS
-  const renderMarkdownContent = (md: string) => {
-    const rawHtml = marked.parse(md, { async: false }) as string;
-    const sanitizedHtml = DOMPurify.sanitize(rawHtml, {
-      ALLOWED_TAGS: [
-        'p', 'br', 'strong', 'em', 'b', 'i', 'u', 'h1', 'h2', 'h3', 'h4',
-        'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'table', 'thead',
-        'tbody', 'tr', 'th', 'td', 'hr', 'span'
-      ],
-      ALLOWED_ATTR: ['class'],
-      ALLOW_DATA_ATTR: false,
-    });
-    return { __html: sanitizedHtml };
-  };
+  // Carga diferida y sanitización segura de Markdown bajo demanda (solo cuando existe contenido analítico)
+  useEffect(() => {
+    if (!forensicMarkdown) return;
+
+    let cancelled = false;
+
+    Promise.all([import('marked'), import('isomorphic-dompurify')])
+      .then(([{ marked }, domPurifyMod]) => {
+        if (cancelled) return;
+        const DOMPurify = domPurifyMod.default;
+        const rawHtml = marked.parse(forensicMarkdown, { async: false }) as string;
+        const sanitizedHtml = DOMPurify.sanitize(rawHtml, {
+          ALLOWED_TAGS: [
+            'p', 'br', 'strong', 'em', 'b', 'i', 'u', 'h1', 'h2', 'h3', 'h4',
+            'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'table', 'thead',
+            'tbody', 'tr', 'th', 'td', 'hr', 'span'
+          ],
+          ALLOWED_ATTR: ['class'],
+          ALLOW_DATA_ATTR: false,
+        });
+        if (!cancelled) {
+          setRenderedForensic({ markdown: forensicMarkdown, html: sanitizedHtml });
+        }
+      })
+      .catch((err) => {
+        console.error('Error al formatear reporte analítico:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [forensicMarkdown]);
+
+  const sanitizedForensicHtml =
+    forensicMarkdown && renderedForensic?.markdown === forensicMarkdown
+      ? renderedForensic.html
+      : null;
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 bg-slate-950 text-slate-100 rounded-3xl border border-slate-800 shadow-2xl">
@@ -452,16 +474,22 @@ export const ExecutiveOracleDashboard: React.FC = () => {
               </button>
             </div>
 
-            {/* Inyección estilizada de tablas y Markdown */}
-            <div
-              className="prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed
-                prose-headings:text-white prose-headings:font-bold prose-headings:mb-2
-                prose-table:w-full prose-table:border-collapse prose-table:my-4
-                prose-th:bg-slate-800/90 prose-th:text-slate-300 prose-th:p-3 prose-th:text-left prose-th:font-semibold prose-th:border prose-th:border-slate-700
-                prose-td:p-3 prose-td:border prose-td:border-slate-800/90 prose-td:font-mono prose-td:text-slate-300
-                prose-strong:text-cyan-300"
-              dangerouslySetInnerHTML={renderMarkdownContent(forensicMarkdown)}
-            />
+            {/* Inyección estilizada de tablas y Markdown con respaldo limpio durante la carga diferida */}
+            {sanitizedForensicHtml !== null ? (
+              <div
+                className="prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed
+                  prose-headings:text-white prose-headings:font-bold prose-headings:mb-2
+                  prose-table:w-full prose-table:border-collapse prose-table:my-4
+                  prose-th:bg-slate-800/90 prose-th:text-slate-300 prose-th:p-3 prose-th:text-left prose-th:font-semibold prose-th:border prose-th:border-slate-700
+                  prose-td:p-3 prose-td:border prose-td:border-slate-800/90 prose-td:font-mono prose-td:text-slate-300
+                  prose-strong:text-cyan-300"
+                dangerouslySetInnerHTML={{ __html: sanitizedForensicHtml }}
+              />
+            ) : (
+              <div className="whitespace-pre-wrap text-slate-200 text-sm leading-relaxed">
+                {forensicMarkdown}
+              </div>
+            )}
           </div>
         </div>
       )}

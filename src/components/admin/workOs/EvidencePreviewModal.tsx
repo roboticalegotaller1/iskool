@@ -316,7 +316,7 @@ El presente documento probatorio ha sido registrado en la Bóveda Central de Evi
             <div className="p-4 sm:p-8 flex justify-center overflow-x-auto bg-slate-200/50 dark:bg-slate-950">
               
               {/* Si es una imagen dataUrl pura */}
-              {doc.dataUrl && (doc.fileType === 'jpg' || doc.fileType === 'jpeg') ? (
+              {doc.dataUrl && (doc.fileType === 'jpg' || doc.fileType === 'jpeg' || doc.fileType === 'webp') ? (
                 <div
                   className="bg-white rounded-xl shadow-xl overflow-hidden transition-all duration-200"
                   style={{ width: `${Math.round(650 * (zoomLevel / 100))}px` }}
@@ -367,7 +367,7 @@ El presente documento probatorio ha sido registrado en la Bóveda Central de Evi
                       DOCUMENTO PROBATORIO OFICIAL
                     </span>
                     <h5 className="text-base font-black text-slate-900">
-                      {doc.fileName.replace(/\.(pdf|doc|docx|jpg|png)$/i, '').replace(/_/g, ' ')}
+                      {doc.fileName.replace(/\.(pdf|doc|docx|jpg|jpeg|png|webp)$/i, '').replace(/_/g, ' ')}
                     </h5>
                     <p className="text-xs text-slate-500">
                       Caso: {taskTitle}

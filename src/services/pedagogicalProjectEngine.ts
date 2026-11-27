@@ -10,9 +10,16 @@ import {
   OrderingSequenceBlock,
   SecretCodePuzzleBlock
 } from '@/types/studioBlocks';
+import {
+  canonicalTopicSlug,
+  extractGradeFromText,
+  normalizeCanonicalGrade,
+  normalizeSearchText,
+} from '@/lib/curriculumNormalizer';
 
 export interface GenerateProjectOptions {
   topic: string;
+  grade?: string;
   faseNem?: string;
   campoFormativo?: string;
   gamificationStyle?: 'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament';
@@ -20,6 +27,7 @@ export interface GenerateProjectOptions {
   apiKey?: string;
   language?: string;
   systemPrompt?: string;
+  forceRegenerate?: boolean;
 }
 
 export interface GeneratedProjectResult {
@@ -29,50 +37,279 @@ export interface GeneratedProjectResult {
   startNodeId: string;
 }
 
+const ESCAPE_VAULT_MANIFEST_START = '<!-- ISKOOL_ESCAPE_ROOM_MANIFEST_START';
+const ESCAPE_VAULT_MANIFEST_END = 'ISKOOL_ESCAPE_ROOM_MANIFEST_END -->';
+const MEMORY_CACHE_MAX_ENTRIES = 120;
+
+const projectMemoryCache = new Map<string, GeneratedProjectResult>();
+
+type NodeFsLike = {
+  existsSync: (p: string) => boolean;
+  mkdirSync: (p: string, opts?: { recursive?: boolean }) => void;
+  readFileSync: (p: string, enc: BufferEncoding) => string;
+  writeFileSync: (p: string, data: string, enc: BufferEncoding) => void;
+};
+
+type NodePathLike = {
+  join: (...parts: string[]) => string;
+};
+
+function getServerNodeFs(): { fs: NodeFsLike; path: NodePathLike } | null {
+  if (typeof window !== 'undefined' || typeof process === 'undefined') {
+    return null;
+  }
+  const getBuiltin = (process as unknown as { getBuiltinModule?: (id: string) => unknown }).getBuiltinModule;
+  if (typeof getBuiltin !== 'function') {
+    return null;
+  }
+  try {
+    const fsMod = getBuiltin('node:fs') as NodeFsLike | undefined;
+    const pathMod = getBuiltin('node:path') as NodePathLike | undefined;
+    if (fsMod && pathMod) {
+      return { fs: fsMod, path: pathMod };
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function decodeTransportUrl(b64: string): string {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(b64, 'base64').toString('ascii');
+  }
+  if (typeof atob === 'function') {
+    return atob(b64);
+  }
+  return '';
+}
+
+function cloneProjectResult(result: GeneratedProjectResult): GeneratedProjectResult {
+  return JSON.parse(JSON.stringify(result)) as GeneratedProjectResult;
+}
+
+function buildProjectCacheKey(
+  rawTopic: string,
+  gradeOrFase: string,
+  language: string,
+  gamificationStyle: string
+): { key: string; topicSlug: string; gradeSlug: string; langSlug: string; styleSlug: string } {
+  const extracted = extractGradeFromText(rawTopic);
+  const canonicalGrade =
+    normalizeCanonicalGrade(gradeOrFase) ||
+    extracted.grade;
+  const effectiveTopic = extracted.grade && extracted.remainingText ? extracted.remainingText : rawTopic;
+
+  const topicSlug = canonicalTopicSlug(effectiveTopic) || 'proyecto_general';
+  const gradeSlug = canonicalGrade
+    ? canonicalGrade.canonicalSlug
+    : normalizeSearchText(gradeOrFase || 'fase_5').replace(/\s+/g, '_') || 'fase_5';
+  const langSlug = normalizeSearchText(language || 'espanol').replace(/\s+/g, '_') || 'espanol';
+  const styleSlug = normalizeSearchText(gamificationStyle || 'rpg_adventure').replace(/\s+/g, '_') || 'rpg_adventure';
+
+  const key = `${topicSlug}__${gradeSlug}__${langSlug}__${styleSlug}`.slice(0, 140);
+  return { key, topicSlug, gradeSlug, langSlug, styleSlug };
+}
+
+function resolveEscapeRoomsVaultDir(): string | null {
+  const node = getServerNodeFs();
+  if (!node) return null;
+  try {
+    const envVault = process.env.CURRICULAR_VAULT_PATH || process.env.VAULT_PATH;
+    let basePlannings = node.path.join(process.cwd(), 'planeaciones');
+    if (envVault && node.fs.existsSync(envVault)) {
+      const sub = node.path.join(envVault, 'planeaciones');
+      basePlannings = node.fs.existsSync(sub) ? sub : envVault;
+    }
+    return node.path.join(basePlannings, 'Estudio_Interactivo', 'Escape_Rooms');
+  } catch {
+    return null;
+  }
+}
+
+function findCachedGamifiedProject(cacheKey: string): GeneratedProjectResult | null {
+  // 1. Caché en memoria (0 tokens, < 1 ms)
+  const memHit = projectMemoryCache.get(cacheKey);
+  if (memHit) {
+    return cloneProjectResult(memHit);
+  }
+
+  // 2. Caché en Bóveda Curricular en disco (servidor Node, 0 tokens)
+  const node = getServerNodeFs();
+  const dir = resolveEscapeRoomsVaultDir();
+  if (!node || !dir) return null;
+
+  try {
+    const mdPath = node.path.join(dir, `${cacheKey}.md`);
+    if (!node.fs.existsSync(mdPath)) return null;
+    const raw = node.fs.readFileSync(mdPath, 'utf8');
+    const startIdx = raw.indexOf(ESCAPE_VAULT_MANIFEST_START);
+    const endIdx = raw.indexOf(ESCAPE_VAULT_MANIFEST_END);
+    if (startIdx === -1 || endIdx === -1) return null;
+    const jsonStr = raw.slice(startIdx + ESCAPE_VAULT_MANIFEST_START.length, endIdx).trim();
+    const parsed = JSON.parse(jsonStr) as GeneratedProjectResult;
+    if (!parsed || !Array.isArray(parsed.blocks) || parsed.blocks.length === 0) return null;
+
+    storeInMemoryCache(cacheKey, parsed);
+    return cloneProjectResult(parsed);
+  } catch {
+    return null;
+  }
+}
+
+function storeInMemoryCache(cacheKey: string, result: GeneratedProjectResult): void {
+  if (projectMemoryCache.size >= MEMORY_CACHE_MAX_ENTRIES) {
+    const oldestKey = projectMemoryCache.keys().next().value;
+    if (oldestKey) projectMemoryCache.delete(oldestKey);
+  }
+  projectMemoryCache.set(cacheKey, cloneProjectResult(result));
+}
+
+function persistProjectToEscapeVault(
+  cacheKey: string,
+  result: GeneratedProjectResult,
+  meta: { topic: string; gradeOrFase: string; language: string; gamificationStyle: string }
+): void {
+  storeInMemoryCache(cacheKey, result);
+
+  const node = getServerNodeFs();
+  const dir = resolveEscapeRoomsVaultDir();
+  if (!node || !dir) return;
+
+  try {
+    node.fs.mkdirSync(dir, { recursive: true });
+    const filePath = node.path.join(dir, `${cacheKey}.md`);
+    const safeTitle = (result.metadata.title || meta.topic).replace(/"/g, "'");
+    const safeTopic = meta.topic.replace(/"/g, "'");
+    const nowIso = new Date().toISOString();
+
+    const mdContent = [
+      '---',
+      `title: "${safeTitle}"`,
+      `tema: "${safeTopic}"`,
+      `grado_o_fase: "${meta.gradeOrFase.replace(/"/g, "'")}"`,
+      `idioma: "${meta.language.replace(/"/g, "'")}"`,
+      `estilo: "${meta.gamificationStyle.replace(/"/g, "'")}"`,
+      `origen: "Estudio ISkool · Aventura Gamificada / Escape Room"`,
+      `reutilizacion_tokens: 0`,
+      `fecha_creacion: "${nowIso.slice(0, 10)}"`,
+      'tags:',
+      '  - estudio-interactivo',
+      '  - escape-room',
+      '  - nem-2024',
+      '---',
+      '',
+      `# ${result.metadata.title}`,
+      '',
+      `> ${result.metadata.description}`,
+      '',
+      ESCAPE_VAULT_MANIFEST_START,
+      JSON.stringify(result),
+      ESCAPE_VAULT_MANIFEST_END,
+      '',
+    ].join('\n');
+
+    node.fs.writeFileSync(filePath, mdContent, 'utf8');
+  } catch {
+    // Entornos serverless de solo lectura: el caché en memoria permanece activo sin interrumpir el flujo
+  }
+}
+
 /**
  * Normaliza un término para búsqueda temática (sin acentos, minúsculas)
  */
 function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
+  return normalizeSearchText(text);
 }
 
 function sanitizeFaseNem(fase?: string): 'Fase 1' | 'Fase 2' | 'Fase 3' | 'Fase 4' | 'Fase 5' | 'Fase 6' {
   if (fase === 'Fase 1' || fase === 'Fase 2' || fase === 'Fase 3' || fase === 'Fase 4' || fase === 'Fase 5' || fase === 'Fase 6') {
     return fase;
   }
+  const canonical = fase ? normalizeCanonicalGrade(fase) : null;
+  if (canonical) {
+    return canonical.faseNemShort;
+  }
   return 'Fase 5';
 }
 
+const ESCAPE_ROOM_STATIC_SYSTEM_INSTRUCTION = `Actúa como Diseñador Instruccional Senior y Desarrollador de Gamificación Educativa para el Estudio ISkool (basado en la NEM 2024 de México).
+REGLAS ESTRICTAS E INVARIABLES:
+1. Genera un proyecto educativo gamificado de alta complejidad y rigor pedagógico con 6 o 7 bloques interconectados:
+   - text_narrative (Diálogo inmersivo con personaje guía temático, planteamiento del conflicto y misión).
+   - ordering_sequence (Secuencia cronológica o algoritmo lógico de 4 pasos reales).
+   - drag_drop_match (4 parejas reales de conceptos, causas-consecuencias o personajes con sus aportes).
+   - quiz_question (Reactivo formativo con situación problemática, 4 opciones plausibles donde solo 1 es correcta, y explicación didáctica).
+   - secret_code_puzzle (Acertijo de escape room con pista ingeniosa y palabra clave de desbloqueo).
+   - boss_enemy (Duelo temático con nombre, 120-150 HP, poder de ataque y condición de victoria).
+   - reward_chest (Cofre legendario con XP, monedas y título de honor).
+2. PROHIBICIÓN ESTRICTA: Queda terminantemente prohibido generar preguntas vacías, opciones genéricas ("Principio clave de...", "Concepto no relacionado") o respuestas absurdas.
+3. MARCA BLANCA INSTITUCIONAL: Queda estrictamente prohibido mencionar marcas comerciales externas de tecnología o software privativo.
+4. Responde EXCLUSIVAMENTE con un objeto JSON válido respetando exactamente este esquema:
+{
+  "title": "Título épico del proyecto",
+  "description": "Descripción pedagógica y narrativa",
+  "subject": "Materia o Campo Formativo",
+  "campoFormativo": "Ética, Naturaleza y Sociedades | Saberes y Pensamiento Científico | Lenguajes | De lo Humano y lo Comunitario",
+  "pdaNem": "PDA formal oficial",
+  "blocks": [ ... bloques completos con type, title y data ... ]
+}`;
+
 /**
- * Generador Maestro de Proyectos Gamificados y Estructurados
+ * Generador Maestro de Proyectos Gamificados y Estructurados (Vault-First 0 Tokens)
  */
 export async function generateGamifiedProject(options: GenerateProjectOptions): Promise<GeneratedProjectResult> {
   const { 
-    topic, 
+    topic,
+    grade,
     faseNem = 'Fase 5', 
     gamificationStyle = 'rpg_adventure', 
     apiKey, 
     language = 'Español',
-    systemPrompt 
+    systemPrompt,
+    forceRegenerate = false,
   } = options;
   const cleanTopic = topic.trim();
   const normalized = normalizeText(cleanTopic);
+  const gradeOrFase = (grade || faseNem || 'Fase 5').trim();
+  const { key: cacheKey } = buildProjectCacheKey(cleanTopic, gradeOrFase, language, gamificationStyle);
 
-  // 1. Intentar generación con IA en línea si se proporciona API Key o si está en el entorno
-  const effectiveApiKey = apiKey || (typeof process !== 'undefined' ? (process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.OPENAI_API_KEY) : undefined);
+  // 0. VAULT-FIRST (Memoria + Bóveda Curricular en disco = 0 Tokens)
+  if (!forceRegenerate) {
+    const cached = findCachedGamifiedProject(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  // 1. Intentar generación con Motor de IA Pedagógica en línea si existe credencial institucional
+  const effectiveApiKey =
+    apiKey ||
+    (typeof process !== 'undefined'
+      ? (process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY)
+      : undefined);
 
   if (effectiveApiKey) {
     try {
-      const aiProject = await tryGenerateWithAI(cleanTopic, faseNem, gamificationStyle, effectiveApiKey, language, systemPrompt);
+      const aiProject = await tryGenerateWithAI(
+        cleanTopic,
+        gradeOrFase,
+        gamificationStyle,
+        effectiveApiKey,
+        language,
+        systemPrompt
+      );
       if (aiProject) {
+        persistProjectToEscapeVault(cacheKey, aiProject, {
+          topic: cleanTopic,
+          gradeOrFase,
+          language,
+          gamificationStyle,
+        });
         return aiProject;
       }
     } catch (err) {
-      console.warn('Fallo en la llamada a la IA externa, procediendo con Motor Pedagógico de Alta Profundidad:', err);
+      console.warn('Fallo en el Motor de IA Pedagógica, procediendo con Motor Curricular Determinista:', err instanceof Error ? err.message : err);
     }
   }
 
@@ -80,16 +317,18 @@ export async function generateGamifiedProject(options: GenerateProjectOptions): 
   if (language === 'Español') {
     const presetProject = getDeepCurricularProject(normalized, cleanTopic, faseNem, gamificationStyle);
     if (presetProject) {
+      storeInMemoryCache(cacheKey, presetProject);
       return presetProject;
     }
   }
 
-  // 3. Generador Heurístico Autónomo de Proyectos Gamificados adaptado al idioma
+  // 3. Generador Heurístico Autónomo de Proyectos Gamificados adaptado al idioma (no envenena caché en disco)
   return buildAutonomousGamifiedProject(cleanTopic, faseNem, gamificationStyle, language);
 }
 
 /**
- * Intenta invocar el motor de inferencia IA para estructurar el proyecto completo
+ * Intenta invocar el Motor de IA Pedagógica para estructurar el proyecto completo
+ * con cascada secuencial ligera de 2 niveles, timeout acotado y fast-fail en 400/401/403.
  */
 async function tryGenerateWithAI(
   topic: string, 
@@ -99,64 +338,71 @@ async function tryGenerateWithAI(
   language: string = 'Español',
   customSystemPrompt?: string
 ): Promise<GeneratedProjectResult | null> {
-  const languageInstruction = `Debes generar todo el contenido, preguntas y distractores estrictamente en ${language}. Mantén la estructura JSON intacta.`;
+  const systemInstructionText = customSystemPrompt
+    ? `${ESCAPE_ROOM_STATIC_SYSTEM_INSTRUCTION}\n\nDIRECTIVAS ADICIONALES DE MODALIDAD:\n${customSystemPrompt}`
+    : ESCAPE_ROOM_STATIC_SYSTEM_INSTRUCTION;
 
-  const prompt = `${customSystemPrompt ? customSystemPrompt + '\n\n' : ''}Actúa como Diseñador Instruccional Senior y Desarrollador de Gamificación Educativa para el Estudio ISkool (basado en la NEM 2024 de México).
-${languageInstruction}
-Genera un proyecto educativo gamificado de alta complejidad y rigor pedagógico para el tema: "${topic}" en "${faseNem}".
-Idioma obligatorio de generación: ${language}.
-El proyecto DEBE ser una aventura con 6 o 7 bloques interconectados:
-1. text_narrative (Diálogo inmersivo con un personaje guía temático, planteamiento del conflicto y misión épica).
-2. ordering_sequence (Secuencia cronológica o algoritmo lógico de 4 pasos con contenido real).
-3. drag_drop_match (4 parejas de conceptos, causas-consecuencias o personajes con sus aportes reales).
-4. quiz_question (Reactivo formativo con situación problemática, 4 opciones reales y plausibles donde solo 1 es correcta, y explicación didáctica).
-5. secret_code_puzzle (Acertijo de escape room con pista ingeniosa y palabra clave de desbloqueo).
-6. boss_enemy (Duelo de combate RPG contra un jefe temático, con nombre, 120-150 HP, poder de ataque y condición de victoria).
-7. reward_chest (Cofre legendario con XP, monedas y título de honor para el avatar del estudiante).
-
-PROHIBICIÓN ESTRICTA: Queda terminantemente prohibido generar preguntas vacías, opciones tipo "Principio clave de...", "Concepto no relacionado" o respuestas absurdas. Todo el contenido debe ser auténtico, desafiante y formativo en el idioma ${language}.
-
-Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura:
-{
-  "title": "Título épico del proyecto",
-  "description": "Descripción pedagógica y narrativa",
-  "subject": "Materia o Campo Formativo",
-  "campoFormativo": "Ética, Naturaleza y Sociedades | Saberes y Pensamiento Científico | Lenguajes | De lo Humano y lo Comunitario",
-  "pdaNem": "PDA formal oficial",
-  "blocks": [
-    ... bloques según la especificación anterior con sus datos completos ...
-  ]
-}`;
+  const userPrompt = `Genera el proyecto educativo gamificado en formato JSON estricto:
+- Tema curricular: "${topic}"
+- Grado / Fase NEM: "${faseNem}"
+- Estilo de dinámica: "${gamificationStyle}"
+- Idioma obligatorio de todo el contenido, preguntas y distractores: ${language}`;
 
   const fallbackEndpoints = [
-    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
-    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktZmxhc2gtbGF0ZXN0OmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy44LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii')
-  ];
+    decodeTransportUrl('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50'),
+    decodeTransportUrl('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50'),
+  ].filter(Boolean);
   const endpointBase = typeof process !== 'undefined' ? process.env.AI_INFERENCE_ENDPOINT : undefined;
   const candidateEndpoints = endpointBase ? [endpointBase, ...fallbackEndpoints] : fallbackEndpoints;
+
+  const basePayload = {
+    systemInstruction: {
+      parts: [{ text: systemInstructionText }],
+    },
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: userPrompt }],
+      },
+    ],
+  };
 
   let res: Response | null = null;
   for (const targetEndpoint of candidateEndpoints) {
     try {
+      const thinkingConfig = targetEndpoint.includes('3.5-')
+        ? { thinkingLevel: 'MINIMAL' }
+        : { thinkingBudget: 0 };
+      const requestBody = JSON.stringify({
+        ...basePayload,
+        generationConfig: {
+          temperature: 0.35,
+          maxOutputTokens: 2800,
+          responseMimeType: 'application/json',
+          thinkingConfig,
+        },
+      });
       const response = await fetch(targetEndpoint, {
         method: 'POST',
-        signal: AbortSignal.timeout(12000),
+        signal: AbortSignal.timeout(20000),
         headers: {
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey,
         },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+        body: requestBody,
       });
+
       if (response.ok) {
         res = response;
         break;
       }
+
+      // Fast-fail inmediato en errores de cliente/autenticación (400/401/403): no cascadear
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
+        return null;
+      }
     } catch {
-      // Intentar con el siguiente endpoint de respaldo
+      // Error de red o timeout -> continuar al perfil de respaldo ligero
     }
   }
 
@@ -164,7 +410,12 @@ Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura:
 
   const data = await res.json();
   let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+  rawText = rawText.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+  const firstBrace = rawText.indexOf('{');
+  const lastBrace = rawText.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    rawText = rawText.slice(firstBrace, lastBrace + 1);
+  }
 
   const parsed = JSON.parse(rawText);
   if (!parsed.blocks || !Array.isArray(parsed.blocks) || parsed.blocks.length < 4) {

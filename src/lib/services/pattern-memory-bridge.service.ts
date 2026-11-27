@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import fs from 'fs';
 import path from 'path';
 
@@ -13,58 +13,63 @@ export interface PatternDetectionResult {
 
 export class PatternMemoryBridgeService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   // 1. ANÁLISIS DE CONJUNTO PROACTIVO (Cerebro Vivo)
   static async evaluateGlobalPatterns(schoolId: string): Promise<PatternDetectionResult[]> {
     const supabase = this.getSupabase();
     const patternsFound: PatternDetectionResult[] = [];
+    const now = Date.now();
 
-    // Patrón A: Incremento repentino sobre evento/horario (Festival de salida)
-    const { data: festivalEmails } = await supabase
-      .from('email_messages')
-      .select('id, received_at')
-      .eq('school_id', schoolId)
-      .ilike('subject', '%festival%')
-      .gte('received_at', new Date(Date.now() - 4 * 3600 * 1000).toISOString());
+    // Conteos paralelos sin transferir filas completas
+    const [
+      { count: festivalCount },
+      { count: transportCount }
+    ] = await Promise.all([
+      // Patrón A: Incremento repentino sobre evento/horario (Festival de salida)
+      supabase
+        .from('email_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('school_id', schoolId)
+        .ilike('subject', '%festival%')
+        .gte('received_at', new Date(now - 4 * 3600 * 1000).toISOString()),
+      // Patrón B: Transporte y retrasos recurrentes en Ruta 4
+      supabase
+        .from('email_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('school_id', schoolId)
+        .ilike('body_text', '%ruta 4%')
+        .gte('received_at', new Date(now - 7 * 24 * 3600 * 1000).toISOString())
+    ]);
 
-    if (festivalEmails && festivalEmails.length >= 10) {
+    const festivalTotal = festivalCount ?? 0;
+    if (festivalTotal >= 10) {
       patternsFound.push({
         pattern_title: '✨ Incremento anómalo de consultas sobre horario del festival',
-        pattern_description: `Se detectaron ${festivalEmails.length} correos en las últimas 4 horas relacionados con la hora de salida del festival. Esto supera en un 400% la frecuencia habitual.`,
-        detected_count: festivalEmails.length,
+        pattern_description: `Se detectaron ${festivalTotal} correos en las últimas 4 horas relacionados con la hora de salida del festival. Esto supera en un 400% la frecuencia habitual.`,
+        detected_count: festivalTotal,
         timeframe_hours: 4,
         entity_key: 'festival_horario_salida',
         suggested_institutional_action: 'Preparar y emitir un comunicado oficial general por los canales institucionales de iSkool para mitigar la saturación de la bandeja.'
       });
     }
 
-    // Patrón B: Transporte y retrasos recurrentes en Ruta 4
-    const { data: transportEmails } = await supabase
-      .from('email_messages')
-      .select('id')
-      .eq('school_id', schoolId)
-      .ilike('body_text', '%ruta 4%')
-      .gte('received_at', new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString());
-
-    if (transportEmails && transportEmails.length >= 8) {
+    const transportTotal = transportCount ?? 0;
+    if (transportTotal >= 8) {
       patternsFound.push({
         pattern_title: 'Incidencias concentradas en Transporte - Ruta 4',
-        pattern_description: `${transportEmails.length} familias reportan demoras reiteradas en la Ruta 4 durante los últimos 7 días.`,
-        detected_count: transportEmails.length,
+        pattern_description: `${transportTotal} familias reportan demoras reiteradas en la Ruta 4 durante los últimos 7 días.`,
+        detected_count: transportTotal,
         timeframe_hours: 168,
         entity_key: 'transporte_ruta_4',
         suggested_institutional_action: 'Solicitar a Administración auditoría de tiempos de recorrido del proveedor antes de que escale a queja colectiva en Dirección.'
       });
     }
 
-    // Persistir patrones activos en base de datos
-    for (const p of patternsFound) {
-      await supabase.from('inbox_patterns').upsert({
+    // Persistir patrones activos en una sola operación bulk
+    if (patternsFound.length > 0) {
+      const rows = patternsFound.map(p => ({
         school_id: schoolId,
         pattern_title: p.pattern_title,
         pattern_description: p.pattern_description,
@@ -73,7 +78,8 @@ export class PatternMemoryBridgeService {
         entity_key: p.entity_key,
         suggested_institutional_action: p.suggested_institutional_action,
         status: 'ACTIVE'
-      }, { onConflict: 'school_id, entity_key' });
+      }));
+      await supabase.from('inbox_patterns').upsert(rows, { onConflict: 'school_id, entity_key' });
     }
 
     return patternsFound;

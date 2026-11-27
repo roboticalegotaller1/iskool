@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
 
 export interface SchoolBrandTheme {
   school_id: string;
@@ -25,6 +25,17 @@ const defaultTheme: SchoolBrandTheme = {
   text_primary_color: '#0f172a',
 };
 
+const applyCSSVariables = (currentTheme: SchoolBrandTheme) => {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.style.setProperty('--brand-primary', currentTheme.primary_color);
+  root.style.setProperty('--brand-secondary', currentTheme.secondary_color);
+  root.style.setProperty('--brand-accent', currentTheme.accent_color);
+  root.style.setProperty('--brand-bg', currentTheme.background_color);
+  root.style.setProperty('--brand-surface', currentTheme.surface_color);
+  root.style.setProperty('--brand-text', currentTheme.text_primary_color);
+};
+
 const BrandThemeContext = createContext<{
   theme: SchoolBrandTheme;
   updateTheme: (newTheme: Partial<SchoolBrandTheme>) => Promise<void>;
@@ -38,62 +49,66 @@ const BrandThemeContext = createContext<{
 export const BrandThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<SchoolBrandTheme>(defaultTheme);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const themeRef = useRef<SchoolBrandTheme>(defaultTheme);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   useEffect(() => {
+    let active = true;
     const fetchTheme = async () => {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
         const { data } = await supabase
           .from('school_brand_settings')
           .select('*')
           .limit(1)
           .single();
 
-        if (data) {
+        if (active && data) {
+          themeRef.current = data;
           setTheme(data);
           applyCSSVariables(data);
         }
-      } catch (err) {
-        console.warn('Usando tema institucional predeterminado.');
-        applyCSSVariables(defaultTheme);
+      } catch {
+        if (active) {
+          console.warn('Usando tema institucional predeterminado.');
+          applyCSSVariables(defaultTheme);
+        }
       } finally {
-        setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchTheme();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const applyCSSVariables = (currentTheme: SchoolBrandTheme) => {
-    const root = document.documentElement;
-    root.style.setProperty('--brand-primary', currentTheme.primary_color);
-    root.style.setProperty('--brand-secondary', currentTheme.secondary_color);
-    root.style.setProperty('--brand-accent', currentTheme.accent_color);
-    root.style.setProperty('--brand-bg', currentTheme.background_color);
-    root.style.setProperty('--brand-surface', currentTheme.surface_color);
-    root.style.setProperty('--brand-text', currentTheme.text_primary_color);
-  };
-
-  const updateTheme = async (newTheme: Partial<SchoolBrandTheme>) => {
-    const updated = { ...theme, ...newTheme };
+  const updateTheme = useCallback(async (newTheme: Partial<SchoolBrandTheme>) => {
+    const updated = { ...themeRef.current, ...newTheme };
+    themeRef.current = updated;
     setTheme(updated);
     applyCSSVariables(updated);
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    await supabase.from('school_brand_settings').upsert(
+      {
+        ...updated,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'school_id' }
     );
-    await supabase.from('school_brand_settings').upsert({
-      ...updated,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'school_id' });
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({ theme, updateTheme, isLoading }),
+    [theme, updateTheme, isLoading]
+  );
 
   return (
-    <BrandThemeContext.Provider value={{ theme, updateTheme, isLoading }}>
+    <BrandThemeContext.Provider value={contextValue}>
       {children}
     </BrandThemeContext.Provider>
   );

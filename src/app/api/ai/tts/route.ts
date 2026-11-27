@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
-import crypto from 'crypto';
-import { synthesizeNeuralAudio } from '@/lib/serverNeuralTts';
+import { synthesizeNeuralAudioWithMeta } from '@/lib/serverNeuralTts';
 import { 
   generateHistoricalSSML, 
   generateNarratorSSML,
@@ -226,40 +225,57 @@ export function resolveCertifiedLatinVoice(voiceId?: string, fallbackGender: 'fe
   return resolveCertifiedPlatformVoice(voiceId, 'es', fallbackGender).voice;
 }
 
-interface AudioCacheEntry {
-  buffer: Buffer;
-  contentType: string;
-  createdAt: number;
-  hits: number;
-}
-
 // =============================================================================
-// CACHÉ DE SÍNTESIS DE ALTA VELOCIDAD (SHA-256 LRU)
-// Evita llamadas redundantes y garantiza latencia cero en frases recurrentes
+// LIMITADOR DE TASA EN MEMORIA ACOTADO POR IP (120 req/min, mapa <= 1000 IPs)
+// Protege el motor neuronal contra ráfagas anómalas sin sobrecarga externa
 // =============================================================================
-const MAX_CACHE_ENTRIES = 300;
-const audioCache = new Map<string, AudioCacheEntry>();
+const TTS_RATE_LIMIT_MAX_REQ = 120;
+const TTS_RATE_LIMIT_WINDOW_MS = 60_000;
+const TTS_RATE_LIMIT_MAX_KEYS = 1000;
+const ttsRateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
 
-function getAudioFromCache(hash: string): Buffer | null {
-  const entry = audioCache.get(hash);
-  if (!entry) return null;
-  entry.hits++;
-  audioCache.delete(hash);
-  audioCache.set(hash, entry);
-  return entry.buffer;
-}
+// Deduplicación de síntesis simultáneas idénticas en vuelo (evita trabajo duplicado concurrente)
+const inFlightSynthesisPromises = new Map<string, Promise<{ buffer: Buffer; cacheHit: boolean }>>();
 
-function saveAudioToCache(hash: string, buffer: Buffer, contentType = 'audio/mpeg') {
-  if (audioCache.size >= MAX_CACHE_ENTRIES) {
-    const oldestKey = audioCache.keys().next().value;
-    if (oldestKey) audioCache.delete(oldestKey);
+function extractClientIp(req: NextRequest): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first;
   }
-  audioCache.set(hash, {
-    buffer,
-    contentType,
-    createdAt: Date.now(),
-    hits: 0
-  });
+  const realIp = req.headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
+  return 'local-client';
+}
+
+function checkTtsRateLimit(ip: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  if (ttsRateLimitBuckets.size > TTS_RATE_LIMIT_MAX_KEYS) {
+    for (const [key, bucket] of ttsRateLimitBuckets) {
+      if (bucket.resetAt <= now) {
+        ttsRateLimitBuckets.delete(key);
+      }
+    }
+    while (ttsRateLimitBuckets.size > TTS_RATE_LIMIT_MAX_KEYS) {
+      const oldestKey = ttsRateLimitBuckets.keys().next().value;
+      if (!oldestKey) break;
+      ttsRateLimitBuckets.delete(oldestKey);
+    }
+  }
+
+  const existing = ttsRateLimitBuckets.get(ip);
+  if (!existing || existing.resetAt <= now) {
+    ttsRateLimitBuckets.set(ip, { count: 1, resetAt: now + TTS_RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, retryAfterSec: 0 };
+  }
+
+  if (existing.count >= TTS_RATE_LIMIT_MAX_REQ) {
+    const retryAfterSec = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
+    return { allowed: false, retryAfterSec };
+  }
+
+  existing.count += 1;
+  return { allowed: true, retryAfterSec: 0 };
 }
 
 /**
@@ -320,10 +336,22 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, l
 }
 
 
-const inFlightSynthesisPromises = new Map<string, Promise<Buffer>>();
-
 export async function POST(req: NextRequest) {
   try {
+    const clientIp = extractClientIp(req);
+    const rateLimit = checkTtsRateLimit(clientIp);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de solicitudes de síntesis de voz excedido temporalmente. Intenta en unos segundos.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimit.retryAfterSec),
+          },
+        }
+      );
+    }
+
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
     if (!auth.authenticated || !auth.user) {
       return NextResponse.json(
@@ -332,7 +360,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado para síntesis de voz.' },
+        { status: 400 }
+      );
+    }
     const { 
       ssml, 
       text, 
@@ -498,33 +532,8 @@ export async function POST(req: NextRequest) {
 
     const targetVoice = preliminaryVoice;
 
-    // 2. Caché SHA-256 incluyendo identificador de voz y hash del texto normalizado
-    const normalizedTextHash = crypto
-      .createHash('sha256')
-      .update(rawNormalizedText || targetSSML)
-      .digest('hex');
-
-    const cacheKey = crypto
-      .createHash('sha256')
-      .update(`v10_pedagogical_math_fluid_96k::${targetVoice}::${characterName || ''}::${role || ''}::${resolvedProsodyRate}::${resolvedProsodyPitch}::${normalizedTextHash}::${targetSSML}`)
-      .digest('hex');
-
-    const cachedBuffer = getAudioFromCache(cacheKey);
-    if (cachedBuffer) {
-      return new NextResponse(new Uint8Array(cachedBuffer), {
-        status: 200,
-        headers: {
-          'Content-Type': 'audio/mpeg',
-          'Content-Length': cachedBuffer.length.toString(),
-          'X-Cache': 'HIT',
-          'X-Voice-Resolved': targetVoice,
-          'X-TTS-Engine': 'Motor-Neuronal-Institucional-96k-0Tokens',
-          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
-        },
-      });
-    }
-
-    // 3. Síntesis neuronal directa de alta fidelidad (24 kHz / 96 kbps, 0 Tokens)
+    // 2. Síntesis neuronal directa de alta fidelidad (24 kHz / 96 kbps, 0 Tokens)
+    // respaldada por la caché unificada LRU (RAM + disco acotado) en serverNeuralTts.ts
     const fallbackRatePercent = Math.max(-6, Math.min(4, Math.round((rate - 1.0) * 50)));
     const fallbackRate = fallbackRatePercent >= 0 ? `+${fallbackRatePercent}%` : `${fallbackRatePercent}%`;
     const fallbackPitchHz = Math.max(-3, Math.min(3, Math.round((pitch - 1.0) * 35)));
@@ -538,9 +547,10 @@ export async function POST(req: NextRequest) {
       : '';
     const synthText = rawNormalizedText || extractedFromSSML || cleanText || text;
 
-    let synthPromise = inFlightSynthesisPromises.get(cacheKey);
-    if (!synthPromise) {
-      synthPromise = synthesizeNeuralAudio({
+    const inFlightKey = `${targetVoice}::${finalRate}::${finalPitch}::${synthText}`;
+    let pendingPromise = inFlightSynthesisPromises.get(inFlightKey);
+    if (!pendingPromise) {
+      pendingPromise = synthesizeNeuralAudioWithMeta({
         text: synthText,
         voice: targetVoice,
         rate: finalRate,
@@ -548,26 +558,25 @@ export async function POST(req: NextRequest) {
         characterName: characterName || '',
         role: role || ''
       }).finally(() => {
-        inFlightSynthesisPromises.delete(cacheKey);
+        inFlightSynthesisPromises.delete(inFlightKey);
       });
-      inFlightSynthesisPromises.set(cacheKey, synthPromise);
+      inFlightSynthesisPromises.set(inFlightKey, pendingPromise);
     }
-
-    const audioBuffer = await synthPromise;
+    const { buffer: audioBuffer, cacheHit } = await pendingPromise;
 
     if (!audioBuffer || audioBuffer.length === 0) {
       throw new Error('El sintetizador no generó datos de audio');
     }
 
-    // Guardar en caché LRU
-    saveAudioToCache(cacheKey, audioBuffer, 'audio/mpeg');
+    const cacheStatus = cacheHit ? 'HIT' : 'MISS';
 
     return new NextResponse(new Uint8Array(audioBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.length.toString(),
-        'X-Cache': 'MISS',
+        'X-Cache': cacheStatus,
+        'X-TTS-Cache': cacheStatus,
         'X-Voice-Resolved': targetVoice,
         'X-TTS-Engine': 'Motor-Neuronal-Institucional-96k-0Tokens',
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
@@ -576,7 +585,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error en síntesis neural de voz oratoria:', error);
     return NextResponse.json(
-      { error: 'Error al generar el audio de voz humana', details: error?.message || String(error) },
+      {
+        error: 'Error al generar el audio de voz humana',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message || String(error) } : {})
+      },
       { status: 500 }
     );
   }

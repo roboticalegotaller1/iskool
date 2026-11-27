@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CeoEmailSettingsService } from '@/lib/services/ceoEmailSettingsService';
 import { validateApiAuth } from '@/lib/authValidator';
-import { isPlatformSuperUser } from '@/types';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 export const runtime = 'nodejs';
 
 const ALLOWED_STAFF_ROLES = ['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo'];
-
-function isAuthorizedForTenant(user: any, tenantId: string): boolean {
-  if (isPlatformSuperUser(user)) return true;
-  const userTenant = user?.tenant_id || user?.school_id;
-  if (!userTenant) return true;
-  if (tenantId !== userTenant) {
-    const ibimeAliases = new Set(['sch-ibime', 'e1000000-0000-0000-0000-000000000001', 'IBIME', 'ibime']);
-    if (ibimeAliases.has(userTenant) && ibimeAliases.has(tenantId)) return true;
-    return false;
-  }
-  return true;
-}
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,10 +18,11 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId') || auth.user.tenant_id || auth.user.school_id || 'e1000000-0000-0000-0000-000000000001';
+    const defaultTenant = resolveCanonicalUserSchoolKey(auth.user as any) || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = searchParams.get('tenantId') || defaultTenant;
 
     // Aislamiento Hermético Multi-Tenant (Anti-BOLA exacto, sin substring bypass)
-    if (!isAuthorizedForTenant(auth.user, tenantId)) {
+    if (!isSchoolTenantAllowed(auth.user as any, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: No tiene autorización para consultar ajustes de otro plantel escolar.' },
         { status: 403 }
@@ -41,10 +30,18 @@ export async function GET(req: NextRequest) {
     }
 
     const settings = CeoEmailSettingsService.getSettings(tenantId);
-    return NextResponse.json({
-      success: true,
-      settings
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        settings
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+          'Vary': 'Cookie, Authorization'
+        }
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Error al obtener ajustes ejecutivos de correo' },
@@ -63,12 +60,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ success: false, error: 'Cuerpo JSON inválido.' }, { status: 400 });
+    }
     const { action } = body;
-    const tenantId = body.tenantId || auth.user.tenant_id || auth.user.school_id || 'e1000000-0000-0000-0000-000000000001';
+    const defaultTenant = resolveCanonicalUserSchoolKey(auth.user as any) || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = body.tenantId || defaultTenant;
 
     // Aislamiento Hermético Multi-Tenant (Anti-BOLA exacto, sin substring bypass)
-    if (!isAuthorizedForTenant(auth.user, tenantId)) {
+    if (!isSchoolTenantAllowed(auth.user as any, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: No tiene autorización para modificar ajustes de otro plantel escolar.' },
         { status: 403 }

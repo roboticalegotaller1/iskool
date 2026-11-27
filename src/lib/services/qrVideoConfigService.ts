@@ -139,38 +139,91 @@ const DEFAULT_CONFIG: QrVideoConfig = {
   updatedAt: initialConfig.updatedAt || new Date().toISOString()
 };
 
+const QR_VIDEO_CONFIG_CACHE_TTL_MS = 30 * 1000;
+
+interface QrVideoConfigDiskCache {
+  config: QrVideoConfig | null;
+  timestamp: number;
+  runtimeMtimeMs: number;
+  sourceMtimeMs: number;
+}
+
+function getFileMtimeMs(
+  node: { fs: typeof import('fs') },
+  filePath: string
+): number {
+  try {
+    if (!node.fs.existsSync(filePath)) return 0;
+    return node.fs.statSync(filePath).mtimeMs;
+  } catch {
+    return 0;
+  }
+}
+
+function invalidateQrVideoConfigCache(): void {
+  delete (globalThis as Record<string, unknown>).__iskoolQrVideoConfigCache;
+}
+
 function loadConfigFromDisk(): QrVideoConfig | null {
   const node = getNodeFs();
   if (!node) return null;
 
+  const g = globalThis as unknown as {
+    __iskoolQrVideoConfigCache?: QrVideoConfigDiskCache;
+  };
+  const now = Date.now();
+  const cached = g.__iskoolQrVideoConfigCache;
+
+  if (cached && now - cached.timestamp < QR_VIDEO_CONFIG_CACHE_TTL_MS) {
+    return cached.config;
+  }
+
   try {
     const runtimePath = node.path.join(process.cwd(), '.data', 'qr_video_config.json');
     const sourcePath = node.path.join(process.cwd(), 'src', 'data', 'qrVideoConfig.json');
+    const runtimeMtimeMs = getFileMtimeMs(node, runtimePath);
+    const sourceMtimeMs = getFileMtimeMs(node, sourcePath);
+
+    if (
+      cached &&
+      cached.runtimeMtimeMs === runtimeMtimeMs &&
+      cached.sourceMtimeMs === sourceMtimeMs
+    ) {
+      cached.timestamp = now;
+      return cached.config;
+    }
 
     let runtimeConfig: QrVideoConfig | null = null;
     let sourceConfig: QrVideoConfig | null = null;
 
-    if (node.fs.existsSync(runtimePath)) {
+    if (runtimeMtimeMs > 0) {
       const parsed = JSON.parse(node.fs.readFileSync(runtimePath, 'utf8'));
       if (parsed && parsed.youtubeId && parsed.youtubeId !== 'WgeQVmHDNJ4') {
         runtimeConfig = { ...DEFAULT_CONFIG, ...parsed };
       }
     }
 
-    if (node.fs.existsSync(sourcePath)) {
+    if (sourceMtimeMs > 0) {
       const parsed = JSON.parse(node.fs.readFileSync(sourcePath, 'utf8'));
       if (parsed && parsed.youtubeId) {
         sourceConfig = { ...DEFAULT_CONFIG, ...parsed };
       }
     }
 
+    let resolved: QrVideoConfig | null = sourceConfig || runtimeConfig;
     if (runtimeConfig && sourceConfig) {
       const rtTime = Date.parse(runtimeConfig.updatedAt || '') || 0;
       const srcTime = Date.parse(sourceConfig.updatedAt || '') || 0;
-      return rtTime > srcTime ? runtimeConfig : sourceConfig;
+      resolved = rtTime > srcTime ? runtimeConfig : sourceConfig;
     }
 
-    return sourceConfig || runtimeConfig;
+    g.__iskoolQrVideoConfigCache = {
+      config: resolved,
+      timestamp: now,
+      runtimeMtimeMs,
+      sourceMtimeMs
+    };
+    return resolved;
   } catch (err) {
     console.warn('Aviso al leer configuración de video QR desde disco:', err);
   }
@@ -179,6 +232,7 @@ function loadConfigFromDisk(): QrVideoConfig | null {
 }
 
 function saveConfigToDisk(config: QrVideoConfig): void {
+  invalidateQrVideoConfigCache();
   const node = getNodeFs();
   if (!node) return;
 

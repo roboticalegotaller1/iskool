@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlock, StudioBlockType, FlowConnection, FlowNodePosition } from '@/types/studioBlocks';
 import { 
@@ -12,6 +13,7 @@ import {
 import { BLOCK_META } from './SortableBlockWrapper';
 import { StudioBlockIcon } from './StudioPremiumBlockIcon';
 import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
+import { fetchCachedNeuralTtsBlob } from '@/lib/audio/ttsClientCache';
 import { 
   Sparkles, 
   Settings2, 
@@ -92,33 +94,111 @@ export const NodeGraphBoard: React.FC = () => {
     loadPresetBlocks,
     autoLayoutNodes,
     switchHistoricalFigureOnBlock
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      blocks: state.blocks,
+      connections: state.connections,
+      startNodeId: state.startNodeId,
+      selectedBlockId: state.selectedBlockId,
+      zoomLevel: state.zoomLevel,
+      setZoomLevel: state.setZoomLevel,
+      setSelectedBlockId: state.setSelectedBlockId,
+      updateNodePosition: state.updateNodePosition,
+      addConnection: state.addConnection,
+      removeConnection: state.removeConnection,
+      setStartNodeId: state.setStartNodeId,
+      duplicateBlock: state.duplicateBlock,
+      removeBlock: state.removeBlock,
+      setIsNodeConfigDrawerOpen: state.setIsNodeConfigDrawerOpen,
+      setIsExtendedMenuOpen: state.setIsExtendedMenuOpen,
+      addBlock: state.addBlock,
+      loadPresetBlocks: state.loadPresetBlocks,
+      autoLayoutNodes: state.autoLayoutNodes,
+      switchHistoricalFigureOnBlock: state.switchHistoricalFigureOnBlock,
+    }))
+  );
 
   const boardRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const audioChainRef = useRef<{ cleanup: () => void } | null>(null);
+  const audioAbortRef = useRef<AbortController | null>(null);
 
   // Estados de arrastre de nodo y de creación de conexión
   const [draggingNode, setDraggingNode] = useState<DraggingNodeState | null>(null);
   const [pendingConn, setPendingConn] = useState<PendingConnectionState | null>(null);
+  const draggingNodeRef = useRef<DraggingNodeState | null>(null);
+  const pendingConnRef = useRef<PendingConnectionState | null>(null);
+  const zoomLevelRef = useRef<number>(zoomLevel);
+  useEffect(() => {
+    zoomLevelRef.current = zoomLevel;
+  }, [zoomLevel]);
   const [hoveredConnId, setHoveredConnId] = useState<string | null>(null);
   const [speakingNodeId, setSpeakingNodeId] = useState<string | null>(null);
+
+  // Índices O(1) para renderizado de aristas y nodos sin búsquedas O(N*M)
+  const blockById = useMemo(() => {
+    const map = new Map<string, StudioBlock>();
+    for (const b of blocks) {
+      map.set(b.id, b);
+    }
+    return map;
+  }, [blocks]);
+
+  const outgoingConnectionsBySource = useMemo(() => {
+    const map = new Map<string, FlowConnection[]>();
+    for (const conn of connections) {
+      const list = map.get(conn.sourceNodeId);
+      if (list) list.push(conn);
+      else map.set(conn.sourceNodeId, [conn]);
+    }
+    return map;
+  }, [connections]);
+
+  const stopNodeNeuralTts = () => {
+    try { audioAbortRef.current?.abort(); } catch {}
+    audioAbortRef.current = null;
+    if (audioRef.current) {
+      try {
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch {}
+      audioRef.current = null;
+    }
+    if (audioChainRef.current) {
+      try { audioChainRef.current.cleanup(); } catch {}
+      audioChainRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      try { URL.revokeObjectURL(audioUrlRef.current); } catch {}
+      audioUrlRef.current = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      stopNodeNeuralTts();
+    };
+  }, []);
 
   // Reproducir Voz Neural LatAm directamente desde cualquier tarjeta del lienzo (Respaldo Neural Continuo - 24 Voces LatAm)
   const playNodeNeuralTts = async (e: React.MouseEvent, node: StudioBlock, textToSpeak: string, voiceGender?: 'male' | 'female') => {
     e.stopPropagation();
     if (speakingNodeId === node.id) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopNodeNeuralTts();
       setSpeakingNodeId(null);
       return;
     }
 
+    stopNodeNeuralTts();
+    const abortController = new AbortController();
+    audioAbortRef.current = abortController;
     setSpeakingNodeId(node.id);
     try {
       const resolvedGender: 'male' | 'female' =
@@ -127,31 +207,35 @@ export const NodeGraphBoard: React.FC = () => {
         (node.data as Record<string, any>)?.characterOrSiteName ||
         (node.data as Record<string, any>)?.characterName ||
         node.title;
-      const res = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const cachedTts = await fetchCachedNeuralTtsBlob(
+        {
           text: textToSpeak,
           language: 'es-MX',
           gender: resolvedGender,
           characterName: resolvedCharacterName,
           role: node.type === 'historical_figure_block' ? 'character' : 'tutor'
-        })
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        if (audioRef.current) audioRef.current.pause();
+        },
+        abortController.signal
+      );
+      if (abortController.signal.aborted) return;
+      if (cachedTts?.blob) {
+        const url = URL.createObjectURL(cachedTts.blob);
         const audio = new Audio(url);
         audioRef.current = audio;
+        audioUrlRef.current = url;
         const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: node.type === 'historical_figure_block' ? 'character' : 'tutor'
         });
+        audioChainRef.current = chain;
         const cleanupPreview = () => {
-          setSpeakingNodeId(null);
-          try { chain?.cleanup(); } catch {}
-          try { URL.revokeObjectURL(url); } catch {}
+          if (audioRef.current === audio) {
+            stopNodeNeuralTts();
+            setSpeakingNodeId(null);
+          } else {
+            try { chain?.cleanup(); } catch {}
+            try { URL.revokeObjectURL(url); } catch {}
+          }
         };
         audio.onended = cleanupPreview;
         audio.onerror = cleanupPreview;
@@ -159,8 +243,11 @@ export const NodeGraphBoard: React.FC = () => {
         return;
       }
     } catch (_) {
+      if (abortController.signal.aborted) return;
       // Fallback en caso de red offline
     }
+
+    if (abortController.signal.aborted) return;
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -252,13 +339,15 @@ export const NodeGraphBoard: React.FC = () => {
       (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
     } catch (_) {}
 
-    setDraggingNode({
+    const nextDrag: DraggingNodeState = {
       nodeId: node.id,
       startX: e.clientX,
       startY: e.clientY,
       initialNodeX: node.position?.x || 80,
       initialNodeY: node.position?.y || 150,
-    });
+    };
+    draggingNodeRef.current = nextDrag;
+    setDraggingNode(nextDrag);
   };
 
   // Manejar inicio de arrastre de flecha de conexión (Touch + Mouse)
@@ -271,51 +360,101 @@ export const NodeGraphBoard: React.FC = () => {
     const rect = boardRef.current.getBoundingClientRect();
     const portPos = getNodePortPos(node, 'output');
 
-    setPendingConn({
+    const nextConn: PendingConnectionState = {
       sourceNodeId: node.id,
       startX: portPos.x,
       startY: portPos.y,
       currentX: (e.clientX - rect.left) / zoomLevel,
       currentY: (e.clientY - rect.top) / zoomLevel,
-    });
+    };
+    pendingConnRef.current = { ...nextConn };
+    setPendingConn(nextConn);
   };
 
-  // Manejar movimiento global de puntero (arrastre fluido sin pérdida de foco)
+  const isPointerActive = draggingNode !== null || pendingConn !== null;
+
+  // Manejar movimiento global de puntero (coalescido a rAF y montado únicamente durante arrastre activo)
   useEffect(() => {
+    if (!isPointerActive) return;
+
+    let nodeMoveRafId: number | null = null;
+    let pendingNodePos: { nodeId: string; x: number; y: number } | null = null;
+    let connRafId: number | null = null;
+    const cachedBoardRect = boardRef.current ? boardRef.current.getBoundingClientRect() : null;
+
+    const flushNodePos = () => {
+      nodeMoveRafId = null;
+      if (pendingNodePos) {
+        const { nodeId, x, y } = pendingNodePos;
+        pendingNodePos = null;
+        updateNodePosition(nodeId, { x, y });
+      }
+    };
+
+    const flushPendingConn = () => {
+      connRafId = null;
+      if (pendingConnRef.current) {
+        setPendingConn({ ...pendingConnRef.current });
+      }
+    };
+
     const handlePointerMove = (e: PointerEvent) => {
-      if (draggingNode) {
-        const deltaX = (e.clientX - draggingNode.startX) / zoomLevel;
-        const deltaY = (e.clientY - draggingNode.startY) / zoomLevel;
+      const activeDrag = draggingNodeRef.current;
+      const currentZoom = zoomLevelRef.current || 1;
+      if (activeDrag) {
+        const deltaX = (e.clientX - activeDrag.startX) / currentZoom;
+        const deltaY = (e.clientY - activeDrag.startY) / currentZoom;
 
-        const newX = Math.max(20, Math.round(draggingNode.initialNodeX + deltaX));
-        const newY = Math.max(20, Math.round(draggingNode.initialNodeY + deltaY));
+        const newX = Math.max(20, Math.round(activeDrag.initialNodeX + deltaX));
+        const newY = Math.max(20, Math.round(activeDrag.initialNodeY + deltaY));
 
-        updateNodePosition(draggingNode.nodeId, { x: newX, y: newY });
+        pendingNodePos = { nodeId: activeDrag.nodeId, x: newX, y: newY };
+        if (nodeMoveRafId === null) {
+          nodeMoveRafId = requestAnimationFrame(flushNodePos);
+        }
       }
 
-      if (pendingConn && boardRef.current) {
-        const rect = boardRef.current.getBoundingClientRect();
-        setPendingConn(prev => prev ? {
-          ...prev,
-          currentX: (e.clientX - rect.left) / zoomLevel,
-          currentY: (e.clientY - rect.top) / zoomLevel,
-        } : null);
+      const activeConn = pendingConnRef.current;
+      if (activeConn && boardRef.current) {
+        const rect = cachedBoardRect || boardRef.current.getBoundingClientRect();
+        activeConn.currentX = (e.clientX - rect.left) / currentZoom;
+        activeConn.currentY = (e.clientY - rect.top) / currentZoom;
+        if (connRafId === null) {
+          connRafId = requestAnimationFrame(flushPendingConn);
+        }
       }
     };
 
     const handlePointerUp = (e: PointerEvent) => {
-      if (draggingNode) {
+      if (nodeMoveRafId !== null) {
+        cancelAnimationFrame(nodeMoveRafId);
+        nodeMoveRafId = null;
+      }
+      if (pendingNodePos) {
+        const { nodeId, x, y } = pendingNodePos;
+        pendingNodePos = null;
+        updateNodePosition(nodeId, { x, y });
+      }
+      if (connRafId !== null) {
+        cancelAnimationFrame(connRafId);
+        connRafId = null;
+      }
+
+      if (draggingNodeRef.current) {
+        draggingNodeRef.current = null;
         setDraggingNode(null);
       }
 
-      if (pendingConn) {
+      if (pendingConnRef.current) {
+        const finishedConn = pendingConnRef.current;
+        pendingConnRef.current = null;
         // Verificar si se soltó sobre un nodo objetivo
         const targetElement = document.elementFromPoint(e.clientX, e.clientY);
         const nodeCard = targetElement?.closest('[data-node-id]');
         if (nodeCard) {
           const targetNodeId = nodeCard.getAttribute('data-node-id');
-          if (targetNodeId && targetNodeId !== pendingConn.sourceNodeId) {
-            addConnection(pendingConn.sourceNodeId, targetNodeId);
+          if (targetNodeId && targetNodeId !== finishedConn.sourceNodeId) {
+            addConnection(finishedConn.sourceNodeId, targetNodeId);
           }
         }
         setPendingConn(null);
@@ -327,11 +466,13 @@ export const NodeGraphBoard: React.FC = () => {
     window.addEventListener('pointercancel', handlePointerUp);
 
     return () => {
+      if (nodeMoveRafId !== null) cancelAnimationFrame(nodeMoveRafId);
+      if (connRafId !== null) cancelAnimationFrame(connRafId);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
     };
-  }, [draggingNode, pendingConn, zoomLevel, updateNodePosition, addConnection]);
+  }, [isPointerActive, updateNodePosition, addConnection]);
 
   // Generar curva Bezier cúbica fluida
   const generateBezierPath = (x1: number, y1: number, x2: number, y2: number) => {
@@ -410,8 +551,8 @@ export const NodeGraphBoard: React.FC = () => {
 
             {/* Flechas establecidas entre nodos */}
             {connections.map((conn) => {
-              const sourceBlock = blocks.find(b => b.id === conn.sourceNodeId);
-              const targetBlock = blocks.find(b => b.id === conn.targetNodeId);
+              const sourceBlock = blockById.get(conn.sourceNodeId);
+              const targetBlock = blockById.get(conn.targetNodeId);
               if (!sourceBlock || !targetBlock) return null;
 
               const startPos = getNodePortPos(sourceBlock, 'output');
@@ -423,7 +564,7 @@ export const NodeGraphBoard: React.FC = () => {
               const midY = (startPos.y + endPos.y) / 2;
 
               // Detectar si viene de una Bifurcación Condicional (logic_branch) para mostrar etiquetas de Ruta Maestría vs Ruta Refuerzo
-              const siblingConns = connections.filter(c => c.sourceNodeId === sourceBlock.id);
+              const siblingConns = outgoingConnectionsBySource.get(sourceBlock.id) || [];
               const siblingIdx = siblingConns.findIndex(c => c.id === conn.id);
               const isLogicSource = sourceBlock.type === 'logic_branch';
               const thresholdVal = (sourceBlock.data as Record<string, any>)?.thresholdScore || (sourceBlock.data as Record<string, any>)?.thresholdValue || 70;
@@ -604,7 +745,7 @@ export const NodeGraphBoard: React.FC = () => {
             const isStart = (startNodeId === block.id) || (block.isStartNode === true);
             
             // Verificar si tiene conexiones salientes (si no, es nodo final)
-            const outgoingCount = connections.filter(c => c.sourceNodeId === block.id).length;
+            const outgoingCount = outgoingConnectionsBySource.get(block.id)?.length || 0;
             const isTerminal = outgoingCount === 0;
 
             const posX = block.position?.x || 80;

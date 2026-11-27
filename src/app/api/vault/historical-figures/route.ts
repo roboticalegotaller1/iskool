@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { 
   findHistoricalFigureInVault, 
   saveHistoricalFigureToVault, 
@@ -38,12 +39,31 @@ export async function GET(req: NextRequest) {
         }
         return f;
       });
-      return NextResponse.json({ 
-        success: true, 
-        count: figures.length, 
+      const payload = {
+        success: true,
+        count: figures.length,
         figures,
         source: 'Bóveda Curricular Institucional'
-      });
+      };
+      const etag = `W/"${crypto.createHash('sha1').update(JSON.stringify(figures)).digest('hex').slice(0, 16)}"`;
+      const cacheHeaders = {
+        'Cache-Control': 'private, max-age=300, stale-while-revalidate=3600',
+        'Vary': 'Cookie, Authorization',
+        'ETag': etag
+      };
+
+      const ifNoneMatch = req.headers.get('if-none-match');
+      if (
+        ifNoneMatch &&
+        ifNoneMatch
+          .split(',')
+          .map((tag) => tag.trim())
+          .some((tag) => tag === '*' || tag === etag)
+      ) {
+        return new NextResponse(null, { status: 304, headers: cacheHeaders });
+      }
+
+      return NextResponse.json(payload, { headers: cacheHeaders });
     }
 
     const nameOrSlug = searchParams.get('name') || searchParams.get('slug') || '';
@@ -109,7 +129,13 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({
+        success: false,
+        error: 'Cuerpo JSON inválido o malformado.'
+      }, { status: 400 });
+    }
     const figure = body.figure as HistoricalFigureBlockData;
 
     if (!figure || !figure.characterName) {
@@ -147,17 +173,18 @@ export async function POST(req: NextRequest) {
         demoSandbox: true,
         persistedInVault: false,
         ephemeralId: eph.id,
-        localPath: `sandbox-ephemeral/historical/${eph.id}.md`,
-        desktopPath: null,
+        vaultPath: `sandbox-ephemeral/historical/${eph.id}.md`,
         message: 'Modo Cuentas Demo: Personaje histórico activo en sesión temporal sin escritura en Bóveda Curricular.',
       });
     }
 
     const result = saveHistoricalFigureToVault(figure);
+    const resolvedSlug = normalizeHistoricalSlug(figure.vaultNodeSlug || figure.characterName);
+    const relativeVaultPath = `personajes_historicos/${resolvedSlug}.md`;
     return NextResponse.json({
       success: result.success,
-      localPath: result.localPath,
-      desktopPath: result.desktopPath,
+      vaultPath: relativeVaultPath,
+      slug: resolvedSlug,
       message: 'Nodo persistido con éxito en la Bóveda Curricular y sincronizado con el repositorio.'
     });
   } catch (error: any) {

@@ -39,7 +39,7 @@ export interface ActiveFormantLevels {
   audioGraphActive: boolean;
 }
 
-const ZERO_FORMANT_LEVELS: ActiveFormantLevels = {
+const liveFormantLevels: ActiveFormantLevels = {
   rms: 0,
   open: 0,
   spread: 0,
@@ -55,7 +55,14 @@ export function resetActiveVoiceFormantLevels(): void {
     __iskoolActiveFormantLevels?: ActiveFormantLevels;
     __iskoolVoiceAudiblySpeaking?: boolean;
   };
-  w.__iskoolActiveFormantLevels = { ...ZERO_FORMANT_LEVELS };
+  liveFormantLevels.rms = 0;
+  liveFormantLevels.open = 0;
+  liveFormantLevels.spread = 0;
+  liveFormantLevels.rounded = 0;
+  liveFormantLevels.alveolar = false;
+  liveFormantLevels.bilabial = false;
+  liveFormantLevels.audioGraphActive = false;
+  w.__iskoolActiveFormantLevels = liveFormantLevels;
   w.__iskoolVoiceAudiblySpeaking = false;
 }
 
@@ -78,6 +85,17 @@ function bandAverageNormalized(
 const processedAudioElements = new WeakMap<HTMLAudioElement, StudioBroadcastChain>();
 let sharedBroadcastAudioContext: AudioContext | null = null;
 let gestureListenersInstalled = false;
+let activeUnlockHandler: (() => void) | null = null;
+
+function removeGestureUnlockListeners(): void {
+  if (typeof window === 'undefined' || !gestureListenersInstalled || !activeUnlockHandler) return;
+  window.removeEventListener('pointerdown', activeUnlockHandler, true);
+  window.removeEventListener('keydown', activeUnlockHandler, true);
+  window.removeEventListener('touchstart', activeUnlockHandler, true);
+  window.removeEventListener('click', activeUnlockHandler, true);
+  gestureListenersInstalled = false;
+  activeUnlockHandler = null;
+}
 
 export function unlockSharedBroadcastAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -90,8 +108,14 @@ export function unlockSharedBroadcastAudioContext(): AudioContext | null {
     if (!sharedBroadcastAudioContext || sharedBroadcastAudioContext.state === 'closed') {
       sharedBroadcastAudioContext = new AudioContextClass({ latencyHint: 'interactive' });
     }
-    if (sharedBroadcastAudioContext.state === 'suspended') {
-      sharedBroadcastAudioContext.resume().catch(() => {});
+    if (sharedBroadcastAudioContext.state === 'running') {
+      removeGestureUnlockListeners();
+    } else if (sharedBroadcastAudioContext.state === 'suspended') {
+      sharedBroadcastAudioContext.resume().then(() => {
+        if (sharedBroadcastAudioContext?.state === 'running') {
+          removeGestureUnlockListeners();
+        }
+      }).catch(() => {});
     }
     return sharedBroadcastAudioContext;
   } catch {
@@ -109,11 +133,16 @@ export function getSharedSfxAudioContext(): AudioContext | null {
 
 function ensureGestureUnlockInstalled(): void {
   if (typeof window === 'undefined' || gestureListenersInstalled) return;
+  if (sharedBroadcastAudioContext && sharedBroadcastAudioContext.state === 'running') return;
   gestureListenersInstalled = true;
 
   const unlockHandler = () => {
-    unlockSharedBroadcastAudioContext();
+    const ctx = unlockSharedBroadcastAudioContext();
+    if (ctx && ctx.state === 'running') {
+      removeGestureUnlockListeners();
+    }
   };
+  activeUnlockHandler = unlockHandler;
 
   window.addEventListener('pointerdown', unlockHandler, { passive: true, capture: true });
   window.addEventListener('keydown', unlockHandler, { passive: true, capture: true });
@@ -299,15 +328,14 @@ export function attachStudioBroadcastMaster(
         __iskoolVoiceAudiblySpeaking?: boolean;
       };
       w.__iskoolVoiceAudiblySpeaking = true;
-      w.__iskoolActiveFormantLevels = {
-        rms,
-        open: normalizedOpen,
-        spread: Math.min(1, f2Spread * 1.65),
-        rounded: Math.min(1, lowRound * 1.45),
-        alveolar: highAlveolar > 0.22 && highAlveolar > f1Open * 0.72,
-        bilabial: suddenDip,
-        audioGraphActive: true,
-      };
+      liveFormantLevels.rms = rms;
+      liveFormantLevels.open = normalizedOpen;
+      liveFormantLevels.spread = Math.min(1, f2Spread * 1.65);
+      liveFormantLevels.rounded = Math.min(1, lowRound * 1.45);
+      liveFormantLevels.alveolar = highAlveolar > 0.22 && highAlveolar > f1Open * 0.72;
+      liveFormantLevels.bilabial = suddenDip;
+      liveFormantLevels.audioGraphActive = true;
+      w.__iskoolActiveFormantLevels = liveFormantLevels;
 
       rafId = window.requestAnimationFrame(sampleFormantsLoop);
     };

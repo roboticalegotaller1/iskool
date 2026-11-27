@@ -97,7 +97,7 @@ import {
   Ticket,
   Upload
 } from 'lucide-react';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import {
   playUniversalIskoolVoice,
   stopAllIskoolAudio
@@ -1332,6 +1332,140 @@ export function mergeAndSortEmails(
   return sortEmailsDescending(Array.from(map.values()));
 }
 
+// Hoja aislada de sincronización automática cada 30s (evita re-renderizar todo el modal cada 1 segundo)
+const AutoSyncCountdownBadge = React.memo(function AutoSyncCountdownBadge({
+  isActive,
+  resetKey,
+  onTriggerSync,
+}: {
+  isActive: boolean;
+  resetKey: string;
+  onTriggerSync: () => void;
+}) {
+  const [countdown, setCountdown] = useState<number>(30);
+  const onTriggerSyncRef = useRef(onTriggerSync);
+
+  useEffect(() => {
+    onTriggerSyncRef.current = onTriggerSync;
+  }, [onTriggerSync]);
+
+  useEffect(() => {
+    if (!isActive) return;
+    setCountdown(30);
+    // Disparo inicial silencioso para consultar buzón de inmediato al abrir la consola
+    onTriggerSyncRef.current();
+
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      setCountdown((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isActive, resetKey]);
+
+  useEffect(() => {
+    if (!isActive || countdown > 0) return;
+    onTriggerSyncRef.current();
+    setCountdown(30);
+  }, [isActive, countdown]);
+
+  return null;
+});
+
+const BRIEFING_WAVEFORM_BARS = [
+  24, 48, 82, 36, 94, 62, 76, 44, 88, 52, 96, 68, 40, 84, 58, 92, 46, 74, 38, 66, 50, 32, 44, 28,
+] as const;
+
+// Hoja aislada para el reproductor de onda sonográfica de 60s (evita re-renders de 1s en el modal padre)
+const BriefingAudioWaveformPlayer = React.memo(function BriefingAudioWaveformPlayer({
+  isPlayingAudio,
+  runId,
+  isCompleted,
+  onTogglePlay,
+  onFinish,
+}: {
+  isPlayingAudio: boolean;
+  runId: number;
+  isCompleted: boolean;
+  onTogglePlay: () => void;
+  onFinish: () => void;
+}) {
+  const [progress, setProgress] = useState<number>(isCompleted ? 60 : 0);
+  const progressRef = useRef<number>(isCompleted ? 60 : 0);
+  const onFinishRef = useRef(onFinish);
+
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
+
+  useEffect(() => {
+    if (runId > 0) {
+      progressRef.current = 0;
+      setProgress(0);
+    }
+  }, [runId]);
+
+  useEffect(() => {
+    if (isCompleted) {
+      progressRef.current = 60;
+      setProgress(60);
+    }
+  }, [isCompleted]);
+
+  useEffect(() => {
+    if (!isPlayingAudio) return;
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (progressRef.current >= 60) return;
+      const next = Math.min(60, progressRef.current + 1);
+      progressRef.current = next;
+      setProgress(next);
+      if (next >= 60) {
+        onFinishRef.current();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlayingAudio]);
+
+  const activeBars = Math.round((progress / 60) * 24);
+
+  return (
+    <div className="p-4 rounded-xl border border-[#CBD5E1] bg-white shadow-2xs space-y-2.5">
+      <div className="flex items-center gap-3.5">
+        <button
+          type="button"
+          onClick={onTogglePlay}
+          className="h-10 w-10 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors shadow-2xs"
+          title="Escuchar síntesis hablada 60s"
+        >
+          {isPlayingAudio ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4 fill-current ml-0.5" />
+          )}
+        </button>
+        <div className="flex-1 flex items-center gap-1 h-8 overflow-hidden">
+          {BRIEFING_WAVEFORM_BARS.map((barH, idx) => {
+            const isPlayed = isPlayingAudio || idx <= activeBars;
+            return (
+              <span
+                key={idx}
+                className={`flex-1 rounded-full transition-all duration-150 ${
+                  isPlayed ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
+                }`}
+                style={{ height: `${barH}%` }}
+              />
+            );
+          })}
+        </div>
+      </div>
+      <p className="text-[11px] text-[#475569] text-center font-semibold tabular-nums">
+        Síntesis hablada 0:{progress.toString().padStart(2, '0')} / 1:00 · Voz Sofía
+      </p>
+    </div>
+  );
+});
+
 export function CEOEmailCommunicationsModal({
   isOpen,
   onClose,
@@ -1479,7 +1613,8 @@ export function CEOEmailCommunicationsModal({
 
   // Estados para Modelo C (Briefing de Audio 60s, Interceptor de Patrones Colectivos, Radar SLA)
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [audioProgress, setAudioProgress] = useState<number>(0);
+  const [audioRunId, setAudioRunId] = useState<number>(0);
+  const [audioCompleted, setAudioCompleted] = useState<boolean>(false);
   const [showModelCPanel, setShowModelCPanel] = useState<boolean>(false);
   const [patternResolved, setPatternResolved] = useState<boolean>(false);
   const [isApprovingCircular, setIsApprovingCircular] = useState<boolean>(false);
@@ -2277,8 +2412,7 @@ export function CEOEmailCommunicationsModal({
   const [isManualIngesting, setIsManualIngesting] = useState<boolean>(false);
   const [showAppPasswordBanner, setShowAppPasswordBanner] = useState<boolean>(false);
 
-  // Sincronización Automática en Segundo Plano cada 30 Segundos (Auto-Triage en Vivo)
-  const [autoSyncCountdown, setAutoSyncCountdown] = useState<number>(30);
+  // Sincronización Automática en Segundo Plano cada 30 Segundos (aislada en AutoSyncCountdownBadge)
   const [isAutoSyncActive, setIsAutoSyncActive] = useState<boolean>(true);
 
   // Asunto seleccionado para inspección en Drawer / Modal
@@ -2289,25 +2423,6 @@ export function CEOEmailCommunicationsModal({
 
   // Modal de "Ponte al día conmigo" (Executive Catchup)
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
-
-  // Efecto de avance del temporizador de audio del Briefing 60s
-  useEffect(() => {
-    let interval: any;
-    if (isPlayingAudio) {
-      interval = setInterval(() => {
-        setAudioProgress(prev => {
-          if (prev >= 60) {
-            setIsPlayingAudio(false);
-            return 60;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPlayingAudio]);
 
   const handleApprovePatternCircular = async () => {
     setIsApprovingCircular(true);
@@ -2573,14 +2688,25 @@ export function CEOEmailCommunicationsModal({
   // Las órdenes y reclasificaciones manuales del CEO son supremas
   // =========================================================
   const executiveOverridesStorageKey = `iskool_executive_overrides_${currentTenantId}`;
+  const executiveOverridesCacheRef = useRef<{
+    key: string;
+    data: Record<string, EmailQuadrant>;
+  } | null>(null);
 
   const getExecutiveOverrides = useCallback((): Record<string, EmailQuadrant> => {
     if (typeof window === 'undefined') return {};
+    if (executiveOverridesCacheRef.current?.key === executiveOverridesStorageKey) {
+      return executiveOverridesCacheRef.current.data;
+    }
     try {
       const raw = localStorage.getItem(executiveOverridesStorageKey);
-      return raw ? JSON.parse(raw) : {};
+      const parsed: Record<string, EmailQuadrant> = raw ? JSON.parse(raw) : {};
+      executiveOverridesCacheRef.current = { key: executiveOverridesStorageKey, data: parsed };
+      return parsed;
     } catch {
-      return {};
+      const empty: Record<string, EmailQuadrant> = {};
+      executiveOverridesCacheRef.current = { key: executiveOverridesStorageKey, data: empty };
+      return empty;
     }
   }, [executiveOverridesStorageKey]);
 
@@ -2588,8 +2714,12 @@ export function CEOEmailCommunicationsModal({
     if (typeof window === 'undefined' || !key) return;
     try {
       const current = getExecutiveOverrides();
-      current[key.toLowerCase().trim()] = quadrant;
-      localStorage.setItem(executiveOverridesStorageKey, JSON.stringify(current));
+      const updated: Record<string, EmailQuadrant> = {
+        ...current,
+        [key.toLowerCase().trim()]: quadrant,
+      };
+      executiveOverridesCacheRef.current = { key: executiveOverridesStorageKey, data: updated };
+      localStorage.setItem(executiveOverridesStorageKey, JSON.stringify(updated));
     } catch {}
   }, [getExecutiveOverrides, executiveOverridesStorageKey]);
 
@@ -5785,26 +5915,18 @@ ${schoolName}`
     }
   };
 
-  // Poller automático en tiempo real cada 30 segundos y sync inicial silencioso al abrir
+  // Clave estable de reinicio para el poller automático aislado en <AutoSyncCountdownBadge>
+  const autoSyncResetKey = `${connectedEmail}|${authUsername}|${incomingHost}|${incomingPort}|${selectedProtocol}|${currentTenantId}`;
+  const handleTriggerSyncRef = useRef(handleTriggerSync);
   useEffect(() => {
-    if (!isOpen || !isAutoSyncActive) return;
-
-    // Disparo inicial silencioso para consultar buzón de inmediato al abrir la consola
-    handleTriggerSync(true);
-
-    const timer = setInterval(() => {
-      setAutoSyncCountdown((prev) => {
-        if (prev <= 1) {
-          // Ejecutar sincronización silenciosa periódica
-          handleTriggerSync(true);
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isOpen, isAutoSyncActive, connectedEmail, authUsername, incomingHost, incomingPort, selectedProtocol, currentTenantId]);
+    handleTriggerSyncRef.current = handleTriggerSync;
+  });
+  const handleAutoTriggerSync = useCallback(() => {
+    void handleTriggerSyncRef.current(true);
+  }, []);
+  const handleBriefingAudioFinish = useCallback(() => {
+    setIsPlayingAudio(false);
+  }, []);
 
   // Ingesta Directa y Triage Cognitivo de Correo Enviado / Recibido
   const handleIngestManualEmail = async (e: React.FormEvent) => {
@@ -6152,6 +6274,10 @@ ${schoolName}`
     try {
       const nextItems: Array<{ name: string; mimeType: string; dataBase64: string; sizeKb: number }> = [];
       for (const rawFile of Array.from(files).slice(0, 4)) {
+        if (isSvgFile(rawFile) || !isRasterImageFile(rawFile)) {
+          onTriggerToast('⚠️ Por seguridad y compresión obligatoria, solo se admiten imágenes PNG, JPG o WebP.');
+          continue;
+        }
         // Compresión obligatoria en cliente previa a transmisión (Regla No Negociable 3)
         const compressed = await compressImageFile(rawFile, {
           maxWidth: 1024,
@@ -6160,6 +6286,10 @@ ${schoolName}`
           format: 'image/webp',
           maxSizeBytes: 280 * 1024,
         });
+        if (compressed.size > 400 * 1024) {
+          onTriggerToast(`⚠️ La imagen "${rawFile.name}" supera el límite institucional de 400 KB tras la compresión.`);
+          continue;
+        }
         const dataBase64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
@@ -6176,8 +6306,10 @@ ${schoolName}`
           sizeKb: Math.max(1, Math.round(compressed.size / 1024)),
         });
       }
-      setComposeRefImages((prev) => [...prev, ...nextItems].slice(0, 4));
-      onTriggerToast(`✓ ${nextItems.length} referencia(s) comprimida(s) a WebP e integrada(s) al Estudio Gráfico.`);
+      if (nextItems.length > 0) {
+        setComposeRefImages((prev) => [...prev, ...nextItems].slice(0, 4));
+        onTriggerToast(`✓ ${nextItems.length} referencia(s) comprimida(s) a WebP e integrada(s) al Estudio Gráfico.`);
+      }
     } catch (err: any) {
       onTriggerToast(`⚠️ No fue posible adjuntar la imagen de referencia: ${err?.message || 'Error'}`);
     } finally {
@@ -6913,6 +7045,7 @@ Comité de Seguridad y Protección Escolar`
 
     // Verificación periódica cada 30 segundos
     const periodicTimer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       evaluateAndSyncDigest();
     }, 30000);
 
@@ -6925,7 +7058,8 @@ Comité de Seguridad y Protección Escolar`
       setIsPlayingAudio(false);
     } else {
       setIsPlayingAudio(true);
-      setAudioProgress(0);
+      setAudioCompleted(false);
+      setAudioRunId(prev => prev + 1);
       const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
       const textToSpeak = audioDigestText || buildDynamicAudioDigestText(
         intelligentMatters,
@@ -6949,7 +7083,7 @@ Comité de Seguridad y Protección Escolar`
         },
         onEnd: () => {
           setIsPlayingAudio(false);
-          setAudioProgress(60);
+          setAudioCompleted(true);
         },
         onError: () => {
           setIsPlayingAudio(false);
@@ -7373,6 +7507,11 @@ Comité de Seguridad y Protección Escolar`
 
   return (
     <div className={embeddedBento ? "w-full animate-in fade-in select-none" : "fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2 md:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none"}>
+      <AutoSyncCountdownBadge
+        isActive={isOpen && isAutoSyncActive}
+        resetKey={autoSyncResetKey}
+        onTriggerSync={handleAutoTriggerSync}
+      />
       <div 
         className={`${currentTheme.modalBg} ${currentTheme.modalBorder} ${
           embeddedBento
@@ -14282,43 +14421,14 @@ Comité de Seguridad y Protección Escolar`
 
             {/* Cuerpo Desplazable del Drawer Suizo sobre Lienzo #EEF2F6 */}
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 bg-[#EEF2F6]">
-              {/* Reproductor de Onda Sonográfica con Cobalto Real #2563EB */}
-              <div className="p-4 rounded-xl border border-[#CBD5E1] bg-white shadow-2xs space-y-2.5">
-                <div className="flex items-center gap-3.5">
-                  <button
-                    type="button"
-                    onClick={handleTogglePlayBriefing}
-                    className="h-10 w-10 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center shrink-0 cursor-pointer transition-colors shadow-2xs"
-                    title="Escuchar síntesis hablada 60s"
-                  >
-                    {isPlayingAudio ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <Play className="h-4 w-4 fill-current ml-0.5" />
-                    )}
-                  </button>
-                  <div className="flex-1 flex items-center gap-1 h-8 overflow-hidden">
-                    {[24, 48, 82, 36, 94, 62, 76, 44, 88, 52, 96, 68, 40, 84, 58, 92, 46, 74, 38, 66, 50, 32, 44, 28].map(
-                      (barH, idx) => {
-                        const activeBars = Math.round((audioProgress / 60) * 24);
-                        const isPlayed = isPlayingAudio || idx <= activeBars;
-                        return (
-                          <span
-                            key={idx}
-                            className={`flex-1 rounded-full transition-all duration-150 ${
-                              isPlayed ? 'bg-[#2563EB]' : 'bg-[#CBD5E1]'
-                            }`}
-                            style={{ height: `${barH}%` }}
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
-                <p className="text-[11px] text-[#475569] text-center font-semibold tabular-nums">
-                  Síntesis hablada 0:{audioProgress.toString().padStart(2, '0')} / 1:00 · Voz Sofía
-                </p>
-              </div>
+              {/* Reproductor de Onda Sonográfica con Cobalto Real #2563EB (aislado para cero re-renders de 1s en el modal) */}
+              <BriefingAudioWaveformPlayer
+                isPlayingAudio={isPlayingAudio}
+                runId={audioRunId}
+                isCompleted={audioCompleted}
+                onTogglePlay={handleTogglePlayBriefing}
+                onFinish={handleBriefingAudioFinish}
+              />
 
               {/* Retícula 2x2 de los 4 Cuadrantes Ejecutivos con Semáforo Cromático OKLCH */}
               <div className="grid grid-cols-2 gap-3">

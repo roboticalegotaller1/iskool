@@ -156,7 +156,8 @@ export class IbimeAuthProvider {
         code: params.code,
         code_verifier: params.codeVerifier,
         redirect_uri: this.config.redirectUri
-      })
+      }),
+      signal: AbortSignal.timeout(10000)
     });
 
     if (!response.ok) {

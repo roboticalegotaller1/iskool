@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { useSchoolAdminStore, getSchoolGroups } from '@/store/useSchoolAdminStore';
 import { SidebarToolbar } from './SidebarToolbar';
@@ -11,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { detectCurriculumPdasForTopic } from '@/lib/curriculumEngine';
 import { InstitutionalMemoryAdvisor } from '../InstitutionalMemoryAdvisor';
 import { attachStudioBroadcastMaster } from '@/lib/audio/studioBroadcastMaster';
+import { fetchCachedNeuralTtsBlob } from '@/lib/audio/ttsClientCache';
 import { 
   Play, 
   Share2, 
@@ -106,6 +108,124 @@ const PDA_SUGGESTIONS: Record<string, string[]> = {
   ]
 };
 
+function formatLiveCountdown(targetMs: number, nowMs: number, includeDays = true): string {
+  const diffSec = Math.max(0, Math.floor((targetMs - nowMs) / 1000));
+  const days = Math.floor(diffSec / 86400);
+  const hours = Math.floor((diffSec % 86400) / 3600);
+  const minutes = Math.floor((diffSec % 3600) / 60);
+  const seconds = diffSec % 60;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  if (includeDays) {
+    return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+  }
+  const totalHours = days * 24 + hours;
+  return `${pad(totalHours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+}
+
+// Hoja aislada de 1s para la píldora de cuota de tokens (evita re-renderizar todo el Estudio cada segundo)
+const StudioTokenQuotaPill = React.memo(function StudioTokenQuotaPill({
+  weeklyRemainingPct,
+  fiveHourRemainingPct,
+  weeklyResetTargetMs,
+  fiveHourResetTargetMs,
+  onWindowExpired,
+  onClick,
+}: {
+  weeklyRemainingPct: number;
+  fiveHourRemainingPct: number;
+  weeklyResetTargetMs: number;
+  fiveHourResetTargetMs: number;
+  onWindowExpired: (tick: number) => void;
+  onClick: () => void;
+}) {
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  const onWindowExpiredRef = React.useRef(onWindowExpired);
+  React.useEffect(() => {
+    onWindowExpiredRef.current = onWindowExpired;
+  }, [onWindowExpired]);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      const tick = Date.now();
+      setNowMs(tick);
+      if (weeklyResetTargetMs <= tick || fiveHourResetTargetMs <= tick) {
+        onWindowExpiredRef.current(tick);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [weeklyResetTargetMs, fiveHourResetTargetMs]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title="Ver porcentaje real de tokens y cuenta regresiva en tiempo real (Actualización cada segundo)"
+      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 text-white border border-emerald-500/40 text-[11px] font-bold transition-all cursor-pointer shadow-xs"
+    >
+      {/* Anillo SVG en Tiempo Real */}
+      <span className="relative w-4 h-4 flex items-center justify-center shrink-0">
+        <svg className="w-4 h-4 -rotate-90" viewBox="0 0 20 20">
+          <circle cx="10" cy="10" r="7.5" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" />
+          <circle
+            cx="10"
+            cy="10"
+            r="7.5"
+            fill="none"
+            stroke="#22c55e"
+            strokeWidth="2.5"
+            strokeDasharray={`${(weeklyRemainingPct / 100) * 47.12} 47.12`}
+            strokeLinecap="round"
+          />
+        </svg>
+      </span>
+      <span className="text-emerald-300 font-black tabular-nums">
+        Tokens: {weeklyRemainingPct.toFixed(2)}%
+      </span>
+      <span className="text-slate-400">•</span>
+      <span className="text-amber-300 font-mono text-[10px] font-bold tabular-nums">
+        ⏱ {formatLiveCountdown(weeklyResetTargetMs, nowMs, true)}
+      </span>
+      <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-black tabular-nums">
+        5h: {fiveHourRemainingPct.toFixed(1)}%
+      </span>
+    </button>
+  );
+});
+
+const StudioLiveCountdownText = React.memo(function StudioLiveCountdownText({
+  targetMs,
+  includeDays = true,
+}: {
+  targetMs: number;
+  includeDays?: boolean;
+}) {
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      setNowMs(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return <>{formatLiveCountdown(targetMs, nowMs, includeDays)}</>;
+});
+
+const StudioLivePulseTime = React.memo(function StudioLivePulseTime({ syncTriggerMs }: { syncTriggerMs: number }) {
+  const [nowMs, setNowMs] = useState<number>(() => Math.max(Date.now(), syncTriggerMs));
+  React.useEffect(() => {
+    setNowMs(Math.max(Date.now(), syncTriggerMs));
+  }, [syncTriggerMs]);
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      setNowMs(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return <>{new Date(nowMs).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</>;
+});
+
 export interface ActivityBuilderLayoutProps {
   isEmbedded?: boolean;
 }
@@ -135,7 +255,32 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     updateBlockTitle,
     updateBlockData,
     switchHistoricalFigureOnBlock
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      metadata: state.metadata,
+      updateMetadata: state.updateMetadata,
+      blocks: state.blocks,
+      connections: state.connections,
+      startNodeId: state.startNodeId,
+      history: state.history,
+      historyIndex: state.historyIndex,
+      undo: state.undo,
+      redo: state.redo,
+      resetWorkspace: state.resetWorkspace,
+      zoomLevel: state.zoomLevel,
+      setZoomLevel: state.setZoomLevel,
+      loadPresetBlocks: state.loadPresetBlocks,
+      serializeToActivityJSON: state.serializeToActivityJSON,
+      selectedBlockId: state.selectedBlockId,
+      setSelectedBlockId: state.setSelectedBlockId,
+      isNodeConfigDrawerOpen: state.isNodeConfigDrawerOpen,
+      setIsNodeConfigDrawerOpen: state.setIsNodeConfigDrawerOpen,
+      isExtendedMenuOpen: state.isExtendedMenuOpen,
+      updateBlockTitle: state.updateBlockTitle,
+      updateBlockData: state.updateBlockData,
+      switchHistoricalFigureOnBlock: state.switchHistoricalFigureOnBlock,
+    }))
+  );
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [duplicateConflicts, setDuplicateConflicts] = useState<DuplicateNodesConflict[] | null>(null);
@@ -181,7 +326,6 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
       { id: 'ev-2', label: ' Calibración de Nodos y Síntesis Neural LatAm', tokensDelta: 1580, savedByVault: false, timestamp: 'Sesión activa' }
     ]
   }));
-  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const [calibrationPctInput, setCalibrationPctInput] = useState<string>('60');
   const [calibrationDaysInput, setCalibrationDaysInput] = useState<string>('2');
   const [calibrationHoursInput, setCalibrationHoursInput] = useState<string>('2');
@@ -226,49 +370,43 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     } catch (_) {}
   }, []);
 
-  // Reloj en tiempo real que actualiza cada 1,000 ms (1 segundo) el porcentaje dinámico y la cuenta regresiva
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      const tick = Date.now();
-      setNowMs(tick);
-      setQuotaState((prev) => {
-        let updated = false;
-        let nextWeeklyTarget = prev.weeklyResetTargetMs;
-        let nextWeeklyTokens = prev.weeklyRemainingTokens;
-        let nextFiveHourTarget = prev.fiveHourResetTargetMs;
-        let nextFiveHourTokens = prev.fiveHourRemainingTokens;
+  // Renovación automática únicamente cuando vence una ventana de cuota (el segundero vive en StudioTokenQuotaPill)
+  const handleQuotaWindowExpired = React.useCallback((tick: number) => {
+    setQuotaState((prev) => {
+      let updated = false;
+      let nextWeeklyTarget = prev.weeklyResetTargetMs;
+      let nextWeeklyTokens = prev.weeklyRemainingTokens;
+      let nextFiveHourTarget = prev.fiveHourResetTargetMs;
+      let nextFiveHourTokens = prev.fiveHourRemainingTokens;
 
-        if (nextWeeklyTarget <= tick) {
-          nextWeeklyTarget = tick + 7 * 86400 * 1000;
-          nextWeeklyTokens = WEEKLY_TOTAL_TOKENS;
-          updated = true;
-        }
-        if (nextFiveHourTarget <= tick) {
-          nextFiveHourTarget = tick + 5 * 3600 * 1000;
-          nextFiveHourTokens = FIVE_HOUR_TOTAL_TOKENS;
-          updated = true;
-        }
-        if (!updated) return prev;
-        const nextState = {
-          ...prev,
-          weeklyRemainingTokens: nextWeeklyTokens,
-          fiveHourRemainingTokens: nextFiveHourTokens,
-          weeklyResetTargetMs: nextWeeklyTarget,
-          fiveHourResetTargetMs: nextFiveHourTarget,
-          lastSyncMs: tick
-        };
-        try {
-          localStorage.setItem('iskool_realtime_quota_telemetry_v1', JSON.stringify(nextState));
-        } catch (_) {}
-        return nextState;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
+      if (nextWeeklyTarget <= tick) {
+        nextWeeklyTarget = tick + 7 * 86400 * 1000;
+        nextWeeklyTokens = WEEKLY_TOTAL_TOKENS;
+        updated = true;
+      }
+      if (nextFiveHourTarget <= tick) {
+        nextFiveHourTarget = tick + 5 * 3600 * 1000;
+        nextFiveHourTokens = FIVE_HOUR_TOTAL_TOKENS;
+        updated = true;
+      }
+      if (!updated) return prev;
+      const nextState = {
+        ...prev,
+        weeklyRemainingTokens: nextWeeklyTokens,
+        fiveHourRemainingTokens: nextFiveHourTokens,
+        weeklyResetTargetMs: nextWeeklyTarget,
+        fiveHourResetTargetMs: nextFiveHourTarget,
+        lastSyncMs: tick
+      };
+      try {
+        localStorage.setItem('iskool_realtime_quota_telemetry_v1', JSON.stringify(nextState));
+      } catch (_) {}
+      return nextState;
+    });
   }, []);
 
   const recordTokenActivity = (label: string, tokensUsed: number, savedByVault = false) => {
     const tick = Date.now();
-    setNowMs(tick);
     setQuotaState((prev) => {
       const nextWeekly = savedByVault
         ? prev.weeklyRemainingTokens
@@ -299,20 +437,6 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
       } catch (_) {}
       return nextState;
     });
-  };
-
-  const formatLiveCountdown = (targetMs: number, includeDays = true) => {
-    const diffSec = Math.max(0, Math.floor((targetMs - nowMs) / 1000));
-    const days = Math.floor(diffSec / 86400);
-    const hours = Math.floor((diffSec % 86400) / 3600);
-    const minutes = Math.floor((diffSec % 3600) / 60);
-    const seconds = diffSec % 60;
-    const pad = (n: number) => String(n).padStart(2, '0');
-    if (includeDays) {
-      return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-    }
-    const totalHours = days * 24 + hours;
-    return `${pad(totalHours)}h ${pad(minutes)}m ${pad(seconds)}s`;
   };
 
   const weeklyRemainingPct = Math.max(0, Math.min(100, (quotaState.weeklyRemainingTokens / WEEKLY_TOTAL_TOKENS) * 100));
@@ -369,23 +493,20 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
           ? blockData.voiceGender
           : gender;
 
-      const res = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          language: 'es-MX',
-          gender: resolvedGender,
-          characterName: resolvedCharacterName,
-          role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor',
-          rate: ttsSpeed
-        })
+      const cachedTts = await fetchCachedNeuralTtsBlob({
+        text,
+        language: 'es-MX',
+        gender: resolvedGender,
+        characterName: resolvedCharacterName,
+        role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor',
+        rate: ttsSpeed
       });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
+      if (cachedTts?.blob) {
+        const url = URL.createObjectURL(cachedTts.blob);
         const audio = new Audio(url);
-        audio.playbackRate = ttsSpeed;
+        // La velocidad `ttsSpeed` ya fue aplicada por el motor neural (/api/ai/tts);
+        // conservar playbackRate en 1.0 evita doble aceleración y artefactos acústicos.
+        audio.playbackRate = 1.0;
         const chain = attachStudioBroadcastMaster(audio, {
           isMale: resolvedGender === 'male',
           role: activeSelectedBlock?.type === 'historical_figure_block' ? 'character' : 'tutor'
@@ -764,7 +885,10 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
   };
 
   const [mobileStudioTab, setMobileStudioTab] = useState<'sidebar' | 'canvas' | 'inspector'>('canvas');
-  const serializedData = serializeToActivityJSON();
+  const serializedData = React.useMemo(
+    () => (isAssignModalOpen ? serializeToActivityJSON() : ({} as ReturnType<typeof serializeToActivityJSON>)),
+    [isAssignModalOpen, serializeToActivityJSON, blocks, connections, metadata, startNodeId]
+  );
 
   const selectedHistoricalBlock: Extract<StudioBlock, { type: 'historical_figure_block' }> | undefined =
     activeSelectedBlock?.type === 'historical_figure_block'
@@ -896,40 +1020,15 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
             Visado SEP NEM 100% ✓
           </span>
 
-          {/* Monitor de Cuota de Tokens & Tiempo Real (Actualización Continua 1s — Solución a Imagen 2) */}
-          <button
-            type="button"
+          {/* Monitor de Cuota de Tokens & Tiempo Real (Actualización Continua 1s aislada en componente hoja) */}
+          <StudioTokenQuotaPill
+            weeklyRemainingPct={weeklyRemainingPct}
+            fiveHourRemainingPct={fiveHourRemainingPct}
+            weeklyResetTargetMs={quotaState.weeklyResetTargetMs}
+            fiveHourResetTargetMs={quotaState.fiveHourResetTargetMs}
+            onWindowExpired={handleQuotaWindowExpired}
             onClick={() => setIsQuotaModalOpen(true)}
-            title="Ver porcentaje real de tokens y cuenta regresiva en tiempo real (Actualización cada segundo)"
-            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-zinc-800 text-white border border-emerald-500/40 text-[11px] font-bold transition-all cursor-pointer shadow-xs"
-          >
-            {/* Anillo SVG en Tiempo Real */}
-            <span className="relative w-4 h-4 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 -rotate-90" viewBox="0 0 20 20">
-                <circle cx="10" cy="10" r="7.5" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2.5" />
-                <circle
-                  cx="10"
-                  cy="10"
-                  r="7.5"
-                  fill="none"
-                  stroke="#22c55e"
-                  strokeWidth="2.5"
-                  strokeDasharray={`${(weeklyRemainingPct / 100) * 47.12} 47.12`}
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <span className="text-emerald-300 font-black tabular-nums">
-              Tokens: {weeklyRemainingPct.toFixed(2)}%
-            </span>
-            <span className="text-slate-400">•</span>
-            <span className="text-amber-300 font-mono text-[10px] font-bold tabular-nums">
-              ⏱ {formatLiveCountdown(quotaState.weeklyResetTargetMs, true)}
-            </span>
-            <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-black tabular-nums">
-              5h: {fiveHourRemainingPct.toFixed(1)}%
-            </span>
-          </button>
+          />
         </div>
 
         {/* Emblema Institucional Multi-Colegio */}
@@ -2239,7 +2338,6 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                   type="button"
                   onClick={() => {
                     const tick = Date.now();
-                    setNowMs(tick);
                     setQuotaState((prev) => {
                       const next = { ...prev, lastSyncMs: tick };
                       try {
@@ -2274,7 +2372,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                   Plan Ultra • Motor de IA Pedagógica (Prioridad Máxima)
                 </div>
                 <div className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  Último pulso en vivo: {new Date(nowMs).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  Último pulso en vivo: <StudioLivePulseTime syncTriggerMs={quotaState.lastSyncMs} />
                 </div>
               </div>
               <div className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-black shadow-xs">
@@ -2326,7 +2424,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                   <div className="p-2.5 rounded-xl bg-slate-900 text-white flex items-center justify-between">
                     <span className="text-[11px] text-slate-300 font-semibold">Renovación total en:</span>
                     <span className="font-mono text-xs font-black text-amber-300 tabular-nums">
-                      {formatLiveCountdown(quotaState.weeklyResetTargetMs, true)}
+                      <StudioLiveCountdownText targetMs={quotaState.weeklyResetTargetMs} includeDays />
                     </span>
                   </div>
                 </div>
@@ -2373,7 +2471,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                   <div className="p-2.5 rounded-xl bg-slate-900 text-white flex items-center justify-between">
                     <span className="text-[11px] text-slate-300 font-semibold">Refresco ventana 5h:</span>
                     <span className="font-mono text-xs font-black text-sky-300 tabular-nums">
-                      {formatLiveCountdown(quotaState.fiveHourResetTargetMs, false)}
+                      <StudioLiveCountdownText targetMs={quotaState.fiveHourResetTargetMs} includeDays={false} />
                     </span>
                   </div>
                 </div>

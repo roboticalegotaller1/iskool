@@ -47,7 +47,7 @@ export interface WorkOsEvidenceDoc {
   taskId: string;
   fileName: string;
   fileSize: number;
-  fileType: 'pdf' | 'jpg' | 'jpeg' | 'doc' | 'docx';
+  fileType: 'pdf' | 'jpg' | 'jpeg' | 'webp' | 'doc' | 'docx';
   uploadedAt: string;
   uploadedBy: string;
   dataUrl?: string; // Base64 o URL para previsualización directa

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 import { validateApiAuth } from '@/lib/authValidator';
 import { isPlatformSuperUser } from '@/types';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 const EXECUTIVE_INBOX_ROLES = new Set(['superadmin', 'admin', 'owner', 'ceo', 'director', 'coordinator']);
 
@@ -24,10 +25,10 @@ export async function GET(req: NextRequest) {
 
   const isSuperUser = isPlatformSuperUser(auth.user as any);
   const { searchParams } = new URL(req.url);
-  const userSchoolId = auth.user.school_id || auth.user.tenant_id || '';
+  const userSchoolId = resolveCanonicalUserSchoolKey(auth.user as any);
   const requestedSchoolId = searchParams.get('schoolId') || userSchoolId || '938fa492-4ddc-4f6f-80d7-1bd054af8536';
 
-  if (!isSuperUser && userSchoolId && requestedSchoolId !== userSchoolId) {
+  if (!isSchoolTenantAllowed(auth.user as any, requestedSchoolId)) {
     return NextResponse.json(
       { error: 'Acceso denegado: aislamiento multi-colegio activo.' },
       { status: 403 }
@@ -36,54 +37,64 @@ export async function GET(req: NextRequest) {
 
   const schoolId = isSuperUser ? requestedSchoolId : (userSchoolId || requestedSchoolId);
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = getServiceSupabaseClient();
 
   try {
-    const { data: matters, error: mattersError } = await supabase
-      .from('inbox_matters')
-      .select('*')
-      .eq('school_id', schoolId)
-      .order('last_activity_at', { ascending: false });
+    const [
+      { data: matters, error: mattersError },
+      { data: patterns }
+    ] = await Promise.all([
+      supabase
+        .from('inbox_matters')
+        .select('id, matter_code, title, summary, category, urgency, destination, why_shown_to_director, reincidence_count, recommended_action, suggested_draft_reply, assigned_role, sla_hours')
+        .eq('school_id', schoolId)
+        .order('last_activity_at', { ascending: false })
+        .limit(100),
+      supabase
+        .from('inbox_patterns')
+        .select('pattern_title, pattern_description')
+        .eq('school_id', schoolId)
+        .eq('status', 'ACTIVE')
+    ]);
 
     if (mattersError) {
       console.warn('Advertencia al consultar inbox_matters:', mattersError.message);
       return NextResponse.json({ matters: [], patterns: [] });
     }
 
-  const { data: patterns } = await supabase
-    .from('inbox_patterns')
-    .select('pattern_title, pattern_description')
-    .eq('school_id', schoolId)
-    .eq('status', 'ACTIVE');
+    const mappedMatters = (matters || []).map((m: any) => ({
+      id: m.id,
+      matter_code: m.matter_code,
+      title: m.title,
+      summary: m.summary,
+      category: m.category,
+      urgency: m.urgency,
+      destination: m.destination,
+      why_shown: m.why_shown_to_director || 'Derivado de matriz de atención prioritaria.',
+      reincidence_count: m.reincidence_count || 1,
+      recommended_action: m.recommended_action || 'Revisión por área correspondiente.',
+      suggested_draft_reply: m.suggested_draft_reply || '',
+      assigned_role: m.assigned_role || 'Dirección General',
+      sla_hours: m.sla_hours || 24
+    }));
 
-  const mappedMatters = (matters || []).map((m: any) => ({
-    id: m.id,
-    matter_code: m.matter_code,
-    title: m.title,
-    summary: m.summary,
-    category: m.category,
-    urgency: m.urgency,
-    destination: m.destination,
-    why_shown: m.why_shown_to_director || 'Derivado de matriz de atención prioritaria.',
-    reincidence_count: m.reincidence_count || 1,
-    recommended_action: m.recommended_action || 'Revisión por área correspondiente.',
-    suggested_draft_reply: m.suggested_draft_reply || '',
-    assigned_role: m.assigned_role || 'Dirección General',
-    sla_hours: m.sla_hours || 24
-  }));
+    const mappedPatterns = (patterns || []).map((p: any) => ({
+      title: p.pattern_title,
+      description: p.pattern_description
+    }));
 
-  const mappedPatterns = (patterns || []).map((p: any) => ({
-    title: p.pattern_title,
-    description: p.pattern_description
-  }));
-
-    return NextResponse.json({
-      matters: mappedMatters,
-      patterns: mappedPatterns
-    });
+    return NextResponse.json(
+      {
+        matters: mappedMatters,
+        patterns: mappedPatterns
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+          'Vary': 'Cookie, Authorization'
+        }
+      }
+    );
   } catch (error: any) {
     console.error('Error en API inbox matters:', error);
     return NextResponse.json({ matters: [], patterns: [] });

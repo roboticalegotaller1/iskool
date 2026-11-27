@@ -14,8 +14,9 @@ export async function GET(req: NextRequest) {
     const email = req.nextUrl.searchParams.get('email') || undefined;
     const rawRedirect = req.nextUrl.searchParams.get('redirect') || '';
     const safeRedirect = sanitizeInternalRedirectUrl(rawRedirect, '');
-    const rawFlow = req.nextUrl.searchParams.get('flow') || req.nextUrl.searchParams.get('mode') || 'login';
-    const flow: 'login' | 'workspace_connect' = (rawFlow === 'workspace_connect' || rawFlow === 'connect') ? 'workspace_connect' : 'login';
+    // Blindaje OAuth: este endpoint público emite exclusivamente flujo 'login' (openid, email, profile).
+    // La vinculación directiva (workspace_connect) exige sesión autenticada vía /api/auth/google/connect.
+    const flow: 'login' = 'login';
 
     const statePayload = signOAuthState({
       flow,
@@ -24,11 +25,7 @@ export async function GET(req: NextRequest) {
       redirect: safeRedirect
     });
 
-    // Login general pide exclusivamente openid email profile (cumpliendo política de privacidad y evitando CASA)
-    const isWorkspaceConnect = flow === 'workspace_connect';
-    const authUrl = isWorkspaceConnect
-      ? GoogleOAuthService.getWorkspaceConnectUrl(origin, statePayload, email)
-      : GoogleOAuthService.getLoginAuthUrl(origin, statePayload, email);
+    const authUrl = GoogleOAuthService.getLoginAuthUrl(origin, statePayload, email);
 
     return NextResponse.redirect(authUrl);
   } catch (error: any) {

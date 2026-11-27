@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import {
   QrVideoConfigService,
   QR_VIDEO_PRESETS,
   extractYouTubeId
 } from '@/lib/services/qrVideoConfigService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
+import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+function timingSafeSecretEqual(expected: string, supplied: string): boolean {
+  const expectedBuf = Buffer.from(expected, 'utf8');
+  const suppliedBuf = Buffer.from(supplied, 'utf8');
+  if (expectedBuf.length !== suppliedBuf.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(expectedBuf, suppliedBuf);
+}
 
 export async function GET() {
   try {
@@ -21,7 +33,7 @@ export async function GET() {
       },
       {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+          'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=300'
         }
       }
     );
@@ -38,34 +50,74 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { youtubeUrl, title, subtitle, badgeText, autoplay, loop, adminKey } = body;
-
-    // Solo sesiones autenticadas de dirección/administración o clave de servidor configurada
+    // Solo Super Usuario de plataforma (no demo) o clave administrativa de servidor validada en tiempo constante
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    const hasAdminSession =
+    const isDemoUser = Boolean(
       auth.authenticated &&
       auth.user &&
-      ['admin', 'superadmin', 'director', 'owner', 'ceo', 'coordinator'].includes(
-        (auth.user.role || '').toLowerCase()
-      );
-    const serverPin = process.env.VIDEO_ADMIN_KEY?.trim();
-    const hasValidPin = Boolean(
-      serverPin &&
-      serverPin.length >= 8 &&
-      typeof adminKey === 'string' &&
-      adminKey.trim() === serverPin
+      isDemoSandboxContext({
+        email: auth.user.email,
+        schoolId: auth.user.school_id,
+        userId: auth.user.id,
+        tenantId: auth.user.tenant_id,
+      })
+    );
+    const hasSuperUserSession = Boolean(
+      auth.authenticated &&
+      auth.user &&
+      !isDemoUser &&
+      isPlatformSuperUser(auth.user as any)
     );
 
-    if (!hasAdminSession && !hasValidPin) {
+    const serverPin = process.env.VIDEO_ADMIN_KEY?.trim() || '';
+    const headerKey = (req.headers.get('x-video-admin-key') || '').trim();
+    let hasValidPin = Boolean(
+      serverPin.length >= 8 &&
+      headerKey.length > 0 &&
+      timingSafeSecretEqual(serverPin, headerKey)
+    );
+
+    if (!hasSuperUserSession && !hasValidPin && serverPin.length < 8) {
       return NextResponse.json(
         {
           success: false,
-          error: 'No autorizado. Se requiere sesión directiva autenticada para actualizar la configuración de vídeo.'
+          error: 'No autorizado. Se requiere sesión de Super Usuario o clave administrativa válida para actualizar la configuración de vídeo.'
         },
-        { status: hasAdminSession ? 403 : 401 }
+        { status: auth.authenticated ? 403 : 401 }
       );
     }
+
+    const body = await req.json().catch(() => null);
+    if (!hasSuperUserSession && !hasValidPin) {
+      const bodyPin = typeof body?.adminKey === 'string' ? body.adminKey.trim() : '';
+      hasValidPin = Boolean(
+        serverPin.length >= 8 &&
+        bodyPin.length > 0 &&
+        timingSafeSecretEqual(serverPin, bodyPin)
+      );
+    }
+
+    if (!hasSuperUserSession && !hasValidPin) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No autorizado. Se requiere sesión de Super Usuario o clave administrativa válida para actualizar la configuración de vídeo.'
+        },
+        { status: auth.authenticated ? 403 : 401 }
+      );
+    }
+
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Cuerpo JSON inválido.'
+        },
+        { status: 400 }
+      );
+    }
+
+    const { youtubeUrl, title, subtitle, badgeText, autoplay, loop } = body;
 
     const extractedId = extractYouTubeId(youtubeUrl || '');
     if (!extractedId) {

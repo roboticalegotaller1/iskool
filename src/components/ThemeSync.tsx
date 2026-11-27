@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect } from 'react';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useWhiteLabelStore, applyWhiteLabelCssVariables } from '@/store/useWhiteLabelStore';
 
 const cleanHslColor = (colorStr: string): string => {
@@ -9,26 +8,30 @@ const cleanHslColor = (colorStr: string): string => {
 };
 
 export const ThemeSync: React.FC = () => {
-  const schoolSettings = useSchoolAdminStore(state => state.schoolSettings);
-  const primaryColor = useWhiteLabelStore(state => state.primaryColor);
-  const isCustomized = useWhiteLabelStore(state => state.isCustomized);
+  const schoolThemeHsl = useWhiteLabelStore((state) => state.schoolThemeHsl);
+  const primaryColor = useWhiteLabelStore((state) => state.primaryColor);
+  const isCustomized = useWhiteLabelStore((state) => state.isCustomized);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
 
-    // 1. Sincronización base del Colegio
-    if (schoolSettings?.themeColors) {
-      const primary = cleanHslColor(schoolSettings.themeColors.primary);
-      const secondary = cleanHslColor(schoolSettings.themeColors.secondary);
-      const accent = cleanHslColor(schoolSettings.themeColors.accent);
+    // 1. Sincronización base del Colegio (espejada en useWhiteLabelStore sin acoplar useSchoolAdminStore)
+    if (schoolThemeHsl) {
+      const primary = cleanHslColor(schoolThemeHsl.primary);
+      const secondary = cleanHslColor(schoolThemeHsl.secondary);
+      const accent = cleanHslColor(schoolThemeHsl.accent);
 
-      root.style.setProperty('--color-secondary-hsl', secondary);
-      root.style.setProperty('--color-accent-hsl', accent);
-      root.style.setProperty('--color-secondary', `hsl(${secondary})`);
-      root.style.setProperty('--color-accent', `hsl(${accent})`);
+      if (secondary) {
+        root.style.setProperty('--color-secondary-hsl', secondary);
+        root.style.setProperty('--color-secondary', `hsl(${secondary})`);
+      }
+      if (accent) {
+        root.style.setProperty('--color-accent-hsl', accent);
+        root.style.setProperty('--color-accent', `hsl(${accent})`);
+      }
 
-      if (!isCustomized) {
+      if (!isCustomized && primary) {
         root.style.setProperty('--color-primary-hsl', primary);
         root.style.setProperty('--color-primary', `hsl(${primary})`);
         root.style.setProperty('--color-brand-primary', `hsl(${primary})`);
@@ -40,18 +43,22 @@ export const ThemeSync: React.FC = () => {
     if (primaryColor) {
       applyWhiteLabelCssVariables(primaryColor);
     }
+  }, [schoolThemeHsl, primaryColor, isCustomized]);
 
-    // 3. Sincronización Universal de Viewport para PC, Laptop, Tablet y Celular
+  // 3. Sincronización Universal de Viewport para PC, Laptop, Tablet y Celular
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') return;
+    const root = document.documentElement;
+
     const syncViewportMetrics = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const pr = window.devicePixelRatio || 1;
 
       root.style.setProperty('--dev-viewport-w', `${w}px`);
       root.style.setProperty('--dev-viewport-h', `${h}px`);
       root.style.setProperty('--dev-content-h', `${Math.max(480, h - (h < 760 ? 110 : 150))}px`);
 
-      const calculatedChartH = h < 760 ? 190 : (h < 860 ? 230 : (w >= 2100 ? 310 : 270));
+      const calculatedChartH = h < 760 ? 190 : h < 860 ? 230 : w >= 2100 ? 310 : 270;
       root.style.setProperty('--dev-chart-h', `${calculatedChartH}px`);
       root.style.setProperty('--dev-table-max-h', `${Math.max(260, h - (h < 760 ? 260 : 330))}px`);
 
@@ -77,9 +84,9 @@ export const ThemeSync: React.FC = () => {
 
     syncViewportMetrics();
 
-    let resizeTimer: NodeJS.Timeout;
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
     const handleResize = () => {
-      clearTimeout(resizeTimer);
+      if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(syncViewportMetrics, 60);
     };
 
@@ -87,11 +94,11 @@ export const ThemeSync: React.FC = () => {
     window.addEventListener('orientationchange', handleResize, { passive: true });
 
     return () => {
-      clearTimeout(resizeTimer);
+      if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
     };
-  }, [schoolSettings, primaryColor, isCustomized]);
+  }, []);
 
   return null;
 };

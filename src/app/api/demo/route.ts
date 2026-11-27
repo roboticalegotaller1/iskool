@@ -8,11 +8,32 @@ import { isKeyboardLimited, recordKeyboardDelivery } from '@/lib/landing/verific
 import { analyzeTrace } from '@/lib/landing/verification/trace'
 
 const demoAttemptTracker = new Map<string, { count: number; resetAtMs: number }>()
+const DEMO_TRACKER_SWEEP_THRESHOLD = 500
+const DEMO_TRACKER_MAX_ENTRIES = 5000
+
+function sweepDemoAttemptTracker(now: number): void {
+  if (demoAttemptTracker.size <= DEMO_TRACKER_SWEEP_THRESHOLD) return
+  for (const [key, item] of demoAttemptTracker) {
+    if (item.resetAtMs <= now) {
+      demoAttemptTracker.delete(key)
+    }
+  }
+  while (demoAttemptTracker.size >= DEMO_TRACKER_MAX_ENTRIES) {
+    const oldestKey = demoAttemptTracker.keys().next().value
+    if (oldestKey === undefined) break
+    demoAttemptTracker.delete(oldestKey)
+  }
+}
 
 function checkDemoRateLimit(ip: string): boolean {
   const now = Date.now()
+  sweepDemoAttemptTracker(now)
   const entry = demoAttemptTracker.get(ip)
   if (!entry || entry.resetAtMs <= now) {
+    if (!entry && demoAttemptTracker.size >= DEMO_TRACKER_MAX_ENTRIES) {
+      const oldestKey = demoAttemptTracker.keys().next().value
+      if (oldestKey !== undefined) demoAttemptTracker.delete(oldestKey)
+    }
     demoAttemptTracker.set(ip, { count: 1, resetAtMs: now + 10 * 60_000 })
     return true
   }

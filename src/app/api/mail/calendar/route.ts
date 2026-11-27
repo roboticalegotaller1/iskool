@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { validateApiAuth } from '@/lib/authValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
+import { isSchoolTenantAllowed, isMailboxAuthorizedForUser } from '@/lib/security/tenantAccess';
 
 export const runtime = 'nodejs';
 
@@ -20,6 +21,23 @@ export async function GET(req: NextRequest) {
         { status: 403 }
       );
     }
+
+    const requestedTenantId = req.nextUrl.searchParams.get('tenantId') || req.nextUrl.searchParams.get('schoolId');
+    if (requestedTenantId && !isSchoolTenantAllowed(auth.user as any, requestedTenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento de agenda multi-colegio activo.' },
+        { status: 403 }
+      );
+    }
+
+    const emailParam = req.nextUrl.searchParams.get('email') || auth.user.email || undefined;
+    if (emailParam && !isMailboxAuthorizedForUser(auth.user as any, emailParam)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: no tiene autorización para consultar el calendario de otra cuenta.' },
+        { status: 403 }
+      );
+    }
+
     if (isDemoSandboxContext({ email: auth.user?.email, schoolId: auth.user?.school_id, userId: auth.user?.id })) {
       return NextResponse.json({
         success: true,
@@ -32,7 +50,6 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const emailParam = req.nextUrl.searchParams.get('email') || undefined;
     const maxResults = Number(req.nextUrl.searchParams.get('maxResults') || 15);
     const targetEmail = GoogleOAuthService.resolveEffectiveGoogleEmail(emailParam);
 
@@ -72,6 +89,31 @@ export async function POST(req: NextRequest) {
         { status: 403 }
       );
     }
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Cuerpo JSON inválido.' },
+        { status: 400 }
+      );
+    }
+
+    const requestedTenantId = typeof body.tenantId === 'string' ? body.tenantId : (typeof body.schoolId === 'string' ? body.schoolId : undefined);
+    if (requestedTenantId && !isSchoolTenantAllowed(auth.user as any, requestedTenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento de agenda multi-colegio activo.' },
+        { status: 403 }
+      );
+    }
+
+    const { action = 'sync_event', email, event, googleEventId } = body;
+    const rawEmail = typeof email === 'string' && email.trim() ? email.trim() : auth.user.email;
+    if (rawEmail && !isMailboxAuthorizedForUser(auth.user as any, rawEmail)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: no tiene autorización para modificar el calendario de otra cuenta.' },
+        { status: 403 }
+      );
+    }
+
     if (isDemoSandboxContext({ email: auth.user?.email, schoolId: auth.user?.school_id, userId: auth.user?.id })) {
       return NextResponse.json({
         success: true,
@@ -84,9 +126,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const body = await req.json();
-    const { action = 'sync_event', email, event, googleEventId } = body;
-    const targetEmail = GoogleOAuthService.resolveEffectiveGoogleEmail(email);
+    const targetEmail = GoogleOAuthService.resolveEffectiveGoogleEmail(rawEmail);
 
     if (action === 'list_events') {
       const result = await GoogleOAuthService.listCalendarEvents(targetEmail, 15);

@@ -7,6 +7,7 @@ import { useClassroomStore } from '@/store/useClassroomStore';
 import { useStudentStore } from '@/store/useStudentStore';
 import { DETAILED_STUDENTS_SEED } from '@/store/seeds';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   X, 
   Sparkles, 
@@ -278,27 +279,30 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
     };
   }, []);
 
-  // === SINTETIZADOR WEB AUDIO NATIVO ===
+  // === SINTETIZADOR WEB AUDIO NATIVO (Contexto Compartido Sin Fugas) ===
   const playSfx = (type: 'spin' | 'win' | 'click' | 'reward') => {
     if (!soundEnabled || typeof window === 'undefined') return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
 
       const now = ctx.currentTime;
 
       if (type === 'click') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
         osc.frequency.setValueAtTime(440, now);
         gain.gain.setValueAtTime(0.08, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
         osc.start(now);
         osc.stop(now + 0.06);
       } else if (type === 'spin') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(320 + Math.random() * 260, now);
         gain.gain.setValueAtTime(0.06, now);
@@ -337,24 +341,32 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
     } catch (e) {}
   };
 
-  // Reproductor de Alarma de 5 Segundos (5 perfiles de sonido)
+  // Reproductor de Alarma de 5 Segundos (5 perfiles de sonido sobre AudioContext compartido)
   const playTimerAlarmSound = (soundProfile: TimerSoundProfile, isPreview = false) => {
     stopAlarm();
     if (!soundEnabled || typeof window === 'undefined' || soundProfile === 'silent') {
       if (!isPreview) {
         setIsAlarmPlaying(true);
-        setTimeout(() => setIsAlarmPlaying(false), 5000);
+        const silentTimerId = setTimeout(() => setIsAlarmPlaying(false), 5000);
+        activeAlarmStopperRef.current = () => {
+          clearTimeout(silentTimerId);
+        };
       }
       return;
     }
 
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
       const durationSec = isPreview ? 1.6 : 5.0;
       const now = ctx.currentTime;
       let isCanceled = false;
+
+      // Bus maestro local para detener/silenciar esta alarma sin cerrar jamás el AudioContext compartido
+      const masterGain = ctx.createGain();
+      masterGain.gain.setValueAtTime(1.0, now);
+      masterGain.connect(ctx.destination);
+      const activeOscillators: OscillatorNode[] = [];
 
       if (isPreview) {
         setPreviewPlayingSound(soundProfile);
@@ -376,9 +388,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
             gain.gain.setValueAtTime(vol, now + offset);
             gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 1.8);
             osc.connect(gain);
-            gain.connect(ctx.destination);
+            gain.connect(masterGain);
             osc.start(now + offset);
             osc.stop(now + offset + 1.8);
+            activeOscillators.push(osc);
           });
         };
 
@@ -402,9 +415,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
             gain.gain.setValueAtTime(0.32, noteT);
             gain.gain.exponentialRampToValueAtTime(0.0001, noteT + 0.55);
             osc.connect(gain);
-            gain.connect(ctx.destination);
+            gain.connect(masterGain);
             osc.start(noteT);
             osc.stop(noteT + 0.55);
+            activeOscillators.push(osc);
           });
         };
 
@@ -430,9 +444,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
           gain.gain.setValueAtTime(0.38, pulseT);
           gain.gain.exponentialRampToValueAtTime(0.001, pulseT + 0.19);
           osc.connect(gain);
-          gain.connect(ctx.destination);
+          gain.connect(masterGain);
           osc.start(pulseT);
           osc.stop(pulseT + 0.19);
+          activeOscillators.push(osc);
         }
 
       } else if (soundProfile === 'epic') {
@@ -450,9 +465,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
           gain1.gain.setValueAtTime(0.5, cycleT);
           gain1.gain.exponentialRampToValueAtTime(0.01, cycleT + 0.8);
           osc1.connect(gain1);
-          gain1.connect(ctx.destination);
+          gain1.connect(masterGain);
           osc1.start(cycleT);
           osc1.stop(cycleT + 0.8);
+          activeOscillators.push(osc1);
 
           const osc2 = ctx.createOscillator();
           const gain2 = ctx.createGain();
@@ -462,30 +478,36 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
           gain2.gain.setValueAtTime(0.4, cycleT);
           gain2.gain.exponentialRampToValueAtTime(0.001, cycleT + 0.8);
           osc2.connect(gain2);
-          gain2.connect(ctx.destination);
+          gain2.connect(masterGain);
           osc2.start(cycleT);
           osc2.stop(cycleT + 0.8);
+          activeOscillators.push(osc2);
         }
       }
 
-      const safeCloseContext = () => {
-        if (ctx && ctx.state !== 'closed') {
-          try {
-            ctx.close().catch(() => {});
-          } catch (e) {}
+      const stopAlarmNodes = () => {
+        try {
+          masterGain.gain.cancelScheduledValues(ctx.currentTime);
+          masterGain.gain.setValueAtTime(0, ctx.currentTime);
+        } catch {}
+        for (const osc of activeOscillators) {
+          try { osc.stop(); } catch {}
+          try { osc.disconnect(); } catch {}
         }
+        activeOscillators.length = 0;
+        try { masterGain.disconnect(); } catch {}
       };
 
       const timerId = setTimeout(() => {
         setIsAlarmPlaying(false);
         setPreviewPlayingSound(null);
-        safeCloseContext();
+        stopAlarmNodes();
       }, durationSec * 1000);
 
       activeAlarmStopperRef.current = () => {
         isCanceled = true;
         clearTimeout(timerId);
-        safeCloseContext();
+        stopAlarmNodes();
       };
 
     } catch (e) {}

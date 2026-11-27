@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import { useShallow } from 'zustand/react/shallow';
 import {
   useLanguagesStore,
   LanguageLesson,
@@ -50,28 +52,112 @@ import {
 } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
-import { english40WeeksCurriculum } from '@/components/languages/data/english40WeeksCurriculum';
-import { french40WeeksCurriculum } from '@/components/languages/data/french40WeeksCurriculum';
 import { CurricularWeek, CurricularLesson } from '@/components/languages/data/curriculumTypes';
 import { AvatarGestureMode } from '@/components/common/NanoBananaLipSyncCanvas';
 import {
   resolveCeltaPocketGuide,
   tokenizeDialogueWithStress,
 } from '@/components/languages/hybrid/hybridPedagogicalData';
-import { ClassroomBoardModal } from '@/components/languages/hybrid/ClassroomBoardModal';
-import {
-  PocketRemoteQrModal,
-  TeacherAccountOption,
-} from '@/components/languages/hybrid/PocketRemoteQrModal';
-import { ContrastivePhoneticsMirrorView } from '@/components/languages/hybrid/ContrastivePhoneticsMirrorView';
-import { HybridWritingStarStudio } from '@/components/languages/hybrid/HybridWritingStarStudio';
-import { TrafficLightDifferentiatedView } from '@/components/languages/hybrid/TrafficLightDifferentiatedView';
-import { CoordinatorAdvancedDrawer } from '@/components/languages/hybrid/CoordinatorAdvancedDrawer';
+import type { TeacherAccountOption } from '@/components/languages/hybrid/PocketRemoteQrModal';
 import { useAuth } from '@/context/AuthContext';
 import {
   deriveTeacherRemoteCredentials,
   syncActiveLessonToPocketServer,
 } from '@/utils/pocketRemoteBridge';
+
+const IdiomasModuleLoader = ({ label }: { label: string }) => (
+  <div className="w-full min-h-[260px] rounded-3xl border border-slate-200/80 bg-white/95 p-8 flex flex-col items-center justify-center gap-3 shadow-xs">
+    <div className="h-8 w-8 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+    <p className="text-xs font-bold text-slate-600">{label}</p>
+  </div>
+);
+
+const ClassroomBoardModal = dynamic(
+  () =>
+    import('@/components/languages/hybrid/ClassroomBoardModal').then(
+      (mod) => mod.ClassroomBoardModal
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs">
+        <div className="rounded-2xl bg-white px-6 py-4 shadow-xl flex items-center gap-3">
+          <div className="h-5 w-5 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+          <span className="text-xs font-bold text-slate-700">Iniciando Pizarrón Interactivo...</span>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const PocketRemoteQrModal = dynamic(
+  () =>
+    import('@/components/languages/hybrid/PocketRemoteQrModal').then(
+      (mod) => mod.PocketRemoteQrModal
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs">
+        <div className="rounded-2xl bg-white px-6 py-4 shadow-xl flex items-center gap-3">
+          <div className="h-5 w-5 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+          <span className="text-xs font-bold text-slate-700">Preparando Control Remoto QR...</span>
+        </div>
+      </div>
+    ),
+  }
+);
+
+const ContrastivePhoneticsMirrorView = dynamic(
+  () =>
+    import('@/components/languages/hybrid/ContrastivePhoneticsMirrorView').then(
+      (mod) => mod.ContrastivePhoneticsMirrorView
+    ),
+  {
+    ssr: false,
+    loading: () => <IdiomasModuleLoader label="Cargando Espejo Articulatorio Contrastivo..." />,
+  }
+);
+
+const HybridWritingStarStudio = dynamic(
+  () =>
+    import('@/components/languages/hybrid/HybridWritingStarStudio').then(
+      (mod) => mod.HybridWritingStarStudio
+    ),
+  {
+    ssr: false,
+    loading: () => <IdiomasModuleLoader label="Cargando Taller de Redacción y Rúbrica..." />,
+  }
+);
+
+const TrafficLightDifferentiatedView = dynamic(
+  () =>
+    import('@/components/languages/hybrid/TrafficLightDifferentiatedView').then(
+      (mod) => mod.TrafficLightDifferentiatedView
+    ),
+  {
+    ssr: false,
+    loading: () => <IdiomasModuleLoader label="Cargando Semáforo Diferenciado del Grupo..." />,
+  }
+);
+
+const CoordinatorAdvancedDrawer = dynamic(
+  () =>
+    import('@/components/languages/hybrid/CoordinatorAdvancedDrawer').then(
+      (mod) => mod.CoordinatorAdvancedDrawer
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-3xl bg-slate-800 text-white border border-slate-600 p-8 flex items-center justify-center gap-3">
+        <div className="h-6 w-6 rounded-full border-2 border-sky-400/20 border-t-sky-400 animate-spin" />
+        <span className="text-xs font-bold text-slate-200">
+          Cargando Panel de Coordinación Académica...
+        </span>
+      </div>
+    ),
+  }
+);
 
 interface IbimeCampus {
   id: string;
@@ -185,7 +271,19 @@ export default function TeacherIdiomasPage() {
     deduplicateLessons,
     studentReports,
     markReportAsReviewed,
-  } = useLanguagesStore();
+  } = useLanguagesStore(
+    useShallow((s) => ({
+      lessons: s.lessons,
+      activeLessonId: s.activeLessonId,
+      setActiveLessonId: s.setActiveLessonId,
+      addLesson: s.addLesson,
+      updateLesson: s.updateLesson,
+      deleteLesson: s.deleteLesson,
+      deduplicateLessons: s.deduplicateLessons,
+      studentReports: s.studentReports,
+      markReportAsReviewed: s.markReportAsReviewed,
+    }))
+  );
 
   // Estados de la Fusión Híbrida Maestra (4 Macro-Habilidades CEFR + Sub-vistas + Modales)
   const [activeMacroTab, setActiveMacroTab] = useState<
@@ -301,10 +399,14 @@ export default function TeacherIdiomasPage() {
   };
 
   const { user: authUser } = useAuth();
-  const activeSchoolId = useSchoolAdminStore((s) => s.activeSchoolId);
-  const adminSchools = useSchoolAdminStore((s) => s.institutionsList);
-  const adminCampuses = useSchoolAdminStore((s) => s.campusesList);
-  const adminTeachers = useSchoolAdminStore((s) => s.teachersList);
+  const { activeSchoolId, adminSchools, adminCampuses, adminTeachers } = useSchoolAdminStore(
+    useShallow((s) => ({
+      activeSchoolId: s.activeSchoolId,
+      adminSchools: s.institutionsList,
+      adminCampuses: s.campusesList,
+      adminTeachers: s.teachersList,
+    }))
+  );
 
   const effectiveIdiomasSchoolId = authUser?.school_id || activeSchoolId || '';
   const isIbimeSession = useMemo(() => {
@@ -540,9 +642,60 @@ export default function TeacherIdiomasPage() {
     );
   }, [activeLesson.language, activeLesson.level, activeLesson.title, activeLesson.dialogue]);
 
+  const [curriculumByLang, setCurriculumByLang] = useState<
+    Partial<Record<LanguageCode, CurricularWeek[]>>
+  >({});
+
+  const hasActiveLanguageCurriculum = curriculumByLang[activeLesson.language] !== undefined;
+  const shouldLoadCurriculum =
+    activeMacroTab === 'listening' || showFull40WeekExplorer || isCoordinatorViewOpen;
+  const isLoadingCurriculum = shouldLoadCurriculum && !hasActiveLanguageCurriculum;
+
+  useEffect(() => {
+    if (activeMacroTab !== 'listening' && !showFull40WeekExplorer && !isCoordinatorViewOpen) {
+      return;
+    }
+    const lang = activeLesson.language;
+    if (hasActiveLanguageCurriculum) return;
+
+    let cancelled = false;
+
+    const loadDataset =
+      lang === 'fr'
+        ? import('@/components/languages/data/french40WeeksCurriculum').then(
+            (mod) => mod.french40WeeksCurriculum
+          )
+        : import('@/components/languages/data/english40WeeksCurriculum').then(
+            (mod) => mod.english40WeeksCurriculum
+          );
+
+    loadDataset
+      .then((weeks) => {
+        if (!cancelled) {
+          setCurriculumByLang((prev) => ({ ...prev, [lang]: weeks }));
+        }
+      })
+      .catch((err) => {
+        console.error('Error cargando malla curricular de 40 semanas:', err);
+        if (!cancelled) {
+          setCurriculumByLang((prev) => ({ ...prev, [lang]: [] }));
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeLesson.language,
+    hasActiveLanguageCurriculum,
+    activeMacroTab,
+    showFull40WeekExplorer,
+    isCoordinatorViewOpen,
+  ]);
+
   const current40Weeks: CurricularWeek[] = useMemo(() => {
-    return activeLesson.language === 'fr' ? french40WeeksCurriculum : english40WeeksCurriculum;
-  }, [activeLesson.language]);
+    return curriculumByLang[activeLesson.language] || [];
+  }, [curriculumByLang, activeLesson.language]);
 
   const filteredCurriculumWeeks = useMemo(() => {
     if (!curriculumSearch.trim()) return current40Weeks;
@@ -987,8 +1140,11 @@ export default function TeacherIdiomasPage() {
     }
   };
 
+  const canUsePocketRemote = Boolean(authUser?.role && authUser.role !== 'student');
+
   // Sincronización global desacoplada y con debounce del Control Remoto QR (cero colisión HTTP con /api/ai/tts)
   useEffect(() => {
+    if (!canUsePocketRemote) return;
     const syncKey = `${activeTeacherQrAccount.id}|${activeTeacherQrAccount.campusName}|${activeLesson.id}|${activeLesson.title}|${activeLesson.defaultSpeed}|${resolvedAvatar3dSrc}|${activeLesson.dialogue.map((d) => d.text).join('§')}`;
     if (lastPocketSyncKeyRef.current === syncKey) return;
 
@@ -1030,6 +1186,7 @@ export default function TeacherIdiomasPage() {
 
     return () => clearTimeout(timer);
   }, [
+    canUsePocketRemote,
     activeTeacherQrAccount.id,
     activeTeacherQrAccount.email,
     activeTeacherQrAccount.name,
@@ -1040,7 +1197,7 @@ export default function TeacherIdiomasPage() {
   ]);
 
   useEffect(() => {
-    if (isPocketRemoteOpen) return;
+    if (!canUsePocketRemote || isPocketRemoteOpen) return;
     const cleanId = activeTeacherQrAccount.id.trim().toLowerCase();
 
     const handleGlobalRemoteCmd = (cmd: any) => {
@@ -1088,7 +1245,13 @@ export default function TeacherIdiomasPage() {
     return () => {
       if (bc) bc.close();
     };
-  }, [activeTeacherQrAccount.id, activeTeacherQrAccount.name, activeLesson, isPocketRemoteOpen]);
+  }, [
+    canUsePocketRemote,
+    activeTeacherQrAccount.id,
+    activeTeacherQrAccount.name,
+    activeLesson,
+    isPocketRemoteOpen,
+  ]);
 
   const handleAddDialogueLine = () => {
     const newLine: DialogueLine = {
@@ -1480,19 +1643,21 @@ export default function TeacherIdiomasPage() {
         {/* =====================================================================
             PANEL EJECUTIVO DE COORDINACIÓN (PANTALLA HÍBRIDA 8 — OCULTO EN MODO AULA)
             ===================================================================== */}
-        <CoordinatorAdvancedDrawer
-          isOpen={isCoordinatorViewOpen}
-          onClose={() => setIsCoordinatorViewOpen(false)}
-          language={activeLesson.language}
-          level={activeLesson.level}
-          cenniLabel={activeCertification.cenni}
-          phaseLabel={activeCertification.unamNote}
-          isLightMode={isLightMode}
-          onLanguageChange={handleSwitchLanguageGlobal}
-          onLoadWeekLessonToWorkshop={handleLoadSingleLessonIntoWorkshop}
-          onSelectLessonTemplate={handleLoadCurriculumTemplate}
-          onTriggerToast={triggerToast}
-        />
+        {isCoordinatorViewOpen && (
+          <CoordinatorAdvancedDrawer
+            isOpen={isCoordinatorViewOpen}
+            onClose={() => setIsCoordinatorViewOpen(false)}
+            language={activeLesson.language}
+            level={activeLesson.level}
+            cenniLabel={activeCertification.cenni}
+            phaseLabel={activeCertification.unamNote}
+            isLightMode={isLightMode}
+            onLanguageChange={handleSwitchLanguageGlobal}
+            onLoadWeekLessonToWorkshop={handleLoadSingleLessonIntoWorkshop}
+            onSelectLessonTemplate={handleLoadCurriculumTemplate}
+            onTriggerToast={triggerToast}
+          />
+        )}
 
         {/* =====================================================================
             2. FRANJA COMPACTA DE AGENDA DE 50 MINUTOS (REDISEÑO 3 EN 1 CLIC)
@@ -2286,7 +2451,15 @@ export default function TeacherIdiomasPage() {
                 </button>
               </div>
 
-              {!showFull40WeekExplorer ? (
+              {isLoadingCurriculum && current40Weeks.length === 0 ? (
+                <div className="py-10 flex flex-col items-center justify-center gap-2.5 text-center">
+                  <div className="h-7 w-7 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+                  <p className="text-xs font-bold text-slate-500">
+                    Cargando malla curricular de 40 semanas (
+                    {activeLesson.language === 'fr' ? 'Francés FLE' : 'Inglés ESL'})...
+                  </p>
+                </div>
+              ) : !showFull40WeekExplorer ? (
                 /* 4 Columnas de Etapas Oficiales (Adaptadas a Cambridge ESL o DELF FLE) */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                   {[
@@ -2608,36 +2781,40 @@ export default function TeacherIdiomasPage() {
             - PANTALLA HÍBRIDA 2: MODO PIZARRÓN INTERACTIVO (36pt + CRONÓMETRO PAREJAS)
             - PANTALLA HÍBRIDA 7: CONTROL REMOTO DE BOLSILLO POR QR
             ===================================================================== */}
-        <ClassroomBoardModal
-          isOpen={isBoardModalOpen}
-          onClose={() => setIsBoardModalOpen(false)}
-          lesson={activeLesson}
-          avatarSrc={resolvedAvatar3dSrc}
-          celtaGuide={activeCeltaGuide}
-          isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
-          onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
-          initialPairTimerRunning={boardStartTimer}
-          schoolName={activeIdiomasSchoolName}
-          groupLabel={effectiveIdiomasSchoolId === 'sch-demo-0001' ? '5º A' : '2º A'}
-        />
+        {isBoardModalOpen && (
+          <ClassroomBoardModal
+            isOpen={isBoardModalOpen}
+            onClose={() => setIsBoardModalOpen(false)}
+            lesson={activeLesson}
+            avatarSrc={resolvedAvatar3dSrc}
+            celtaGuide={activeCeltaGuide}
+            isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
+            onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
+            initialPairTimerRunning={boardStartTimer}
+            schoolName={activeIdiomasSchoolName}
+            groupLabel={effectiveIdiomasSchoolId === 'sch-demo-0001' ? '5º A' : '2º A'}
+          />
+        )}
 
-        <PocketRemoteQrModal
-          isOpen={isPocketRemoteOpen}
-          onClose={() => setIsPocketRemoteOpen(false)}
-          lesson={activeLesson}
-          avatarSrc={resolvedAvatar3dSrc}
-          celtaGuide={activeCeltaGuide}
-          isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
-          activeTeacherAccount={activeTeacherQrAccount}
-          availableTeacherAccounts={availableTeacherAccounts}
-          onSelectTeacherAccount={(teacher) => setSelectedTeacherQrId(teacher.id)}
-          onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
-          onLaunchBoardWithTimer={() => {
-            setBoardStartTimer(true);
-            setIsBoardModalOpen(true);
-          }}
-          onTriggerGesture={(gesture) => setActiveAvatarGesture(gesture)}
-        />
+        {isPocketRemoteOpen && canUsePocketRemote && (
+          <PocketRemoteQrModal
+            isOpen={isPocketRemoteOpen}
+            onClose={() => setIsPocketRemoteOpen(false)}
+            lesson={activeLesson}
+            avatarSrc={resolvedAvatar3dSrc}
+            celtaGuide={activeCeltaGuide}
+            isPlayingAudio={isPlayingPreview || Boolean(activePlayingLineId)}
+            activeTeacherAccount={activeTeacherQrAccount}
+            availableTeacherAccounts={availableTeacherAccounts}
+            onSelectTeacherAccount={(teacher) => setSelectedTeacherQrId(teacher.id)}
+            onPlayLineAudio={(txt, rate) => handlePlayAudioSample(txt, undefined, rate)}
+            onLaunchBoardWithTimer={() => {
+              setBoardStartTimer(true);
+              setIsBoardModalOpen(true);
+            }}
+            onTriggerGesture={(gesture) => setActiveAvatarGesture(gesture)}
+          />
+        )}
 
         {/* Modal de Confirmación de Eliminación de Lección */}
         {lessonToDelete && (

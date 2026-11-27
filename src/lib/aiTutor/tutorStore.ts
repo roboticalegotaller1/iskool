@@ -8,6 +8,29 @@
 import { TutorSessionEntity } from './types';
 import { supabase } from '../supabaseClient';
 
+const MAX_CACHE_ENTRIES = 1000;
+
+function getLruEntry<K, V>(map: Map<K, V>, key: K): V | undefined {
+  const value = map.get(key);
+  if (value !== undefined) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+}
+
+function setLruEntry<K, V>(map: Map<K, V>, key: K, value: V): void {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
 export class AITutorStore {
   private static sessions = new Map<string, TutorSessionEntity>();
 
@@ -16,7 +39,7 @@ export class AITutorStore {
   }
 
   static async saveSession(session: TutorSessionEntity): Promise<void> {
-    this.sessions.set(session.id, session);
+    setLruEntry(this.sessions, session.id, session);
 
     if (supabase) {
       try {
@@ -50,8 +73,9 @@ export class AITutorStore {
   }
 
   static async getSession(sessionId: string): Promise<TutorSessionEntity | null> {
-    if (this.sessions.has(sessionId)) {
-      return this.sessions.get(sessionId)!;
+    const cached = getLruEntry(this.sessions, sessionId);
+    if (cached) {
+      return cached;
     }
 
     if (supabase) {
@@ -86,7 +110,7 @@ export class AITutorStore {
             created_at: data.created_at,
             updated_at: data.updated_at
           };
-          this.sessions.set(sessionId, session);
+          setLruEntry(this.sessions, sessionId, session);
           return session;
         }
       } catch {

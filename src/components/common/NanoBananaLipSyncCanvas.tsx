@@ -1,10 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   CharacterAnatomicalMouth,
   getHistoricalMouthConfig,
 } from '@/lib/historicalVoiceEngine';
+
+const EMPTY_FORMANT_LEVELS = Object.freeze({
+  rms: 0,
+  open: 0,
+  spread: 0,
+  rounded: 0,
+  alveolar: false,
+  bilabial: false,
+  audioGraphActive: false,
+});
 
 function getVoiceFormantLevels(): {
   rms: number;
@@ -18,7 +28,7 @@ function getVoiceFormantLevels(): {
   if (typeof window !== 'undefined' && (window as any).__iskoolActiveFormantLevels) {
     return (window as any).__iskoolActiveFormantLevels;
   }
-  return { rms: 0, open: 0, spread: 0, rounded: 0, alveolar: false, bilabial: false, audioGraphActive: false };
+  return EMPTY_FORMANT_LEVELS;
 }
 
 function isVoiceAudiblySpeaking(): boolean {
@@ -94,12 +104,33 @@ interface VisemeToken {
   durationWeight: number;
 }
 
+interface VisemeSchedule {
+  tokens: VisemeToken[];
+  prefixWeights: Float64Array;
+  safeTotalWeight: number;
+}
+
+const FALLBACK_VISEME_TOKEN: Readonly<VisemeToken> = Object.freeze({
+  open: 0.5,
+  spread: 0,
+  tongue: 0.3,
+  bilabial: false,
+  durationWeight: 1,
+});
+
 interface PoseEyeOffset {
   dxL: number;
   dyL: number;
   dxR: number;
   dyR: number;
 }
+
+const ZERO_EYE_OFFSET: Readonly<PoseEyeOffset> = Object.freeze({
+  dxL: 0,
+  dyL: 0,
+  dxR: 0,
+  dyR: 0,
+});
 
 interface EyelidSkinPalette {
   base: string;
@@ -199,6 +230,21 @@ function buildPhonemeVisemeSequence(text: string): VisemeToken[] {
     : [{ open: 0.6, spread: 0.1, tongue: 0.4, bilabial: false, durationWeight: 1 }];
 }
 
+function buildVisemeSchedule(text: string): VisemeSchedule {
+  const tokens = buildPhonemeVisemeSequence(text);
+  const prefixWeights = new Float64Array(tokens.length);
+  let totalWeight = 0;
+  for (let i = 0; i < tokens.length; i++) {
+    totalWeight += tokens[i].durationWeight || 0.7;
+    prefixWeights[i] = totalWeight;
+  }
+  return {
+    tokens,
+    prefixWeights,
+    safeTotalWeight: Math.max(0.5, totalWeight),
+  };
+}
+
 /**
  * Physiological asymmetrical human eyelid blink curve:
  * - Fast downward closure (0.00 -> 0.34): smooth cubic acceleration
@@ -270,8 +316,268 @@ export function buildContextualMovementSequence(text: string): ConcreteAvatarGes
   ];
 }
 
-function measureDarkPupilCenter(
+// Single module-level 1024x1024 CPU scratch surface solely for one-time getImageData analysis
+// so cached pose canvases remain 100% GPU-backed without CPU->GPU uploads every frame.
+let sharedCpuAnalysisCanvas: HTMLCanvasElement | null = null;
+let sharedCpuAnalysisCtx: CanvasRenderingContext2D | null = null;
+
+function getSharedCpuAnalysisSurface(): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | null {
+  if (typeof document === 'undefined') return null;
+  if (!sharedCpuAnalysisCanvas) {
+    sharedCpuAnalysisCanvas = document.createElement('canvas');
+    sharedCpuAnalysisCanvas.width = 1024;
+    sharedCpuAnalysisCanvas.height = 1024;
+    sharedCpuAnalysisCtx =
+      sharedCpuAnalysisCanvas.getContext('2d', { willReadFrequently: true }) ||
+      sharedCpuAnalysisCanvas.getContext('2d');
+    if (sharedCpuAnalysisCtx) {
+      sharedCpuAnalysisCtx.imageSmoothingEnabled = false;
+    }
+  }
+  if (!sharedCpuAnalysisCtx) return null;
+  return { canvas: sharedCpuAnalysisCanvas, ctx: sharedCpuAnalysisCtx };
+}
+
+function readImageDataViaCpuScratch(
+  source: HTMLCanvasElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+): ImageData | null {
+  if (source.width <= 0 || source.height <= 0 || w <= 0 || h <= 0) return null;
+  const cpu = getSharedCpuAnalysisSurface();
+  if (!cpu) return null;
+  // Direct CPU-RAM read when source IS the shared CPU analysis surface (0 GPU pipeline flushes)
+  if (source === cpu.canvas) {
+    return cpu.ctx.getImageData(x, y, w, h);
+  }
+  cpu.ctx.imageSmoothingEnabled = false;
+  cpu.ctx.clearRect(0, 0, w, h);
+  cpu.ctx.drawImage(source, x, y, w, h, 0, 0, w, h);
+  return cpu.ctx.getImageData(0, 0, w, h);
+}
+
+function readImageDataPreservingSharedCpu(
+  source: HTMLCanvasElement,
+  x: number,
+  y: number,
+  w: number,
+  h: number
+): ImageData | null {
+  if (source.width <= 0 || source.height <= 0 || w <= 0 || h <= 0) return null;
+  const cpu = getSharedCpuAnalysisSurface();
+  if (cpu && source === cpu.canvas) {
+    return cpu.ctx.getImageData(x, y, w, h);
+  }
+  if (typeof document === 'undefined') return null;
+  const tmp = document.createElement('canvas');
+  tmp.width = w;
+  tmp.height = h;
+  const tctx = tmp.getContext('2d', { willReadFrequently: true }) || tmp.getContext('2d');
+  if (!tctx) return null;
+  tctx.imageSmoothingEnabled = false;
+  tctx.drawImage(source, x, y, w, h, 0, 0, w, h);
+  const data = tctx.getImageData(0, 0, w, h);
+  tmp.width = 0;
+  tmp.height = 0;
+  return data;
+}
+
+interface CachedBridgePatch {
+  rx0: number;
+  ry0: number;
+  patchW: number;
+  patchH: number;
+  imageData: ImageData;
+}
+
+interface CanonicalBridgePatchEntry {
+  upper?: CachedBridgePatch;
+  blink?: CachedBridgePatch;
+}
+
+const CANONICAL_BRIDGE_PATCH_CACHE = new WeakMap<HTMLCanvasElement, CanonicalBridgePatchEntry>();
+
+function getUpperFaceBridgePatchRect(
+  lx: number,
+  ly: number,
+  rx: number,
+  ry: number,
+  mouthCy: number
+): { rx0: number; ry0: number; patchW: number; patchH: number } {
+  const centerX = (lx + rx) * 0.5;
+  const topY = Math.max(0, Math.round(Math.min(ly, ry) - 24));
+  const botY = Math.min(1020, Math.max(topY + 36, Math.round(mouthCy - 18)));
+  const patchW = Math.min(240, Math.max(72, Math.round(Math.abs(rx - lx) * 1.62)));
+  const patchH = Math.min(180, Math.max(36, botY - topY));
+  const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
+  const ry0 = topY;
+  return { rx0, ry0, patchW, patchH };
+}
+
+function getBlinkSpriteBridgePatchRect(
+  lx: number,
+  ly: number,
+  rx: number,
+  ry: number,
+  mouthCy: number
+): { rx0: number; ry0: number; patchW: number; patchH: number } {
+  const centerX = (lx + rx) * 0.5;
+  const eyeMidY = (ly + ry) * 0.5;
+  // Lower nasal bridge / cheek strip strictly below lower eyelids and above upper lip
+  const topY = Math.max(0, Math.round(eyeMidY + Math.max(16, (mouthCy - eyeMidY) * 0.34)));
+  const botY = Math.min(1020, Math.max(topY + 24, Math.round(mouthCy - 10)));
+  const patchW = Math.min(220, Math.max(68, Math.round(Math.abs(rx - lx) * 1.48)));
+  const patchH = Math.min(120, Math.max(24, botY - topY));
+  const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
+  const ry0 = topY;
+  return { rx0, ry0, patchW, patchH };
+}
+
+function preCacheCanonicalBridgePatches(
+  canonicalCanvas: HTMLCanvasElement,
+  analysisCanvas: HTMLCanvasElement,
+  lx: number,
+  ly: number,
+  rx: number,
+  ry: number,
+  mouthCy: number
+): void {
+  try {
+    const entry: CanonicalBridgePatchEntry = CANONICAL_BRIDGE_PATCH_CACHE.get(canonicalCanvas) || {};
+    const upperRect = getUpperFaceBridgePatchRect(lx, ly, rx, ry, mouthCy);
+    const upperImg = readImageDataViaCpuScratch(
+      analysisCanvas,
+      upperRect.rx0,
+      upperRect.ry0,
+      upperRect.patchW,
+      upperRect.patchH
+    );
+    if (upperImg) {
+      entry.upper = { ...upperRect, imageData: upperImg };
+    }
+    const blinkRect = getBlinkSpriteBridgePatchRect(lx, ly, rx, ry, mouthCy);
+    const blinkImg = readImageDataViaCpuScratch(
+      analysisCanvas,
+      blinkRect.rx0,
+      blinkRect.ry0,
+      blinkRect.patchW,
+      blinkRect.patchH
+    );
+    if (blinkImg) {
+      entry.blink = { ...blinkRect, imageData: blinkImg };
+    }
+    CANONICAL_BRIDGE_PATCH_CACHE.set(canonicalCanvas, entry);
+  } catch {
+    // Fallback will lazily populate if needed
+  }
+}
+
+function getOrCacheCanonicalBridgePatch(
+  refCanvas: HTMLCanvasElement,
+  kind: 'upper' | 'blink',
+  rx0: number,
+  ry0: number,
+  patchW: number,
+  patchH: number
+): ImageData | null {
+  const existing = CANONICAL_BRIDGE_PATCH_CACHE.get(refCanvas);
+  const cached = existing?.[kind];
+  if (
+    cached &&
+    cached.rx0 === rx0 &&
+    cached.ry0 === ry0 &&
+    cached.patchW === patchW &&
+    cached.patchH === patchH
+  ) {
+    return cached.imageData;
+  }
+  const fresh = readImageDataPreservingSharedCpu(refCanvas, rx0, ry0, patchW, patchH);
+  if (!fresh) return null;
+  const nextEntry: CanonicalBridgePatchEntry = existing || {};
+  nextEntry[kind] = { rx0, ry0, patchW, patchH, imageData: fresh };
+  CANONICAL_BRIDGE_PATCH_CACHE.set(refCanvas, nextEntry);
+  return fresh;
+}
+
+function detectPoseOpaque(source: HTMLCanvasElement): boolean {
+  try {
+    const corners: ReadonlyArray<readonly [number, number]> = [
+      [0, 0],
+      [1020, 0],
+      [0, 1020],
+      [1020, 1020],
+      [510, 0],
+      [510, 1020],
+    ];
+    for (let k = 0; k < corners.length; k++) {
+      const img = readImageDataViaCpuScratch(source, corners[k][0], corners[k][1], 4, 4);
+      if (!img) return false;
+      const d = img.data;
+      for (let i = 3; i < d.length; i += 4) {
+        if (d[i] < 254) return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const unitRadialMaskCache = new WeakMap<CanvasRenderingContext2D, Map<string, CanvasGradient>>();
+
+function getCachedUnitRadialMask(
   ctx: CanvasRenderingContext2D,
+  cacheKey: string,
+  r0: number,
+  stops: ReadonlyArray<readonly [number, string]>
+): CanvasGradient {
+  let ctxMap = unitRadialMaskCache.get(ctx);
+  if (!ctxMap) {
+    ctxMap = new Map<string, CanvasGradient>();
+    unitRadialMaskCache.set(ctx, ctxMap);
+  }
+  let grad = ctxMap.get(cacheKey);
+  if (!grad) {
+    grad = ctx.createRadialGradient(0, 0, r0, 0, 0, 1.0);
+    for (let i = 0; i < stops.length; i++) {
+      grad.addColorStop(stops[i][0], stops[i][1]);
+    }
+    ctxMap.set(cacheKey, grad);
+  }
+  return grad;
+}
+
+const MASK_STOPS_MUSTACHE: ReadonlyArray<readonly [number, string]> = Object.freeze([
+  [0, 'rgba(0,0,0,1)'],
+  [0.72, 'rgba(0,0,0,0.85)'],
+  [1, 'rgba(0,0,0,0)'],
+]);
+const MASK_STOPS_MOUTH_FEATHER: ReadonlyArray<readonly [number, string]> = Object.freeze([
+  [0, 'rgba(0,0,0,1)'],
+  [0.50, 'rgba(0,0,0,0.68)'],
+  [0.84, 'rgba(0,0,0,0.20)'],
+  [1, 'rgba(0,0,0,0)'],
+]);
+const MASK_STOPS_BROW: ReadonlyArray<readonly [number, string]> = Object.freeze([
+  [0, 'rgba(0,0,0,1)'],
+  [0.75, 'rgba(0,0,0,0.55)'],
+  [1, 'rgba(0,0,0,0)'],
+]);
+const MASK_STOPS_SACCADE: ReadonlyArray<readonly [number, string]> = Object.freeze([
+  [0, 'rgba(0,0,0,1)'],
+  [0.78, 'rgba(0,0,0,0.52)'],
+  [1, 'rgba(0,0,0,0)'],
+]);
+const MASK_STOPS_ORBITAL: ReadonlyArray<readonly [number, string]> = Object.freeze([
+  [0, 'rgba(0,0,0,1)'],
+  [0.55, 'rgba(0,0,0,0.68)'],
+  [1, 'rgba(0,0,0,0)'],
+]);
+
+function measureDarkPupilCenter(
+  sourceCanvas: HTMLCanvasElement,
   cx: number,
   cy: number,
   rx: number,
@@ -283,7 +589,8 @@ function measureDarkPupilCenter(
     const w = Math.min(1024 - x0, Math.ceil(rx * 2.2));
     const h = Math.min(1024 - y0, Math.ceil(ry * 1.9));
     if (w <= 4 || h <= 4) return null;
-    const img = ctx.getImageData(x0, y0, w, h);
+    const img = readImageDataViaCpuScratch(sourceCanvas, x0, y0, w, h);
+    if (!img) return null;
     const data = img.data;
     let minLuma = 255;
     for (let i = 0; i < data.length; i += 4) {
@@ -327,11 +634,11 @@ function sampleEyelidSkinPalette(
     crease: 'rgb(168, 118, 98)',
   };
   try {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return fallback;
     const sx = Math.max(0, Math.min(1018, Math.round(lx - 6)));
     const sy = Math.max(0, Math.min(1018, Math.round(ly - ry * 0.78)));
-    const data = ctx.getImageData(sx, sy, 12, 6).data;
+    const img = readImageDataViaCpuScratch(canvas, sx, sy, 12, 6);
+    if (!img) return fallback;
+    const data = img.data;
     let r = 0;
     let g = 0;
     let b = 0;
@@ -377,17 +684,7 @@ function computeUpperFaceBridgeShift(
   mouthCy: number
 ): { dx: number; dy: number } | null {
   try {
-    const rCtx = refCanvas.getContext('2d', { willReadFrequently: true }) || refCanvas.getContext('2d');
-    const tCtx = targetCanvas.getContext('2d', { willReadFrequently: true }) || targetCanvas.getContext('2d');
-    if (!rCtx || !tCtx) return null;
-
-    const centerX = (lx + rx) * 0.5;
-    const topY = Math.max(0, Math.round(Math.min(ly, ry) - 24));
-    const botY = Math.min(1020, Math.max(topY + 36, Math.round(mouthCy - 18)));
-    const patchW = Math.min(240, Math.max(72, Math.round(Math.abs(rx - lx) * 1.62)));
-    const patchH = Math.min(180, Math.max(36, botY - topY));
-    const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
-    const ry0 = topY;
+    const { rx0, ry0, patchW, patchH } = getUpperFaceBridgePatchRect(lx, ly, rx, ry, mouthCy);
 
     const maxShiftX = 80;
     const maxShiftY = 34;
@@ -396,8 +693,11 @@ function computeUpperFaceBridgeShift(
     const searchW = Math.min(1024 - searchX0, patchW + maxShiftX * 2);
     const searchH = Math.min(1024 - searchY0, patchH + maxShiftY * 2);
 
-    const refData = rCtx.getImageData(rx0, ry0, patchW, patchH).data;
-    const tgtData = tCtx.getImageData(searchX0, searchY0, searchW, searchH).data;
+    const tgtImg = readImageDataViaCpuScratch(targetCanvas, searchX0, searchY0, searchW, searchH);
+    const refImg = getOrCacheCanonicalBridgePatch(refCanvas, 'upper', rx0, ry0, patchW, patchH);
+    if (!refImg || !tgtImg) return null;
+    const refData = refImg.data;
+    const tgtData = tgtImg.data;
 
     // Stage 1: Coarse Pyramid Search (4px grid, 6px patch stride -> <1.2ms on main thread)
     const coarseShiftStep = 4;
@@ -517,19 +817,7 @@ function computeBlinkSpriteBridgeShift(
   mouthCy: number
 ): { dx: number; dy: number } | null {
   try {
-    const rCtx = refCanvas.getContext('2d', { willReadFrequently: true }) || refCanvas.getContext('2d');
-    const bCtx = blinkCanvas.getContext('2d', { willReadFrequently: true }) || blinkCanvas.getContext('2d');
-    if (!rCtx || !bCtx) return null;
-
-    const centerX = (lx + rx) * 0.5;
-    const eyeMidY = (ly + ry) * 0.5;
-    // Lower nasal bridge / cheek strip strictly below lower eyelids and above upper lip
-    const topY = Math.max(0, Math.round(eyeMidY + Math.max(16, (mouthCy - eyeMidY) * 0.34)));
-    const botY = Math.min(1020, Math.max(topY + 24, Math.round(mouthCy - 10)));
-    const patchW = Math.min(220, Math.max(68, Math.round(Math.abs(rx - lx) * 1.48)));
-    const patchH = Math.min(120, Math.max(24, botY - topY));
-    const rx0 = Math.max(0, Math.min(1024 - patchW, Math.round(centerX - patchW * 0.5)));
-    const ry0 = topY;
+    const { rx0, ry0, patchW, patchH } = getBlinkSpriteBridgePatchRect(lx, ly, rx, ry, mouthCy);
 
     const maxShift = 12;
     const searchX0 = Math.max(0, rx0 - maxShift);
@@ -537,8 +825,11 @@ function computeBlinkSpriteBridgeShift(
     const searchW = Math.min(1024 - searchX0, patchW + maxShift * 2);
     const searchH = Math.min(1024 - searchY0, patchH + maxShift * 2);
 
-    const refData = rCtx.getImageData(rx0, ry0, patchW, patchH).data;
-    const tgtData = bCtx.getImageData(searchX0, searchY0, searchW, searchH).data;
+    const tgtImg = readImageDataViaCpuScratch(blinkCanvas, searchX0, searchY0, searchW, searchH);
+    const refImg = getOrCacheCanonicalBridgePatch(refCanvas, 'blink', rx0, ry0, patchW, patchH);
+    if (!refImg || !tgtImg) return null;
+    const refData = refImg.data;
+    const tgtData = tgtImg.data;
 
     let bestScore = Infinity;
     let bestDx = 0;
@@ -579,6 +870,32 @@ function computeBlinkSpriteBridgeShift(
 }
 
 const MOUTH_PATCH_WIDTH_MULT = 1.46;
+const MOUTH_NUM_COLS = 48;
+const CHEEK_TAPER_LUT = new Float64Array(MOUTH_NUM_COLS);
+const JAW_OVAL_LUT = new Float64Array(MOUTH_NUM_COLS);
+const APERTURE_LUT = new Float64Array(MOUTH_NUM_COLS);
+const INSIDE_MOUTH_LUT = new Uint8Array(MOUTH_NUM_COLS);
+for (let c = 0; c < MOUTH_NUM_COLS; c++) {
+  const u = ((c + 0.5) / MOUTH_NUM_COLS) * 2 - 1;
+  const m = u * MOUTH_PATCH_WIDTH_MULT;
+  const insideMouth = Math.abs(m) < 0.96;
+  const normM = m / 0.96;
+  CHEEK_TAPER_LUT[c] = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.65);
+  JAW_OVAL_LUT[c] = Math.pow(Math.max(0, 1 - u * u * 0.88), 0.62);
+  INSIDE_MOUTH_LUT[c] = insideMouth ? 1 : 0;
+  APERTURE_LUT[c] = insideMouth
+    ? Math.pow(Math.max(0, Math.cos(normM * Math.PI * 0.5)), 1.35)
+    : 0;
+}
+
+const BROW_STRIPS = 9;
+const BROW_BELL_LUT = new Float64Array(BROW_STRIPS);
+for (let i = 0; i < BROW_STRIPS; i++) {
+  const normY = (i + 0.5) / BROW_STRIPS;
+  BROW_BELL_LUT[i] = Math.pow(Math.sin(normY * Math.PI), 1.85);
+}
+
+const SMOOTH5_SCRATCH_BUF = new Float32Array(MOUTH_NUM_COLS);
 
 function measurePoseMouthAnatomy(
   poseCanvas: HTMLCanvasElement,
@@ -587,7 +904,7 @@ function measurePoseMouthAnatomy(
   dy: number,
   isCanonical: boolean
 ): PoseMouthAnatomy {
-  const numCols = 48;
+  const numCols = MOUTH_NUM_COLS;
   const mouthW = Math.max(24, cfg.x2 - cfg.x1);
   const halfW = mouthW * 0.5;
   const patchHalfW = halfW * MOUTH_PATCH_WIDTH_MULT;
@@ -616,9 +933,6 @@ function measurePoseMouthAnatomy(
   };
 
   try {
-    const ctx = poseCanvas.getContext('2d');
-    if (!ctx) return buildFallbackClosed();
-
     const scanTop = Math.max(0, Math.round(Math.min(y1, y2, cy) - 12));
     const scanBot = Math.min(1023, Math.round(Math.max(y1, y2, cy) + 30));
     const scanH = scanBot - scanTop + 1;
@@ -627,7 +941,9 @@ function measurePoseMouthAnatomy(
     const scanW = scanRight - scanLeft + 1;
     if (scanW <= 8 || scanH <= 8) return buildFallbackClosed();
 
-    const img = ctx.getImageData(scanLeft, scanTop, scanW, scanH).data;
+    const imgData = readImageDataViaCpuScratch(poseCanvas, scanLeft, scanTop, scanW, scanH);
+    if (!imgData) return buildFallbackClosed();
+    const img = imgData.data;
     const sampleLumaAndSat = (pxAbs: number, pyAbs: number): { luma: number; sat: number; r: number; g: number } => {
       const lx = Math.max(0, Math.min(scanW - 1, Math.round(pxAbs) - scanLeft));
       const ly = Math.max(0, Math.min(scanH - 1, Math.round(pyAbs) - scanTop));
@@ -774,11 +1090,12 @@ function measurePoseMouthAnatomy(
 
     // 5-tap Gaussian horizontal smoothing across all three curves so corners are 100% C2 silky smooth (zero corner steps!)
     const smooth5 = (arr: Float32Array) => {
-      const out = new Float32Array(arr);
+      const out = arr.length <= SMOOTH5_SCRATCH_BUF.length ? SMOOTH5_SCRATCH_BUF : new Float32Array(arr.length);
+      out.set(arr);
       for (let c = 2; c < numCols - 2; c++) {
         out[c] = 0.10 * arr[c - 2] + 0.22 * arr[c - 1] + 0.36 * arr[c] + 0.22 * arr[c + 1] + 0.10 * arr[c + 2];
       }
-      arr.set(out);
+      arr.set(out.subarray(0, arr.length));
     };
     smooth5(srcUpperLipBotY);
     smooth5(srcTeethBotY);
@@ -832,13 +1149,13 @@ function sampleLipSealPalette(
         stomionLine: 'rgba(78, 22, 30, 0.85)',
       };
   try {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return fallback;
     const jawSpan = Math.max(28, chinY - cy);
     // Sample lower lip vermilion slightly below stomion (avoiding white upper teeth!)
     const sampleY = Math.max(0, Math.min(1018, Math.round(cy + Math.min(14, jawSpan * 0.24))));
     const sampleX = Math.max(0, Math.min(1014, Math.round(cx - 5)));
-    const data = ctx.getImageData(sampleX, sampleY, 10, 5).data;
+    const img = readImageDataViaCpuScratch(canvas, sampleX, sampleY, 10, 5);
+    if (!img) return fallback;
+    const data = img.data;
     let r = 0;
     let g = 0;
     let b = 0;
@@ -888,17 +1205,25 @@ interface CachedProcessedPoseEntry {
   refPupils?: { lx: number; ly: number; rx: number; ry: number } | null;
   eyelidSkin?: EyelidSkinPalette;
   lipSealPalette?: LipSealPalette;
+  isOpaque?: boolean;
 }
 
 const GLOBAL_PROCESSED_POSE_CACHE = new Map<string, CachedProcessedPoseEntry>();
-const MAX_GLOBAL_PROCESSED_POSES = 180;
+const MAX_GLOBAL_PROCESSED_POSES = 42;
 
 function putGlobalProcessedPose(key: string, entry: CachedProcessedPoseEntry): void {
   if (GLOBAL_PROCESSED_POSE_CACHE.has(key)) {
     GLOBAL_PROCESSED_POSE_CACHE.delete(key);
   } else if (GLOBAL_PROCESSED_POSE_CACHE.size >= MAX_GLOBAL_PROCESSED_POSES) {
     const oldest = GLOBAL_PROCESSED_POSE_CACHE.keys().next().value;
-    if (oldest) GLOBAL_PROCESSED_POSE_CACHE.delete(oldest);
+    if (oldest) {
+      const evicted = GLOBAL_PROCESSED_POSE_CACHE.get(oldest);
+      GLOBAL_PROCESSED_POSE_CACHE.delete(oldest);
+      if (evicted?.canvas && evicted.canvas !== entry.canvas) {
+        evicted.canvas.width = 0;
+        evicted.canvas.height = 0;
+      }
+    }
   }
   GLOBAL_PROCESSED_POSE_CACHE.set(key, entry);
 }
@@ -908,7 +1233,7 @@ function putGlobalProcessedPose(key: string, entry: CachedProcessedPoseEntry): v
  * Combina Streams de Video Neuronal 3D (.mp4) Simétricos + Compendio de 12 Movimientos 3D +
  * Cortina Palpebral Periorbital Anatómica sin Deformación de Pupila + Lip-Sync Fonético en Tiempo Real.
  */
-export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = ({
+const NanoBananaLipSyncCanvasInner: React.FC<NanoBananaLipSyncCanvasProps> = ({
   imageSrc,
   characterId,
   isSpeaking,
@@ -930,19 +1255,32 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   onLoad,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mainCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const offscreenRef = useRef<HTMLCanvasElement | null>(null);
   const videoFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  // Zero-allocation reusable scratch buffers for cinema-grade C2 feathered facial compositing at 60 FPS
+  const videoFrameCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  // Zero-allocation reusable scratch buffers & cached 2D contexts for cinema-grade C2 feathered facial compositing at 60 FPS
   const blendFrameCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const blendCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const mouthPatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouthCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const browPatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const browCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const eyePatchCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const eyeCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const snapCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const snapCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const poseCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
-  const poseEyeOffsetRef = useRef<Map<HTMLCanvasElement, PoseEyeOffset>>(new Map());
-  const poseMouthAnatomyRef = useRef<Map<HTMLCanvasElement, PoseMouthAnatomy>>(new Map());
+  const poseEyeOffsetRef = useRef<WeakMap<HTMLCanvasElement, PoseEyeOffset>>(new WeakMap());
+  const poseMouthAnatomyRef = useRef<WeakMap<HTMLCanvasElement, PoseMouthAnatomy>>(new WeakMap());
+  const poseOpaqueRef = useRef<WeakMap<HTMLCanvasElement, boolean>>(new WeakMap());
   const pendingVideoEyeSeedRef = useRef<PoseEyeOffset | null>(null);
   const refPupilsRef = useRef<{ lx: number; ly: number; rx: number; ry: number } | null>(null);
   const canonicalPoseCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const prevCharIdRef = useRef<string>(characterId);
+  const isMountedRef = useRef<boolean>(true);
+  const isInViewportRef = useRef<boolean>(true);
+  const kickSecondaryPosesRef = useRef<(() => void) | null>(null);
   const speechStartMsRef = useRef<number>(0);
   const lipSealPaletteRef = useRef<LipSealPalette>({
     upperLip: 'rgb(192, 92, 98)',
@@ -960,12 +1298,11 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   const videoReadyRef = useRef<boolean>(false);
   const activeVideoUrlRef = useRef<string>('');
 
-  const [loadedSrc, setLoadedSrc] = useState<string>('');
   const isSpeakingRef = useRef<boolean>(isSpeaking);
   const externalOpenRef = useRef<number>(externalMouthOpen);
   const externalSpreadRef = useRef<number>(externalMouthSpread);
   const spokenTextRef = useRef<string>(spokenText);
-  const visemeTokensRef = useRef<VisemeToken[]>(buildPhonemeVisemeSequence(spokenText));
+  const visemeScheduleRef = useRef<VisemeSchedule>(buildVisemeSchedule(spokenText));
   const activeGestureRef = useRef<AvatarGestureMode>(activeGesture);
   const resolvedGestureRef = useRef<ConcreteAvatarGesture>('welcome');
   const poseCompendiumRef = useRef(poseCompendium);
@@ -985,9 +1322,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       speechStartMsRef.current = performance.now();
     }
     isSpeakingRef.current = isSpeaking;
+    if (isSpeaking) {
+      kickSecondaryPosesRef.current?.();
+    }
     if (videoElementRef.current) {
       videoElementRef.current.playbackRate = isSpeaking ? 1.12 : 0.86;
-      if (videoElementRef.current.paused) {
+      const isVisibleNow =
+        isInViewportRef.current && (typeof document === 'undefined' || !document.hidden);
+      if (isVisibleNow && videoElementRef.current.paused && Boolean(activeVideoUrlRef.current)) {
         videoElementRef.current.play().catch(() => {});
       }
     }
@@ -1003,12 +1345,15 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
   useEffect(() => {
     spokenTextRef.current = spokenText;
-    visemeTokensRef.current = buildPhonemeVisemeSequence(spokenText);
+    visemeScheduleRef.current = buildVisemeSchedule(spokenText);
     speechStartMsRef.current = performance.now();
   }, [spokenText]);
 
   useEffect(() => {
     activeGestureRef.current = activeGesture;
+    if (activeGesture !== 'auto') {
+      kickSecondaryPosesRef.current?.();
+    }
     if (activeGesture === 'listen') {
       forceBlinkRef.current = true;
     }
@@ -1052,21 +1397,33 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   }, [characterId, imageSrc, mouthConfig]);
 
   const registerPoseEyeAlignment = React.useCallback(
-    (poseCanvas: HTMLCanvasElement, isCanonical: boolean, isBlinkSprite: boolean) => {
+    (
+      poseCanvas: HTMLCanvasElement,
+      isCanonical: boolean,
+      isBlinkSprite: boolean,
+      cpuSurface?: HTMLCanvasElement | null
+    ) => {
       const cfg = resolvedConfig;
-      const ctx = poseCanvas.getContext('2d');
-      if (!ctx) return;
+      const analysisCanvas = cpuSurface || poseCanvas;
+      poseOpaqueRef.current.set(poseCanvas, detectPoseOpaque(analysisCanvas));
+
+      const canonicalValid =
+        canonicalPoseCanvasRef.current &&
+        canonicalPoseCanvasRef.current.width > 0 &&
+        canonicalPoseCanvasRef.current.height > 0
+          ? canonicalPoseCanvasRef.current
+          : null;
 
       if (isBlinkSprite) {
         if (
-          canonicalPoseCanvasRef.current &&
+          canonicalValid &&
           cfg.leftEyeX &&
           cfg.rightEyeX &&
           (cfg.leftEyeY || cfg.eyeY)
         ) {
           const blinkShift = computeBlinkSpriteBridgeShift(
-            canonicalPoseCanvasRef.current,
-            poseCanvas,
+            canonicalValid,
+            analysisCanvas,
             cfg.leftEyeX,
             cfg.leftEyeY ?? cfg.eyeY ?? 260,
             cfg.rightEyeX,
@@ -1083,15 +1440,15 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             return;
           }
         }
-        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        poseEyeOffsetRef.current.set(poseCanvas, ZERO_EYE_OFFSET);
         return;
       }
 
       if (!cfg.leftEyeX || !cfg.rightEyeX || !(cfg.leftEyeY || cfg.eyeY)) {
-        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        poseEyeOffsetRef.current.set(poseCanvas, ZERO_EYE_OFFSET);
         poseMouthAnatomyRef.current.set(
           poseCanvas,
-          measurePoseMouthAnatomy(poseCanvas, cfg, 0, 0, isCanonical)
+          measurePoseMouthAnatomy(analysisCanvas, cfg, 0, 0, isCanonical)
         );
         return;
       }
@@ -1103,21 +1460,22 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       const eRx = cfg.eyeRx ?? cfg.eyeRadius ?? 30;
       const eRy = cfg.eyeRy ?? cfg.eyeRadius ?? 28;
 
-      if (isCanonical || !canonicalPoseCanvasRef.current) {
+      if (isCanonical || !canonicalValid) {
         canonicalPoseCanvasRef.current = poseCanvas;
-        const pL = measureDarkPupilCenter(ctx, lx, ly, eRx, eRy);
-        const pR = measureDarkPupilCenter(ctx, rx, ry, eRx, eRy);
+        preCacheCanonicalBridgePatches(poseCanvas, analysisCanvas, lx, ly, rx, ry, cfg.cy);
+        const pL = measureDarkPupilCenter(analysisCanvas, lx, ly, eRx, eRy);
+        const pR = measureDarkPupilCenter(analysisCanvas, rx, ry, eRx, eRy);
         if (pL && pR) {
           refPupilsRef.current = { lx: pL.x, ly: pL.y, rx: pR.x, ry: pR.y };
         }
-        poseEyeOffsetRef.current.set(poseCanvas, { dxL: 0, dyL: 0, dxR: 0, dyR: 0 });
+        poseEyeOffsetRef.current.set(poseCanvas, ZERO_EYE_OFFSET);
         poseMouthAnatomyRef.current.set(
           poseCanvas,
-          measurePoseMouthAnatomy(poseCanvas, cfg, 0, 0, true)
+          measurePoseMouthAnatomy(analysisCanvas, cfg, 0, 0, true)
         );
-        eyelidSkinRef.current = sampleEyelidSkinPalette(poseCanvas, lx, ly, eRy);
+        eyelidSkinRef.current = sampleEyelidSkinPalette(analysisCanvas, lx, ly, eRy);
         lipSealPaletteRef.current = sampleLipSealPalette(
-          poseCanvas,
+          analysisCanvas,
           cfg.cx,
           cfg.cy,
           cfg.chinY ?? cfg.cy + 56,
@@ -1128,8 +1486,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
       // Upper-Face Bridge 2D SAD Alignment (strictly above mouth so open/closed pose smiles never bias shift!)
       const bridgeShift = computeUpperFaceBridgeShift(
-        canonicalPoseCanvasRef.current,
-        poseCanvas,
+        canonicalValid,
+        analysisCanvas,
         lx,
         ly,
         rx,
@@ -1146,13 +1504,13 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         });
         poseMouthAnatomyRef.current.set(
           poseCanvas,
-          measurePoseMouthAnatomy(poseCanvas, cfg, bridgeShift.dx, bridgeShift.dy, false)
+          measurePoseMouthAnatomy(analysisCanvas, cfg, bridgeShift.dx, bridgeShift.dy, false)
         );
         return;
       }
 
-      const pL = measureDarkPupilCenter(ctx, lx, ly, eRx, eRy);
-      const pR = measureDarkPupilCenter(ctx, rx, ry, eRx, eRy);
+      const pL = measureDarkPupilCenter(analysisCanvas, lx, ly, eRx, eRy);
+      const pR = measureDarkPupilCenter(analysisCanvas, rx, ry, eRx, eRy);
       let dx = 0;
       let dy = 0;
       if (pL && pR && refPupilsRef.current) {
@@ -1168,13 +1526,13 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       }
       poseMouthAnatomyRef.current.set(
         poseCanvas,
-        measurePoseMouthAnatomy(poseCanvas, cfg, dx, dy, false)
+        measurePoseMouthAnatomy(analysisCanvas, cfg, dx, dy, false)
       );
     },
     [resolvedConfig]
   );
 
-  // Helper to load an image URL into a 1024x1024 offscreen canvas and cache it globally across mounts
+  // Helper to load an image URL into a GPU-backed 1024x1024 offscreen canvas and cache it globally across mounts
   const onLoadRef = useRef(onLoad);
   useEffect(() => {
     onLoadRef.current = onLoad;
@@ -1184,16 +1542,21 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     (src: string, onDone?: (canvas: HTMLCanvasElement) => void, isCanonical = false, isBlinkSprite = false) => {
       if (!src) return;
       const cached = poseCacheRef.current.get(src);
-      if (cached) {
+      if (cached && cached.width > 0 && cached.height > 0) {
         onDone?.(cached);
         return;
+      } else if (cached) {
+        poseCacheRef.current.delete(src);
       }
 
       const globalKey = `${characterId || imageSrc}::${isCanonical ? 'canon' : isBlinkSprite ? 'blink' : 'pose'}::${src}`;
       const globalHit = GLOBAL_PROCESSED_POSE_CACHE.get(globalKey);
-      if (globalHit) {
+      if (globalHit && globalHit.canvas.width > 0 && globalHit.canvas.height > 0) {
+        // Promote hit to MRU so active character poses stay resident
+        GLOBAL_PROCESSED_POSE_CACHE.delete(globalKey);
+        GLOBAL_PROCESSED_POSE_CACHE.set(globalKey, globalHit);
         poseCacheRef.current.set(src, globalHit.canvas);
-        if (isCanonical || !canonicalPoseCanvasRef.current) {
+        if (isCanonical || !canonicalPoseCanvasRef.current || canonicalPoseCanvasRef.current.width === 0) {
           canonicalPoseCanvasRef.current = globalHit.canvas;
           if (globalHit.refPupils) refPupilsRef.current = globalHit.refPupils;
           if (globalHit.eyelidSkin) eyelidSkinRef.current = globalHit.eyelidSkin;
@@ -1205,34 +1568,57 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         if (globalHit.mouthAnatomy) {
           poseMouthAnatomyRef.current.set(globalHit.canvas, globalHit.mouthAnatomy);
         }
+        if (typeof globalHit.isOpaque === 'boolean') {
+          poseOpaqueRef.current.set(globalHit.canvas, globalHit.isOpaque);
+        }
         onDone?.(globalHit.canvas);
         return;
+      } else if (globalHit) {
+        GLOBAL_PROCESSED_POSE_CACHE.delete(globalKey);
       }
 
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.decoding = 'async';
       img.onload = () => {
-        const off = document.createElement('canvas');
-        off.width = 1024;
-        off.height = 1024;
-        const octx = off.getContext('2d', { willReadFrequently: true }) || off.getContext('2d');
-        if (octx) {
-          octx.imageSmoothingEnabled = true;
-          octx.imageSmoothingQuality = 'high';
-          octx.drawImage(img, 0, 0, 1024, 1024);
+        const finalize = () => {
+          if (!isMountedRef.current) return;
+          const off = document.createElement('canvas');
+          off.width = 1024;
+          off.height = 1024;
+          // GPU-backed 2D context (no willReadFrequently!) for fast hardware blitting at 60 FPS
+          const octx = off.getContext('2d');
+          if (octx) {
+            octx.imageSmoothingEnabled = true;
+            octx.imageSmoothingQuality = 'high';
+            octx.drawImage(img, 0, 0, 1024, 1024);
+          }
+          // Draw decoded image ONCE onto CPU-backed analysis canvas (willReadFrequently: true) for 0 GPU->CPU readbacks
+          const cpuSurface = getSharedCpuAnalysisSurface();
+          if (cpuSurface) {
+            cpuSurface.ctx.imageSmoothingEnabled = true;
+            cpuSurface.ctx.imageSmoothingQuality = 'high';
+            cpuSurface.ctx.clearRect(0, 0, 1024, 1024);
+            cpuSurface.ctx.drawImage(img, 0, 0, 1024, 1024);
+          }
+          poseCacheRef.current.set(src, off);
+          registerPoseEyeAlignment(off, isCanonical, isBlinkSprite, cpuSurface?.canvas ?? null);
+          putGlobalProcessedPose(globalKey, {
+            canvas: off,
+            eyeOffset: poseEyeOffsetRef.current.get(off),
+            mouthAnatomy: poseMouthAnatomyRef.current.get(off),
+            refPupils: isCanonical ? refPupilsRef.current : undefined,
+            eyelidSkin: isCanonical ? eyelidSkinRef.current : undefined,
+            lipSealPalette: isCanonical ? lipSealPaletteRef.current : undefined,
+            isOpaque: poseOpaqueRef.current.get(off),
+          });
+          onDone?.(off);
+        };
+        if (typeof img.decode === 'function') {
+          img.decode().catch(() => {}).then(finalize);
+        } else {
+          finalize();
         }
-        poseCacheRef.current.set(src, off);
-        registerPoseEyeAlignment(off, isCanonical, isBlinkSprite);
-        putGlobalProcessedPose(globalKey, {
-          canvas: off,
-          eyeOffset: poseEyeOffsetRef.current.get(off),
-          mouthAnatomy: poseMouthAnatomyRef.current.get(off),
-          refPupils: isCanonical ? refPupilsRef.current : undefined,
-          eyelidSkin: isCanonical ? eyelidSkinRef.current : undefined,
-          lipSealPalette: isCanonical ? lipSealPaletteRef.current : undefined,
-        });
-        onDone?.(off);
       };
       img.onerror = () => {
         if (fallbackImageSrc && src !== fallbackImageSrc) {
@@ -1311,6 +1697,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         activeVideoUrlRef.current = '';
         return;
       }
+      const canPlayVideoNow = () =>
+        isInViewportRef.current && (typeof document === 'undefined' || !document.hidden);
+
       if (
         activeVideoUrlRef.current === targetVideoUrl &&
         videoElementRef.current &&
@@ -1318,7 +1707,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         videoElementRef.current.networkState !== 3
       ) {
         videoReadyRef.current = videoElementRef.current.readyState >= 2;
-        if (videoElementRef.current.paused) {
+        if (videoElementRef.current.paused && canPlayVideoNow()) {
           videoElementRef.current.play().catch(() => {});
         }
         return;
@@ -1329,6 +1718,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         vOff.width = 1024;
         vOff.height = 1024;
         videoFrameCanvasRef.current = vOff;
+        videoFrameCtxRef.current = vOff.getContext('2d');
       }
 
       if (videoElementRef.current && !videoElementRef.current.paused) {
@@ -1349,7 +1739,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             vid.currentTime = 0;
           } catch {}
         }
-        vid.play().catch(() => {});
+        if (canPlayVideoNow()) {
+          vid.play().catch(() => {});
+        }
       } else {
         videoReadyRef.current = false;
         const markReady = () => {
@@ -1357,7 +1749,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           vid.oncanplay = null;
           if (activeVideoUrlRef.current === targetVideoUrl) {
             videoReadyRef.current = true;
-            vid.play().catch(() => {});
+            if (canPlayVideoNow()) {
+              vid.play().catch(() => {});
+            }
           }
         };
         vid.onloadeddata = markReady;
@@ -1374,43 +1768,93 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     [getOrCreatePooledVideo]
   );
 
-  // Preload canonical image immediately + time-slice secondary poseCompendium in idle frames (zero LongTasks!)
+  // Eagerly load canonical + blink on mount; defer secondary gesture poses lazily via requestIdleCallback or when isSpeaking turns true
   useEffect(() => {
     if (!imageSrc) return;
     let cancelled = false;
     let idleTimerId: ReturnType<typeof setTimeout> | null = null;
+    let idleCallbackId: number | null = null;
     refPupilsRef.current = null;
 
-    const enqueueSecondaryPoses = () => {
-      if (cancelled || !poseCompendium) return;
-      const entries = Object.entries(poseCompendium).filter(
-        ([, url]) => Boolean(url) && url !== imageSrc
-      ) as Array<[string, string]>;
-      let idx = 0;
+    if (prevCharIdRef.current !== characterId) {
+      prevCharIdRef.current = characterId;
+      poseCacheRef.current.clear();
+      canonicalPoseCanvasRef.current = null;
+    }
 
-      const stepNext = () => {
-        if (cancelled || idx >= entries.length) return;
+    const cancelScheduledIdle = () => {
+      if (idleTimerId !== null) {
+        clearTimeout(idleTimerId);
+        idleTimerId = null;
+      }
+      if (idleCallbackId !== null && typeof window !== 'undefined' && typeof (window as any).cancelIdleCallback === 'function') {
+        (window as any).cancelIdleCallback(idleCallbackId);
+        idleCallbackId = null;
+      }
+    };
+
+    const secondaryEntries = poseCompendium
+      ? (Object.entries(poseCompendium).filter(
+          ([key, url]) => Boolean(url) && url !== imageSrc && key !== 'blink'
+        ) as Array<[string, string]>)
+      : [];
+    let secondaryIdx = 0;
+    let secondaryStepInFlight = false;
+
+    const enqueueSecondaryPoses = (urgent: boolean) => {
+      if (cancelled || secondaryStepInFlight || secondaryIdx >= secondaryEntries.length) return;
+      cancelScheduledIdle();
+
+      const runOnePose = () => {
+        idleTimerId = null;
+        idleCallbackId = null;
+        if (cancelled || secondaryIdx >= secondaryEntries.length) return;
         const w = typeof window !== 'undefined'
           ? (window as unknown as { __iskoolVoiceSynthesisPending?: boolean })
           : undefined;
         if (w?.__iskoolVoiceSynthesisPending) {
-          idleTimerId = setTimeout(stepNext, 60);
+          idleTimerId = setTimeout(() => enqueueSecondaryPoses(urgent), 70);
           return;
         }
-        const [key, url] = entries[idx++];
+        if (!urgent && !isSpeakingRef.current && (!isInViewportRef.current || (typeof document !== 'undefined' && document.hidden))) {
+          idleTimerId = setTimeout(() => enqueueSecondaryPoses(false), 600);
+          return;
+        }
+        secondaryStepInFlight = true;
+        const [, url] = secondaryEntries[secondaryIdx++];
         loadPoseToCanvas(
           url,
           () => {
-            if (!cancelled) {
-              idleTimerId = setTimeout(stepNext, 20);
+            secondaryStepInFlight = false;
+            if (!cancelled && secondaryIdx < secondaryEntries.length) {
+              enqueueSecondaryPoses(isSpeakingRef.current);
             }
           },
           false,
-          key === 'blink'
+          false
         );
       };
 
-      idleTimerId = setTimeout(stepNext, 24);
+      const hasRic = typeof window !== 'undefined' && typeof (window as any).requestIdleCallback === 'function';
+      if (urgent) {
+        if (hasRic) {
+          idleCallbackId = (window as any).requestIdleCallback(runOnePose, { timeout: 120 });
+        } else {
+          idleTimerId = setTimeout(runOnePose, 24);
+        }
+      } else {
+        if (hasRic) {
+          idleCallbackId = (window as any).requestIdleCallback(runOnePose, { timeout: 2200 });
+        } else {
+          idleTimerId = setTimeout(runOnePose, 180);
+        }
+      }
+    };
+
+    kickSecondaryPosesRef.current = () => {
+      if (!cancelled && secondaryIdx < secondaryEntries.length) {
+        enqueueSecondaryPoses(true);
+      }
     };
 
     loadPoseToCanvas(
@@ -1418,16 +1862,28 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       (off) => {
         if (cancelled) return;
         offscreenRef.current = off;
-        if (!currPoseCanvasRef.current) {
+        if (!currPoseCanvasRef.current || currPoseCanvasRef.current.width === 0) {
           currPoseCanvasRef.current = off;
         } else if (currPoseCanvasRef.current !== off) {
           prevPoseCanvasRef.current = currPoseCanvasRef.current;
           currPoseCanvasRef.current = off;
           transitionStartRef.current = performance.now();
         }
-        setLoadedSrc(imageSrc);
         onLoadRef.current?.();
-        enqueueSecondaryPoses();
+
+        const blinkUrl = poseCompendium?.blink;
+        const afterBlinkReady = () => {
+          if (cancelled || secondaryEntries.length === 0) return;
+          if (isSpeakingRef.current || activeGestureRef.current !== 'auto') {
+            enqueueSecondaryPoses(true);
+          }
+        };
+
+        if (blinkUrl && blinkUrl !== imageSrc) {
+          loadPoseToCanvas(blinkUrl, afterBlinkReady, false, true);
+        } else {
+          afterBlinkReady();
+        }
       },
       true,
       false
@@ -1435,14 +1891,18 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
     return () => {
       cancelled = true;
-      if (idleTimerId) clearTimeout(idleTimerId);
+      kickSecondaryPosesRef.current = null;
+      cancelScheduledIdle();
     };
-  }, [imageSrc, poseCompendium, loadPoseToCanvas]);
+  }, [characterId, imageSrc, poseCompendium, loadPoseToCanvas]);
 
-  // Cleanup pooled video elements on unmount
+  // Cleanup pooled video elements, pose cache references & owned scratch buffers on unmount
   useEffect(() => {
+    isMountedRef.current = true;
     const pool = videoPoolRef.current;
+    const localPoseCache = poseCacheRef.current;
     return () => {
+      isMountedRef.current = false;
       pool.forEach((v) => {
         v.onloadeddata = null;
         v.oncanplay = null;
@@ -1453,6 +1913,33 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       });
       pool.clear();
       videoElementRef.current = null;
+      localPoseCache.clear();
+      offscreenRef.current = null;
+      currPoseCanvasRef.current = null;
+      prevPoseCanvasRef.current = null;
+      canonicalPoseCanvasRef.current = null;
+      const ownedScratchRefs = [
+        videoFrameCanvasRef,
+        blendFrameCanvasRef,
+        mouthPatchCanvasRef,
+        browPatchCanvasRef,
+        eyePatchCanvasRef,
+        snapCanvasRef,
+      ];
+      for (const sRef of ownedScratchRefs) {
+        if (sRef.current) {
+          sRef.current.width = 0;
+          sRef.current.height = 0;
+          sRef.current = null;
+        }
+      }
+      mainCtxRef.current = null;
+      videoFrameCtxRef.current = null;
+      blendCtxRef.current = null;
+      mouthCtxRef.current = null;
+      browCtxRef.current = null;
+      eyeCtxRef.current = null;
+      snapCtxRef.current = null;
     };
   }, []);
 
@@ -1461,7 +1948,11 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     (gesture: ConcreteAvatarGesture, now: number) => {
       const compendium = poseCompendiumRef.current;
       const targetUrl = (compendium && compendium[gesture]) || imageSrc;
-      const cachedTarget = poseCacheRef.current.get(targetUrl);
+      const rawCachedTarget = poseCacheRef.current.get(targetUrl);
+      const cachedTarget =
+        rawCachedTarget && rawCachedTarget.width > 0 && rawCachedTarget.height > 0
+          ? rawCachedTarget
+          : undefined;
       const targetCanvas = cachedTarget || offscreenRef.current;
 
       if (!cachedTarget && targetUrl && targetUrl !== imageSrc) {
@@ -1484,26 +1975,29 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         onResolvedGestureChangeRef.current?.(gesture);
       }
 
-      // Snapshot current visible state for smooth 250ms cross-dissolve
-      if (videoReadyRef.current && videoFrameCanvasRef.current) {
-        const snap = document.createElement('canvas');
-        snap.width = 1024;
-        snap.height = 1024;
-        snap.getContext('2d')?.drawImage(videoFrameCanvasRef.current, 0, 0);
-        prevPoseCanvasRef.current = snap;
-      } else if (currPoseCanvasRef.current) {
+      // Snapshot current visible state into single reusable snapCanvasRef for smooth 200ms cross-dissolve
+      if (videoReadyRef.current && videoFrameCanvasRef.current && videoFrameCanvasRef.current.width > 0) {
+        if (!snapCanvasRef.current) {
+          const snap = document.createElement('canvas');
+          snap.width = 1024;
+          snap.height = 1024;
+          snapCanvasRef.current = snap;
+          snapCtxRef.current = snap.getContext('2d');
+        }
+        const sCtx = snapCtxRef.current;
+        if (sCtx && snapCanvasRef.current) {
+          sCtx.clearRect(0, 0, 1024, 1024);
+          sCtx.drawImage(videoFrameCanvasRef.current, 0, 0);
+          prevPoseCanvasRef.current = snapCanvasRef.current;
+        }
+      } else if (currPoseCanvasRef.current && currPoseCanvasRef.current.width > 0) {
         prevPoseCanvasRef.current = currPoseCanvasRef.current;
       }
 
-      if (targetCanvas) {
+      if (targetCanvas && targetCanvas.width > 0) {
         currPoseCanvasRef.current = targetCanvas;
         transitionStartRef.current = now;
-        pendingVideoEyeSeedRef.current = poseEyeOffsetRef.current.get(targetCanvas) || {
-          dxL: 0,
-          dyL: 0,
-          dxR: 0,
-          dyR: 0,
-        };
+        pendingVideoEyeSeedRef.current = poseEyeOffsetRef.current.get(targetCanvas) || ZERO_EYE_OFFSET;
       }
 
       // For 3D multi-pose compendium rigs, render crisp 1024x1024 3D poses + 60 FPS real-time formant lip-sync
@@ -1579,11 +2073,20 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    if (!mainCtxRef.current || mainCtxRef.current.canvas !== canvas) {
+      mainCtxRef.current = canvas.getContext('2d');
+    }
+    const ctx = mainCtxRef.current;
     if (!ctx) return;
 
-    let rafId: number;
+    let rafId: number | null = null;
+    let isLoopRunning = false;
+    let isDisposed = false;
     let lastTime = performance.now();
+    let lastIdleRenderMs = -Infinity;
+    let lastDrawnBaseCanvas: HTMLCanvasElement | null = null;
+    let prevWasBlinking = false;
+    let prevWasSpeaking = false;
     let nextBlinkAt = lastTime + 950 + Math.random() * 1250;
     let blinkStartAt = -1;
     let pendingDoubleBlink = false;
@@ -1596,6 +2099,51 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
     const liveVideoEyeOffset = { dxL: 0, dyL: 0, dxR: 0, dyR: 0 };
     let videoTrackTick = 0;
+
+    // Pre-allocated zero-GC per-frame scratch arrays & eye socket tuple
+    let dstColCenterXBuf = new Float32Array(MOUTH_NUM_COLS);
+    let jawTopBuf = new Float32Array(MOUTH_NUM_COLS);
+    let jawBotBuf = new Float32Array(MOUTH_NUM_COLS);
+    const eyeSockets: [
+      { side: 'L'; srcEx: number; srcEy: number; poseEx: number; poseEy: number; dstEx: number; dstEy: number; liftMult: number },
+      { side: 'R'; srcEx: number; srcEy: number; poseEx: number; poseEy: number; dstEx: number; dstEy: number; liftMult: number }
+    ] = [
+      { side: 'L', srcEx: 0, srcEy: 0, poseEx: 0, poseEy: 0, dstEx: 0, dstEy: 0, liftMult: 1 },
+      { side: 'R', srcEx: 0, srcEy: 0, poseEx: 0, poseEy: 0, dstEx: 0, dstEy: 0, liftMult: 1 },
+    ];
+
+    // Helper for zero-allocation reusable offscreen scratch surfaces with cached 2D contexts
+    const ensureScratchSurface = (
+      cRef: React.MutableRefObject<HTMLCanvasElement | null>,
+      ctxRef: React.MutableRefObject<CanvasRenderingContext2D | null>,
+      w: number,
+      h: number
+    ): { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D | null } => {
+      if (!cRef.current) {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        cRef.current = c;
+        ctxRef.current = c.getContext('2d');
+      } else if (cRef.current.width < w || cRef.current.height < h) {
+        cRef.current.width = Math.max(cRef.current.width, w);
+        cRef.current.height = Math.max(cRef.current.height, h);
+        if (!ctxRef.current) {
+          ctxRef.current = cRef.current.getContext('2d');
+        }
+      } else if (!ctxRef.current) {
+        ctxRef.current = cRef.current.getContext('2d');
+      }
+      return { canvas: cRef.current, ctx: ctxRef.current };
+    };
+
+    const validCanvas = (c: HTMLCanvasElement | null | undefined): HTMLCanvasElement | null =>
+      c && c.width > 0 && c.height > 0 ? c : null;
+
+    const shouldRunLoop = () =>
+      !isDisposed &&
+      isInViewportRef.current &&
+      (typeof document === 'undefined' || !document.hidden);
 
     const spring: SpringState = {
       open: resolvedConfig.baseOpen ?? 0,
@@ -1614,11 +2162,17 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     };
 
     const renderFrame = (now: number) => {
+      if (!shouldRunLoop()) {
+        rafId = null;
+        isLoopRunning = false;
+        return;
+      }
+
       const dt = Math.min(0.033, Math.max(0.004, (now - lastTime) / 1000));
       lastTime = now;
 
       const vid = videoElementRef.current;
-      const vOff = videoFrameCanvasRef.current;
+      const vOff = validCanvas(videoFrameCanvasRef.current);
       const isExplicitBlinkHold = activeGestureRef.current === 'listen';
       let hasLiveVideoFrame = false;
 
@@ -1630,7 +2184,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         vid.readyState >= 2 &&
         !isExplicitBlinkHold
       ) {
-        const vCtx = vOff.getContext('2d');
+        const vCtx = videoFrameCtxRef.current || (videoFrameCtxRef.current = vOff.getContext('2d'));
         if (vCtx) {
           vCtx.drawImage(vid, 0, 0, 1024, 1024);
           hasLiveVideoFrame = true;
@@ -1659,8 +2213,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             const ry = resolvedConfig.rightEyeY ?? resolvedConfig.eyeY ?? 260;
             const eRx = resolvedConfig.eyeRx ?? resolvedConfig.eyeRadius ?? 28;
             const eRy = resolvedConfig.eyeRy ?? resolvedConfig.eyeRadius ?? 24;
-            const pL = measureDarkPupilCenter(vCtx, lx, ly, eRx, eRy);
-            const pR = measureDarkPupilCenter(vCtx, rx, ry, eRx, eRy);
+            const pL = measureDarkPupilCenter(vOff, lx, ly, eRx, eRy);
+            const pR = measureDarkPupilCenter(vOff, rx, ry, eRx, eRy);
             if (pL && pR) {
               const ref = refPupilsRef.current;
               const clampVideoShift = (val: number) => Math.max(-26, Math.min(26, val));
@@ -1681,10 +2235,15 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         liveVideoEyeOffset.dyR *= 0.85;
       }
 
-      const staticPoseOff = currPoseCanvasRef.current || offscreenRef.current;
+      const staticPoseOff = validCanvas(currPoseCanvasRef.current) || validCanvas(offscreenRef.current);
       const baseOff = hasLiveVideoFrame && vOff ? vOff : staticPoseOff;
       if (!baseOff) {
-        rafId = requestAnimationFrame(renderFrame);
+        if (shouldRunLoop()) {
+          rafId = requestAnimationFrame(renderFrame);
+        } else {
+          rafId = null;
+          isLoopRunning = false;
+        }
         return;
       }
 
@@ -1711,22 +2270,24 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         const extOpen = externalOpenRef.current;
         const extSpread = externalSpreadRef.current;
 
-        // Advance through weighted viseme tokens anchored to speech start time
-        const tokens = visemeTokensRef.current;
+        // Advance through precomputed prefix-sum weighted viseme tokens anchored to speech start time
+        const { tokens, prefixWeights, safeTotalWeight } = visemeScheduleRef.current;
         const elapsedSpeechSec = Math.max(0, (now - speechStartMsRef.current) * 0.001);
-        let totalWeight = 0;
-        for (let ti = 0; ti < tokens.length; ti++) {
-          totalWeight += tokens[ti].durationWeight || 0.7;
-        }
-        const safeTotalWeight = Math.max(0.5, totalWeight);
         const cursorWeight = (elapsedSpeechSec * 7.8) % safeTotalWeight;
-        let accum = 0;
-        let tok = tokens[0] || { open: 0.5, spread: 0, tongue: 0.3, bilabial: false, durationWeight: 1 };
-        for (let ti = 0; ti < tokens.length; ti++) {
-          accum += tokens[ti].durationWeight || 0.7;
-          if (cursorWeight <= accum) {
-            tok = tokens[ti];
-            break;
+        let tok: VisemeToken = tokens[0] || FALLBACK_VISEME_TOKEN;
+        if (tokens.length > 0) {
+          let lo = 0;
+          let hi = tokens.length - 1;
+          while (lo < hi) {
+            const mid = (lo + hi) >>> 1;
+            if (cursorWeight <= prefixWeights[mid]) {
+              hi = mid;
+            } else {
+              lo = mid + 1;
+            }
+          }
+          if (cursorWeight <= prefixWeights[lo]) {
+            tok = tokens[lo];
           }
         }
 
@@ -1882,23 +2443,42 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       spring.saccadeX += (targetSaccadeX - spring.saccadeX) * Math.min(1, dt * 11);
       spring.saccadeY += (targetSaccadeY - spring.saccadeY) * Math.min(1, dt * 11);
 
-      // Helper for zero-allocation reusable offscreen scratch canvases
-      const ensureScratchCanvas = (
-        ref: React.MutableRefObject<HTMLCanvasElement | null>,
-        w: number,
-        h: number
-      ): HTMLCanvasElement => {
-        if (!ref.current) {
-          const c = document.createElement('canvas');
-          c.width = w;
-          c.height = h;
-          ref.current = c;
-        } else if (ref.current.width < w || ref.current.height < h) {
-          ref.current.width = Math.max(ref.current.width, w);
-          ref.current.height = Math.max(ref.current.height, h);
+      // IMPORTANT: Never swap the full 1024x1024 body to blinkPoseCanvas (prevents arm/mouth teleportation!)
+      const activeFrameCanvas = baseOff;
+
+      // LAYER 1 preparation: Active 3D Video Stream or High-Precision 3D Pose with Unified 200ms Cross-Dissolve
+      const prevPoseValid = validCanvas(prevPoseCanvasRef.current);
+      const transElapsed = now - transitionStartRef.current;
+      const TRANS_DURATION = 200;
+      const isCrossDissolving = Boolean(
+        prevPoseValid &&
+          prevPoseValid !== activeFrameCanvas &&
+          transElapsed < TRANS_DURATION
+      );
+
+      // Throttle pure idle breathing redraws to ~18 FPS while preserving instant 60 FPS during speech, blinks, cross-dissolves, or video
+      const isPureIdle =
+        !audiblySpeaking &&
+        spring.blink === 0 &&
+        !isCrossDissolving &&
+        !hasLiveVideoFrame &&
+        !prevWasBlinking &&
+        !prevWasSpeaking &&
+        activeFrameCanvas === lastDrawnBaseCanvas;
+
+      if (isPureIdle && now - lastIdleRenderMs < 55) {
+        if (shouldRunLoop()) {
+          rafId = requestAnimationFrame(renderFrame);
+        } else {
+          rafId = null;
+          isLoopRunning = false;
         }
-        return ref.current;
-      };
+        return;
+      }
+      lastIdleRenderMs = now;
+      lastDrawnBaseCanvas = activeFrameCanvas;
+      prevWasBlinking = spring.blink > 0;
+      prevWasSpeaking = audiblySpeaking;
 
       // =======================================================================
       // 5. FOREGROUND-DECOUPLED 3D COMPOSITOR (BACKGROUND & HANDS 100% UNDISTORTED)
@@ -1906,6 +2486,9 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       ctx.save();
       ctx.clearRect(0, 0, 1024, 1024);
 
+      let isZoomedBust = false;
+      let visibleTopY = 0;
+      let visibleBotY = 1024;
       if (enableSmartBustCrop && cfg.bustCrop) {
         const { focusX, focusY, zoom } = cfg.bustCrop;
         // Clamp focus strictly inside zoomed bounds so the portrait fills 100% of the 1024x1024 viewport with zero blank top/side bars
@@ -1913,28 +2496,15 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
         const maxFocus = zoom > 1 ? 1024 - 512 / zoom : 512;
         const clampedFocusX = Math.max(minFocus, Math.min(maxFocus, focusX));
         const clampedFocusY = Math.max(minFocus, Math.min(maxFocus, focusY));
+        if (zoom > 1.01) {
+          isZoomedBust = true;
+          visibleTopY = clampedFocusY - 512 / zoom;
+          visibleBotY = clampedFocusY + 512 / zoom;
+        }
         ctx.translate(512, 512);
         ctx.scale(zoom, zoom);
         ctx.translate(-clampedFocusX, -clampedFocusY);
       }
-
-      // IMPORTANT: Never swap the full 1024x1024 body to blinkPoseCanvas (prevents arm/mouth teleportation!)
-      const activeFrameCanvas = baseOff;
-
-      // LAYER 0: Locked Static Background
-      const staticBgRef = offscreenRef.current || activeFrameCanvas;
-      ctx.globalAlpha = 1;
-      ctx.drawImage(staticBgRef, 0, 0, 1024, 1024);
-
-      // LAYER 1: Active 3D Video Stream or High-Precision 3D Pose with Unified 200ms Cross-Dissolve
-      // (Composites prevPose + currPose into blendFrameCanvas FIRST so facial rig never ghosts during transitions!)
-      const transElapsed = now - transitionStartRef.current;
-      const TRANS_DURATION = 200;
-      const isCrossDissolving = Boolean(
-        prevPoseCanvasRef.current &&
-          prevPoseCanvasRef.current !== activeFrameCanvas &&
-          transElapsed < TRANS_DURATION
-      );
 
       // Subtle 60 FPS organic chest/head breathing on static 3D pose rigs (100% locked to landmarks)
       const subtleBreathY =
@@ -1942,23 +2512,43 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           ? Math.sin(tSec * (audiblySpeaking ? 2.4 : 1.55)) * (audiblySpeaking ? 1.55 : 0.95)
           : 0;
 
+      // LAYER 0: Locked Static Background (skip when Layer 1 opaque portrait 100% covers visible viewport)
+      const isActivePoseOpaque = hasLiveVideoFrame
+        ? true
+        : (poseOpaqueRef.current.get(activeFrameCanvas) ?? false);
+      const canSkipStaticBg =
+        !isCrossDissolving &&
+        isActivePoseOpaque &&
+        (subtleBreathY === 0 ||
+          (isZoomedBust && visibleTopY >= subtleBreathY && visibleBotY <= 1024 + subtleBreathY));
+
+      ctx.globalAlpha = 1;
+      if (!canSkipStaticBg) {
+        const staticBgRef = validCanvas(offscreenRef.current) || activeFrameCanvas;
+        ctx.drawImage(staticBgRef, 0, 0, 1024, 1024);
+      }
+
       let renderSourceCanvas: HTMLCanvasElement = activeFrameCanvas;
-      if (isCrossDissolving && prevPoseCanvasRef.current) {
+      if (isCrossDissolving && prevPoseValid) {
         const alpha = Math.min(1, Math.max(0, transElapsed / TRANS_DURATION));
         const smoothAlpha = alpha * alpha * (3 - 2 * alpha);
-        const blendCanvas = ensureScratchCanvas(blendFrameCanvasRef, 1024, 1024);
-        const bCtx = blendCanvas.getContext('2d');
+        const { canvas: blendCanvas, ctx: bCtx } = ensureScratchSurface(
+          blendFrameCanvasRef,
+          blendCtxRef,
+          1024,
+          1024
+        );
         if (bCtx) {
           bCtx.clearRect(0, 0, 1024, 1024);
           bCtx.globalAlpha = 1;
-          bCtx.drawImage(prevPoseCanvasRef.current, 0, 0, 1024, 1024);
+          bCtx.drawImage(prevPoseValid, 0, 0, 1024, 1024);
           bCtx.globalAlpha = smoothAlpha;
           bCtx.drawImage(activeFrameCanvas, 0, 0, 1024, 1024);
           bCtx.globalAlpha = 1;
           renderSourceCanvas = blendCanvas;
           ctx.drawImage(blendCanvas, 0, subtleBreathY, 1024, 1024);
         } else {
-          ctx.drawImage(prevPoseCanvasRef.current, 0, subtleBreathY, 1024, 1024);
+          ctx.drawImage(prevPoseValid, 0, subtleBreathY, 1024, 1024);
           ctx.globalAlpha = smoothAlpha;
           ctx.drawImage(activeFrameCanvas, 0, subtleBreathY, 1024, 1024);
           ctx.globalAlpha = 1;
@@ -1981,12 +2571,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       if (shouldRenderFacialRig) {
         const poseOffsets = hasLiveVideoFrame
           ? liveVideoEyeOffset
-          : poseEyeOffsetRef.current.get(activeFrameCanvas) || {
-              dxL: 0,
-              dyL: 0,
-              dxR: 0,
-              dyR: 0,
-            };
+          : poseEyeOffsetRef.current.get(activeFrameCanvas) || ZERO_EYE_OFFSET;
         const avgPoseDx = (poseOffsets.dxL + poseOffsets.dxR) * 0.5;
         const avgPoseDy = (poseOffsets.dyL + poseOffsets.dyR) * 0.5;
 
@@ -2034,9 +2619,14 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const desiredCenterGapPx = Math.max(0, Math.min(maxGapPx, spring.open * maxGapPx));
           const spreadScale = 1 + spring.spread * 0.14;
 
-          const dstColCenterX = new Float32Array(numCols);
-          const dstUpperCurveY = new Float32Array(numCols);
-          const dstLowerCurveY = new Float32Array(numCols);
+          if (numCols > dstColCenterXBuf.length) {
+            dstColCenterXBuf = new Float32Array(numCols);
+            jawTopBuf = new Float32Array(numCols);
+            jawBotBuf = new Float32Array(numCols);
+          }
+          const dstColCenterX = dstColCenterXBuf;
+          const dstUpperCurveY = jawTopBuf;
+          const dstLowerCurveY = jawBotBuf;
           let firstMouthCol = -1;
           let lastMouthCol = -1;
 
@@ -2047,8 +2637,12 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const patchBoxTop = Math.floor(srcAnchorTopY + subtleBreathY - padY);
           const patchBoxW = Math.ceil(patchW + padX * 2);
           const patchBoxH = Math.ceil(srcAnchorBotY - srcAnchorTopY + padY * 2);
-          const mCanvas = ensureScratchCanvas(mouthPatchCanvasRef, Math.max(256, patchBoxW), Math.max(256, patchBoxH));
-          const mCtx = mCanvas.getContext('2d');
+          const { canvas: mCanvas, ctx: mCtx } = ensureScratchSurface(
+            mouthPatchCanvasRef,
+            mouthCtxRef,
+            Math.max(256, patchBoxW),
+            Math.max(256, patchBoxH)
+          );
 
           if (mCtx) {
             mCtx.save();
@@ -2072,11 +2666,29 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
 
             // STEP A: Continuous Monotonic Upper-Lip & Parabolic-Jaw Mandible Column Slices
             //         Parabolic colAnchorBotY(u) tapers upward along the anatomical jawline, NEVER cutting collars or beards!
+            const useStaticLut = numCols === MOUTH_NUM_COLS;
             for (let c = 0; c < numCols; c++) {
-              const u = ((c + 0.5) / numCols) * 2 - 1; // -1 .. +1 across patch
-              const m = u * MOUTH_PATCH_WIDTH_MULT; // -1 .. +1 strictly between true mouth corners x1..x2
-              const cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.65);
-              const jawOval = Math.pow(Math.max(0, 1 - u * u * 0.88), 0.62);
+              let cheekTaper: number;
+              let jawOval: number;
+              let insideMouth: boolean;
+              let apertureProfile: number;
+
+              if (useStaticLut) {
+                cheekTaper = CHEEK_TAPER_LUT[c];
+                jawOval = JAW_OVAL_LUT[c];
+                insideMouth = INSIDE_MOUTH_LUT[c] === 1;
+                apertureProfile = APERTURE_LUT[c];
+              } else {
+                const u = ((c + 0.5) / numCols) * 2 - 1;
+                const m = u * MOUTH_PATCH_WIDTH_MULT;
+                cheekTaper = Math.pow(Math.max(0, Math.cos(u * Math.PI * 0.5)), 1.65);
+                jawOval = Math.pow(Math.max(0, 1 - u * u * 0.88), 0.62);
+                insideMouth = Math.abs(m) < 0.96;
+                const normM = m / 0.96;
+                apertureProfile = insideMouth
+                  ? Math.pow(Math.max(0, Math.cos(normM * Math.PI * 0.5)), 1.35)
+                  : 0;
+              }
               const colAnchorTopY = Math.max(0, srcMinLipY - Math.max(15, jawSpan * (0.24 + 0.12 * jawOval)));
               const colAnchorBotY = Math.min(1022, srcMouthMidY + Math.max(18, jawSpan * (0.48 + 0.52 * jawOval)));
 
@@ -2088,16 +2700,10 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               const dstX = dstCenterX - dstW * 0.5;
               dstColCenterX[c] = dstCenterX;
 
-              const insideMouth = Math.abs(m) < 0.96;
               if (insideMouth) {
                 if (firstMouthCol < 0) firstMouthCol = c;
                 lastMouthCol = c;
               }
-
-              const normM = m / 0.96;
-              const apertureProfile = insideMouth
-                ? Math.pow(Math.max(0, Math.cos(normM * Math.PI * 0.5)), 1.35)
-                : 0;
 
               const sUpperLipY = anatomy.srcUpperLipBotY[c];
               const sTeethBotY = anatomy.srcTeethBotY[c];
@@ -2350,8 +2956,12 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               const mustH = Math.ceil(mustRy * 2 + 8);
               const mustLeft = activeMouthCx - mustW * 0.5;
               const mustTop = mustacheBottomY - 5.8 - mustH * 0.5;
-              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, mustW), Math.max(140, mustH));
-              const eCtx = eScratch.getContext('2d');
+              const { canvas: eScratch, ctx: eCtx } = ensureScratchSurface(
+                eyePatchCanvasRef,
+                eyeCtxRef,
+                Math.max(200, mustW),
+                Math.max(140, mustH)
+              );
               if (eCtx) {
                 eCtx.save();
                 eCtx.globalCompositeOperation = 'source-over';
@@ -2372,11 +2982,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                 eCtx.save();
                 eCtx.translate(mustW * 0.5, mustH * 0.5);
                 eCtx.scale(mustRx, mustRy);
-                const mMask = eCtx.createRadialGradient(0, 0, 0.45, 0, 0, 1.0);
-                mMask.addColorStop(0, 'rgba(0,0,0,1)');
-                mMask.addColorStop(0.72, 'rgba(0,0,0,0.85)');
-                mMask.addColorStop(1, 'rgba(0,0,0,0)');
-                eCtx.fillStyle = mMask;
+                eCtx.fillStyle = getCachedUnitRadialMask(eCtx, 'mustache_0.45', 0.45, MASK_STOPS_MUSTACHE);
                 eCtx.beginPath();
                 eCtx.arc(0, 0, 1, 0, Math.PI * 2);
                 eCtx.fill();
@@ -2397,12 +3003,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
             mCtx.save();
             mCtx.translate(maskCx, maskCy);
             mCtx.scale(maskRx, maskRy);
-            const featherGrad = mCtx.createRadialGradient(0, 0, 0.80, 0, 0, 1.0);
-            featherGrad.addColorStop(0, 'rgba(0,0,0,1)');
-            featherGrad.addColorStop(0.50, 'rgba(0,0,0,0.68)');
-            featherGrad.addColorStop(0.84, 'rgba(0,0,0,0.20)');
-            featherGrad.addColorStop(1, 'rgba(0,0,0,0)');
-            mCtx.fillStyle = featherGrad;
+            mCtx.fillStyle = getCachedUnitRadialMask(mCtx, 'mouth_0.80', 0.80, MASK_STOPS_MOUTH_FEATHER);
             mCtx.beginPath();
             mCtx.arc(0, 0, 1, 0, Math.PI * 2);
             mCtx.fill();
@@ -2431,32 +3032,26 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const srcLeftY = cfg.leftEyeY ?? cfg.eyeY ?? 260;
           const srcRightY = cfg.rightEyeY ?? cfg.eyeY ?? 260;
 
-          const eyeSockets = [
-            {
-              side: 'L' as const,
-              srcEx: cfg.leftEyeX,
-              srcEy: srcLeftY,
-              poseEx: cfg.leftEyeX + poseOffsets.dxL,
-              poseEy: srcLeftY + poseOffsets.dyL,
-              dstEx: cfg.leftEyeX + poseOffsets.dxL + headShiftX * 0.72,
-              dstEy: srcLeftY + poseOffsets.dyL + headShiftY * 0.72,
-              liftMult: 1 - spring.browAsym * 0.35,
-            },
-            {
-              side: 'R' as const,
-              srcEx: cfg.rightEyeX,
-              srcEy: srcRightY,
-              poseEx: cfg.rightEyeX + poseOffsets.dxR,
-              poseEy: srcRightY + poseOffsets.dyR,
-              dstEx: cfg.rightEyeX + poseOffsets.dxR + headShiftX * 0.72,
-              dstEy: srcRightY + poseOffsets.dyR + headShiftY * 0.72,
-              liftMult: 1 + spring.browAsym * 0.45,
-            },
-          ];
+          eyeSockets[0].srcEx = cfg.leftEyeX;
+          eyeSockets[0].srcEy = srcLeftY;
+          eyeSockets[0].poseEx = cfg.leftEyeX + poseOffsets.dxL;
+          eyeSockets[0].poseEy = srcLeftY + poseOffsets.dyL;
+          eyeSockets[0].dstEx = cfg.leftEyeX + poseOffsets.dxL + headShiftX * 0.72;
+          eyeSockets[0].dstEy = srcLeftY + poseOffsets.dyL + headShiftY * 0.72;
+          eyeSockets[0].liftMult = 1 - spring.browAsym * 0.35;
+
+          eyeSockets[1].srcEx = cfg.rightEyeX;
+          eyeSockets[1].srcEy = srcRightY;
+          eyeSockets[1].poseEx = cfg.rightEyeX + poseOffsets.dxR;
+          eyeSockets[1].poseEy = srcRightY + poseOffsets.dyR;
+          eyeSockets[1].dstEx = cfg.rightEyeX + poseOffsets.dxR + headShiftX * 0.72;
+          eyeSockets[1].dstEy = srcRightY + poseOffsets.dyR + headShiftY * 0.72;
+          eyeSockets[1].liftMult = 1 + spring.browAsym * 0.45;
 
           // 10A. Feathered Supraorbital Eyebrow Gesticulation (zero elliptical clip rings on textured foreheads!)
           if (Math.abs(spring.browLift) > 0.04) {
-            for (const { poseEx, poseEy, dstEx, dstEy, liftMult } of eyeSockets) {
+            for (let ei = 0; ei < 2; ei++) {
+              const { poseEx, poseEy, dstEx, dstEy, liftMult } = eyeSockets[ei];
               const browW = eRx * 1.62;
               const browH = eRy * 0.96;
               const srcBrowTopY = poseEy - eRy * 1.72;
@@ -2467,19 +3062,21 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               const bLeft = dstEx - bw * 0.5;
               const bTop = dstBrowTopY - 7;
 
-              const bScratch = ensureScratchCanvas(browPatchCanvasRef, Math.max(220, bw), Math.max(140, bh));
-              const bCtx = bScratch.getContext('2d');
+              const { canvas: bScratch, ctx: bCtx } = ensureScratchSurface(
+                browPatchCanvasRef,
+                browCtxRef,
+                Math.max(220, bw),
+                Math.max(140, bh)
+              );
               if (bCtx) {
                 bCtx.save();
                 bCtx.globalCompositeOperation = 'source-over';
                 bCtx.clearRect(0, 0, bw, bh);
                 bCtx.translate(-bLeft, -bTop);
 
-                const bStrips = 9;
-                const bStripH = browH / bStrips;
-                for (let i = 0; i < bStrips; i++) {
-                  const normY = (i + 0.5) / bStrips;
-                  const bell = Math.pow(Math.sin(normY * Math.PI), 1.85);
+                const bStripH = browH / BROW_STRIPS;
+                for (let i = 0; i < BROW_STRIPS; i++) {
+                  const bell = BROW_BELL_LUT[i];
                   const srcY = srcBrowTopY + i * bStripH;
                   const dstY = dstBrowTopY + i * bStripH + browShiftPx * bell;
                   bCtx.drawImage(
@@ -2500,11 +3097,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                 bCtx.save();
                 bCtx.translate(dstEx, dstBrowTopY + browH * 0.5);
                 bCtx.scale(browW * 0.48, browH * 0.46);
-                const brMask = bCtx.createRadialGradient(0, 0, 0.50, 0, 0, 1.0);
-                brMask.addColorStop(0, 'rgba(0,0,0,1)');
-                brMask.addColorStop(0.75, 'rgba(0,0,0,0.55)');
-                brMask.addColorStop(1, 'rgba(0,0,0,0)');
-                bCtx.fillStyle = brMask;
+                bCtx.fillStyle = getCachedUnitRadialMask(bCtx, 'brow_0.50', 0.50, MASK_STOPS_BROW);
                 bCtx.beginPath();
                 bCtx.arc(0, 0, 1, 0, Math.PI * 2);
                 bCtx.fill();
@@ -2520,13 +3113,18 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const scaledSacX = Math.max(-2.1, Math.min(2.1, spring.saccadeX * Math.min(1.65, eRx * 0.068)));
           const scaledSacY = Math.max(-1.1, Math.min(1.1, spring.saccadeY * Math.min(1.0, eRy * 0.052)));
           if (spring.blink < 0.08 && (Math.abs(scaledSacX) > 0.16 || Math.abs(scaledSacY) > 0.14)) {
-            for (const { poseEx, poseEy, dstEx, dstEy } of eyeSockets) {
+            for (let ei = 0; ei < 2; ei++) {
+              const { poseEx, poseEy, dstEx, dstEy } = eyeSockets[ei];
               const sacRx = eRx * 0.44;
               const sacRy = eRy * 0.36;
               const sw = Math.ceil(sacRx * 2 + 12);
               const sh = Math.ceil(sacRy * 2 + 12);
-              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(200, sw), Math.max(140, sh));
-              const eCtx = eScratch.getContext('2d');
+              const { canvas: eScratch, ctx: eCtx } = ensureScratchSurface(
+                eyePatchCanvasRef,
+                eyeCtxRef,
+                Math.max(200, sw),
+                Math.max(140, sh)
+              );
               if (eCtx) {
                 eCtx.save();
                 eCtx.globalCompositeOperation = 'source-over';
@@ -2559,11 +3157,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                 eCtx.save();
                 eCtx.translate(sw * 0.5, sh * 0.5);
                 eCtx.scale(sacRx, sacRy);
-                const sMask = eCtx.createRadialGradient(0, 0, 0.52, 0, 0, 1.0);
-                sMask.addColorStop(0, 'rgba(0,0,0,1)');
-                sMask.addColorStop(0.78, 'rgba(0,0,0,0.52)');
-                sMask.addColorStop(1, 'rgba(0,0,0,0)');
-                eCtx.fillStyle = sMask;
+                eCtx.fillStyle = getCachedUnitRadialMask(eCtx, 'saccade_0.52', 0.52, MASK_STOPS_SACCADE);
                 eCtx.beginPath();
                 eCtx.arc(0, 0, 1, 0, Math.PI * 2);
                 eCtx.fill();
@@ -2579,13 +3173,15 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
           const b = spring.blink;
           if (b > 0.04) {
             const blinkUrl = poseCompendiumRef.current?.blink;
-            const blinkCanvas = blinkUrl ? poseCacheRef.current.get(blinkUrl) : null;
+            const rawBlinkCanvas = blinkUrl ? poseCacheRef.current.get(blinkUrl) : null;
+            const blinkCanvas = validCanvas(rawBlinkCanvas);
             const blinkOffsets = blinkCanvas
-              ? poseEyeOffsetRef.current.get(blinkCanvas) || { dxL: 0, dyL: 0, dxR: 0, dyR: 0 }
-              : { dxL: 0, dyL: 0, dxR: 0, dyR: 0 };
+              ? poseEyeOffsetRef.current.get(blinkCanvas) || ZERO_EYE_OFFSET
+              : ZERO_EYE_OFFSET;
             const skin = eyelidSkinRef.current;
 
-            for (const { side, srcEx, srcEy, dstEx, dstEy } of eyeSockets) {
+            for (let ei = 0; ei < 2; ei++) {
+              const { side, srcEx, srcEy, dstEx, dstEy } = eyeSockets[ei];
               const bOffDx = side === 'L' ? blinkOffsets.dxL : blinkOffsets.dxR;
               const bOffDy = side === 'L' ? blinkOffsets.dyL : blinkOffsets.dyR;
               const alignedBlinkEx = srcEx + bOffDx;
@@ -2605,8 +3201,12 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
               const bh = Math.ceil(eRy * 2.48);
               const bLeft = dstEx - bw * 0.5;
               const bTop = dstEy - bh * 0.5;
-              const eScratch = ensureScratchCanvas(eyePatchCanvasRef, Math.max(220, bw), Math.max(180, bh));
-              const eCtx = eScratch.getContext('2d');
+              const { canvas: eScratch, ctx: eCtx } = ensureScratchSurface(
+                eyePatchCanvasRef,
+                eyeCtxRef,
+                Math.max(220, bw),
+                Math.max(180, bh)
+              );
 
               if (eCtx) {
                 eCtx.save();
@@ -2646,7 +3246,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                   }
                   eCtx.restore();
 
-                  // Seamless full tarsal seal when lid nears complete closure (fully covers big Pixar eyes)
+                  // Seamless full tarsal seal when lid nears complete closure (fully covers big 3D eyes)
                   if (b > 0.48) {
                     const sealAlpha = Math.min(1, (b - 0.48) / 0.34);
                     eCtx.save();
@@ -2754,11 +3354,7 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
                 eCtx.save();
                 eCtx.translate(dstEx, dstEy + eRy * 0.02);
                 eCtx.scale(eRx * 1.16, eRy * 1.14);
-                const orbMask = eCtx.createRadialGradient(0, 0, 0.78, 0, 0, 1.0);
-                orbMask.addColorStop(0, 'rgba(0,0,0,1)');
-                orbMask.addColorStop(0.55, 'rgba(0,0,0,0.68)');
-                orbMask.addColorStop(1, 'rgba(0,0,0,0)');
-                eCtx.fillStyle = orbMask;
+                eCtx.fillStyle = getCachedUnitRadialMask(eCtx, 'orbital_0.78', 0.78, MASK_STOPS_ORBITAL);
                 eCtx.beginPath();
                 eCtx.arc(0, 0, 1, 0, Math.PI * 2);
                 eCtx.fill();
@@ -2773,35 +3369,98 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
       }
 
       ctx.restore();
+      if (shouldRunLoop()) {
+        rafId = requestAnimationFrame(renderFrame);
+      } else {
+        rafId = null;
+        isLoopRunning = false;
+      }
+    };
+
+    const pauseLoopAndVideo = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      isLoopRunning = false;
+      const vid = videoElementRef.current;
+      if (vid && !vid.paused) {
+        try {
+          vid.pause();
+        } catch {}
+      }
+    };
+
+    const startLoopAndResumeVideo = () => {
+      if (!shouldRunLoop()) return;
+      const vid = videoElementRef.current;
+      if (
+        vid &&
+        vid.paused &&
+        Boolean(activeVideoUrlRef.current) &&
+        videoReadyRef.current &&
+        activeGestureRef.current !== 'listen'
+      ) {
+        vid.play().catch(() => {});
+      }
+      if (isLoopRunning) return;
+      isLoopRunning = true;
+      lastTime = performance.now();
+      lastIdleRenderMs = -Infinity;
       rafId = requestAnimationFrame(renderFrame);
     };
 
     const handleVisibilityChange = () => {
-      if (typeof document === 'undefined') return;
-      if (document.hidden) {
-        cancelAnimationFrame(rafId);
+      if (shouldRunLoop()) {
+        startLoopAndResumeVideo();
       } else {
-        lastTime = performance.now();
-        rafId = requestAnimationFrame(renderFrame);
+        pauseLoopAndVideo();
       }
     };
 
+    let intersectionObserver: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (!entry) return;
+          isInViewportRef.current = entry.isIntersecting;
+          if (shouldRunLoop()) {
+            startLoopAndResumeVideo();
+          } else {
+            pauseLoopAndVideo();
+          }
+        },
+        { threshold: 0.01, rootMargin: '80px' }
+      );
+      intersectionObserver.observe(canvas);
+    }
+
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', handleVisibilityChange);
-      if (!document.hidden) {
-        rafId = requestAnimationFrame(renderFrame);
+      if (shouldRunLoop()) {
+        startLoopAndResumeVideo();
       }
     } else {
-      rafId = requestAnimationFrame(renderFrame);
+      startLoopAndResumeVideo();
     }
 
     return () => {
-      cancelAnimationFrame(rafId);
+      isDisposed = true;
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      isLoopRunning = false;
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
+      }
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       }
     };
-  }, [resolvedConfig, enableSmartBustCrop, loadedSrc]);
+  }, [resolvedConfig, enableSmartBustCrop]);
 
   return (
     <canvas
@@ -2817,5 +3476,8 @@ export const NanoBananaLipSyncCanvas: React.FC<NanoBananaLipSyncCanvasProps> = (
     />
   );
 };
+
+export const NanoBananaLipSyncCanvas = React.memo(NanoBananaLipSyncCanvasInner);
+NanoBananaLipSyncCanvas.displayName = 'NanoBananaLipSyncCanvas';
 
 export default NanoBananaLipSyncCanvas;

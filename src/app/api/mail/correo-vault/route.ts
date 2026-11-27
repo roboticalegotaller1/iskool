@@ -7,6 +7,7 @@ import {
 import { validateApiAuth } from '@/lib/authValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,13 +21,9 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const requestedTenant = searchParams.get('tenantId') || auth.user.school_id || 'IBIME';
-    if (
-      roleLower !== 'superadmin' &&
-      auth.user.school_id &&
-      requestedTenant !== auth.user.school_id &&
-      !(auth.user.school_id === 'sch-ibime' && requestedTenant.toUpperCase() === 'IBIME')
-    ) {
+    const defaultTenant = resolveCanonicalUserSchoolKey(auth.user as any) || 'IBIME';
+    const requestedTenant = searchParams.get('tenantId') || defaultTenant;
+    if (!isSchoolTenantAllowed(auth.user as any, requestedTenant)) {
       return NextResponse.json({ success: false, error: 'Acceso denegado: aislamiento multi-colegio.' }, { status: 403 });
     }
     const matters = getDelegatedMattersFromCorreoVault(requestedTenant);
@@ -47,14 +44,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Permisos insuficientes para delegar asuntos ejecutivos.' }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { tenantId = auth.user.school_id || 'IBIME', matter } = body as { tenantId: string; matter: CorreoDelegatedMatter };
-    if (
-      postRoleLower !== 'superadmin' &&
-      auth.user.school_id &&
-      tenantId !== auth.user.school_id &&
-      !(auth.user.school_id === 'sch-ibime' && tenantId.toUpperCase() === 'IBIME')
-    ) {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ success: false, error: 'Cuerpo JSON inválido.' }, { status: 400 });
+    }
+    const defaultTenant = resolveCanonicalUserSchoolKey(auth.user as any) || 'IBIME';
+    const { tenantId = defaultTenant, matter } = body as { tenantId?: string; matter?: CorreoDelegatedMatter };
+    if (!isSchoolTenantAllowed(auth.user as any, tenantId)) {
       return NextResponse.json({ success: false, error: 'Acceso denegado: no puedes escribir asuntos en otro colegio.' }, { status: 403 });
     }
 

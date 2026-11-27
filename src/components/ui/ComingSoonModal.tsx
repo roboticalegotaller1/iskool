@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
-import { Sparkles, X, Clock, CheckCircle2, ArrowRight } from "lucide-react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Sparkles, X, Clock, CheckCircle2 } from "lucide-react";
 
 interface ComingSoonOptions {
   title?: string;
@@ -60,10 +60,11 @@ export const ComingSoonProvider: React.FC<ComingSoonProviderProps> = ({ children
     setIsOpen(false);
   }, []);
 
-  // Manejador de teclado para accesibilidad (Escape cierra el modal)
+  // Manejador de teclado para accesibilidad (Escape cierra el modal) — activo únicamente cuando el modal está abierto
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+      if (e.key === "Escape") {
         closeComingSoon();
       }
     };
@@ -71,17 +72,22 @@ export const ComingSoonProvider: React.FC<ComingSoonProviderProps> = ({ children
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, closeComingSoon]);
 
-  // Autofoco al abrir para cumplimiento WCAG 2.1 AA
+  // Autofoco al abrir para cumplimiento WCAG 2.1 AA con limpieza de temporizador
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => {
-        closeButtonRef.current?.focus();
-      }, 50);
-    }
+    if (!isOpen) return;
+    const focusTimer = setTimeout(() => {
+      closeButtonRef.current?.focus();
+    }, 50);
+    return () => clearTimeout(focusTimer);
   }, [isOpen]);
 
+  const contextValue = useMemo(
+    () => ({ showComingSoon, closeComingSoon }),
+    [showComingSoon, closeComingSoon]
+  );
+
   return (
-    <ComingSoonContext.Provider value={{ showComingSoon, closeComingSoon }}>
+    <ComingSoonContext.Provider value={contextValue}>
       {children}
 
       {isOpen && (

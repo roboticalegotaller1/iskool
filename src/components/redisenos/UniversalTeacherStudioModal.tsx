@@ -233,7 +233,7 @@ export function UniversalTeacherStudioModal({ isOpen, onClose, onChallengeAssign
                   </div>
                   <div className="h-28 rounded-xl bg-amber-950/20 border border-amber-900/40 p-2.5 flex items-center gap-3">
                     <img
-                      src="/redisenos_assets/gamification_quiz_preescolar_gameplay_1792734559505.jpg"
+                      src="/redisenos_assets/gamification_quiz_preescolar_gameplay_1792734559505.webp"
                       alt="Preschool"
                       className="w-20 h-20 rounded-lg object-cover border border-amber-500/30"
                     />
@@ -266,7 +266,7 @@ export function UniversalTeacherStudioModal({ isOpen, onClose, onChallengeAssign
                   </div>
                   <div className="h-28 rounded-xl bg-emerald-950/20 border border-emerald-900/40 p-2.5 flex items-center gap-3">
                     <img
-                      src="/redisenos_assets/gamification_quiz_primaria_baja_battle_1792734597009.jpg"
+                      src="/redisenos_assets/gamification_quiz_primaria_baja_battle_1792734597009.webp"
                       alt="Elementary"
                       className="w-20 h-20 rounded-lg object-cover border border-emerald-500/30"
                     />
@@ -297,7 +297,7 @@ export function UniversalTeacherStudioModal({ isOpen, onClose, onChallengeAssign
                   </div>
                   <div className="h-28 rounded-xl bg-cyan-950/20 border border-cyan-900/40 p-2.5 flex items-center gap-3">
                     <img
-                      src="/redisenos_assets/gamification_quiz_secundaria_cyber_duel_1792734640480.jpg"
+                      src="/redisenos_assets/gamification_quiz_secundaria_cyber_duel_1792734640480.webp"
                       alt="Middle school"
                       className="w-20 h-20 rounded-lg object-cover border border-cyan-500/30"
                     />
@@ -324,7 +324,7 @@ export function UniversalTeacherStudioModal({ isOpen, onClose, onChallengeAssign
                   </div>
                   <div className="h-28 rounded-xl bg-purple-950/20 border border-purple-900/40 p-2.5 flex items-center gap-3">
                     <img
-                      src="/redisenos_assets/gamification_quiz_preparatoria_mastery_1792734699863.jpg"
+                      src="/redisenos_assets/gamification_quiz_preparatoria_mastery_1792734699863.webp"
                       alt="High school"
                       className="w-20 h-20 rounded-lg object-cover border border-purple-500/30"
                     />

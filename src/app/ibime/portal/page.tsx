@@ -46,7 +46,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, Subject, Campus, UserProfile, isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
-import { switchCanonicalStudent, resetCanonicalSelectedSchool } from '@/lib/auth/multiTenantSession';
+import { switchCanonicalStudent, resetCanonicalSelectedSchool } from '@/lib/auth/clientSessionHelpers';
 
 const CEOEmailCommunicationsModal = dynamic(
   () => import('@/components/admin/CEOEmailCommunicationsModal').then((m) => m.CEOEmailCommunicationsModal),

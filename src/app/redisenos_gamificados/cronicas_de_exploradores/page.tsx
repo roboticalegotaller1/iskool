@@ -239,7 +239,7 @@ const TCG_DECK: TcgCard[] = [
     costMana: 1,
     attack: 1,
     health: 3,
-    image: '/redisenos_assets/cronicas/tcg_card_newton.jpg',
+    image: '/redisenos_assets/cronicas/tcg_card_newton.webp',
     rarity: 'Legendaria',
     flavorText: 'Toda partícula en el cosmos atrae a otra con una fuerza cósmica y matemática.'
   },
@@ -250,7 +250,7 @@ const TCG_DECK: TcgCard[] = [
     costMana: 2,
     attack: 2,
     health: 3,
-    image: '/redisenos_assets/cronicas/tcg_card_termodinamica.jpg',
+    image: '/redisenos_assets/cronicas/tcg_card_termodinamica.webp',
     rarity: 'Épica',
     flavorText: 'La energía no se crea ni se destruye: se transforma en calor, vapor y movimiento.'
   },
@@ -261,7 +261,7 @@ const TCG_DECK: TcgCard[] = [
     costMana: 3,
     attack: 2,
     health: 3,
-    image: '/redisenos_assets/cronicas/tcg_card_celular.jpg',
+    image: '/redisenos_assets/cronicas/tcg_card_celular.webp',
     rarity: 'Épica',
     flavorText: 'Desde la bacteria más diminuta hasta la secuoya milenaria, la vida late en células.'
   },
@@ -272,7 +272,7 @@ const TCG_DECK: TcgCard[] = [
     costMana: 2,
     attack: 3,
     health: 2,
-    image: '/redisenos_assets/cronicas/tcg_card_maya.jpg',
+    image: '/redisenos_assets/cronicas/tcg_card_maya.webp',
     rarity: 'Legendaria',
     flavorText: 'El caracol de jade que cuenta el infinito y alinea los templos con las estrellas.'
   }
@@ -348,16 +348,16 @@ export default function CronicasDeExploradoresPage() {
   const getExplorerRender = () => {
     switch (selectedHeroItem) {
       case 'brujula':
-        return '/redisenos_assets/cronicas/explorador_brujula_antigua.jpg';
+        return '/redisenos_assets/cronicas/explorador_brujula_antigua.webp';
       case 'sombrero':
-        return '/redisenos_assets/cronicas/explorador_sombrero_safari.jpg';
+        return '/redisenos_assets/cronicas/explorador_sombrero_safari.webp';
       case 'quetzal':
-        return '/redisenos_assets/cronicas/explorador_mascota_quetzal.jpg';
+        return '/redisenos_assets/cronicas/explorador_mascota_quetzal.webp';
       case 'poncho':
-        return '/redisenos_assets/cronicas/explorador_poncho_artico.jpg';
+        return '/redisenos_assets/cronicas/explorador_poncho_artico.webp';
       case 'base':
       default:
-        return '/redisenos_assets/cronicas/explorador_base_pedestal.jpg';
+        return '/redisenos_assets/cronicas/explorador_base_pedestal.webp';
     }
   };
 
@@ -652,7 +652,7 @@ export default function CronicasDeExploradoresPage() {
           
           {/* Ilustración de Fondo Original (1600x893) */}
           <img 
-            src="/redisenos_assets/cronicas/cronicas_main_hub_scene.jpg" 
+            src="/redisenos_assets/cronicas/cronicas_main_hub_scene.webp" 
             alt="Crónicas de Exploradores - Archipiélago Hexagonal"
             className="w-full h-full object-fill select-none"
           />
@@ -894,7 +894,7 @@ export default function CronicasDeExploradoresPage() {
             <div className="relative w-full aspect-[16/9] overflow-hidden group">
               
               <img 
-                src="/redisenos_assets/cronicas/cronicas_tcg_arena_scene.jpg" 
+                src="/redisenos_assets/cronicas/cronicas_tcg_arena_scene.webp" 
                 alt="Arena TCG - Duelo de Cartas Didáctico"
                 className="w-full h-full object-cover"
               />
@@ -1028,7 +1028,7 @@ export default function CronicasDeExploradoresPage() {
             <div className="relative w-full aspect-[16/9] overflow-hidden group">
               
               <img 
-                src="/redisenos_assets/cronicas/cronicas_album_customizer_scene.jpg" 
+                src="/redisenos_assets/cronicas/cronicas_album_customizer_scene.webp" 
                 alt="Álbum de Logros y Personalizador"
                 className="w-full h-full object-cover"
               />
@@ -1186,7 +1186,7 @@ export default function CronicasDeExploradoresPage() {
               {/* Ingrediente 1: Hierba Lacandona */}
               <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-900/40 border border-amber-700/60 text-center">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-400 mb-2">
-                  <img src="/redisenos_assets/cronicas/alquimia_hierba.jpg" alt="Hierba Lacandona" className="w-full h-full object-cover" />
+                  <img src="/redisenos_assets/cronicas/alquimia_hierba.webp" alt="Hierba Lacandona" className="w-full h-full object-cover" />
                 </div>
                 <strong className="text-xs text-white">Hierba Lacandona</strong>
                 <span className="text-[10px] text-emerald-300">Disponible: {herbCount}x</span>
@@ -1196,7 +1196,7 @@ export default function CronicasDeExploradoresPage() {
               <div className="flex flex-col items-center text-center">
                 <span className="text-3xl font-black text-amber-400 mb-2">+</span>
                 <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-rose-400 mb-2">
-                  <img src="/redisenos_assets/cronicas/alquimia_roca.jpg" alt="Roca de Basalto" className="w-full h-full object-cover" />
+                  <img src="/redisenos_assets/cronicas/alquimia_roca.webp" alt="Roca de Basalto" className="w-full h-full object-cover" />
                 </div>
                 <strong className="text-xs text-white">Roca de Basalto</strong>
                 <span className="text-[10px] text-rose-300">Disponible: {stoneCount}x</span>
@@ -1206,7 +1206,7 @@ export default function CronicasDeExploradoresPage() {
               <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-900/40 border border-amber-700/60 text-center">
                 <span className="text-2xl font-black text-amber-400 mb-1">=</span>
                 <div className={`w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-amber-400 mb-2 ${isBrewing ? 'animate-spin' : ''}`}>
-                  <img src="/redisenos_assets/cronicas/alquimia_pocion.jpg" alt="Poción de Ciencia" className="w-full h-full object-cover" />
+                  <img src="/redisenos_assets/cronicas/alquimia_pocion.webp" alt="Poción de Ciencia" className="w-full h-full object-cover" />
                 </div>
                 <strong className="text-xs text-amber-300">Poción de Ciencia</strong>
                 <span className="text-[10px] text-amber-400 font-bold">+60 Cristales · +80 Pts NEM</span>
@@ -1399,7 +1399,7 @@ export default function CronicasDeExploradoresPage() {
             {/* Lienzo del Estudio Docente (Mockup Optimizado) */}
             <div className="relative w-full aspect-[21/9] overflow-hidden">
               <img 
-                src="/redisenos_assets/cronicas/cronicas_teacher_studio_scene.jpg" 
+                src="/redisenos_assets/cronicas/cronicas_teacher_studio_scene.webp" 
                 alt="Estudio Cartográfico Docente"
                 className="w-full h-full object-cover"
               />

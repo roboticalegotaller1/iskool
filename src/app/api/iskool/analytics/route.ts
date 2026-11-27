@@ -2,14 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { validateApiAuth } from '@/lib/authValidator';
 
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+const PRIVATE_SHORT_CACHE_HEADERS = {
+  'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+  Vary: 'Cookie, Authorization'
+};
+
 export async function GET(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
     if (!auth.authenticated || !auth.user) {
-      return NextResponse.json({ error: 'Autenticación requerida para acceder a métricas analíticas.' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acceder a métricas analíticas.' },
+        { status: 401, headers: NO_STORE_HEADERS }
+      );
     }
     if (!['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo'].includes((auth.user.role || '').toLowerCase())) {
-      return NextResponse.json({ error: 'Permisos insuficientes para consultar analítica institucional.' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Permisos insuficientes para consultar analítica institucional.' },
+        { status: 403, headers: NO_STORE_HEADERS }
+      );
     }
 
     const { searchParams } = new URL(req.url);
@@ -28,11 +40,14 @@ export async function GET(req: NextRequest) {
       scopeId
     });
 
-    return NextResponse.json({ success: true, metric, data });
+    return NextResponse.json({ success: true, metric, data }, { headers: PRIVATE_SHORT_CACHE_HEADERS });
   } catch (err: any) {
     return NextResponse.json(
-      { error: 'Error recuperando datos analíticos', details: err.message },
-      { status: 500 }
+      {
+        error: 'Error recuperando datos analíticos',
+        ...(process.env.NODE_ENV !== 'production' ? { details: err?.message } : {})
+      },
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }

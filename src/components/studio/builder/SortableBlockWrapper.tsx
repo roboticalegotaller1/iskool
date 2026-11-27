@@ -5,6 +5,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, StudioBlockType } from '@/types/studioBlocks';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
 import { StudioBlockIcon } from './StudioPremiumBlockIcon';
@@ -338,7 +339,17 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
     moveBlock,
     toggleCollapseBlock,
     updateBlockTitle,
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      selectedBlockId: state.selectedBlockId,
+      setSelectedBlockId: state.setSelectedBlockId,
+      removeBlock: state.removeBlock,
+      duplicateBlock: state.duplicateBlock,
+      moveBlock: state.moveBlock,
+      toggleCollapseBlock: state.toggleCollapseBlock,
+      updateBlockTitle: state.updateBlockTitle,
+    }))
+  );
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const isSelected = selectedBlockId === block.id;

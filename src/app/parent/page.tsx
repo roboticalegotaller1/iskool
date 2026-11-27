@@ -15,7 +15,7 @@ import {
   Users, Eye, ChevronDown, UserCheck, Sparkles, X, ShieldCheck, Zap
 } from 'lucide-react';
 import { FormattedDate } from '@/components/FormattedDate';
-import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
+import { switchCanonicalStudent } from '@/lib/auth/clientSessionHelpers';
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';

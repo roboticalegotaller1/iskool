@@ -5,6 +5,7 @@ import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, Pare
 export { resolveEffectiveSchoolId, isPlatformSuperUser } from '../types';
 import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED, STAFF_USERS_SEED, DEFAULT_GOVERNANCE_SETTINGS, DEFAULT_DIRECTOR_LIMITS, STAFF_PAYROLL_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
+import { useWhiteLabelStore } from './useWhiteLabelStore';
 import { supabase } from '@/lib/supabaseClient';
 import { formatCdmxDate } from '@/utils/timeZoneUtils';
 
@@ -819,6 +820,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const std = (get().detailedStudents || []).find(s => (user.id && s.id === user.id) || (user.email && s.email?.toLowerCase() === user.email.toLowerCase()));
           targetSchoolId = std?.school_id || user.school_id || 'sch-test-case';
         }
+        const mirroredSyncInst = (get().institutionsList || []).find(i => i.id === targetSchoolId);
         set((state) => {
           const inst = (state.institutionsList || []).find(i => i.id === targetSchoolId);
           if (inst && inst.settings) {
@@ -834,6 +836,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           if (state.activeSchoolId === targetSchoolId) return state;
           return { activeSchoolId: targetSchoolId };
         });
+        if (mirroredSyncInst?.settings?.themeColors) {
+          useWhiteLabelStore.getState().setSchoolThemeHsl(mirroredSyncInst.settings.themeColors);
+        }
       },
 
       selectSchool: (schoolId) => {
@@ -854,6 +859,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           }
         }
 
+        const mirroredSelectInst = schoolId
+          ? (get().institutionsList || []).find(i => i.id === (schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId))
+          : null;
         set((state) => {
           if (!schoolId) {
             return { activeSchoolId: null };
@@ -869,6 +877,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           }
           return { activeSchoolId: targetId };
         });
+        if (mirroredSelectInst?.settings?.themeColors) {
+          useWhiteLabelStore.getState().setSchoolThemeHsl(mirroredSelectInst.settings.themeColors);
+        }
       },
 
       createInstitution: (instData) => {
@@ -1271,6 +1282,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
       saveSchoolSettings: (settings) => {
         applyThemeCssVariables(settings.themeColors);
+        if (settings.themeColors) {
+          useWhiteLabelStore.getState().setSchoolThemeHsl(settings.themeColors);
+        }
         set({ schoolSettings: settings, syncError: null });
 
         if (saveSettingsTimeout) clearTimeout(saveSettingsTimeout);
@@ -2659,11 +2673,11 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const existingStaffIds = new Set(currentStaff.map(s => s.id));
           const missingStaff = STAFF_USERS_SEED.filter(s => !existingStaffIds.has(s.id));
 
-          // Reconciliar nómina (10 registros pay-cdemo-*)
+          // Reconciliar nómina (50 registros pay-cdemo-*)
           const demoPayrollSeed = STAFF_PAYROLL_SEED.filter(p => p.school_id === demoId);
           let currentPayroll = state.staffPayroll || [];
           const demoPayrollIds = new Set(currentPayroll.filter(p => p.school_id === demoId).map(p => p.id));
-          if (!demoPayrollIds.has('pay-cdemo-010') || demoPayrollIds.size < demoPayrollSeed.length) {
+          if (!demoPayrollIds.has('pay-cdemo-050') || demoPayrollIds.size < demoPayrollSeed.length) {
             currentPayroll = [
               ...currentPayroll.filter(p => p.school_id !== demoId),
               ...demoPayrollSeed

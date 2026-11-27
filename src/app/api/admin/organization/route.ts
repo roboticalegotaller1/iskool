@@ -17,6 +17,11 @@ const demoOrgGraphCache = new Map<string, SchoolOrganizationGraph>();
 export const dynamic = 'force-dynamic';
 
 const EXECUTIVE_ORG_ROLES = new Set(['superadmin', 'director', 'admin', 'owner', 'ceo']);
+const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' };
+const PRIVATE_SHORT_CACHE_HEADERS = {
+  'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+  Vary: 'Cookie, Authorization',
+};
 
 function sanitizeOrgGraphForApi(graph: SchoolOrganizationGraph): SchoolOrganizationGraph {
   return {
@@ -34,14 +39,14 @@ export async function GET(req: NextRequest) {
     if (!auth.authenticated) {
       return NextResponse.json(
         { success: false, error: 'Autenticación institucional requerida.' },
-        { status: 401 }
+        { status: 401, headers: NO_STORE_HEADERS }
       );
     }
     const roleLower = (auth.user?.role || '').toLowerCase();
     if (!EXECUTIVE_ORG_ROLES.has(roleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos directivos requeridos para consultar el organigrama.' },
-        { status: 403 }
+        { status: 403, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -58,7 +63,7 @@ export async function GET(req: NextRequest) {
       if (userSchool && userSchool !== schoolId) {
         return NextResponse.json(
           { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
-          { status: 403 }
+          { status: 403, headers: NO_STORE_HEADERS }
         );
       }
     }
@@ -72,16 +77,19 @@ export async function GET(req: NextRequest) {
     const payroll = calculateConsolidatedPayrollSummary(graph);
     const delegates = buildDynamicSlaDelegatesFromGraph(graph);
 
-    return NextResponse.json({
-      success: true,
-      graph: sanitizeOrgGraphForApi(graph),
-      payroll,
-      delegates,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        graph: sanitizeOrgGraphForApi(graph),
+        payroll,
+        delegates,
+      },
+      { headers: PRIVATE_SHORT_CACHE_HEADERS }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || 'Error consultando organigrama.' },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }
@@ -92,14 +100,14 @@ export async function POST(req: NextRequest) {
     if (!auth.authenticated) {
       return NextResponse.json(
         { success: false, error: 'Autenticación institucional requerida.' },
-        { status: 401 }
+        { status: 401, headers: NO_STORE_HEADERS }
       );
     }
     const roleLower = (auth.user?.role || '').toLowerCase();
     if (!EXECUTIVE_ORG_ROLES.has(roleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos directivos requeridos para modificar el organigrama.' },
-        { status: 403 }
+        { status: 403, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -118,7 +126,7 @@ export async function POST(req: NextRequest) {
       if (userSchool && userSchool !== schoolId) {
         return NextResponse.json(
           { success: false, error: 'Acceso denegado: no puedes modificar otra institución.' },
-          { status: 403 }
+          { status: 403, headers: NO_STORE_HEADERS }
         );
       }
     }
@@ -126,7 +134,7 @@ export async function POST(req: NextRequest) {
     if (!body.graph || typeof body.graph !== 'object') {
       return NextResponse.json(
         { success: false, error: 'Estructura de organigrama inválida.' },
-        { status: 400 }
+        { status: 400, headers: NO_STORE_HEADERS }
       );
     }
 
@@ -145,13 +153,16 @@ export async function POST(req: NextRequest) {
         title: `Organigrama Demo (${schoolId})`,
         payload: { schoolId },
       });
-      return NextResponse.json({
-        success: true,
-        demoSandbox: true,
-        graph: sanitizeOrgGraphForApi(ephemeralGraph),
-        payroll: calculateConsolidatedPayrollSummary(ephemeralGraph),
-        delegates: buildDynamicSlaDelegatesFromGraph(ephemeralGraph),
-      });
+      return NextResponse.json(
+        {
+          success: true,
+          demoSandbox: true,
+          graph: sanitizeOrgGraphForApi(ephemeralGraph),
+          payroll: calculateConsolidatedPayrollSummary(ephemeralGraph),
+          delegates: buildDynamicSlaDelegatesFromGraph(ephemeralGraph),
+        },
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
     const saved = OrganizationServerService.saveGraph(
@@ -171,16 +182,19 @@ export async function POST(req: NextRequest) {
 
     const payroll = calculateConsolidatedPayrollSummary(saved);
 
-    return NextResponse.json({
-      success: true,
-      graph: sanitizeOrgGraphForApi(saved),
-      payroll,
-      delegates,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        graph: sanitizeOrgGraphForApi(saved),
+        payroll,
+        delegates,
+      },
+      { headers: NO_STORE_HEADERS }
+    );
   } catch (err: any) {
     return NextResponse.json(
       { success: false, error: err?.message || 'Error guardando organigrama.' },
-      { status: 500 }
+      { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 }

@@ -14,8 +14,31 @@ import {
 } from './types';
 import { supabase } from '../supabaseClient';
 
+const MAX_CACHE_ENTRIES = 1000;
+
+function getLruEntry<K, V>(map: Map<K, V>, key: K): V | undefined {
+  const value = map.get(key);
+  if (value !== undefined) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+}
+
+function setLruEntry<K, V>(map: Map<K, V>, key: K, value: V): void {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
 export class AdaptiveLearningStore {
-  // Almacenes en memoria
+  // Almacenes en memoria acotados (LRU máx. 1,000 entradas)
   private static profiles = new Map<string, StudentAcademicProfileEntity>();
   private static competencies = new Map<string, Map<string, StudentCompetencyEntity>>();
   private static evidences = new Map<string, LearningEvidenceEntity[]>();
@@ -34,8 +57,9 @@ export class AdaptiveLearningStore {
    */
   static async getProfile(studentId: string, defaultGrade: string = 'high_school_1'): Promise<StudentAcademicProfileEntity> {
     // 1. Verificar en memoria
-    if (this.profiles.has(studentId)) {
-      return this.profiles.get(studentId)!;
+    const cachedProfile = getLruEntry(this.profiles, studentId);
+    if (cachedProfile) {
+      return cachedProfile;
     }
 
     // 2. Intentar recuperar desde Supabase
@@ -103,7 +127,7 @@ export class AdaptiveLearningStore {
             created_at: data.created_at,
             last_updated_at: data.last_updated_at
           };
-          this.profiles.set(studentId, profile);
+          setLruEntry(this.profiles, studentId, profile);
           return profile;
         }
       } catch {
@@ -129,7 +153,7 @@ export class AdaptiveLearningStore {
       last_updated_at: new Date().toISOString()
     };
 
-    this.profiles.set(studentId, defaultProfile);
+    setLruEntry(this.profiles, studentId, defaultProfile);
     return defaultProfile;
   }
 
@@ -137,7 +161,7 @@ export class AdaptiveLearningStore {
    * Guarda o actualiza un perfil académico
    */
   static async saveProfile(profile: StudentAcademicProfileEntity): Promise<void> {
-    this.profiles.set(profile.student_id, profile);
+    setLruEntry(this.profiles, profile.student_id, profile);
 
     if (supabase) {
       try {
@@ -188,10 +212,12 @@ export class AdaptiveLearningStore {
    * Obtiene el mapa de micro-competencias de un estudiante
    */
   static async getCompetencies(studentId: string): Promise<Map<string, StudentCompetencyEntity>> {
-    if (!this.competencies.has(studentId)) {
-      this.competencies.set(studentId, new Map());
+    let map = getLruEntry(this.competencies, studentId);
+    if (!map) {
+      map = new Map();
+      setLruEntry(this.competencies, studentId, map);
     }
-    return this.competencies.get(studentId)!;
+    return map;
   }
 
   /**
@@ -200,7 +226,7 @@ export class AdaptiveLearningStore {
   static async saveCompetencies(studentId: string, list: StudentCompetencyEntity[]): Promise<void> {
     const map = await this.getCompetencies(studentId);
     for (const c of list) {
-      map.set(c.knowledge_unit_id, c);
+      setLruEntry(map, c.knowledge_unit_id, c);
     }
   }
 
@@ -208,10 +234,12 @@ export class AdaptiveLearningStore {
    * Registra una nueva evidencia de aprendizaje
    */
   static async recordEvidence(evidence: LearningEvidenceEntity): Promise<void> {
-    if (!this.evidences.has(evidence.student_id)) {
-      this.evidences.set(evidence.student_id, []);
+    let list = getLruEntry(this.evidences, evidence.student_id);
+    if (!list) {
+      list = [];
+      setLruEntry(this.evidences, evidence.student_id, list);
     }
-    this.evidences.get(evidence.student_id)!.push(evidence);
+    list.push(evidence);
 
     if (supabase) {
       try {
@@ -241,7 +269,7 @@ export class AdaptiveLearningStore {
    * Obtiene la bitácora de evidencias de un estudiante
    */
   static async getEvidences(studentId: string): Promise<LearningEvidenceEntity[]> {
-    return this.evidences.get(studentId) || [];
+    return getLruEntry(this.evidences, studentId) || [];
   }
 
   /**
@@ -288,7 +316,7 @@ export class AdaptiveLearningStore {
       comp.updated_at = new Date().toISOString();
     }
 
-    map.set(knowledgeUnitId, comp);
+    setLruEntry(map, knowledgeUnitId, comp);
     return comp;
   }
 }

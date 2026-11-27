@@ -1,5 +1,3 @@
-"use client";
-
 import React, { Suspense } from 'react';
 import { Skeleton, CardSkeleton, HeroBannerSkeleton } from '@/components/ui/SkeletonLoader';
 import { RoleGuard } from '@/components/auth/RoleGuard';

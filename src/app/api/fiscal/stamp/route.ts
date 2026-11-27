@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFiscalPacAdapter } from '@/lib/fiscal/pacAdapter';
-import { CfdiStampRequest } from '@/types';
+import { CfdiStampRequest, isPlatformSuperUser } from '@/types';
 import { validateApiAuth } from '@/lib/authValidator';
 
 /**
@@ -25,23 +25,30 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const body: CfdiStampRequest & { schoolId?: string } = await req.json();
+    const body = (await req.json().catch(() => null)) as (CfdiStampRequest & { schoolId?: string }) | null;
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({
+        success: false,
+        error: 'Cuerpo JSON inválido o malformado.'
+      }, { status: 400 });
+    }
 
-    if (!body || !body.emisor || !body.receptor || !body.items || body.items.length === 0) {
+    if (!body.emisor || !body.receptor || !body.items || body.items.length === 0) {
       return NextResponse.json({
         success: false,
         error: 'Petición de timbrado incompleta. Se requieren emisor, receptor e items.'
       }, { status: 400 });
     }
 
-    const userRole = (auth.user.role || '').toLowerCase();
-    if (userRole !== 'superadmin' && body.schoolId && auth.user.school_id && body.schoolId !== auth.user.school_id) {
+    if (!isPlatformSuperUser(auth.user) && body.schoolId && auth.user.school_id && body.schoolId !== auth.user.school_id) {
       return NextResponse.json({
         success: false,
         error: 'Prohibido: No puedes timbrar comprobantes fiscales para otro plantel.'
       }, { status: 403 });
     }
-    body.schoolId = auth.user.school_id || body.schoolId;
+    body.schoolId = isPlatformSuperUser(auth.user)
+      ? (body.schoolId || auth.user.school_id)
+      : auth.user.school_id;
 
     const pac = getFiscalPacAdapter();
     const stampResult = await pac.stampInvoice(body);

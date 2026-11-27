@@ -11,6 +11,29 @@ import {
 } from './types';
 import { supabase } from '../supabaseClient';
 
+const MAX_CACHE_ENTRIES = 1000;
+
+function getLruEntry<K, V>(map: Map<K, V>, key: K): V | undefined {
+  const value = map.get(key);
+  if (value !== undefined) {
+    map.delete(key);
+    map.set(key, value);
+  }
+  return value;
+}
+
+function setLruEntry<K, V>(map: Map<K, V>, key: K, value: V): void {
+  if (map.has(key)) {
+    map.delete(key);
+  } else if (map.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey !== undefined) {
+      map.delete(oldestKey);
+    }
+  }
+  map.set(key, value);
+}
+
 export class AcademicAnalyticsStore {
   private static snapshots = new Map<string, AcademicAnalyticsSnapshotEntity>();
   private static alerts = new Map<string, AcademicAlertEntity>();
@@ -24,7 +47,7 @@ export class AcademicAnalyticsStore {
 
   // --- SNAPSHOTS HISTÓRICOS ---
   static async saveSnapshot(snapshot: AcademicAnalyticsSnapshotEntity): Promise<AcademicAnalyticsSnapshotEntity> {
-    this.snapshots.set(snapshot.id, snapshot);
+    setLruEntry(this.snapshots, snapshot.id, snapshot);
 
     try {
       if (supabase) {
@@ -56,12 +79,12 @@ export class AcademicAnalyticsStore {
   }
 
   static async getSnapshot(id: string): Promise<AcademicAnalyticsSnapshotEntity | null> {
-    return this.snapshots.get(id) || null;
+    return getLruEntry(this.snapshots, id) || null;
   }
 
   // --- ALERTAS ACADÉMICAS ---
   static async saveAlert(alert: AcademicAlertEntity): Promise<AcademicAlertEntity> {
-    this.alerts.set(alert.id, { ...alert, updated_at: new Date().toISOString() });
+    setLruEntry(this.alerts, alert.id, { ...alert, updated_at: new Date().toISOString() });
 
     try {
       if (supabase) {
@@ -89,7 +112,7 @@ export class AcademicAnalyticsStore {
   }
 
   static async getAlert(id: string): Promise<AcademicAlertEntity | undefined> {
-    return this.alerts.get(id);
+    return getLruEntry(this.alerts, id);
   }
 
   static async getAlerts(scopeId?: string): Promise<AcademicAlertEntity[]> {
@@ -101,17 +124,17 @@ export class AcademicAnalyticsStore {
   }
 
   static async updateAlertStatus(alertId: string, status: AcademicAlertEntity['status']): Promise<AcademicAlertEntity | null> {
-    const alert = this.alerts.get(alertId);
+    const alert = getLruEntry(this.alerts, alertId);
     if (!alert) return null;
     alert.status = status;
     alert.updated_at = new Date().toISOString();
-    this.alerts.set(alertId, alert);
+    setLruEntry(this.alerts, alertId, alert);
     return alert;
   }
 
   // --- INTERVENCIONES DIDÁCTICAS ---
   static async saveIntervention(intervention: AcademicInterventionEntity): Promise<AcademicInterventionEntity> {
-    this.interventions.set(intervention.id, { ...intervention, updated_at: new Date().toISOString() });
+    setLruEntry(this.interventions, intervention.id, { ...intervention, updated_at: new Date().toISOString() });
 
     try {
       if (supabase) {

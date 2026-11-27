@@ -29,12 +29,33 @@ export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a
 export const PERIOD_REGEX = /^(current|\d{4}-(0[1-9]|1[0-2]))$/;
 
 /**
+ * Lista blanca estricta de tablas/vistas analíticas BI permitidas en consultas forenses de solo lectura.
+ */
+export const ALLOWED_FORENSIC_BI_TABLES = new Set<string>([
+  'planteles',
+  'transacciones_caja',
+  'matricula_alumnos',
+  'nomina_desglose',
+  'gastos_operativos',
+  'cobranza',
+  'alumnos',
+  'grupos',
+  'asistencia',
+  'calificaciones',
+  'docentes',
+  'planeaciones',
+  'bi_metrics',
+  'executive_telemetry'
+]);
+
+/**
  * Validador estricto para consultas analíticas de solo lectura.
- * Solo permite SELECT o WITH (Common Table Expressions) y bloquea cualquier mutación DDL/DML.
+ * Solo permite SELECT o WITH (Common Table Expressions) sobre la lista blanca de tablas BI
+ * y bloquea cualquier mutación DDL/DML o lectura de tablas sensibles/sistema.
  */
 export function validateForensicQuery(sql: string): { isValid: boolean; error?: string } {
   const trimmed = sql.trim();
-  
+
   if (!trimmed) {
     return { isValid: false, error: 'La consulta SQL analítica no puede estar vacía.' };
   }
@@ -42,13 +63,13 @@ export function validateForensicQuery(sql: string): { isValid: boolean; error?: 
   // Debe iniciar estrictamente con SELECT o WITH
   const startsWithRead = /^(WITH|SELECT)\b/i.test(trimmed);
   if (!startsWithRead) {
-    return { 
-      isValid: false, 
-      error: 'Violación de frontera de seguridad: la consulta forense debe iniciar exclusivamente con SELECT o WITH.' 
+    return {
+      isValid: false,
+      error: 'Violación de frontera de seguridad: la consulta forense debe iniciar exclusivamente con SELECT o WITH.'
     };
   }
 
-  // Lista negra de palabras clave DDL, DML destructivo y funciones de administración
+  // Lista negra estricta de comandos DDL/DML, tablas sensibles, esquemas de sistema y vectores de exfiltración
   const forbiddenPatterns = [
     /\bDROP\b/i,
     /\bDELETE\b/i,
@@ -61,6 +82,31 @@ export function validateForensicQuery(sql: string): { isValid: boolean; error?: 
     /\bREVOKE\b/i,
     /\bEXEC\b/i,
     /\bEXECUTE\b/i,
+    /\bINTO\b/i,
+    /\bCOPY\b/i,
+    /\bCALL\b/i,
+    /\bDO\b/i,
+    /\bMERGE\b/i,
+    /\bSET\b/i,
+    /\bLOCK\b/i,
+    /\bPREPARE\b/i,
+    /\bDEALLOCATE\b/i,
+    /\bVACUUM\b/i,
+    /\bpg_[a-z0-9_]*\b/i,
+    /\binformation_schema\b/i,
+    /\bauth\s*\./i,
+    /\bvault\s*\./i,
+    /\bstorage\s*\./i,
+    /\boauth_tokens\b/i,
+    /\boauth_credentials\b/i,
+    /\bemail_accounts\b/i,
+    /\bprofiles\b/i,
+    /\bsecrets\b/i,
+    /\bcurrent_setting\b/i,
+    /\bset_config\b/i,
+    /\bdblink\b/i,
+    /\blo_import\b/i,
+    /\blo_export\b/i,
     /--/,
     /\/\*/,
     /;\s*\S+/ // Bloquear consultas encadenadas múltiples
@@ -68,11 +114,74 @@ export function validateForensicQuery(sql: string): { isValid: boolean; error?: 
 
   for (const pattern of forbiddenPatterns) {
     if (pattern.test(trimmed)) {
-      return { 
-        isValid: false, 
-        error: `Violación de frontera de seguridad: se detectó el token o comando no permitido '${pattern.source}'.` 
+      return {
+        isValid: false,
+        error: `Violación de frontera de seguridad: se detectó un comando o entidad restringida ('${pattern.source}').`
       };
     }
+  }
+
+  // Extraer nombres de CTEs legítimos declarados en cláusula WITH
+  const cteNames = new Set<string>();
+  const cteRegex = /(?:\bWITH(?:\s+RECURSIVE)?|\)\s*,)\s*"?([a-zA-Z_][a-zA-Z0-9_]*)"?\s*(?:\([^)]*\))?\s+AS\s*\(/gi;
+  let cteMatch: RegExpExecArray | null;
+  while ((cteMatch = cteRegex.exec(trimmed)) !== null) {
+    cteNames.add(cteMatch[1].toLowerCase());
+  }
+
+  // Validar que toda tabla o vista referenciada en FROM / JOIN (incluyendo joins por coma) pertenezca a la lista blanca BI o a un CTE
+  const validateTableToken = (rawToken: string): string | null => {
+    const cleanedToken = rawToken.replace(/["`]/g, '').toLowerCase();
+    if (!cleanedToken) return null;
+
+    const parts = cleanedToken.split('.');
+    if (parts.length > 2) {
+      return `Violación de frontera de seguridad: identificador de tabla no permitido ('${cleanedToken}').`;
+    }
+    if (parts.length === 2 && parts[0] !== 'public') {
+      return `Violación de frontera de seguridad: el esquema '${parts[0]}' no está autorizado para consultas analíticas.`;
+    }
+    const tableName = parts.length === 2 ? parts[1] : parts[0];
+    if (!ALLOWED_FORENSIC_BI_TABLES.has(tableName) && !cteNames.has(tableName)) {
+      return `Violación de frontera de seguridad: la tabla o vista '${tableName}' no pertenece al catálogo analítico BI autorizado.`;
+    }
+    return null;
+  };
+
+  let foundTableRef = false;
+
+  // 1. Validar cada objetivo directo después de FROM o JOIN sin consumir palabras clave contiguas
+  const directRefRegex = /\b(?:FROM|JOIN)\s+(?!\()([a-zA-Z0-9_."]+)/gi;
+  let refMatch: RegExpExecArray | null;
+  while ((refMatch = directRefRegex.exec(trimmed)) !== null) {
+    foundTableRef = true;
+    const err = validateTableToken(refMatch[1]);
+    if (err) {
+      return { isValid: false, error: err };
+    }
+  }
+
+  // 2. Validar joins implícitos por coma dentro de cláusulas FROM (ej. FROM planteles p, otra_tabla x)
+  const fromListRegex = /\bFROM\s+(?!\()([\s\S]*?)(?=\b(?:WHERE|JOIN|INNER|LEFT|RIGHT|FULL|CROSS|OUTER|NATURAL|ON|USING|GROUP|ORDER|HAVING|LIMIT|OFFSET|UNION|INTERSECT|EXCEPT)\b|\)|;|$)/gi;
+  let fromListMatch: RegExpExecArray | null;
+  while ((fromListMatch = fromListRegex.exec(trimmed)) !== null) {
+    const segments = fromListMatch[1].split(',');
+    for (const seg of segments) {
+      const firstToken = seg.trim().split(/\s+/)[0] || '';
+      if (!firstToken || firstToken.startsWith('(')) continue;
+      foundTableRef = true;
+      const err = validateTableToken(firstToken);
+      if (err) {
+        return { isValid: false, error: err };
+      }
+    }
+  }
+
+  if (!foundTableRef) {
+    return {
+      isValid: false,
+      error: 'Violación de frontera de seguridad: la consulta forense debe referenciar al menos una tabla BI autorizada.'
+    };
   }
 
   return { isValid: true };

@@ -33,17 +33,29 @@ export interface CorreoDelegatedMatter {
  */
 export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
   const raw = (tenantIdOrAccount || 'IBIME').trim();
+  const rawLower = raw.toLowerCase();
   let folder = 'IBIME';
 
-  // Blindaje hermético: en demo y producción, todo acceso se acota exclusivamente a IBIME
-  if (raw === 'e1000000-0000-0000-0000-000000000001' || raw.toLowerCase().includes('ibime')) {
+  // Aislamiento estricto por plantel: IBIME conserva su carpeta canónica y los demás planteles usan subcarpeta sanitizada propia
+  if (
+    raw === 'e1000000-0000-0000-0000-000000000001' ||
+    rawLower === 'ibime' ||
+    rawLower === 'sch-ibime' ||
+    rawLower.endsWith('@ibime.edu.mx')
+  ) {
     folder = 'IBIME';
-  } else if (process.env.NODE_ENV === 'test' && (raw === 'e2000000-0000-0000-0000-000000000002' || raw.toLowerCase().includes('iskool'))) {
-    // Permitido estrictamente en suites de testing para verificar no-fuga cross-tenant
+  } else if (
+    raw === 'e2000000-0000-0000-0000-000000000002' ||
+    rawLower === 'iskool' ||
+    rawLower === 'sch-iskool'
+  ) {
     folder = 'iSkool';
   } else {
-    // Bloqueo hermético: cualquier otra petición se redirige a IBIME
-    folder = 'IBIME';
+    const sanitized = raw
+      .replace(/[^a-zA-Z0-9_-]/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 64);
+    folder = sanitized || 'tenant-isolated';
   }
 
   const primaryRoot = path.join(process.cwd(), 'Correo');
@@ -51,7 +63,11 @@ export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
     if (!fs.existsSync(/*turbopackIgnore: true*/ primaryRoot)) {
       fs.mkdirSync(/*turbopackIgnore: true*/ primaryRoot, { recursive: true });
     }
-    const primaryTenantDir = path.join(primaryRoot, folder);
+    const resolvedRoot = path.resolve(primaryRoot);
+    const primaryTenantDir = path.resolve(primaryRoot, folder);
+    if (!primaryTenantDir.startsWith(resolvedRoot + path.sep)) {
+      throw new Error('Ruta de bóveda de correo fuera de la frontera permitida.');
+    }
     if (!fs.existsSync(/*turbopackIgnore: true*/ primaryTenantDir)) {
       fs.mkdirSync(/*turbopackIgnore: true*/ primaryTenantDir, { recursive: true });
     }
@@ -65,19 +81,37 @@ export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
   }
 }
 
+interface CachedCorreoMattersEntry {
+  mtimeMs: number;
+  matters: CorreoDelegatedMatter[];
+}
+
+const correoVaultJsonCache = new Map<string, CachedCorreoMattersEntry>();
+
 /**
  * Carga la lista de Asuntos Delegados con SLA para la cuenta/tenant desde Correo/[Tenant]/Asuntos_Delegados_Con_SLA.json
+ * Mantiene caché en memoria indexada por ruta y mtimeMs (invalidada en escritura).
  */
 export function getDelegatedMattersFromCorreoVault(tenantIdOrAccount: string): CorreoDelegatedMatter[] {
   try {
     const tenantDir = getTenantCorreoDir(tenantIdOrAccount);
     const jsonPath = path.join(tenantDir, 'Asuntos_Delegados_Con_SLA.json');
-    if (fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
-      const content = fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed)) {
-        return parsed;
-      }
+    if (!fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
+      correoVaultJsonCache.delete(jsonPath);
+      return [];
+    }
+
+    const stat = fs.statSync(/*turbopackIgnore: true*/ jsonPath);
+    const cached = correoVaultJsonCache.get(jsonPath);
+    if (cached && cached.mtimeMs === stat.mtimeMs) {
+      return [...cached.matters];
+    }
+
+    const content = fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8');
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed)) {
+      correoVaultJsonCache.set(jsonPath, { mtimeMs: stat.mtimeMs, matters: parsed });
+      return [...parsed];
     }
   } catch (err) {
     console.warn('[CorreoVaultService] Error al leer Asuntos_Delegados_Con_SLA.json:', err);
@@ -121,6 +155,7 @@ export function saveDelegatedMatterToCorreoVault(
     }
 
     fs.writeFileSync(/*turbopackIgnore: true*/ jsonPath, JSON.stringify(current, null, 2), 'utf8');
+    correoVaultJsonCache.delete(jsonPath);
 
     // Registro individual en Markdown en subcarpeta delegados/
     const delegadosFolder = path.join(tenantDir, 'delegados');

@@ -8,6 +8,7 @@
 
 import { KnowledgeVaultSyncService, PersistedKnowledgeDocRecord } from './syncService';
 import { KnowledgeQueryFilter } from './types';
+import { normalizeCanonicalGrade } from '@/lib/curriculumNormalizer';
 
 export class KnowledgeVaultQueryService {
   /**
@@ -36,12 +37,21 @@ export class KnowledgeVaultQueryService {
       records = records.filter(r => r.status === 'approved');
     }
 
-    // 3. Filtro por Grado Escolar (grades)
+    // 3. Filtro por Grado Escolar (grades) con normalización canónica (etiquetas en español -> taxonomyCode)
     if (filter.grade) {
-      const targetGrades = this.normalizeToArray(filter.grade);
+      const resolveGradeToken = (raw: string): string => {
+        const trimmed = String(raw).trim();
+        const canonical =
+          normalizeCanonicalGrade(trimmed) ||
+          normalizeCanonicalGrade(trimmed.replace(/\b([1-6]\s*[°ºª]?)\s*[a-z]\b/gi, '$1'));
+        return canonical ? canonical.taxonomyCode : trimmed.toLowerCase();
+      };
+
+      const targetGrades = this.normalizeToArray(filter.grade).map(resolveGradeToken);
       records = records.filter(r => {
         if (!r.grades || !Array.isArray(r.grades)) return false;
-        return targetGrades.some(tg => r.grades.includes(tg));
+        const normalizedRecordGrades = r.grades.map(resolveGradeToken);
+        return targetGrades.some(tg => normalizedRecordGrades.includes(tg));
       });
     }
 

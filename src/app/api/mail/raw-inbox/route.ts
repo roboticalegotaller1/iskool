@@ -7,22 +7,9 @@ import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs,
 import { validateApiAuth } from '@/lib/authValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { validateMailTargetAsync } from '@/lib/security/ssrfValidator';
-import { isPlatformSuperUser } from '@/types';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 const EXECUTIVE_INBOX_ROLES = new Set(['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator']);
-
-function isTenantAllowedForInbox(user: any, targetTenantId: string): boolean {
-  if (isPlatformSuperUser(user)) return true;
-  const userSchool = user?.school_id;
-  const userTenantUuid = user?.institution_metadata?.tenant_uuid || user?.tenant_id;
-  if (!userSchool && !userTenantUuid) return true;
-  if (targetTenantId === userSchool || targetTenantId === userTenantUuid) return true;
-  const ibimeAliases = new Set(['sch-ibime', 'e1000000-0000-0000-0000-000000000001', 'IBIME', 'ibime']);
-  if ((userSchool && ibimeAliases.has(userSchool)) || (userTenantUuid && ibimeAliases.has(userTenantUuid))) {
-    if (ibimeAliases.has(targetTenantId)) return true;
-  }
-  return false;
-}
 
 export const runtime = 'nodejs';
 
@@ -54,29 +41,45 @@ export interface RawGmailItem {
   resolved_at?: string;
 }
 
+const MAX_SERVER_REGISTRY_SIZE = 10_000;
+
+function addToBoundedSet(set: Set<string>, value: string, maxSize = MAX_SERVER_REGISTRY_SIZE): void {
+  if (set.has(value)) return;
+  while (set.size >= maxSize) {
+    const oldest = set.keys().next().value;
+    if (oldest === undefined) break;
+    set.delete(oldest);
+  }
+  set.add(value);
+}
+
 const serverResolvedRegistry: Set<string> =
   (globalThis as any).__iskoolResolvedEmails ||
   ((globalThis as any).__iskoolResolvedEmails = new Set<string>());
 
 export function markEmailAsResolvedServer(tenantId: string, emailId?: string, subject?: string): void {
+  const scope = (tenantId || '').trim();
+  if (!scope) return;
   if (emailId) {
-    serverResolvedRegistry.add(`${tenantId}:${emailId}`);
-    serverResolvedRegistry.add(emailId);
+    addToBoundedSet(serverResolvedRegistry, `${scope}:${emailId}`);
   }
   if (subject) {
     const norm = subject.trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
-    serverResolvedRegistry.add(`${tenantId}:${norm}`);
-    serverResolvedRegistry.add(norm);
+    if (norm) {
+      addToBoundedSet(serverResolvedRegistry, `${scope}:${norm}`);
+    }
   }
 }
 
 export function isEmailResolvedServer(tenantId: string, emailId?: string, subject?: string): boolean {
-  if (emailId && (serverResolvedRegistry.has(`${tenantId}:${emailId}`) || serverResolvedRegistry.has(emailId))) {
+  const scope = (tenantId || '').trim();
+  if (!scope) return false;
+  if (emailId && serverResolvedRegistry.has(`${scope}:${emailId}`)) {
     return true;
   }
   if (subject) {
     const norm = subject.trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
-    if (serverResolvedRegistry.has(`${tenantId}:${norm}`) || serverResolvedRegistry.has(norm)) {
+    if (norm && serverResolvedRegistry.has(`${scope}:${norm}`)) {
       return true;
     }
   }
@@ -88,14 +91,15 @@ const serverDeletedRegistry: Set<string> =
   ((globalThis as any).__iskoolDeletedEmails = new Set<string>());
 
 export function markEmailAsDeletedServer(tenantId: string, emailId: string): void {
-  if (emailId) {
-    serverDeletedRegistry.add(`${tenantId}:${emailId}`);
-    serverDeletedRegistry.add(emailId);
+  const scope = (tenantId || '').trim();
+  if (scope && emailId) {
+    addToBoundedSet(serverDeletedRegistry, `${scope}:${emailId}`);
   }
 }
 
 export function isEmailDeletedServer(tenantId: string, emailId: string): boolean {
-  if (emailId && (serverDeletedRegistry.has(`${tenantId}:${emailId}`) || serverDeletedRegistry.has(emailId))) {
+  const scope = (tenantId || '').trim();
+  if (scope && emailId && serverDeletedRegistry.has(`${scope}:${emailId}`)) {
     return true;
   }
   return false;
@@ -252,8 +256,9 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId') || authResult.user?.school_id || authResult.user?.tenant_id || 'e1000000-0000-0000-0000-000000000001';
-    if (!isTenantAllowedForInbox(authResult.user, tenantId)) {
+    const defaultTenant = resolveCanonicalUserSchoolKey(authResult.user as any) || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = searchParams.get('tenantId') || defaultTenant;
+    if (!isSchoolTenantAllowed(authResult.user as any, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
         { status: 403 }
@@ -322,17 +327,20 @@ export async function GET(request: NextRequest) {
 
     // 0. Si ya existen correos en el caché del buzón, utilizarlos de inmediato y evitar peticiones redundantes
     const cachedInbox = getCachedInboxEmails(tenantId, email);
-    if (cachedInbox && cachedInbox.length > 0) {
+    const hasWarmCache = Boolean(cachedInbox && cachedInbox.length > 0);
+    if (hasWarmCache && cachedInbox) {
       authenticated = true;
       emails = cachedInbox;
     }
 
-    // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
-    await GoogleOAuthService.ensureTokensLoaded(email);
-    const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
+    // 1. Hidratar tokens solo cuando no hay caché caliente o se solicita recarga forzada
     const forceRefresh = searchParams.get('force') === 'true';
+    if (!hasWarmCache || forceRefresh) {
+      await GoogleOAuthService.ensureTokensLoaded(email);
+    }
+    const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
 
-    if (hasGoogleOAuth && (!cachedInbox || cachedInbox.length === 0 || forceRefresh)) {
+    if (hasGoogleOAuth && (!hasWarmCache || forceRefresh)) {
       try {
         const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 15, tenantId);
         if (liveGoogle.length > 0) {
@@ -342,7 +350,7 @@ export async function GET(request: NextRequest) {
           injectEmailsBatchIntoCache(tenantId, liveGoogle, email);
         }
       } catch (err: any) {
-        console.warn('Error sincronizando correos con Google OAuth:', err?.message);
+        console.warn('Error sincronizando correos OAuth:', err?.message);
       }
     }
 
@@ -354,6 +362,13 @@ export async function GET(request: NextRequest) {
     let resolvedEmail = email;
 
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+      const ssrfCheck = await validateMailTargetAsync(targetHost, targetPort);
+      if (!ssrfCheck.valid) {
+        return NextResponse.json(
+          { success: false, error: ssrfCheck.reason || 'Servidor IMAP bloqueado por política de seguridad.' },
+          { status: 403 }
+        );
+      }
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
@@ -369,7 +384,7 @@ export async function GET(request: NextRequest) {
         requiresAppPassword = imapRes.requiresAppPassword || false;
         authError = imapRes.error;
       }
-    } else if (!hasGoogleOAuth) {
+    } else if (!authenticated && !hasGoogleOAuth) {
       requiresAppPassword = true;
     }
 
@@ -640,28 +655,52 @@ export async function POST(request: NextRequest) {
       );
     }
     const roleLower = (authResult.user.role || '').toLowerCase();
-    if (!['superadmin', 'ceo', 'owner', 'director', 'admin', 'coordinator', 'teacher'].includes(roleLower)) {
+    if (!EXECUTIVE_INBOX_ROLES.has(roleLower)) {
       return NextResponse.json(
         { success: false, error: 'Permisos insuficientes para operar en el buzón ejecutivo.' },
         { status: 403 }
       );
     }
 
-    const body = await request.json().catch(() => ({}));
-    const tenantId = String(body.tenantId || authResult.user.school_id || 'sch-default');
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Cuerpo JSON inválido.' },
+        { status: 400 }
+      );
+    }
 
-    // Aislamiento de tenant por escuela (excepto superadmin)
-    if (
-      roleLower !== 'superadmin' &&
-      authResult.user.school_id &&
-      tenantId !== 'sch-default' &&
-      tenantId !== authResult.user.school_id &&
-      tenantId !== authResult.user.institution_metadata?.tenant_uuid
-    ) {
+    const defaultTenant = resolveCanonicalUserSchoolKey(authResult.user as any) || 'sch-default';
+    const tenantId = String(body.tenantId || defaultTenant);
+
+    // Aislamiento estricto de tenant por plantel escolar (sin bypass sch-default)
+    if (!isSchoolTenantAllowed(authResult.user as any, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
         { status: 403 }
       );
+    }
+
+    if (
+      isDemoSandboxContext({
+        email: authResult.user?.email,
+        schoolId: authResult.user?.school_id,
+        userId: authResult.user?.id,
+        tenantId: authResult.user?.tenant_id || tenantId,
+      })
+    ) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        authenticated: true,
+        requiresAppPassword: false,
+        emails: getFallbackRawEmails(authResult.user?.email || 'sandbox@iskool.mx'),
+        total: 0,
+        unreadCount: 0,
+        connectedEmail: authResult.user?.email || 'demo.ceo@iskool.mx',
+        lastSyncTime: 'Entorno Demo Aislado',
+        message: 'Operación procesada en entorno aislado de demostración.'
+      });
     }
 
     // Acción directa de resolución de expediente por Dirección General
@@ -758,10 +797,7 @@ export async function POST(request: NextRequest) {
       emails.push(injected);
     }
 
-    // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
-    await GoogleOAuthService.ensureTokensLoaded(email);
-    const hasGoogleOAuth = body.mode === 'oauth_authorized' || (GoogleOAuthService.hasValidTokens(email) && body.password === undefined);
-
+    // 1. Hidratar tokens solo cuando no hay caché caliente autenticado o se solicita recarga forzada
     let cleanPass = (password || '').replace(/\s+/g, '');
     const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
@@ -769,6 +805,19 @@ export async function POST(request: NextRequest) {
 
     const forcePostRefresh = Boolean(body.force);
     const cachedInboxPost = getCachedInboxEmails(tenantId, email);
+    const hasWarmPostCache = Boolean(!forcePostRefresh && cachedInboxPost && cachedInboxPost.length > 0);
+    const hasKnownPostAuth = Boolean(
+      cleanPass ||
+      body.injectEmail ||
+      body.mode === 'oauth_authorized' ||
+      GoogleOAuthService.hasValidTokens(email)
+    );
+
+    if (!hasWarmPostCache || !hasKnownPostAuth) {
+      await GoogleOAuthService.ensureTokensLoaded(email);
+    }
+    const hasGoogleOAuth = body.mode === 'oauth_authorized' || (GoogleOAuthService.hasValidTokens(email) && body.password === undefined);
+
     if (!forcePostRefresh && cachedInboxPost && cachedInboxPost.length > 0 && (cleanPass || hasGoogleOAuth || body.injectEmail)) {
       authenticated = true;
       emails = cachedInboxPost;
@@ -1080,12 +1129,28 @@ export async function DELETE(request: NextRequest) {
     }
     const body = await request.json().catch(() => ({}));
     const { searchParams } = new URL(request.url);
-    const tenantId = body.tenantId || searchParams.get('tenantId') || authResult.user?.school_id || authResult.user?.tenant_id || 'e1000000-0000-0000-0000-000000000001';
-    if (!isTenantAllowedForInbox(authResult.user, tenantId)) {
+    const defaultTenant = resolveCanonicalUserSchoolKey(authResult.user as any) || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = body.tenantId || searchParams.get('tenantId') || defaultTenant;
+    if (!isSchoolTenantAllowed(authResult.user as any, tenantId)) {
       return NextResponse.json(
         { success: false, error: 'Acceso denegado: aislamiento de buzón multi-tenant activo.' },
         { status: 403 }
       );
+    }
+    if (
+      isDemoSandboxContext({
+        email: authResult.user?.email,
+        schoolId: authResult.user?.school_id,
+        userId: authResult.user?.id,
+        tenantId: authResult.user?.tenant_id || tenantId,
+      })
+    ) {
+      return NextResponse.json({
+        success: true,
+        demoSandbox: true,
+        message: 'Eliminación procesada en entorno aislado de demostración.',
+        deletedIds: []
+      });
     }
     const ids: string[] = Array.isArray(body.ids)
       ? body.ids

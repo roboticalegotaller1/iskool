@@ -54,26 +54,37 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
   const [currentAction, setCurrentAction] = useState<IdleActionDefinition | null>(null);
   const [isPetting, setIsPetting] = useState(false);
   const [floatingHearts, setFloatingHearts] = useState<FloatingHeart[]>([]);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  const petTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const nextActionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const petTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nextActionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actionEndTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 1. MOTOR PROCEDIMENTAL DE ESPERA VIVA (32 Acciones Aleatorias)
   const scheduleNextAction = useCallback(() => {
     if (isEgg || isPetting) return;
 
+    if (nextActionTimerRef.current) {
+      clearTimeout(nextActionTimerRef.current);
+      nextActionTimerRef.current = null;
+    }
+    if (actionEndTimerRef.current) {
+      clearTimeout(actionEndTimerRef.current);
+      actionEndTimerRef.current = null;
+    }
+
     // Intervalo aleatorio entre 3.5 y 7 segundos
     const delay = Math.floor(Math.random() * 3500) + 3500;
 
     nextActionTimerRef.current = setTimeout(() => {
+      nextActionTimerRef.current = null;
       // Elegir aleatoriamente una de las 32 conductas
       const randomIndex = Math.floor(Math.random() * LIVING_IDLE_ACTIONS.length);
       const chosenAction = LIVING_IDLE_ACTIONS[randomIndex];
       setCurrentAction(chosenAction);
 
       // Revertir a reposo al concluir la duración de la acción
-      setTimeout(() => {
+      actionEndTimerRef.current = setTimeout(() => {
+        actionEndTimerRef.current = null;
         setCurrentAction(null);
         scheduleNextAction();
       }, chosenAction.durationMs);
@@ -83,9 +94,34 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
   useEffect(() => {
     scheduleNextAction();
     return () => {
-      if (nextActionTimerRef.current) clearTimeout(nextActionTimerRef.current);
+      if (nextActionTimerRef.current) {
+        clearTimeout(nextActionTimerRef.current);
+        nextActionTimerRef.current = null;
+      }
+      if (actionEndTimerRef.current) {
+        clearTimeout(actionEndTimerRef.current);
+        actionEndTimerRef.current = null;
+      }
     };
   }, [scheduleNextAction]);
+
+  // Limpieza segura de temporizadores al desmontar
+  useEffect(() => {
+    return () => {
+      if (petTimeoutRef.current) {
+        clearTimeout(petTimeoutRef.current);
+        petTimeoutRef.current = null;
+      }
+      if (nextActionTimerRef.current) {
+        clearTimeout(nextActionTimerRef.current);
+        nextActionTimerRef.current = null;
+      }
+      if (actionEndTimerRef.current) {
+        clearTimeout(actionEndTimerRef.current);
+        actionEndTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // 2. SISTEMA INTERACTIVO DE CARICIAS (Dinámica Háptica de Afecto)
   const handlePointerInteraction = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -94,7 +130,6 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    setCursorPos({ x, y });
     setIsPetting(true);
 
     // Notificar callback externo para sumar puntos de amistad
@@ -115,13 +150,16 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
     // Resetear temporizador de caricia
     if (petTimeoutRef.current) clearTimeout(petTimeoutRef.current);
     petTimeoutRef.current = setTimeout(() => {
+      petTimeoutRef.current = null;
       setIsPetting(false);
     }, 900);
   };
 
+  const hasFloatingHearts = floatingHearts.length > 0;
+
   // Limpieza gradual de corazones flotantes
   useEffect(() => {
-    if (floatingHearts.length === 0) return;
+    if (!hasFloatingHearts) return;
     const interval = setInterval(() => {
       setFloatingHearts(prev =>
         prev
@@ -130,7 +168,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
       );
     }, 50);
     return () => clearInterval(interval);
-  }, [floatingHearts]);
+  }, [hasFloatingHearts]);
 
   // Transformaciones dinámicas CSS según la acción activa
   const getActionTransformClass = () => {

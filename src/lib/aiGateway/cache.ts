@@ -121,6 +121,7 @@ export class AIGatewayCache {
     // 2. Consulta L2 (Persistent Cache en base de datos) si no está en L1
     const db = getDbClient();
     if (db) {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
       try {
         // Timeout de seguridad de 1200ms para evitar ralentizar la respuesta si la red está fría
         const queryPromise = db
@@ -129,9 +130,9 @@ export class AIGatewayCache {
           .eq('cache_key', key)
           .maybeSingle();
 
-        const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: { message: 'L2 Cache Timeout' } }), 1200)
-        );
+        const timeoutPromise = new Promise<{ data: null; error: { message: string } }>((resolve) => {
+          timeoutId = setTimeout(() => resolve({ data: null, error: { message: 'L2 Cache Timeout' } }), 1200);
+        });
 
         const result: any = await Promise.race([queryPromise, timeoutPromise]);
 
@@ -154,6 +155,10 @@ export class AIGatewayCache {
         }
       } catch {
         // En caso de falla en Supabase o timeout, degradar de forma segura a miss
+      } finally {
+        if (timeoutId !== undefined) {
+          clearTimeout(timeoutId);
+        }
       }
     }
 

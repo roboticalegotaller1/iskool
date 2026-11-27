@@ -60,7 +60,7 @@ function fallbackSanitizeHtml(dirtyHtml: string): string {
   return clean;
 }
 
-// Configurar marked para tablas y GitHub Flavored Markdown (GFM)
+// Configurar marked para Markdown extendido con tablas
 marked.setOptions({
   gfm: true,
   breaks: true,
@@ -107,17 +107,20 @@ export interface ParsedVaultDoc {
   filename: string;
   frontmatter: PlanningFrontmatter;
   title: string;
-  rawContent: string;
   markdownBody: string;
   renderedHtml: string;
   lastModified: number;
 }
 
+interface IndexedVaultEntry extends ParsedVaultDoc {
+  hydrated: boolean;
+}
+
 // =========================================================================
 // CACHÉ EN MEMORIA PARA RENDERIZADO ESTÁTICO / ISR (< 2ms)
 // =========================================================================
-const docCacheBySlug = new Map<string, ParsedVaultDoc>();
-const docCacheByFilename = new Map<string, ParsedVaultDoc>();
+const docCacheBySlug = new Map<string, IndexedVaultEntry>();
+const docCacheByFilename = new Map<string, IndexedVaultEntry>();
 let allSlugsCache: string[][] | null = null;
 let lastScanTimestamp = 0;
 const VAULT_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hora de persistencia en memoria
@@ -245,7 +248,8 @@ function scanVaultFiles(dirPath: string, rootPath: string = dirPath): Array<{ fu
 }
 
 /**
- * Pre-calienta e indexa la totalidad de la Bóveda Curricular.
+ * Pre-calienta e indexa los metadatos ligeros de la Bóveda Curricular sin renderizado HTML masivo.
+ * El cuerpo Markdown y HTML sanitizado se hidratan y cachean bajo demanda por documento en getVaultPlanningBySlug().
  */
 export function buildOrGetVaultIndex(): void {
   const now = Date.now();
@@ -261,48 +265,34 @@ export function buildOrGetVaultIndex(): void {
 
   for (const item of scanned) {
     try {
-      const raw = fs.readFileSync(/*turbopackIgnore: true*/ item.fullPath, 'utf8');
-      const stat = fs.statSync(/*turbopackIgnore: true*/ item.fullPath);
-      const { frontmatter, body } = parseFrontmatter(raw);
-
-      // Extracción de título canónico
-      const rawTitle = frontmatter.title || 
-                       frontmatter.tema || 
-                       frontmatter.titulo || 
-                       raw.match(/^#\s+(.*)$/m)?.[1]?.trim() || 
-                       path.basename(item.fullPath, '.md').replace(/^Planeacion_/, '').replace(/_/g, ' ');
-      const title = String(rawTitle);
       const filename = path.basename(item.fullPath);
-      const isMasterIndex = item.slug.length === 1 || filename.startsWith('00_Indice_Maestro') || filename.includes('ISkool_Core');
-      const renderedHtml = isMasterIndex ? renderSanitizedMarkdown(body) : '';
+      const fallbackTitle = path
+        .basename(item.fullPath, '.md')
+        .replace(/^Planeacion_/, '')
+        .replace(/_/g, ' ');
       const slugString = item.slug.join('/');
 
-      const doc: ParsedVaultDoc = {
+      const doc: IndexedVaultEntry = {
         slug: item.slug,
         slugString,
         filePath: item.fullPath,
         filename,
-        frontmatter,
-        title,
-        rawContent: raw,
-        markdownBody: body,
-        renderedHtml,
-        lastModified: stat.mtimeMs
+        frontmatter: {},
+        title: fallbackTitle,
+        markdownBody: '',
+        renderedHtml: '',
+        lastModified: 0,
+        hydrated: false,
       };
 
       // Indexación por ruta jerárquica
       docCacheBySlug.set(slugString.toLowerCase(), doc);
-      
+
       // Indexación por nombre de archivo (para resolver enlaces simples o planos)
       const baseNameNoExt = path.basename(item.fullPath, '.md').toLowerCase();
       docCacheByFilename.set(baseNameNoExt, doc);
 
       slugsList.push(item.slug);
-
-      // Si es un índice o archivo de raíz, registrar también con slug de un solo segmento
-      if (item.slug.length === 1) {
-        slugsList.push([item.slug[0]]);
-      }
     } catch (e) {
       console.warn(`[Bóveda Curricular] Error indexando ${item.fullPath}:`, e);
     }
@@ -310,7 +300,7 @@ export function buildOrGetVaultIndex(): void {
 
   allSlugsCache = slugsList;
   lastScanTimestamp = now;
-  console.log(`🚀 [Bóveda Curricular]: Indexadas ${docCacheBySlug.size} planeaciones en memoria (Pre-renderizado y Sanitizado listo).`);
+  console.log(`🚀 [Bóveda Curricular]: Indexadas ${docCacheBySlug.size} planeaciones en memoria (Índice ligero + renderizado bajo demanda).`);
 }
 
 /**
@@ -323,14 +313,14 @@ export function getAllVaultPlanningSlugs(): Array<{ slug: string[] }> {
 }
 
 /**
- * Recupera una planeación pre-renderizada desde la memoria por su slug.
+ * Recupera una planeación por su slug, hidratando YAML + Markdown y cacheando HTML sanitizado bajo demanda.
  */
 export function getVaultPlanningBySlug(slug: string[]): ParsedVaultDoc | null {
   buildOrGetVaultIndex();
   if (!slug || slug.length === 0) return null;
 
   const searchKey = slug.join('/').toLowerCase();
-  let foundDoc: ParsedVaultDoc | null = null;
+  let foundDoc: IndexedVaultEntry | null = null;
   
   // 1. Coincidencia exacta por ruta
   if (docCacheBySlug.has(searchKey)) {
@@ -349,7 +339,28 @@ export function getVaultPlanningBySlug(slug: string[]): ParsedVaultDoc | null {
     }
   }
 
-  if (foundDoc && !foundDoc.renderedHtml) {
+  if (foundDoc && !foundDoc.hydrated) {
+    try {
+      const raw = fs.readFileSync(/*turbopackIgnore: true*/ foundDoc.filePath, 'utf8');
+      const stat = fs.statSync(/*turbopackIgnore: true*/ foundDoc.filePath);
+      const { frontmatter, body } = parseFrontmatter(raw);
+      const rawTitle =
+        frontmatter.title ||
+        frontmatter.tema ||
+        frontmatter.titulo ||
+        body.match(/^#\s+(.*)$/m)?.[1]?.trim() ||
+        foundDoc.title;
+      foundDoc.frontmatter = frontmatter;
+      foundDoc.title = String(rawTitle);
+      foundDoc.markdownBody = body;
+      foundDoc.lastModified = stat.mtimeMs;
+      foundDoc.hydrated = true;
+    } catch (e) {
+      console.warn(`[Bóveda Curricular] Error hidratando ${foundDoc.filePath}:`, e);
+    }
+  }
+
+  if (foundDoc && !foundDoc.renderedHtml && foundDoc.markdownBody) {
     foundDoc.renderedHtml = renderSanitizedMarkdown(foundDoc.markdownBody);
   }
 

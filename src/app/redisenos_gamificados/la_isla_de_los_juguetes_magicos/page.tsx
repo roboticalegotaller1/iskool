@@ -138,21 +138,21 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
     const { cape, trainWheels, propeller, lightbulbs } = activeStudent.equippedToys;
 
     if (cape && trainWheels) {
-      return '/redisenos_assets/isla_juguetes/robot_capa_y_ruedas.jpg';
+      return '/redisenos_assets/isla_juguetes/robot_capa_y_ruedas.webp';
     }
     if (trainWheels) {
-      return '/redisenos_assets/isla_juguetes/robot_ruedas_tren.jpg';
+      return '/redisenos_assets/isla_juguetes/robot_ruedas_tren.webp';
     }
     if (cape) {
-      return '/redisenos_assets/isla_juguetes/robot_capa_superheroe.jpg';
+      return '/redisenos_assets/isla_juguetes/robot_capa_superheroe.webp';
     }
     if (propeller) {
-      return '/redisenos_assets/isla_juguetes/robot_helices_voladoras.jpg';
+      return '/redisenos_assets/isla_juguetes/robot_helices_voladoras.webp';
     }
     if (lightbulbs) {
-      return '/redisenos_assets/isla_juguetes/robot_bombillas_magicas.jpg';
+      return '/redisenos_assets/isla_juguetes/robot_bombillas_magicas.webp';
     }
-    return '/redisenos_assets/isla_juguetes/robot_base_taller.jpg';
+    return '/redisenos_assets/isla_juguetes/robot_base_taller.webp';
   };
 
   // Interacción al tocar al Huevito Amigo en su nido (Imagen 1)
@@ -344,7 +344,7 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
           
           {/* Ilustración Maestra de la Isla Flotante (Imagen 1) */}
           <img 
-            src="/redisenos_assets/isla_juguetes/hub_isla_juguetes.jpg" 
+            src="/redisenos_assets/isla_juguetes/hub_isla_juguetes.webp" 
             alt="La Isla de los Juguetes Mágicos - Preescolar iSkool" 
             className="w-full h-full object-fill select-none"
           />
@@ -559,7 +559,7 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
             {/* Lienzo del Reto: Escena Real del Trenecito generada con Nano Banana */}
             <div className="relative w-full aspect-[16/9] max-h-[50vh] overflow-hidden bg-emerald-100">
               <img 
-                src="/redisenos_assets/isla_juguetes/trenecito_puente_reto.jpg" 
+                src="/redisenos_assets/isla_juguetes/trenecito_puente_reto.webp" 
                 alt="Reto del Trenecito y Puente de Bloques" 
                 className="w-full h-full object-cover"
               />
@@ -908,7 +908,7 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
             {/* Escena Real del Taller con Robot Dinámico (Nano Banana) */}
             <div className="relative w-full aspect-[16/9] max-h-[50vh] overflow-hidden bg-amber-100">
               <img 
-                src="/redisenos_assets/isla_juguetes/taller_juguete_guardian.jpg" 
+                src="/redisenos_assets/isla_juguetes/taller_juguete_guardian.webp" 
                 alt="Taller del Juguete Mágico" 
                 className="w-full h-full object-cover"
               />

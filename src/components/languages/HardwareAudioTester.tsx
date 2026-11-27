@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
+import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Mic, 
   MicOff, 
@@ -50,6 +51,8 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const recognitionRef = useRef<any>(null);
   const startTimeRef = useRef<number>(0);
+  const testToneTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestAudioLevelRef = useRef<number>(0);
 
   // Iniciar diagnóstico de micrófono y osciloscopio
   const startMicTest = async () => {
@@ -118,52 +121,67 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
         }
       }
 
-      // Loop de visualización en canvas y medición de decibeles
+      // Loop de visualización en lienzo 60 FPS y telemetría React acotada (~12 Hz)
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
+      let cachedCanvasEl: HTMLCanvasElement | null = null;
+      let cachedCanvasCtx: CanvasRenderingContext2D | null = null;
+      let lastUiCommitMs = 0;
+      const UI_THROTTLE_MS = 80; // ~12.5 Hz
 
       const renderMeter = () => {
         if (!analyserRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
 
-        // Calcular volumen RMS
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-        }
-        const avg = sum / bufferLength;
-        const normalized = Math.min(100, Math.round((avg / 128) * 100));
-        setAudioLevel(normalized);
+        if (!document.hidden) {
+          analyserRef.current.getByteFrequencyData(dataArray);
 
-        // dB aproximados
-        const dB = Math.round(-60 + (normalized * 0.6));
-        setDecibels(dB);
+          // Calcular volumen RMS
+          let sum = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / bufferLength;
+          const normalized = Math.min(100, Math.round((avg / 128) * 100));
+          latestAudioLevelRef.current = normalized;
 
-        // Dibujar en Canvas
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const canvasCtx = canvas.getContext('2d');
-          if (canvasCtx) {
-            canvasCtx.fillStyle = isLightMode ? '#f8fafc' : '#0f172a';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+          // Commits de estado React acotados (~12 Hz) manteniendo el espectrograma fluido a 60 FPS
+          const now = performance.now();
+          if (now - lastUiCommitMs >= UI_THROTTLE_MS) {
+            lastUiCommitMs = now;
+            setAudioLevel(normalized);
+            const dB = Math.round(-60 + (normalized * 0.6));
+            setDecibels(dB);
+          }
 
-            const barWidth = (canvas.width / bufferLength) * 2.5;
-            let x = 0;
+          // Dibujar espectrograma 60 FPS en lienzo con contexto 2D cacheado
+          const canvas = canvasRef.current;
+          if (canvas) {
+            if (canvas !== cachedCanvasEl) {
+              cachedCanvasEl = canvas;
+              cachedCanvasCtx = canvas.getContext('2d');
+            }
+            if (cachedCanvasCtx) {
+              cachedCanvasCtx.fillStyle = isLightMode ? '#f8fafc' : '#0f172a';
+              cachedCanvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 0; i < bufferLength; i++) {
-              const barHeight = (dataArray[i] / 255) * canvas.height;
+              const barWidth = (canvas.width / bufferLength) * 2.5;
+              let x = 0;
 
-              // Gradiente de color según intensidad
-              if (dataArray[i] > 180) {
-                canvasCtx.fillStyle = '#ef4444'; // Rojo (Saturación)
-              } else if (dataArray[i] > 100) {
-                canvasCtx.fillStyle = '#eab308'; // Amarillo
-              } else {
-                canvasCtx.fillStyle = '#10b981'; // Verde óptimo
+              for (let i = 0; i < bufferLength; i++) {
+                const barHeight = (dataArray[i] / 255) * canvas.height;
+
+                // Gradiente de color según intensidad
+                if (dataArray[i] > 180) {
+                  cachedCanvasCtx.fillStyle = '#ef4444'; // Rojo (Saturación)
+                } else if (dataArray[i] > 100) {
+                  cachedCanvasCtx.fillStyle = '#eab308'; // Amarillo
+                } else {
+                  cachedCanvasCtx.fillStyle = '#10b981'; // Verde óptimo
+                }
+
+                cachedCanvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+                x += barWidth + 1;
               }
-
-              canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-              x += barWidth + 1;
             }
           }
         }
@@ -180,10 +198,13 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
     }
   };
 
-  const stopMicTest = () => {
+  // Liberación pura de hardware (sin disparar callbacks ni mutar estado obsoleto en desmontaje)
+  const cleanupMicHardware = () => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
+    analyserRef.current = null;
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(track => track.stop());
       mediaStreamRef.current = null;
@@ -194,43 +215,63 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
     }
     if (recognitionRef.current) {
       try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
         recognitionRef.current.stop();
       } catch {}
       recognitionRef.current = null;
     }
+  };
+
+  const stopMicTest = () => {
+    const measuredLevel = latestAudioLevelRef.current;
+    cleanupMicHardware();
+    latestAudioLevelRef.current = 0;
     setIsListening(false);
     setAudioLevel(0);
     setDecibels(-60);
 
     onDiagnosticComplete?.({
-      micOk: micPermission === 'granted' && audioLevel > 5,
+      micOk: micPermission === 'granted' && measuredLevel > 5,
       speakerOk: speakerVerified,
       latencyMs: measuredLatencyMs || 120
     });
   };
 
-  // Reproducir tono sinusoidal de prueba (440 Hz)
+  // Reproducir tono sinusoidal de prueba (440 Hz) sobre el AudioContext compartido
   const playTestTone = () => {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioContextClass();
+      const ctx = getSharedSfxAudioContext();
+      if (!ctx) return;
+
+      if (testToneTimeoutRef.current) {
+        clearTimeout(testToneTimeoutRef.current);
+        testToneTimeoutRef.current = null;
+      }
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
+      const now = ctx.currentTime;
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, ctx.currentTime); // La 4
+      osc.frequency.setValueAtTime(440, now); // La 4
 
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
+      osc.onended = () => {
+        try { osc.disconnect(); } catch {}
+        try { gain.disconnect(); } catch {}
+      };
 
-      osc.start();
+      osc.start(now);
       setIsPlayingTestTone(true);
-      osc.stop(ctx.currentTime + 1.2);
+      osc.stop(now + 1.2);
 
-      setTimeout(() => {
+      testToneTimeoutRef.current = setTimeout(() => {
+        testToneTimeoutRef.current = null;
         setIsPlayingTestTone(false);
         setSpeakerVerified(true);
       }, 1200);
@@ -268,10 +309,14 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
     }
   };
 
-  // Limpieza al desmontar
+  // Limpieza pura de hardware y temporizadores al desmontar (sin invocar onDiagnosticComplete)
   useEffect(() => {
     return () => {
-      stopMicTest();
+      cleanupMicHardware();
+      if (testToneTimeoutRef.current) {
+        clearTimeout(testToneTimeoutRef.current);
+        testToneTimeoutRef.current = null;
+      }
     };
   }, []);
 

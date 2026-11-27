@@ -25,10 +25,33 @@ export interface ImapEmailResult {
   latencyMs: number;
 }
 
-// Búfer en memoria global para retener correos reales descargados del buzón
+// Búfer en memoria global (LRU acotado a 50 entradas) para retener correos reales descargados del buzón
+const MAX_GLOBAL_INBOX_CACHE_ENTRIES = 50;
 const globalInboxCache: Map<string, { emails: RawGmailItem[]; lastSync: number }> =
   (globalThis as any).__iskoolRealInboxCache ||
   ((globalThis as any).__iskoolRealInboxCache = new Map());
+
+function touchGlobalInboxCache(key: string): { emails: RawGmailItem[]; lastSync: number } | undefined {
+  const entry = globalInboxCache.get(key);
+  if (entry !== undefined) {
+    globalInboxCache.delete(key);
+    globalInboxCache.set(key, entry);
+  }
+  return entry;
+}
+
+function setGlobalInboxCache(key: string, value: { emails: RawGmailItem[]; lastSync: number }): void {
+  if (globalInboxCache.has(key)) {
+    globalInboxCache.delete(key);
+  } else {
+    while (globalInboxCache.size >= MAX_GLOBAL_INBOX_CACHE_ENTRIES) {
+      const lruKey = globalInboxCache.keys().next().value;
+      if (lruKey === undefined) break;
+      globalInboxCache.delete(lruKey);
+    }
+  }
+  globalInboxCache.set(key, value);
+}
 
 /**
  * Decodificador RFC 2047 para Asuntos y Remitentes con codificación Base64 o Quoted-Printable
@@ -274,7 +297,7 @@ function attemptSingleLiveImap(
       } catch {}
 
       if (result.success && result.emails.length > 0) {
-        globalInboxCache.set(tenantKey, { emails: result.emails, lastSync: Date.now() });
+        setGlobalInboxCache(tenantKey, { emails: result.emails, lastSync: Date.now() });
       }
 
       resolve({
@@ -350,8 +373,8 @@ function attemptSingleLiveImap(
       if (step === 'INIT' && buffer.includes('* OK')) {
         step = 'LOGIN';
         buffer = '';
-        const safeUser = cleanUser.replace(/"/g, '\\"');
-        const safePass = cleanPass.replace(/"/g, '\\"');
+        const safeUser = cleanUser.replace(/[\r\n\0"\\]/g, '');
+        const safePass = cleanPass.replace(/[\r\n\0"\\]/g, '');
         socket.write(`T01 LOGIN "${safeUser}" "${safePass}"\r\n`);
         return;
       }
@@ -603,8 +626,8 @@ export async function fetchLiveImapEmails(
       const secondAttempt = await attemptSingleLiveImap(host, port, fallbackUser, cleanPass, options);
       if (secondAttempt.success && secondAttempt.authenticated) {
         // Almacenar en caché bajo ambos usuarios para que cualquier consulta de la interfaz responda al instante
-        globalInboxCache.set(`${tenantId}:${fallbackUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
-        globalInboxCache.set(`${tenantId}:${cleanUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
+        setGlobalInboxCache(`${tenantId}:${fallbackUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
+        setGlobalInboxCache(`${tenantId}:${cleanUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
         return secondAttempt;
       }
     }
@@ -618,21 +641,14 @@ export async function fetchLiveImapEmails(
  */
 export function getCachedInboxEmails(tenantId: string, email?: string): RawGmailItem[] | null {
   if (!email) {
-    const item = globalInboxCache.get(tenantId);
+    const item = touchGlobalInboxCache(tenantId);
     return item ? item.emails : null;
   }
   const cleanUser = email.trim().toLowerCase();
   const tenantKey = `${tenantId}:${cleanUser}`;
-  const item = globalInboxCache.get(tenantKey) || globalInboxCache.get(tenantId);
+  const item = touchGlobalInboxCache(tenantKey) || touchGlobalInboxCache(tenantId);
   if (item && item.emails.length > 0) {
     return item.emails;
-  }
-
-  // Búsqueda flexible en todos los tenants para la misma cuenta de correo
-  for (const [k, v] of Array.from(globalInboxCache.entries())) {
-    if (k.endsWith(`:${cleanUser}`) && v?.emails && v.emails.length > 0) {
-      return v.emails;
-    }
   }
 
   return null;
@@ -652,7 +668,7 @@ export function injectEmailIntoCache(tenantId: string, email: RawGmailItem): voi
       const timeB = parseEmailDateMs(b);
       return timeB - timeA;
     });
-    globalInboxCache.set(tenantKey, {
+    setGlobalInboxCache(tenantKey, {
       emails: nextList,
       lastSync: Date.now()
     });
@@ -688,7 +704,7 @@ export function injectEmailsBatchIntoCache(tenantId: string, emails: RawGmailIte
       const timeB = parseEmailDateMs(b);
       return timeB - timeA;
     });
-    globalInboxCache.set(tenantKey, {
+    setGlobalInboxCache(tenantKey, {
       emails: mergedSorted,
       lastSync: Date.now()
     });

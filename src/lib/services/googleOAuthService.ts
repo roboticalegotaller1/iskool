@@ -8,6 +8,7 @@ import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
 import { injectEmailsBatchIntoCache } from './imapClientService';
 import { formatCdmxDate, formatCdmxTime, formatCdmxSmartBadge } from '@/utils/timeZoneUtils';
 import { encryptToken, decryptToken } from '@/lib/security/tokenCipher';
+import { resolveOAuthOrigin as resolveStrictOAuthOrigin } from '@/lib/security/originResolver';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -95,10 +96,80 @@ const tokenStore: Map<string, GoogleTokens> =
   (globalThis as any).__iskoolGoogleTokens ||
   ((globalThis as any).__iskoolGoogleTokens = loadTokensFromFile());
 
-// Caché en memoria de corto plazo (25s) para evitar sobrepasar límites de cuota por usuario en Google API
+// Caché en memoria de corto plazo (25s, acotado a 50 buzones) para mitigar cuotas por usuario
+const GMAIL_FETCH_CACHE_TTL_MS = 25_000;
+const MAX_GMAIL_FETCH_CACHE_SIZE = 50;
+const EXTERNAL_FETCH_TIMEOUT_MS = 12_000;
+
 const gmailFetchCache: Map<string, { emails: RawGmailItem[]; timestamp: number }> =
   (globalThis as any).__iskoolGmailFetchCache ||
   ((globalThis as any).__iskoolGmailFetchCache = new Map());
+
+function setGmailFetchCache(key: string, value: { emails: RawGmailItem[]; timestamp: number }): void {
+  const now = value.timestamp;
+  if (gmailFetchCache.has(key)) {
+    gmailFetchCache.delete(key);
+  } else if (gmailFetchCache.size >= MAX_GMAIL_FETCH_CACHE_SIZE) {
+    // Evictar primero entradas expiradas
+    for (const [k, v] of gmailFetchCache.entries()) {
+      if (now - v.timestamp >= GMAIL_FETCH_CACHE_TTL_MS) {
+        gmailFetchCache.delete(k);
+      }
+    }
+    // Si aún excede el límite, evictar las más antiguas (FIFO)
+    while (gmailFetchCache.size >= MAX_GMAIL_FETCH_CACHE_SIZE) {
+      const oldestKey = gmailFetchCache.keys().next().value;
+      if (oldestKey === undefined) break;
+      gmailFetchCache.delete(oldestKey);
+    }
+  }
+  gmailFetchCache.set(key, value);
+}
+
+// Caché TTL de búsquedas negativas de tokens (30s) para evitar consultas repetidas a BD para buzones sin credenciales
+const NEGATIVE_TOKEN_LOOKUP_TTL_MS = 30_000;
+const MAX_NEGATIVE_LOOKUP_ENTRIES = 200;
+const negativeTokenLookupCache: Map<string, number> =
+  (globalThis as any).__iskoolNegativeTokenLookupCache ||
+  ((globalThis as any).__iskoolNegativeTokenLookupCache = new Map());
+
+function markNegativeTokenLookup(key: string): void {
+  if (negativeTokenLookupCache.has(key)) {
+    negativeTokenLookupCache.delete(key);
+  } else if (negativeTokenLookupCache.size >= MAX_NEGATIVE_LOOKUP_ENTRIES) {
+    const oldestKey = negativeTokenLookupCache.keys().next().value;
+    if (oldestKey !== undefined) negativeTokenLookupCache.delete(oldestKey);
+  }
+  negativeTokenLookupCache.set(key, Date.now());
+}
+
+function clearNegativeTokenLookup(email?: string): void {
+  if (email) {
+    negativeTokenLookupCache.delete(email.toLowerCase().trim());
+  }
+  negativeTokenLookupCache.delete('__all__');
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, concurrency), items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (nextIndex < items.length) {
+        const currentIndex = nextIndex++;
+        results[currentIndex] = await worker(items[currentIndex], currentIndex);
+      }
+    })
+  );
+
+  return results;
+}
 
 /**
  * Scopes oficiales no sensibles para Inicio de Sesión Institucional (SSO).
@@ -152,30 +223,10 @@ export class GoogleOAuthService {
   private static cachedClientSecret = '';
 
   /**
-   * Resuelve el origen canónico para redirecciones OAuth 2.0.
-   * En AWS Amplify Compute detrás de CloudFront, el contenedor interno recibe Host: localhost:3000
-   * con protocolo HTTPS (https://localhost:3000). En ese escenario se normaliza a https://iskool.mx.
+   * Resuelve el origen canónico para redirecciones OAuth 2.0 con lista blanca estricta de host.
    */
   public static resolveOAuthOrigin(reqOrigin?: string, headers?: Headers): string {
-    const forwardedHost = headers?.get('x-forwarded-host')?.split(',')[0]?.trim();
-    if (forwardedHost && !forwardedHost.includes('localhost') && !forwardedHost.includes('127.0.0.1')) {
-      return `https://${forwardedHost}`;
-    }
-
-    const rawOrigin = (reqOrigin || 'http://localhost:3000').replace(/\/$/, '');
-    const isLocalOrigin = rawOrigin.includes('localhost') || rawOrigin.includes('127.0.0.1');
-    const isCloudFrontOrHttpsLocal =
-      rawOrigin.startsWith('https://localhost') ||
-      rawOrigin.startsWith('https://127.0.0.1') ||
-      Boolean(headers?.get('cloudfront-viewer-country')) ||
-      Boolean(headers?.get('via')?.toLowerCase().includes('cloudfront')) ||
-      (isLocalOrigin && process.env.NODE_ENV === 'production' && !process.env.VITEST);
-
-    if (isLocalOrigin && isCloudFrontOrHttpsLocal) {
-      return (process.env.NEXT_PUBLIC_SITE_URL || 'https://iskool.mx').replace(/\/$/, '');
-    }
-
-    return rawOrigin;
+    return resolveStrictOAuthOrigin(reqOrigin, headers);
   }
 
   public static async ensureClientCredentials(): Promise<void> {
@@ -255,7 +306,7 @@ export class GoogleOAuthService {
       await this.ensureClientCredentials();
       const effectiveEmail = this.resolveEffectiveGoogleEmail(email);
 
-      // Optimización de latencia: Si los tokens ya residen en memoria y son vigentes, evitar consulta de red a Supabase
+      // Optimización de latencia: Si los tokens ya residen en memoria y son vigentes, evitar consulta de red a BD
       if (effectiveEmail && tokenStore.has(effectiveEmail)) {
         const cached = tokenStore.get(effectiveEmail);
         if (cached && (cached.refreshToken || cached.expiresAt > Date.now() + 60000)) {
@@ -263,13 +314,29 @@ export class GoogleOAuthService {
         }
       }
 
+      // Evitar consultas repetidas en ráfaga cuando se confirmó recientemente ausencia de tokens (TTL 30s)
+      const negKey = effectiveEmail || '__all__';
+      const negTimestamp = negativeTokenLookupCache.get(negKey);
+      if (negTimestamp !== undefined) {
+        if (Date.now() - negTimestamp < NEGATIVE_TOKEN_LOOKUP_TTL_MS) {
+          return;
+        }
+        negativeTokenLookupCache.delete(negKey);
+      }
+
       const supabase = getSupabaseClient();
       if (!supabase) return;
-      let query = supabase.from('email_accounts').select('*').eq('is_active', true);
+      let query = supabase
+        .from('email_accounts')
+        .select('email_address, access_token_encrypted, refresh_token_encrypted, token_expires_at')
+        .eq('is_active', true);
       if (effectiveEmail) {
         query = query.eq('email_address', effectiveEmail);
+      } else {
+        query = query.limit(50);
       }
       const { data, error } = await query;
+      let loadedAny = false;
       if (!error && Array.isArray(data) && data.length > 0) {
         for (const row of data) {
           if (row.email_address && (row.refresh_token_encrypted || row.access_token_encrypted)) {
@@ -286,19 +353,25 @@ export class GoogleOAuthService {
               picture: existing?.picture
             };
             tokenStore.set(em, tokens);
+            clearNegativeTokenLookup(em);
+            loadedAny = true;
           }
         }
       }
+      if (!error && !loadedAny) {
+        markNegativeTokenLookup(negKey);
+      }
     } catch (e) {
-      console.warn('Error cargando tokens de Supabase email_accounts:', e);
+      console.warn('Error cargando tokens de email_accounts:', e);
     }
   }
 
   /**
-   * Persiste un token actualizado de forma permanente en la base de datos Supabase
+   * Persiste un token actualizado de forma permanente en la base de datos
    * aplicando cifrado simétrico autenticado AES-256-GCM (CASA Tier 2/3 ASVS V6.2).
    */
   static async persistTokensToDb(tokens: GoogleTokens): Promise<void> {
+    clearNegativeTokenLookup(tokens.email);
     try {
       const supabase = getSupabaseClient();
       if (!supabase) return;
@@ -315,7 +388,7 @@ export class GoogleOAuthService {
         { onConflict: 'email_address' }
       );
     } catch (e) {
-      console.warn('Error persistiendo tokens en Supabase email_accounts:', e);
+      console.warn('Error persistiendo tokens en email_accounts:', e);
     }
   }
 
@@ -413,12 +486,13 @@ export class GoogleOAuthService {
         code,
         grant_type: 'authorization_code',
         redirect_uri: redirectUri
-      }).toString()
+      }).toString(),
+      signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
     });
 
     if (!tokenRes.ok) {
       const errBody = await tokenRes.text();
-      throw new Error(`Fallo al intercambiar código con Google: ${tokenRes.status} ${errBody}`);
+      throw new Error(`Fallo al intercambiar código OAuth: ${tokenRes.status} ${errBody}`);
     }
 
     const tokenData = await tokenRes.json();
@@ -428,11 +502,12 @@ export class GoogleOAuthService {
 
     // Obtener información del usuario autenticado
     const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
     });
 
     let email = '';
-    let name = 'Usuario de Google';
+    let name = 'Usuario Institucional';
     let picture = '';
 
     if (userRes.ok) {
@@ -452,6 +527,7 @@ export class GoogleOAuthService {
     };
 
     if (email) {
+      clearNegativeTokenLookup(email);
       tokenStore.set(email, tokens);
       saveTokensToFile(tokenStore);
       await this.persistTokensToDb(tokens);
@@ -476,21 +552,19 @@ export class GoogleOAuthService {
   }
 
   /**
-   * Obtiene los tokens almacenados para una cuenta de correo
+   * Obtiene los tokens almacenados exclusivamente para la cuenta de correo solicitada (cero respaldo cross-tenant).
    */
   static getStoredTokens(email?: string): GoogleTokens | undefined {
     if (!email) {
-      const lastConnected = ((globalThis as any).__iskoolLastConnectedGoogleEmail || '').toLowerCase().trim();
-      if (lastConnected && tokenStore.has(lastConnected)) {
-        return tokenStore.get(lastConnected);
-      }
-      const first = tokenStore.values().next();
-      return first.value;
+      return undefined;
     }
     const clean = email.toLowerCase().trim();
+    if (!clean) {
+      return undefined;
+    }
     const effectiveEmail = this.resolveEffectiveGoogleEmail(clean);
 
-    return tokenStore.get(effectiveEmail) || tokenStore.get(clean) || tokenStore.values().next().value;
+    return (effectiveEmail ? tokenStore.get(effectiveEmail) : undefined) || tokenStore.get(clean);
   }
 
   private static refreshPromises: Map<string, Promise<string | null>> = new Map();
@@ -524,7 +598,8 @@ export class GoogleOAuthService {
             client_secret: clientSecret,
             refresh_token: tokens.refreshToken,
             grant_type: 'refresh_token'
-          }).toString()
+          }).toString(),
+          signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
         });
 
         if (res.ok) {
@@ -620,27 +695,29 @@ export class GoogleOAuthService {
       let listRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
         {
-          headers: { Authorization: `Bearer ${effectiveToken}` }
+          headers: { Authorization: `Bearer ${effectiveToken}` },
+          signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
         }
       );
 
-      // Si retorna 401 Unauthorized, forzar renovación inmediata del token con Google y reintentar
+      // Si retorna 401 Unauthorized, forzar renovación inmediata del token y reintentar
       if (listRes.status === 401) {
-        console.warn('Gmail API returned 401, forcing token refresh with Google...');
+        console.warn('Mail API returned 401, forcing OAuth token refresh...');
         const refreshedToken = await this.refreshAccessToken(targetAccount);
         if (refreshedToken) {
           effectiveToken = refreshedToken;
           listRes = await fetch(
             `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
             {
-              headers: { Authorization: `Bearer ${effectiveToken}` }
+              headers: { Authorization: `Bearer ${effectiveToken}` },
+              signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
             }
           );
         }
       }
 
       if (!listRes.ok) {
-        console.warn('Gmail API list messages failed:', listRes.status);
+        console.warn('Mail API list messages failed:', listRes.status);
         return [];
       }
 
@@ -651,20 +728,17 @@ export class GoogleOAuthService {
         return [];
       }
 
-      // 2. Descargar mensajes en paralelo para máxima velocidad y fidelidad
+      // 2. Descargar mensajes en paralelo con timeout nativo sin fuga de temporizadores
       const settledDetails = await Promise.allSettled(
         messages.map(async (msgRef) => {
           try {
-            const msgController = new AbortController();
-            const msgTimeout = setTimeout(() => msgController.abort(), 8000);
             const detailRes = await fetch(
               `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msgRef.id}?format=full`,
               {
                 headers: { Authorization: `Bearer ${effectiveToken}` },
-                signal: msgController.signal
+                signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
               }
             );
-            clearTimeout(msgTimeout);
             if (!detailRes.ok) return null;
             return await detailRes.json();
           } catch {
@@ -802,9 +876,11 @@ export class GoogleOAuthService {
         }
       }
 
-      // 4. Evaluación en paralelo ultra-eficiente de todos los candidatos (resuelve simultáneamente en ~1.5s)
-      const emailItems: RawGmailItem[] = await Promise.all(
-        candidates.map(async (c) => {
+      // 4. Evaluación en paralelo acotado (pool de concurrencia 4) para evitar picos 429 en el Motor de IA
+      const emailItems: RawGmailItem[] = await mapWithConcurrency(
+        candidates,
+        4,
+        async (c) => {
           const evaluation = await CognitiveAIEmailTriageService.evaluateEmail({
             emailId: `gmail-${c.detailId}`,
             subject: c.subject,
@@ -862,7 +938,7 @@ export class GoogleOAuthService {
           }
 
           return rawItem;
-        })
+        }
       );
 
       // 4.1 Orden estricto descendente: el correo más reciente en la cima absoluta
@@ -870,7 +946,7 @@ export class GoogleOAuthService {
 
       // 5. Inyección atómica en lote al caché del buzón (O(N) sin cuellos de botella)
       injectEmailsBatchIntoCache(tenantId, emailItems, targetAccount);
-      gmailFetchCache.set(cacheKey, { emails: emailItems, timestamp: Date.now() });
+      setGmailFetchCache(cacheKey, { emails: emailItems, timestamp: Date.now() });
 
       return emailItems;
     } catch (err: any) {
@@ -905,7 +981,6 @@ export class GoogleOAuthService {
   }> {
     const targetEmail = this.resolveEffectiveGoogleEmail(email);
     try {
-      await this.ensureTokensLoaded(targetEmail);
       const accessToken = await this.getValidAccessToken(targetEmail);
       if (!accessToken) {
         return {
@@ -925,7 +1000,8 @@ export class GoogleOAuthService {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${accessToken}`
-        }
+        },
+        signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
       });
 
       if (gcalRes.status === 401) {
@@ -935,7 +1011,8 @@ export class GoogleOAuthService {
             method: 'GET',
             headers: {
               Authorization: `Bearer ${refreshed}`
-            }
+            },
+            signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
           });
         }
       }
@@ -1030,7 +1107,6 @@ export class GoogleOAuthService {
   }> {
     const targetEmail = this.resolveEffectiveGoogleEmail(email);
     try {
-      await this.ensureTokensLoaded(targetEmail);
       const accessToken = await this.getValidAccessToken(targetEmail);
 
       // Parsear horas de inicio y fin (ej. "08:30 - 09:30 hrs" o "10:00")
@@ -1076,10 +1152,11 @@ export class GoogleOAuthService {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(eventPayload)
+          body: JSON.stringify(eventPayload),
+          signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
         });
 
-        // Si el evento a actualizar ya no existe en Google Calendar (404), recrearlo con POST
+        // Si el evento a actualizar ya no existe en el calendario remoto (404), recrearlo con POST
         if (method === 'PATCH' && gcalRes.status === 404) {
           method = 'POST';
           endpoint = `https://www.googleapis.com/calendar/v3/calendars/primary/events`;
@@ -1089,7 +1166,8 @@ export class GoogleOAuthService {
               Authorization: `Bearer ${accessToken}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(eventPayload)
+            body: JSON.stringify(eventPayload),
+            signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
           });
         }
 
@@ -1144,7 +1222,6 @@ export class GoogleOAuthService {
   }> {
     const targetEmail = this.resolveEffectiveGoogleEmail(email);
     try {
-      await this.ensureTokensLoaded(targetEmail);
       const accessToken = await this.getValidAccessToken(targetEmail);
 
       if (accessToken && googleEventId && !googleEventId.startsWith('gcal-')) {
@@ -1153,7 +1230,8 @@ export class GoogleOAuthService {
           method: 'DELETE',
           headers: {
             Authorization: `Bearer ${accessToken}`
-          }
+          },
+          signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
         });
 
         if (gcalRes.ok || gcalRes.status === 204 || gcalRes.status === 410) {
@@ -1351,7 +1429,6 @@ export class GoogleOAuthService {
         throw new Error('Se requiere una dirección de correo de destinatario válida.');
       }
 
-      await this.ensureTokensLoaded(sender);
       const token = await this.getValidAccessToken(sender);
       if (!token) {
         throw new Error(`No se encontró token de acceso válido para la cuenta ${sender}.`);
@@ -1394,7 +1471,8 @@ export class GoogleOAuthService {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
       });
 
       if (!res.ok) {
@@ -1439,16 +1517,19 @@ export class GoogleOAuthService {
         try {
           await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(tokenToRevoke)}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            signal: AbortSignal.timeout(EXTERNAL_FETCH_TIMEOUT_MS)
           });
         } catch (revokeErr) {
-          console.warn('Advertencia al invocar revocación remota en Google:', revokeErr);
+          console.warn('Advertencia al invocar revocación remota OAuth:', revokeErr);
         }
       }
 
       // Purgar de memoria y cachés locales
       tokenStore.delete(effectiveEmail);
       tokenStore.delete(clean);
+      clearNegativeTokenLookup(effectiveEmail);
+      clearNegativeTokenLookup(clean);
       saveTokensToFile(tokenStore);
 
       // Desactivar y limpiar en Supabase

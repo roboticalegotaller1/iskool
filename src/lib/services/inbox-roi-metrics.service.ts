@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 
 export interface InboxROISummary {
   total_emails_analyzed: number;
@@ -18,39 +18,40 @@ export interface InboxROISummary {
 
 export class InboxRoiMetricsService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   static async getWeeklyMetrics(schoolId: string): Promise<InboxROISummary> {
     const supabase = this.getSupabase();
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
-    const { count: totalEmails } = await supabase
-      .from('email_messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('school_id', schoolId)
-      .gte('received_at', oneWeekAgo);
-
-    const { data: matters } = await supabase
-      .from('inbox_matters')
-      .select('*')
-      .eq('school_id', schoolId)
-      .gte('created_at', oneWeekAgo);
-
-    const { data: patterns } = await supabase
-      .from('inbox_patterns')
-      .select('*')
-      .eq('school_id', schoolId)
-      .gte('created_at', oneWeekAgo);
-
-    const { count: feedbackCount } = await supabase
-      .from('inbox_director_feedback')
-      .select('*', { count: 'exact', head: true })
-      .eq('school_id', schoolId)
-      .gte('created_at', oneWeekAgo);
+    const [
+      { count: totalEmails },
+      { data: matters },
+      { count: patternsCount },
+      { count: feedbackCount }
+    ] = await Promise.all([
+      supabase
+        .from('email_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('school_id', schoolId)
+        .gte('received_at', oneWeekAgo),
+      supabase
+        .from('inbox_matters')
+        .select('destination, resolved_without_director, status, suggested_draft_reply, reincidence_count')
+        .eq('school_id', schoolId)
+        .gte('created_at', oneWeekAgo),
+      supabase
+        .from('inbox_patterns')
+        .select('id', { count: 'exact', head: true })
+        .eq('school_id', schoolId)
+        .gte('created_at', oneWeekAgo),
+      supabase
+        .from('inbox_director_feedback')
+        .select('id', { count: 'exact', head: true })
+        .eq('school_id', schoolId)
+        .gte('created_at', oneWeekAgo)
+    ]);
 
     const allMatters = matters ?? [];
     const totalAnalyzed = totalEmails || 297;
@@ -78,7 +79,7 @@ export class InboxRoiMetricsService {
       matters_resolved_without_director: resolvedWithout,
       matters_escalated_to_director: escalated,
       matters_breached_sla: breached,
-      patterns_detected: patterns?.length ?? 4,
+      patterns_detected: patternsCount ?? 4,
       drafts_generated: drafts,
       human_corrections_made: feedbackCount ?? 0,
       bypassed_ratio_percentage: Math.round(bypassedRatio * 10) / 10,

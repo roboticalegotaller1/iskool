@@ -45,7 +45,7 @@ const SAMPLE_READINGS = [
 
 La Temperatura no constituye un fluido corpóreo ni una sustancia misteriosa (como sugería el arcaico principio del calórico), sino la manifestación directa de la energía cinética promedio que poseen las partículas microscópicas en su ininterrumpida danza de choque y vibración.
 
-![Lámina Científica: Teoría Cinética del Calor y Flujo Térmico](/images/studio/calor_termodinamica_folio.jpg)
+![Lámina Científica: Teoría Cinética del Calor y Flujo Térmico](/images/studio/calor_termodinamica_folio.webp)
 
 Cuando dos cuerpos a distintas temperaturas entran en contacto térmico, el flujo espontáneo de energía siempre viaja desde la región de mayor excitación molecular hacia la de menor agitación, hasta alcanzar la perfecta quietud del Equilibrio Térmico (Te).
 
@@ -81,7 +81,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
 
 Durante este fenómeno astronómico extraordinario, el disco solar queda oculto y el día se transforma momentáneamente en un crepúsculo estrellado donde la temperatura ambiental desciende de forma perceptible.
 
-![Carta Astronómica: Corona Solar y Mecánica Celeste](/images/studio/sistema_solar_folio.jpg)
+![Carta Astronómica: Corona Solar y Mecánica Celeste](/images/studio/sistema_solar_folio.webp)
 
 Es en ese instante de totalidad cuando la corona solar, la atmósfera exterior del astro rey compuesta de plasma a millones de grados centígrados, se hace visible a simple vista como un anillo brillante de filamentos resplandecientes.`,
     time: 60,
@@ -109,7 +109,7 @@ Es en ese instante de totalidad cuando la corona solar, la atmósfera exterior d
 
 A diferencia de otros anfibios que completan su metamorfosis hacia la vida terrestre, el ajolote conserva sus rasgos larvales durante toda su vida adulta, un fenómeno evolutivo conocido como neotenia.
 
-![Grabado Naturalista: Anatomía y Hábitat del Ambystoma Mexicanum](/images/studio/ajolote_antiguo_folio.jpg)
+![Grabado Naturalista: Anatomía y Hábitat del Ambystoma Mexicanum](/images/studio/ajolote_antiguo_folio.webp)
 
 Su rasgo biológico más fascinante es su asombrosa capacidad de regenerar extremidades completas, branquias externas, órganos vitales e incluso fragmentos de su tejido cardíaco y cerebral sin dejar cicatrices.`,
     time: 60,
@@ -430,7 +430,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
         <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
           <button
             type="button"
-            onClick={() => handleInsertImage('/images/studio/calor_termodinamica_folio.jpg', 'Lámina Científica: Teoría Cinética del Calor y Flujo Térmico')}
+            onClick={() => handleInsertImage('/images/studio/calor_termodinamica_folio.webp', 'Lámina Científica: Teoría Cinética del Calor y Flujo Térmico')}
             className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100 transition-all cursor-pointer shadow-2xs"
             title="Insertar Lámina de Termodinámica"
           >
@@ -438,7 +438,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
           </button>
           <button
             type="button"
-            onClick={() => handleInsertImage('/images/studio/ajolote_antiguo_folio.jpg', 'Grabado Naturalista: Anatomía y Hábitat del Ambystoma Mexicanum')}
+            onClick={() => handleInsertImage('/images/studio/ajolote_antiguo_folio.webp', 'Grabado Naturalista: Anatomía y Hábitat del Ambystoma Mexicanum')}
             className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100 transition-all cursor-pointer shadow-2xs"
             title="Insertar Grabado del Ajolote"
           >
@@ -446,7 +446,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
           </button>
           <button
             type="button"
-            onClick={() => handleInsertImage('/images/studio/sistema_solar_folio.jpg', 'Carta Astronómica: Corona Solar y Mecánica Celeste')}
+            onClick={() => handleInsertImage('/images/studio/sistema_solar_folio.webp', 'Carta Astronómica: Corona Solar y Mecánica Celeste')}
             className="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 hover:bg-amber-100 transition-all cursor-pointer shadow-2xs"
             title="Insertar Carta Celeste"
           >

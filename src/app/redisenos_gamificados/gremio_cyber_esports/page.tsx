@@ -152,7 +152,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Chamarra',
     rarity: 'Legendario',
     bonus: 'Multiplicador Clan x5 · Aura Neón',
-    image: '/redisenos_assets/gremio_cyber/cyber_gamer_chaqueta_phoenix.jpg',
+    image: '/redisenos_assets/gremio_cyber/cyber_gamer_chaqueta_phoenix.webp',
     badgeColor: 'from-rose-500 to-amber-500',
     borderColor: 'border-rose-400',
     renderKey: 'chaqueta_phoenix'
@@ -163,7 +163,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Gafas Cyber',
     rarity: 'Épico',
     bonus: 'HUD Táctico · Lectura de PDA',
-    image: '/redisenos_assets/gremio_cyber/cyber_gamer_gafas_neon.jpg',
+    image: '/redisenos_assets/gremio_cyber/cyber_gamer_gafas_neon.webp',
     badgeColor: 'from-cyan-500 to-blue-600',
     borderColor: 'border-cyan-400',
     renderKey: 'gafas_neon'
@@ -174,7 +174,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Auriculares',
     rarity: 'Épico',
     bonus: 'Audio Binaural · Canal de Voz del Aula',
-    image: '/redisenos_assets/gremio_cyber/cyber_gamer_auriculares_rgb.jpg',
+    image: '/redisenos_assets/gremio_cyber/cyber_gamer_auriculares_rgb.webp',
     badgeColor: 'from-purple-500 to-pink-600',
     borderColor: 'border-purple-400',
     renderKey: 'auriculares_rgb'
@@ -185,7 +185,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Guantes',
     rarity: 'Raro',
     bonus: 'Precisión Mecánica +25% en Quizzes',
-    image: '/redisenos_assets/gremio_cyber/cyber_gamer_guante_haptico.jpg',
+    image: '/redisenos_assets/gremio_cyber/cyber_gamer_guante_haptico.webp',
     badgeColor: 'from-emerald-500 to-teal-600',
     borderColor: 'border-emerald-400',
     renderKey: 'guante_haptico'
@@ -196,7 +196,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Chamarra',
     rarity: 'Legendario',
     bonus: 'Racha 30 días ininterrumpida',
-    image: '/redisenos_assets/gremio_cyber/gear_chamarra_neo_estilo.jpg',
+    image: '/redisenos_assets/gremio_cyber/gear_chamarra_neo_estilo.webp',
     badgeColor: 'from-amber-500 to-orange-600',
     borderColor: 'border-amber-400',
     renderKey: 'chaqueta_phoenix'
@@ -207,7 +207,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Gafas Cyber',
     rarity: 'Épico',
     bonus: '100 PDA SEP Completados',
-    image: '/redisenos_assets/gremio_cyber/gear_gafas_hologen.jpg',
+    image: '/redisenos_assets/gremio_cyber/gear_gafas_hologen.webp',
     badgeColor: 'from-purple-500 to-pink-600',
     borderColor: 'border-purple-400',
     renderKey: 'gafas_neon'
@@ -218,7 +218,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Mochila Tech',
     rarity: 'Raro',
     bonus: 'Capacidad Extra de Proyectos',
-    image: '/redisenos_assets/gremio_cyber/gear_mochila_tech_b.jpg',
+    image: '/redisenos_assets/gremio_cyber/gear_mochila_tech_b.webp',
     badgeColor: 'from-blue-500 to-cyan-600',
     borderColor: 'border-cyan-400',
     renderKey: 'base'
@@ -229,7 +229,7 @@ const GEAR_CATALOG: GearItem[] = [
     category: 'Chamarra',
     rarity: 'Raro',
     bonus: 'Estilo Urbano de Competencia',
-    image: '/redisenos_assets/gremio_cyber/gear_camiseta_gtr.jpg',
+    image: '/redisenos_assets/gremio_cyber/gear_camiseta_gtr.webp',
     badgeColor: 'from-blue-500 to-indigo-600',
     borderColor: 'border-indigo-400',
     renderKey: 'base'
@@ -541,16 +541,16 @@ export default function GremioCyberEsportsPage() {
   const getGamerHeroImage = () => {
     switch (activeVisualRender) {
       case 'chaqueta_phoenix':
-        return '/redisenos_assets/gremio_cyber/cyber_gamer_chaqueta_phoenix.jpg';
+        return '/redisenos_assets/gremio_cyber/cyber_gamer_chaqueta_phoenix.webp';
       case 'gafas_neon':
-        return '/redisenos_assets/gremio_cyber/cyber_gamer_gafas_neon.jpg';
+        return '/redisenos_assets/gremio_cyber/cyber_gamer_gafas_neon.webp';
       case 'auriculares_rgb':
-        return '/redisenos_assets/gremio_cyber/cyber_gamer_auriculares_rgb.jpg';
+        return '/redisenos_assets/gremio_cyber/cyber_gamer_auriculares_rgb.webp';
       case 'guante_haptico':
-        return '/redisenos_assets/gremio_cyber/cyber_gamer_guante_haptico.jpg';
+        return '/redisenos_assets/gremio_cyber/cyber_gamer_guante_haptico.webp';
       case 'base':
       default:
-        return '/redisenos_assets/gremio_cyber/cyber_gamer_base.jpg';
+        return '/redisenos_assets/gremio_cyber/cyber_gamer_base.webp';
     }
   };
 
@@ -706,7 +706,7 @@ export default function GremioCyberEsportsPage() {
           
           {/* Fondo Oficial de Alta Resolución (1280x714) */}
           <img
-            src="/redisenos_assets/gremio_cyber/cyber_master_hub_scene.jpg"
+            src="/redisenos_assets/gremio_cyber/cyber_master_hub_scene.webp"
             alt="Gremio Cyber-Saga Escenario Maestro"
             className="w-full h-full object-fill pointer-events-none select-none"
           />
@@ -908,7 +908,7 @@ export default function GremioCyberEsportsPage() {
               {/* Escenario 16:9 con los Pedestales Holográficos */}
               <div className="relative w-full aspect-[16/9] min-h-[320px] max-h-[420px] rounded-2xl overflow-hidden border border-cyan-400/40 shadow-xl bg-black">
                 <img
-                  src="/redisenos_assets/gremio_cyber/cyber_arena_duel_scene.jpg"
+                  src="/redisenos_assets/gremio_cyber/cyber_arena_duel_scene.webp"
                   alt="Duelo de Clanes Escolar"
                   className="w-full h-full object-cover"
                 />

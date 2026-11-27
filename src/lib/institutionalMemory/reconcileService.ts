@@ -156,6 +156,7 @@ export class InstitutionalMemoryReconcileService {
         const treeUrl = `${remoteApiHost}/repos/${safeRepo}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
         const treeRes = await fetch(treeUrl, {
           method: 'GET',
+          signal: AbortSignal.timeout(12000),
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github.v3+json',

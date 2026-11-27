@@ -12,18 +12,18 @@ export class AIGatewayModelRouter {
   public static readonly MODEL_CORE = 'models/pedagogical-ai-core';
   public static readonly MODEL_PRO = 'models/pedagogical-ai-pro';
 
-  // Tarifas de facturación por millón de tokens (USD)
+  // Tarifas reales vigentes de facturación por millón de tokens (USD)
   private static readonly PRICING: Record<string, ModelPricingConfig> = {
     [AIGatewayModelRouter.MODEL_FLASH_LITE]: {
       identifier: AIGatewayModelRouter.MODEL_FLASH_LITE,
-      input_cost_per_million_usd: 0.10,  // $0.0001 por 1K
-      output_cost_per_million_usd: 0.40, // $0.0004 por 1K
+      input_cost_per_million_usd: 0.25,  // Nivel ligero ($0.25 / 1M entrada)
+      output_cost_per_million_usd: 1.50, // Nivel ligero ($1.50 / 1M salida)
       context_window: 1000000
     },
     [AIGatewayModelRouter.MODEL_CORE]: {
       identifier: AIGatewayModelRouter.MODEL_CORE,
-      input_cost_per_million_usd: 0.30,  // $0.0003 por 1K
-      output_cost_per_million_usd: 1.20, // $0.0012 por 1K
+      input_cost_per_million_usd: 0.30,  // Nivel intermedio ligero ($0.30 / 1M entrada)
+      output_cost_per_million_usd: 2.50, // Nivel intermedio ligero ($2.50 / 1M salida)
       context_window: 1000000
     },
     [AIGatewayModelRouter.MODEL_PRO]: {

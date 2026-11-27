@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
+import { plusJakartaSans, jetbrainsMono, poppins } from "./fonts";
 import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
 import { ClientFloatingShell } from "@/components/layout/ClientFloatingShell";
@@ -67,7 +68,7 @@ export default async function RootLayout({
   return (
     <html
       lang="es"
-      className="h-full light antialiased"
+      className={`h-full light antialiased ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${poppins.variable}`}
       data-tenant={resolvedTenant}
       suppressHydrationWarning
     >

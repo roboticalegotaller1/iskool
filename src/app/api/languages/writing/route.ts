@@ -12,14 +12,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AutonomousWritingEngineService } from '@/services/writingEngineService';
 import { validateApiAuth } from '@/lib/authValidator';
 
+const WRITING_STAFF_ROLES = new Set([
+  'teacher',
+  'coordinator',
+  'director',
+  'admin',
+  'superadmin',
+  'owner',
+  'ceo'
+]);
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    if (!auth.authenticated) {
+    if (!auth.authenticated || !auth.user) {
       return NextResponse.json({ error: 'Autenticación requerida para interactuar con el Motor de Escritura.' }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
+    }
     const { comando, payload } = body;
 
     if (!comando) {
@@ -29,8 +42,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const roleLower = (auth.user.role || '').toLowerCase();
+
     switch (comando) {
       case 'CREAR_CONSIGNA': {
+        if (!WRITING_STAFF_ROLES.has(roleLower)) {
+          return NextResponse.json(
+            { error: 'Acceso denegado: Solo docentes o personal directivo pueden crear consignas de escritura.' },
+            { status: 403 }
+          );
+        }
         const { idioma = 'en', nivel = 'B2', tipo_tarea, tema } = payload || {};
         const consigna = AutonomousWritingEngineService.crearConsigna({
           idioma,
@@ -85,6 +106,12 @@ export async function POST(req: NextRequest) {
       }
 
       case 'DASHBOARD_DOCENTE': {
+        if (!WRITING_STAFF_ROLES.has(roleLower)) {
+          return NextResponse.json(
+            { error: 'Acceso denegado: Solo docentes o personal directivo pueden consultar el tablero docente.' },
+            { status: 403 }
+          );
+        }
         const { grupo = 'Cohorte General', evaluaciones = [] } = payload || {};
         const dashboard = AutonomousWritingEngineService.generarDashboardDocente({
           grupo,
@@ -106,7 +133,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error en WritingEngine API:', error);
     return NextResponse.json(
-      { error: error?.message || 'Error interno del servidor en Writing Engine' },
+      {
+        error: 'Error interno del servidor en Writing Engine',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
       { status: 500 }
     );
   }

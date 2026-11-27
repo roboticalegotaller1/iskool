@@ -18,7 +18,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const { studentId, simulatorId, difficulty, teacherId } = body;
     const isStudent = (auth.user.role || '').toLowerCase() === 'student';
     const effectiveStudentId = isStudent ? auth.user.id : (studentId || auth.user.id);
@@ -52,7 +58,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error inicializando sesión de simulador:', error);
     return NextResponse.json(
-      { error: 'Error interno generando sesión criptográfica', details: error.message },
+      {
+        error: 'Error interno generando sesión criptográfica',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
       { status: 500 }
     );
   }

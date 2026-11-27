@@ -11,14 +11,27 @@ import {
   CheckCircle2, XCircle, ChevronRight, Bold, Italic, List, Heading,
   Upload, FileImage, Mic, Timer, Heart, Award, Check
 } from 'lucide-react';
-import { StudioFlowPlayer } from '@/components/studio/player/StudioFlowPlayer';
 
 import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
 
-// Dynamically load the PixiCombatView to avoid SSR hydration issues
+// Dynamically load the PixiCombatView and StudioFlowPlayer to avoid SSR hydration issues and eager bundling
 const PixiCombatView = dynamic(() => import('./PixiCombatView'), { ssr: false });
+const StudioFlowPlayer = dynamic(
+  () => import('@/components/studio/player/StudioFlowPlayer').then((mod) => mod.StudioFlowPlayer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex flex-col items-center justify-center p-10 text-center min-h-[260px] gap-3">
+        <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-400 rounded-full animate-spin" />
+        <p className="text-xs font-serif font-bold text-amber-300 tracking-wide">
+          Preparando actividad interactiva...
+        </p>
+      </div>
+    ),
+  }
+);
 
 // Retro Sound Chiptune Synth Player
 const playChiptuneSound = (type: string) => {
@@ -149,10 +162,34 @@ export default function QuestCardModal() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const isAudio = file.type.startsWith('audio');
-    const processed = !isAudio && file.type.startsWith('image/')
-      ? await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 }).catch(() => file)
-      : file;
+    if (isSvgFile(file)) {
+      showToast('⚠️ Por seguridad e integridad visual, no se permiten archivos SVG. Adjunta PNG, JPG, WebP o audio.');
+      e.target.value = '';
+      return;
+    }
+
+    const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|webm)$/i.test(file.name);
+    let processed = file;
+
+    if (!isAudio) {
+      if (!isRasterImageFile(file)) {
+        showToast('⚠️ Formato no permitido. Adjunta una imagen (PNG, JPG, WebP) o un archivo de audio.');
+        e.target.value = '';
+        return;
+      }
+      try {
+        processed = await compressImageFile(file, { maxWidth: 1280, maxHeight: 1280, maxSizeBytes: 300 * 1024 });
+        if (processed.size > 400 * 1024) {
+          showToast('⚠️ La imagen comprimida supera el límite institucional de 400 KB.');
+          e.target.value = '';
+          return;
+        }
+      } catch (err: any) {
+        showToast(`⚠️ ${err?.message || 'No se pudo comprimir la imagen por debajo de 400 KB.'}`);
+        e.target.value = '';
+        return;
+      }
+    }
 
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -164,6 +201,7 @@ export default function QuestCardModal() {
       });
     };
     reader.readAsDataURL(processed);
+    e.target.value = '';
   };
 
   // Reset local states when activeQuest changes
@@ -975,7 +1013,7 @@ export default function QuestCardModal() {
                           type="file" 
                           ref={fileInputRef} 
                           onChange={handleRealFileChange} 
-                          accept="image/*,audio/*" 
+                          accept="image/png,image/jpeg,image/webp,audio/*" 
                           className="hidden" 
                         />
 

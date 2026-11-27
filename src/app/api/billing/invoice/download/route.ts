@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getStampedCfdiByUuid } from '@/lib/fiscal/pacAdapter';
 import { buildCfdi40Xml } from '@/lib/fiscal/cfdiXmlBuilder';
 import { validateApiAuth } from '@/lib/authValidator';
-import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
+import { isPlatformSuperUser } from '@/types';
+import { resolveOAuthOrigin } from '@/lib/security/originResolver';
 
 export async function GET(req: NextRequest) {
   const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
@@ -33,10 +34,50 @@ export async function GET(req: NextRequest) {
   const curp = req.nextUrl.searchParams.get('curp') || 'AAAA000101HDFZNS01';
   const level = req.nextUrl.searchParams.get('level') || 'Secundaria';
   const rvoe = req.nextUrl.searchParams.get('rvoe') || 'SEP-RVOE-2024-SEC-098';
+  const requestedSchoolId = req.nextUrl.searchParams.get('school_id') || req.nextUrl.searchParams.get('schoolId');
+
+  // 1. Verificar propiedad institucional y familiar sobre el CFDI almacenado (Anti-IDOR)
+  const isSuper = isPlatformSuperUser(auth.user);
+  const stored = getStampedCfdiByUuid(uuid);
+
+  if (!isSuper && requestedSchoolId && auth.user.school_id && requestedSchoolId !== auth.user.school_id) {
+    return NextResponse.json(
+      { error: 'Acceso denegado: No puedes descargar comprobantes fiscales de otra institución.' },
+      { status: 403 }
+    );
+  }
+
+  if (stored && !isSuper) {
+    if (!auth.user.school_id || !stored.schoolId || stored.schoolId !== auth.user.school_id) {
+      return NextResponse.json(
+        { error: 'Acceso denegado: Este comprobante fiscal pertenece a otra institución.' },
+        { status: 403 }
+      );
+    }
+
+    if (roleLower === 'parent') {
+      const storedParentId = (stored as any).parentId || (stored.request as any)?.parentId;
+      const storedParentEmail = ((stored as any).parentEmail || (stored.request as any)?.parentEmail || '').trim().toLowerCase();
+      const userEmail = (auth.user.email || '').trim().toLowerCase();
+      const userFullName = `${auth.user.first_name || ''} ${auth.user.last_name || ''}`.trim().toLowerCase();
+      const receptorName = (stored.request?.receptor?.nombre || '').trim().toLowerCase();
+
+      const isParentOwner = Boolean(
+        (storedParentId && storedParentId === auth.user.id) ||
+        (storedParentEmail && userEmail && storedParentEmail === userEmail) ||
+        (userFullName.length >= 4 && receptorName && receptorName.includes(userFullName))
+      );
+
+      if (!isParentOwner) {
+        return NextResponse.json(
+          { error: 'Acceso denegado: Este comprobante fiscal no corresponde a tu cuenta familiar.' },
+          { status: 403 }
+        );
+      }
+    }
+  }
 
   if (format === 'xml') {
-    // 1. Verificar si existe en el almacén de timbrado del PAC
-    const stored = getStampedCfdiByUuid(uuid);
     let xmlContent = stored?.response?.xmlContent;
 
     if (!xmlContent) {
@@ -100,7 +141,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Redirigir a la representación gráfica oficial en PDF usando el origen público canónico
-  const publicOrigin = GoogleOAuthService.resolveOAuthOrigin(req.nextUrl.origin, req.headers);
+  const publicOrigin = resolveOAuthOrigin(req.nextUrl.origin, req.headers);
   const pdfUrl = `/api/billing/invoice/pdf?receipt_id=${receiptId}&uuid=${uuid}&rfc=${rfcReceptor}&amount=${amount}&concept=${encodeURIComponent(concept)}&student=${encodeURIComponent(studentName)}`;
   return NextResponse.redirect(new URL(pdfUrl, publicOrigin));
 }

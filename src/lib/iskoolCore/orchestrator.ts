@@ -67,8 +67,10 @@ export class IskoolCore {
     options?: { grade?: string; courseId?: string; targetKnowledgeId?: string }
   ) {
     const grade = options?.grade || 'high_school_1';
-    const profile = await this.Adaptive.getProfile(studentId, grade);
-    const competenciesMap = await this.Adaptive.getCompetenciesMap(studentId);
+    const [profile, competenciesMap] = await Promise.all([
+      this.Adaptive.getProfile(studentId, grade),
+      this.Adaptive.getCompetenciesMap(studentId)
+    ]);
 
     const currentTarget = options?.targetKnowledgeId ||
       profile.mastery_history?.[0]?.concept_id ||
@@ -103,17 +105,20 @@ export class IskoolCore {
   ) {
     const schoolId = options?.schoolId || 'sch-jjrosseau';
     const groupId = options?.groupId || 'group_hs1_a';
-
-    const release = await this.Knowledge.getRelease('release_1.0_english_2026');
-
-    const groupAnalytics = await this.Analytics.query({
-      metric: 'executive_summary',
-      scopeType: 'group',
-      scopeId: groupId
-    });
-
     const sessionId = `copilot_sess_${teacherId}_${courseId}`;
-    let copilotSession = await TeacherCopilotStore.getSession(sessionId);
+
+    const [release, groupAnalytics, existingCopilotSession, artifacts] = await Promise.all([
+      this.Knowledge.getRelease('release_1.0_english_2026'),
+      this.Analytics.query({
+        metric: 'executive_summary',
+        scopeType: 'group',
+        scopeId: groupId
+      }),
+      TeacherCopilotStore.getSession(sessionId),
+      TeacherCopilotStore.getArtifactsBySession(sessionId)
+    ]);
+
+    let copilotSession = existingCopilotSession;
     if (!copilotSession) {
       copilotSession = {
         id: sessionId,
@@ -144,8 +149,6 @@ export class IskoolCore {
       };
       await TeacherCopilotStore.saveSession(copilotSession);
     }
-
-    const artifacts = await TeacherCopilotStore.getArtifactsBySession(sessionId);
 
     return {
       teacher_id: teacherId,
@@ -257,11 +260,15 @@ export class IskoolCore {
       comps: any
     ) => AdaptiveLearningNextActionService.call(studentId, currentTarget, priorities, comps),
     processEvidence: async (evidence: any) => {
-      const profile = await AdaptiveLearningStore.getProfile(evidence.student_id);
-      const compsMap = await AdaptiveLearningStore.getCompetencies(evidence.student_id);
+      const [profile, compsMap] = await Promise.all([
+        AdaptiveLearningStore.getProfile(evidence.student_id),
+        AdaptiveLearningStore.getCompetencies(evidence.student_id)
+      ]);
       const result = AdaptiveLearningMasteryEngine.call(profile, compsMap, evidence);
-      await AdaptiveLearningStore.saveProfile(result.updated_profile);
-      await AdaptiveLearningStore.saveCompetencies(evidence.student_id, result.updated_competencies);
+      await Promise.all([
+        AdaptiveLearningStore.saveProfile(result.updated_profile),
+        AdaptiveLearningStore.saveCompetencies(evidence.student_id, result.updated_competencies)
+      ]);
       return result;
     }
   };
@@ -308,6 +315,8 @@ export class IskoolCore {
   static readonly Analytics = {
     query: (params: AnalyticsQueryParams) =>
       AcademicAnalyticsQueryService.query(params),
+    queryGroupBundle: (scopeId?: string) =>
+      AcademicAnalyticsQueryService.queryGroupBundle(scopeId),
     getSnapshot: (id: string) =>
       AcademicAnalyticsStore.getSnapshot(id),
     saveSnapshot: (snapshot: Parameters<typeof AcademicAnalyticsStore.saveSnapshot>[0]) =>

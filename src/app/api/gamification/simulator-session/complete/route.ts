@@ -23,7 +23,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const { sessionToken, score, durationMs, timeSpentSeconds, interactionCount, userActions } = body;
 
     if (!sessionToken) {
@@ -133,6 +139,7 @@ export async function POST(req: NextRequest) {
     // 6. Emisión de Hito Pedagógico en Tiempo Real hacia el Teacher Social Loop
     try {
       broadcastTeacherMilestone({
+        schoolId: auth.user.school_id,
         teacherId: payload.teacherId,
         studentId: payload.studentId,
         studentName: `Alumno ${payload.studentId.substring(0, 7)}`,
@@ -173,7 +180,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Error procesando canje seguro de simulador:', error);
     return NextResponse.json(
-      { error: 'Error interno del servidor procesando la sesión de juego', details: error.message },
+      {
+        error: 'Error interno del servidor procesando la sesión de juego',
+        ...(process.env.NODE_ENV !== 'production' ? { details: error?.message } : {})
+      },
       { status: 500 }
     );
   }

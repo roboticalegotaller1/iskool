@@ -50,6 +50,58 @@ function loadImg(src: string): Promise<HTMLImageElement> {
   });
 }
 
+// Caché LRU acotado (máx. 16 entradas) del canal rojo de máscaras decodificadas + canvas temporal reutilizable
+const MAX_AVATAR_MASK_CACHE = 16;
+const avatarMaskChannelCache = new Map<string, Uint8Array>();
+let sharedAvatarMaskTmpCanvas: HTMLCanvasElement | null = null;
+let sharedAvatarMaskTmpCtx: CanvasRenderingContext2D | null = null;
+
+function getCachedMaskRedChannel(
+  src: string,
+  img: HTMLImageElement,
+  w: number,
+  h: number
+): Uint8Array | null {
+  const key = `${src}::${w}x${h}`;
+  const hit = avatarMaskChannelCache.get(key);
+  if (hit) {
+    avatarMaskChannelCache.delete(key);
+    avatarMaskChannelCache.set(key, hit);
+    return hit;
+  }
+
+  if (!sharedAvatarMaskTmpCanvas) {
+    sharedAvatarMaskTmpCanvas = document.createElement('canvas');
+    sharedAvatarMaskTmpCanvas.width = w;
+    sharedAvatarMaskTmpCanvas.height = h;
+    sharedAvatarMaskTmpCtx = sharedAvatarMaskTmpCanvas.getContext('2d', { willReadFrequently: true });
+  } else if (sharedAvatarMaskTmpCanvas.width !== w || sharedAvatarMaskTmpCanvas.height !== h) {
+    sharedAvatarMaskTmpCanvas.width = w;
+    sharedAvatarMaskTmpCanvas.height = h;
+  }
+
+  const tmpCtx = sharedAvatarMaskTmpCtx;
+  if (!tmpCtx) return null;
+
+  tmpCtx.clearRect(0, 0, w, h);
+  tmpCtx.drawImage(img, 0, 0, w, h);
+  const rgba = tmpCtx.getImageData(0, 0, w, h).data;
+  const total = w * h;
+  const red = new Uint8Array(total);
+  for (let i = 0; i < total; i++) {
+    red[i] = rgba[i * 4];
+  }
+
+  if (avatarMaskChannelCache.size >= MAX_AVATAR_MASK_CACHE) {
+    const oldestKey = avatarMaskChannelCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      avatarMaskChannelCache.delete(oldestKey);
+    }
+  }
+  avatarMaskChannelCache.set(key, red);
+  return red;
+}
+
 function hexToRgbArr(hex: string): [number, number, number] {
   let cleaned = hex.replace('#', '');
   if (cleaned.length === 3) cleaned = cleaned.split('').map(c => c + c).join('');
@@ -197,43 +249,43 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         const hairAssetKey = hairStyle !== 'spiky' ? (HAIR_ASSET_MAP[hairStyle] || null) : null;
         const prefix = isFemale ? 'female' : isNeutral ? 'neutral' : 'male';
 
-        const v = '?v=20261005_master_flawless_v16';
+        const v = '?v=20261126_master_webp_v17';
         const baseSrc = (hairAssetKey
-          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}.png`
+          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}.webp`
           : isFemale 
-          ? '/images/avatar/trainer_female_clean.png' 
+          ? '/images/avatar/trainer_female_clean.webp' 
           : isNeutral
-          ? '/images/avatar/trainer_neutral_clean.png' 
-          : '/images/avatar/trainer_base_clean.png') + v;
+          ? '/images/avatar/trainer_neutral_clean.webp' 
+          : '/images/avatar/trainer_base_clean.webp') + v;
 
         const skinMaskSrc = (isFemale 
-          ? '/images/avatar/trainer_female_skin_mask.png' 
+          ? '/images/avatar/trainer_female_skin_mask.webp' 
           : isNeutral
-          ? '/images/avatar/trainer_neutral_skin_mask.png' 
-          : '/images/avatar/trainer_clean_skin_mask.png') + v;
+          ? '/images/avatar/trainer_neutral_skin_mask.webp' 
+          : '/images/avatar/trainer_clean_skin_mask.webp') + v;
 
         const hairMaskSrc = (hairAssetKey
-          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}_hair_mask.png`
+          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}_hair_mask.webp`
           : isFemale 
-          ? '/images/avatar/trainer_female_hair_mask.png' 
+          ? '/images/avatar/trainer_female_hair_mask.webp' 
           : isNeutral
-          ? '/images/avatar/trainer_neutral_hair_mask.png' 
-          : '/images/avatar/trainer_hair_mask.png') + v;
+          ? '/images/avatar/trainer_neutral_hair_mask.webp' 
+          : '/images/avatar/trainer_hair_mask.webp') + v;
 
         const pantsMaskSrc = (isFemale 
-          ? '/images/avatar/trainer_female_pants_mask.png' 
+          ? '/images/avatar/trainer_female_pants_mask.webp' 
           : isNeutral
-          ? '/images/avatar/trainer_neutral_pants_mask.png' 
-          : '/images/avatar/trainer_pants_mask.png') + v;
+          ? '/images/avatar/trainer_neutral_pants_mask.webp' 
+          : '/images/avatar/trainer_pants_mask.webp') + v;
 
         const bootsMaskSrc = (isFemale 
-          ? '/images/avatar/trainer_female_boots_mask.png' 
+          ? '/images/avatar/trainer_female_boots_mask.webp' 
           : isNeutral
-          ? '/images/avatar/trainer_neutral_boots_mask.png' 
-          : '/images/avatar/trainer_boots_mask.png') + v;
+          ? '/images/avatar/trainer_neutral_boots_mask.webp' 
+          : '/images/avatar/trainer_boots_mask.webp') + v;
 
         const topSrc = (equippedTop && equippedTop !== 'top_none')
-          ? `/images/avatar/tops/${prefix}_${equippedTop}.png${v}`
+          ? `/images/avatar/tops/${prefix}_${equippedTop}.webp${v}`
           : null;
 
         const [baseImg, skinMask, hairMask, pantsMask, bootsMask, topImg] = await Promise.all([
@@ -265,33 +317,19 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         const brd = baseRawData.data;
 
         // 2. Si hay una prenda superior modular (top), se compone anatómicamente en el lienzo
+        let compData = baseRawData;
         if (topImg) {
           ctx.drawImage(topImg, 0, 0, w, h);
+          compData = ctx.getImageData(0, 0, w, h);
         }
-        const compData = ctx.getImageData(0, 0, w, h);
         const bd = compData.data;
 
-        // 3. Cargar máscaras a canvas temporales para lectura rápida de canales
-        const tmp = document.createElement('canvas');
-        tmp.width = w;
-        tmp.height = h;
-        const tmpCtx = tmp.getContext('2d');
-        if (!tmpCtx) return;
-
-        tmpCtx.drawImage(skinMask, 0, 0, w, h);
-        const smData = tmpCtx.getImageData(0, 0, w, h).data;
-
-        tmpCtx.clearRect(0, 0, w, h);
-        tmpCtx.drawImage(hairMask, 0, 0, w, h);
-        const hmData = tmpCtx.getImageData(0, 0, w, h).data;
-
-        tmpCtx.clearRect(0, 0, w, h);
-        tmpCtx.drawImage(pantsMask, 0, 0, w, h);
-        const pmData = tmpCtx.getImageData(0, 0, w, h).data;
-
-        tmpCtx.clearRect(0, 0, w, h);
-        tmpCtx.drawImage(bootsMask, 0, 0, w, h);
-        const bmData = tmpCtx.getImageData(0, 0, w, h).data;
+        // 3. Leer canales de máscaras desde caché LRU (decodificación única en canvas reutilizable)
+        const smData = getCachedMaskRedChannel(skinMaskSrc, skinMask, w, h);
+        const hmData = getCachedMaskRedChannel(hairMaskSrc, hairMask, w, h);
+        const pmData = getCachedMaskRedChannel(pantsMaskSrc, pantsMask, w, h);
+        const bmData = getCachedMaskRedChannel(bootsMaskSrc, bootsMask, w, h);
+        if (!smData || !hmData || !pmData || !bmData) return;
 
         const total = w * h;
 
@@ -310,7 +348,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           const lum = 0.299 * br + 0.587 * bg + 0.114 * bb;
 
           // A) Cabello dinámico (Coloreado anatómico de alta fidelidad según género)
-          if (hmData[idx] > 50) {
+          if (hmData[i] > 50) {
             // Si hay una prenda superior, restaurar el cabello frontal original de la base por encima de la prenda
             if (topImg && brd[idx + 3] >= 40) {
               bd[idx] = brd[idx];
@@ -336,14 +374,14 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             }
           }
           // B) Piel dinámica
-          else if (!isDefaultSkin && smData[idx] > 128) {
+          else if (!isDefaultSkin && smData[i] > 128) {
             const f = lum / 199;
             bd[idx] = Math.min(255, Math.max(0, Math.round(skinRgb[0] * f)));
             bd[idx + 1] = Math.min(255, Math.max(0, Math.round(skinRgb[1] * f)));
             bd[idx + 2] = Math.min(255, Math.max(0, Math.round(skinRgb[2] * f)));
           }
           // C) Pantalones modulares
-          else if (pmData[idx] > 128) {
+          else if (pmData[i] > 128) {
             if (equippedBottom === 'bottom_ibime_plaid_skirt' || equippedBottom === 'bottom_ibime_pants') {
               bd[idx + 3] = 0; // Transparente para dar paso a la prenda oficial de alta fidelidad
             } else if (!isDefaultPants) {
@@ -354,7 +392,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             }
           }
           // D) Calzado modular
-          else if (bmData[idx] > 128) {
+          else if (bmData[i] > 128) {
             if (equippedShoes === 'shoes_ibime_formal' || equippedBottom === 'bottom_ibime_plaid_skirt') {
               bd[idx + 3] = 0; // Transparente para dar paso al calzado escolar oficial
             } else if (!isDefaultBoots) {
@@ -919,7 +957,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="footwear_ibime_formal_layer">
             <image
-              href={isFemale ? "/images/avatar/shoes/female_shoes_ibime_formal.png" : isNeutral ? "/images/avatar/shoes/neutral_shoes_ibime_formal.png" : "/images/avatar/shoes/male_shoes_ibime_formal.png"}
+              href={isFemale ? "/images/avatar/shoes/female_shoes_ibime_formal.webp" : isNeutral ? "/images/avatar/shoes/neutral_shoes_ibime_formal.webp" : "/images/avatar/shoes/male_shoes_ibime_formal.webp"}
               x="0"
               y="0"
               width="768"
@@ -943,7 +981,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="bottom_ibime_pants_overlay">
             <image
-              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_pants.png" : isNeutral ? "/images/avatar/bottoms/neutral_bottom_ibime_pants.png" : "/images/avatar/bottoms/male_bottom_ibime_pants.png"}
+              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_pants.webp" : isNeutral ? "/images/avatar/bottoms/neutral_bottom_ibime_pants.webp" : "/images/avatar/bottoms/male_bottom_ibime_pants.webp"}
               x="0"
               y="0"
               width="768"
@@ -956,7 +994,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="bottom_ibime_skirt_overlay">
             <image
-              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_plaid_skirt.png" : "/images/avatar/bottoms/neutral_bottom_ibime_plaid_skirt.png"}
+              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_plaid_skirt.webp" : "/images/avatar/bottoms/neutral_bottom_ibime_plaid_skirt.webp"}
               x="0"
               y="0"
               width="768"
@@ -1756,7 +1794,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="outerwear_ibime_blazer_layer">
             <image
-              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_blazer.png" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_blazer.png" : "/images/avatar/outerwear/male_outerwear_ibime_blazer.png"}
+              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_blazer.webp" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_blazer.webp" : "/images/avatar/outerwear/male_outerwear_ibime_blazer.webp"}
               x="0"
               y="0"
               width="768"
@@ -1769,7 +1807,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="outerwear_ibime_track_layer">
             <image
-              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_track.png" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_track.png" : "/images/avatar/outerwear/male_outerwear_ibime_track.png"}
+              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_track.webp" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_track.webp" : "/images/avatar/outerwear/male_outerwear_ibime_track.webp"}
               x="0"
               y="0"
               width="768"

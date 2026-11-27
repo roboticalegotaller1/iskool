@@ -85,7 +85,7 @@ export const GrimorioTimedReadingPlayer: React.FC<Props> = ({
 
 La Temperatura no constituye un fluido corpóreo ni una sustancia misteriosa (como sugería el arcaico principio del calórico), sino la manifestación directa de la energía cinética promedio que poseen las partículas microscópicas en su ininterrumpida danza de choque y vibración.
 
-![Lámina Científica: Teoría Cinética del Calor y Flujo Térmico](/images/studio/calor_termodinamica_folio.jpg)
+![Lámina Científica: Teoría Cinética del Calor y Flujo Térmico](/images/studio/calor_termodinamica_folio.webp)
 
 Cuando dos cuerpos a distintas temperaturas entran en contacto térmico, el flujo espontáneo de energía siempre viaja desde la región de mayor excitación molecular hacia la de menor agitación, hasta alcanzar la perfecta quietud del Equilibrio Térmico (Te).
 
@@ -1051,7 +1051,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
               <div 
                 className="relative w-full min-h-[520px] sm:min-h-[580px] p-6 sm:p-10 flex flex-col md:flex-row gap-6 md:gap-10 transition-transform duration-500"
                 style={{
-                  backgroundImage: `url('/images/studio/ancient_parchment_book.jpg')`,
+                  backgroundImage: `url('/images/studio/ancient_parchment_book.webp')`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
@@ -1181,7 +1181,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
                 <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-500/70 shadow-lg shadow-amber-500/20 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/studio/ignis_boss_avatar.jpg"
+                    src="/images/studio/ignis_boss_avatar.webp"
                     alt="Ignis-Thermos"
                     className="w-full h-full object-cover"
                   />
@@ -1374,7 +1374,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
             <div className="relative w-24 h-24 mx-auto rounded-3xl overflow-hidden border-4 border-amber-500 shadow-2xl shadow-amber-500/30">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/studio/ignis_boss_avatar.jpg"
+                src="/images/studio/ignis_boss_avatar.webp"
                 alt="Ignis-Thermos"
                 className={`w-full h-full object-cover transition-transform ${bossIsDamaged ? 'scale-110 brightness-150 animate-bounce' : ''}`}
               />

@@ -72,9 +72,90 @@ interface CachedHistoricalFigure {
   filePath: string;
 }
 
+export interface HistoricalFigureSummary {
+  slug: string;
+  name: string;
+  era?: string;
+  isGeographicSite?: boolean;
+  bookSpineStyle: BookSpineStyle;
+  shortBio: string;
+  avatarImageUrl: string;
+}
+
+interface HistoricalFigureIndexEntry {
+  slug: string;
+  filePath: string;
+  titleSlug: string;
+  summary: HistoricalFigureSummary;
+}
+
 const historicalFigureMemoryCache = new Map<string, CachedHistoricalFigure>();
+const HISTORICAL_INDEX_TTL_MS = 5 * 60 * 1000;
+let historicalVaultIndexCache: {
+  dirKey: string;
+  timestamp: number;
+  entries: HistoricalFigureIndexEntry[];
+} | null = null;
+
+function getOrBuildHistoricalVaultIndex(): HistoricalFigureIndexEntry[] {
+  const { localDir, desktopDir } = getHistoricalVaultDirs();
+  const dirKey = `${localDir}|${desktopDir || ''}`;
+  const now = Date.now();
+
+  if (
+    historicalVaultIndexCache &&
+    historicalVaultIndexCache.dirKey === dirKey &&
+    now - historicalVaultIndexCache.timestamp < HISTORICAL_INDEX_TTL_MS
+  ) {
+    return historicalVaultIndexCache.entries;
+  }
+
+  const entryMap = new Map<string, HistoricalFigureIndexEntry>();
+
+  const scanDir = (dirPath: string) => {
+    if (!fs.existsSync(/*turbopackIgnore: true*/ dirPath)) return;
+    const dirEntries = fs.readdirSync(/*turbopackIgnore: true*/ dirPath, { withFileTypes: true });
+    for (const dirent of dirEntries) {
+      if (!dirent.isFile() || !dirent.name.endsWith('.md')) continue;
+      const slug = dirent.name.replace(/\.md$/, '');
+      if (entryMap.has(slug)) continue;
+
+      const filePath = path.join(/*turbopackIgnore: true*/ dirPath, dirent.name);
+      try {
+        const content = fs.readFileSync(/*turbopackIgnore: true*/ filePath, 'utf8');
+        const parsed = parseHistoricalMarkdown(content, slug);
+        entryMap.set(slug, {
+          slug,
+          filePath,
+          titleSlug: normalizeHistoricalSlug(parsed.characterName),
+          summary: {
+            slug,
+            name: parsed.characterName,
+            era: parsed.historicalEra,
+            isGeographicSite: parsed.isGeographicSite,
+            bookSpineStyle: parsed.bookSpineStyle,
+            shortBio: parsed.shortBio,
+            avatarImageUrl: parsed.avatarImageUrl
+          }
+        });
+      } catch (err) {
+        console.warn(`Error al escanear archivo de Bóveda [${dirent.name}]:`, err);
+      }
+    }
+  };
+
+  scanDir(localDir);
+  if (desktopDir) {
+    scanDir(desktopDir);
+  }
+
+  const entries = Array.from(entryMap.values());
+  historicalVaultIndexCache = { dirKey, timestamp: now, entries };
+  return entries;
+}
 
 export function invalidateHistoricalFigureCache(slug?: string): void {
+  historicalVaultIndexCache = null;
   if (slug) {
     historicalFigureMemoryCache.delete(slug);
   } else {
@@ -205,45 +286,32 @@ export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigur
     }
   }
 
-  // Si no se encuentra con coincidencia exacta de slug, buscar en los directorios por coincidencia de nombre o prefijo
+  // Si no se encuentra con coincidencia exacta de slug, resolver desde el índice en caché (sin relectura de 22+ archivos)
   if (!fs.existsSync(/*turbopackIgnore: true*/ targetPath)) {
-    const searchDirs = [localDir];
-    if (desktopDir) searchDirs.push(desktopDir);
+    const indexEntries = getOrBuildHistoricalVaultIndex();
 
-    for (const d of searchDirs) {
-      if (!fs.existsSync(/*turbopackIgnore: true*/ d)) continue;
-      const files = fs.readdirSync(/*turbopackIgnore: true*/ d).filter(f => f.endsWith('.md'));
-      
-      // 1. Coincidencia por inicio de nombre de archivo o contención
-      for (const file of files) {
-        const fileBase = file.replace(/\.md$/, '');
-        if (fileBase === slug || fileBase.startsWith(slug) || slug.startsWith(fileBase) || fileBase.includes(slug)) {
-          targetPath = path.join(/*turbopackIgnore: true*/ d, file);
-          slug = fileBase;
-          break;
-        }
-      }
-      if (fs.existsSync(/*turbopackIgnore: true*/ targetPath)) break;
+    // 1. Coincidencia por inicio de nombre de archivo o contención
+    let matched = indexEntries.find(
+      (entry) =>
+        entry.slug === slug ||
+        entry.slug.startsWith(slug) ||
+        slug.startsWith(entry.slug) ||
+        entry.slug.includes(slug)
+    );
 
-      // 2. Coincidencia inspeccionando el título/frontmatter
-      for (const file of files) {
-        try {
-          const filePath = path.join(/*turbopackIgnore: true*/ d, file);
-          const raw = fs.readFileSync(/*turbopackIgnore: true*/ filePath, 'utf8');
-          const titleMatch = raw.match(/^title:\s*(.+)$/m);
-          if (titleMatch) {
-            const fileTitleSlug = normalizeHistoricalSlug(titleMatch[1]);
-            if (fileTitleSlug === slug || fileTitleSlug.includes(slug) || slug.includes(fileTitleSlug)) {
-              targetPath = filePath;
-              slug = file.replace(/\.md$/, '');
-              break;
-            }
-          }
-        } catch {
-          // continuar
-        }
-      }
-      if (fs.existsSync(/*turbopackIgnore: true*/ targetPath)) break;
+    // 2. Coincidencia por título normalizado en índice en memoria
+    if (!matched) {
+      matched = indexEntries.find(
+        (entry) =>
+          entry.titleSlug === slug ||
+          entry.titleSlug.includes(slug) ||
+          slug.includes(entry.titleSlug)
+      );
+    }
+
+    if (matched) {
+      targetPath = matched.filePath;
+      slug = matched.slug;
     }
   }
 
@@ -460,7 +528,7 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
     isGeographicSite,
     historicalEra,
     birthDeathDates,
-    shortBio: shortBio || `${characterName} es un personaje fundamental en la historia.`,
+    shortBio: shortBio || `Soy ${characterName}, protagonista de nuestra historia nacional.`,
     detailedContext: detailedContext || shortBio,
     avatarImageUrl,
     bookSpineStyle,
@@ -495,7 +563,7 @@ export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { 
   const allowedBase = path.resolve(/*turbopackIgnore: true*/ localDir);
   const localPath = path.resolve(/*turbopackIgnore: true*/ localDir, `${slug}.md`);
 
-  if (!localPath.startsWith(allowedBase)) {
+  if (!localPath.startsWith(allowedBase + path.sep)) {
     throw new Error('Intento de Path Traversal bloqueado por el perímetro de seguridad.');
   }
 
@@ -508,7 +576,7 @@ export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { 
     if (desktopDir && fs.existsSync(/*turbopackIgnore: true*/ desktopDir)) {
       const allowedDesktopBase = path.resolve(/*turbopackIgnore: true*/ desktopDir);
       const dPath = path.resolve(/*turbopackIgnore: true*/ desktopDir, `${slug}.md`);
-      if (dPath.startsWith(allowedDesktopBase)) {
+      if (dPath.startsWith(allowedDesktopBase + path.sep)) {
         desktopPath = dPath;
         try {
           fs.writeFileSync(desktopPath, markdownContent, 'utf8');
@@ -1093,7 +1161,7 @@ export function analyzeHistoricalQuestion(
  * Evita que respuestas genéricas o no pertinentes se entreguen o se almacenen en caché.
  */
 export function isAnswerSemanticallyAligned(question: string, answer: string, characterName?: string): boolean {
-  if (!answer || isCorruptOrGenericPersonaAnswer(answer)) return false;
+  if (!answer || isCorruptOrGenericPersonaAnswer(answer, characterName)) return false;
   const analysis = analyzeHistoricalQuestion(question, undefined, characterName);
   const normAnswer = answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
@@ -1467,6 +1535,7 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
 
 /**
  * Lista todos los personajes y sitios históricos disponibles en la Bóveda Curricular
+ * reutilizando el índice en memoria (TTL 5 min).
  */
 export function listAllHistoricalFiguresInVault(): Array<{ 
   slug: string; 
@@ -1477,47 +1546,5 @@ export function listAllHistoricalFiguresInVault(): Array<{
   shortBio: string;
   avatarImageUrl: string;
 }> {
-  const { localDir, desktopDir } = getHistoricalVaultDirs();
-  const resultMap = new Map<string, {
-    slug: string; 
-    name: string; 
-    era?: string; 
-    isGeographicSite?: boolean; 
-    bookSpineStyle: BookSpineStyle;
-    shortBio: string;
-    avatarImageUrl: string;
-  }>();
-
-  const scanDir = (dirPath: string) => {
-    if (!fs.existsSync(dirPath)) return;
-    const files = fs.readdirSync(dirPath);
-    for (const file of files) {
-      if (!file.endsWith('.md')) continue;
-      const slug = file.replace(/\.md$/, '');
-      if (resultMap.has(slug)) continue;
-
-      try {
-        const content = fs.readFileSync(path.join(dirPath, file), 'utf8');
-        const parsed = parseHistoricalMarkdown(content, slug);
-        resultMap.set(slug, {
-          slug,
-          name: parsed.characterName,
-          era: parsed.historicalEra,
-          isGeographicSite: parsed.isGeographicSite,
-          bookSpineStyle: parsed.bookSpineStyle,
-          shortBio: parsed.shortBio,
-          avatarImageUrl: parsed.avatarImageUrl
-        });
-      } catch (err) {
-        console.warn(`Error al escanear archivo de Bóveda [${file}]:`, err);
-      }
-    }
-  };
-
-  scanDir(localDir);
-  if (desktopDir) {
-    scanDir(desktopDir);
-  }
-
-  return Array.from(resultMap.values());
+  return getOrBuildHistoricalVaultIndex().map((entry) => ({ ...entry.summary }));
 }

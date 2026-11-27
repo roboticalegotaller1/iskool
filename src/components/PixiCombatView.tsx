@@ -129,6 +129,18 @@ export default function PixiCombatView({
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<Application | null>(null);
   const [loading, setLoading] = useState(true);
+  const trackedRafIdsRef = useRef<Set<number>>(new Set());
+  const isMountedRef = useRef(true);
+
+  const scheduleTrackedRaf = (cb: FrameRequestCallback) => {
+    if (!isMountedRef.current) return;
+    const id = requestAnimationFrame((ts) => {
+      trackedRafIdsRef.current.delete(id);
+      if (!isMountedRef.current) return;
+      cb(ts);
+    });
+    trackedRafIdsRef.current.add(id);
+  };
 
 
   // References
@@ -208,15 +220,16 @@ export default function PixiCombatView({
         let sY = shieldText.y;
         let sAlpha = 1.0;
         const animateShieldText = () => {
+          if (!appRef.current) return;
           sY -= 0.5;
           sAlpha -= 0.015;
           shieldText.y = sY;
           shieldText.alpha = sAlpha;
           if (sAlpha <= 0) {
-            if (appRef.current) appRef.current.stage.removeChild(shieldText);
+            appRef.current.stage.removeChild(shieldText);
             shieldText.destroy();
           } else {
-            requestAnimationFrame(animateShieldText);
+            scheduleTrackedRaf(animateShieldText);
           }
         };
         animateShieldText();
@@ -237,9 +250,12 @@ export default function PixiCombatView({
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
+    const trackedRafIds = trackedRafIdsRef.current;
     let active = true;
     let cleanupMouse: (() => void) | null = null;
     let cleanupCoop: (() => void) | null = null;
+    let cleanupVisibility: (() => void) | null = null;
 
     const assetsToLoad = [
       '/images/rpg/combat_bg.png',
@@ -753,6 +769,7 @@ export default function PixiCombatView({
         const duration = 600; // ms
 
         const animateProj = () => {
+          if (!active || !appRef.current) return;
           const elapsed = Date.now() - startTime;
           const progress = Math.min(elapsed / duration, 1);
 
@@ -771,19 +788,20 @@ export default function PixiCombatView({
           
           let trailAlpha = 0.4;
           const fadeTrail = () => {
+            if (!active || !appRef.current) return;
             trailAlpha -= 0.05;
             trail.alpha = trailAlpha;
             if (trailAlpha <= 0) {
               mainContainer.removeChild(trail);
               trail.destroy();
             } else {
-              requestAnimationFrame(fadeTrail);
+              scheduleTrackedRaf(fadeTrail);
             }
           };
           fadeTrail();
 
           if (progress < 1) {
-            requestAnimationFrame(animateProj);
+            scheduleTrackedRaf(animateProj);
           } else {
             // Impact!
             mainContainer.removeChild(projectile);
@@ -813,6 +831,7 @@ export default function PixiCombatView({
             let dY = damageText.y;
             let dAlpha = 1.2;
             const animateText = () => {
+              if (!active || !appRef.current) return;
               dY -= 0.8;
               dAlpha -= 0.025;
               damageText.y = dY;
@@ -821,7 +840,7 @@ export default function PixiCombatView({
                 mainContainer.removeChild(damageText);
                 damageText.destroy();
               } else {
-                requestAnimationFrame(animateText);
+                scheduleTrackedRaf(animateText);
               }
             };
             animateText();
@@ -1119,10 +1138,29 @@ export default function PixiCombatView({
         }
       });
 
+      const handleVisibilityChange = () => {
+        if (!appRef.current?.ticker) return;
+        if (document.hidden) {
+          appRef.current.ticker.stop();
+        } else if (active) {
+          appRef.current.ticker.start();
+        }
+      };
+
       if (!active) {
         window.removeEventListener('mousemove', handleMouseMove);
         unsubscribeCoop();
         return;
+      }
+
+      if (typeof document !== 'undefined') {
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        if (document.hidden) {
+          app.ticker.stop();
+        }
+        cleanupVisibility = () => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
       }
 
       cleanupMouse = () => {
@@ -1135,6 +1173,10 @@ export default function PixiCombatView({
 
     return () => {
       active = false;
+      isMountedRef.current = false;
+      trackedRafIds.forEach((id) => cancelAnimationFrame(id));
+      trackedRafIds.clear();
+      if (cleanupVisibility) cleanupVisibility();
       if (cleanupMouse) cleanupMouse();
       if (cleanupCoop) cleanupCoop();
       if (appRef.current) {
@@ -1225,7 +1267,7 @@ export default function PixiCombatView({
         text.alpha = tAlpha;
         
         if (combatStateRef.current === 'victory') {
-          requestAnimationFrame(animateVictoryText);
+          scheduleTrackedRaf(animateVictoryText);
         } else {
           appRef.current.stage.removeChild(text);
           text.destroy();

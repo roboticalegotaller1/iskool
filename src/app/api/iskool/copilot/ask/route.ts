@@ -26,7 +26,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { error: 'Cuerpo JSON inválido o malformado.' },
+        { status: 400 }
+      );
+    }
     const { teacherId = 'teacher_hs1_lead', courseId = 'course_hs1_eng_2026', sessionId, query } = body;
 
     // 1. Validación de parámetros requeridos
@@ -77,7 +83,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     return NextResponse.json(
-      { error: 'Error procesando solicitud del Teacher Copilot', details: err.message },
+      {
+        error: 'Error procesando solicitud del Teacher Copilot',
+        ...(process.env.NODE_ENV !== 'production' ? { details: err?.message } : {})
+      },
       { status: 500 }
     );
   }

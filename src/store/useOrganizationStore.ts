@@ -29,9 +29,37 @@ import {
   wouldCreateHierarchyCycle,
 } from '@/lib/services/organizationService';
 import { useSchoolAdminStore } from './useSchoolAdminStore';
-import { UserProfile, UserRole } from '@/types';
+import { UserProfile, UserRole, isPlatformSuperUser } from '@/types';
 
 const ORG_CHANNEL_NAME = 'iskool_org_realtime_v1';
+const EXECUTIVE_ORG_ROLES = new Set(['superadmin', 'director', 'admin', 'owner', 'ceo']);
+
+function getActiveClientSessionUser(): Partial<UserProfile> | null {
+  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem('iskool_active_session_v2');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? (parsed as Partial<UserProfile>) : null;
+  } catch {
+    return null;
+  }
+}
+
+function isSessionAuthorizedForOrgSchool(schoolId: string): boolean {
+  const sessionUser = getActiveClientSessionUser();
+  if (!sessionUser) return true;
+  const roleLower = String(sessionUser.role || '').toLowerCase();
+  if (roleLower && !EXECUTIVE_ORG_ROLES.has(roleLower)) {
+    return false;
+  }
+  if (isPlatformSuperUser(sessionUser)) {
+    return true;
+  }
+  const userSchool = sessionUser.school_id ? normalizeOrgSchoolId(sessionUser.school_id) : '';
+  if (!userSchool) return false;
+  return userSchool === normalizeOrgSchoolId(schoolId);
+}
 
 function broadcastOrgUpdate(payload: any) {
   if (typeof window === 'undefined' || typeof BroadcastChannel === 'undefined') return;
@@ -323,7 +351,12 @@ function syncGraphToServerAndAdminStore(
   }
 
   // 2. Sincronizar hacia API del Servidor (/api/admin/organization) en cliente navegador
-  if (!options?.skipServerPost && typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+  if (
+    !options?.skipServerPost &&
+    typeof window !== 'undefined' &&
+    typeof fetch !== 'undefined' &&
+    isSessionAuthorizedForOrgSchool(schoolId)
+  ) {
     fetch(`/api/admin/organization?schoolId=${encodeURIComponent(schoolId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -348,7 +381,10 @@ interface OrganizationStoreState {
 
   getGraph: (schoolId?: string) => SchoolOrganizationGraph;
   hydrateFromServer: (schoolId?: string) => Promise<void>;
-  hydrateAllSchoolsFromServer: (schoolIds?: string[]) => Promise<void>;
+  hydrateAllSchoolsFromServer: (
+    schoolIds?: string[],
+    options?: { authorizedSchoolId?: string | null; isSuperUser?: boolean }
+  ) => Promise<void>;
 
   // Acciones de Nodos y Organigrama
   addSeatNode: (params: {
@@ -496,6 +532,7 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
       hydrateFromServer: async (rawSchoolId = 'sch-test-case') => {
         if (typeof window === 'undefined') return;
         const schoolId = normalizeOrgSchoolId(rawSchoolId);
+        if (!isSessionAuthorizedForOrgSchool(schoolId)) return;
         try {
           const res = await fetch(`/api/admin/organization?schoolId=${encodeURIComponent(schoolId)}`);
           if (!res.ok) return;
@@ -543,8 +580,40 @@ export const useOrganizationStore = create<OrganizationStoreState>()(
         }
       },
 
-      hydrateAllSchoolsFromServer: async (schoolIds) => {
+      hydrateAllSchoolsFromServer: async (schoolIds, options) => {
         if (typeof window === 'undefined') return;
+
+        // Restringir la hidratación multi-colegio a Super Usuarios de plataforma;
+        // cuentas directivas/CEO de un solo colegio o demo solo consultan su school_id autorizado.
+        if (options?.isSuperUser === false) {
+          const scopedId = options.authorizedSchoolId
+            ? normalizeOrgSchoolId(options.authorizedSchoolId)
+            : '';
+          if (scopedId) {
+            await get().hydrateFromServer(scopedId);
+          }
+          return;
+        }
+
+        if (options?.isSuperUser !== true) {
+          const sessionUser = getActiveClientSessionUser();
+          if (sessionUser) {
+            const roleLower = String(sessionUser.role || '').toLowerCase();
+            if (roleLower && !EXECUTIVE_ORG_ROLES.has(roleLower)) {
+              return;
+            }
+            if (!isPlatformSuperUser(sessionUser)) {
+              const scopedId = sessionUser.school_id
+                ? normalizeOrgSchoolId(sessionUser.school_id)
+                : '';
+              if (scopedId) {
+                await get().hydrateFromServer(scopedId);
+              }
+              return;
+            }
+          }
+        }
+
         const defaultIds = [
           'sch-ibime',
           'sch-jjrosseau',

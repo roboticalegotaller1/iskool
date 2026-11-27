@@ -37,6 +37,7 @@ import {
   ChevronRight,
   Radio
 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import {
   useLanguagesStore,
   LanguageCode,
@@ -96,7 +97,14 @@ export const BloomBktGamifiedCockpit: React.FC<BloomBktGamifiedCockpitProps> = (
   onLoadWeekLessonToWorkshop,
   onNavigateLegacyTab,
 }) => {
-  const { lessons, activeLessonId, setActiveLessonId, updateLesson } = useLanguagesStore();
+  const { lessons, activeLessonId, setActiveLessonId, updateLesson } = useLanguagesStore(
+    useShallow((state) => ({
+      lessons: state.lessons,
+      activeLessonId: state.activeLessonId,
+      setActiveLessonId: state.setActiveLessonId,
+      updateLesson: state.updateLesson,
+    }))
+  );
 
   const activeLesson = useMemo(() => {
     return lessons.find((l) => l.id === activeLessonId) || lessons[0];

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { teacherMilestoneBroadcaster, TeacherMilestoneEvent } from '@/lib/teacherMilestoneBroadcaster';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,8 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const isStaff = ['teacher', 'director', 'admin', 'superadmin', 'coordinator', 'owner', 'ceo'].includes(auth.user.role || '');
+  const roleLower = (auth.user.role || '').toLowerCase();
+  const isStaff = ['teacher', 'director', 'admin', 'superadmin', 'coordinator', 'owner', 'ceo'].includes(roleLower);
   if (!isStaff) {
     return new Response(JSON.stringify({ error: 'Acceso denegado: Se requiere rol docente o directivo.' }), {
       status: 403,
@@ -27,9 +29,10 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const isSuperUser = ['director', 'admin', 'superadmin', 'owner', 'ceo'].includes(auth.user.role || '');
-  const teacherId = isSuperUser ? (searchParams.get('teacherId') || auth.user.id) : auth.user.id;
-  const schoolId = auth.user.school_id || searchParams.get('schoolId');
+  const isSuperUser = isPlatformSuperUser(auth.user);
+  const isSchoolLeader = isSuperUser || ['director', 'coordinator', 'owner', 'ceo'].includes(roleLower);
+  const teacherId = isSchoolLeader ? (searchParams.get('teacherId') || auth.user.id) : auth.user.id;
+  const schoolId = isSuperUser ? (searchParams.get('schoolId') || auth.user.school_id) : auth.user.school_id;
 
   const encoder = new TextEncoder();
 
@@ -47,10 +50,14 @@ export async function GET(req: NextRequest) {
       });
       controller.enqueue(encoder.encode(`event: connected\ndata: ${welcomeData}\n\n`));
 
-      // 2. Suscripción a eventos de hitos
+      // 2. Suscripción a eventos de hitos con aislamiento estricto por escuela
       unsubscribe = teacherMilestoneBroadcaster.subscribe((event: TeacherMilestoneEvent) => {
-        // Filtrar por colegio o docente si corresponde
-        if (schoolId && event.schoolId && event.schoolId !== schoolId) {
+        // Para no superusuarios, descartar eventos sin schoolId o pertenecientes a otra escuela
+        if (!isSuperUser) {
+          if (!schoolId || !event.schoolId || event.schoolId !== schoolId) {
+            return;
+          }
+        } else if (schoolId && event.schoolId && event.schoolId !== schoolId) {
           return;
         }
         if (event.teacherId && event.teacherId !== teacherId && teacherId !== 'all') {

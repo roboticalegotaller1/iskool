@@ -52,10 +52,14 @@ export class LeadershipDashboardService {
     const now = new Date();
     const dataFreshness = `${formatCdmxDate(now)} ${formatCdmxTime(now)}`;
 
-    // 2. Cargar perfiles y evidencias de la base analítica
+    // 2. Cargar perfiles, evidencias y competencias de la base analítica en paralelo
     const allProfiles = await AdaptiveLearningStore.getAllProfiles();
-    const allEvidences = Array.from(await (AcademicAnalyticsQueryService as any).getAllEvidences(allProfiles)) as LearningEvidenceEntity[];
-    const allCompetencies = Array.from(await (AcademicAnalyticsQueryService as any).getAllCompetencies(allProfiles)) as StudentCompetencyEntity[];
+    const [rawEvidences, rawCompetencies] = await Promise.all([
+      AcademicAnalyticsQueryService.getAllEvidences(allProfiles),
+      AcademicAnalyticsQueryService.getAllCompetencies(allProfiles)
+    ]);
+    const allEvidences = Array.from(rawEvidences) as LearningEvidenceEntity[];
+    const allCompetencies = Array.from(rawCompetencies) as StudentCompetencyEntity[];
 
     const totalStudents = allProfiles.length || 75;
     const totalGroups = 3;

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useDeferredValue } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { useDemoInteractionStore } from '@/store/useDemoInteractionStore';
 import { DEMO_DEFAULT_PASSWORD, DEMO_SCHOOL_ID } from '@/lib/demo/demoSandboxConfig';
@@ -92,7 +93,7 @@ import { SuperUserFourQuadrantCockpit } from '@/components/ergonomics/SuperUserF
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { getUnifiedInstitutionAccounts, normalizeOrgSchoolId } from '@/lib/services/organizationService';
 import SuperUserAccountsControlModal from '@/components/admin/SuperUserAccountsControlModal';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 
 const ExecutiveAnalyticsStudio = dynamic(() => import('@/components/admin/ExecutiveAnalyticsStudio'), { ssr: false });
 const CEOEmailCommunicationsModal = dynamic(() => import('@/components/admin/CEOEmailCommunicationsModal').then(m => m.CEOEmailCommunicationsModal), { ssr: false });
@@ -131,15 +132,11 @@ export default function SuperUserAdminPage() {
     updateSubjectSyllabus,
     createCampus,
     updateCampus,
-    deleteCampus,
     createGroup,
-    updateGroup,
-    deleteGroup,
     staffUsers,
     staffPayroll: storeStaffPayroll,
     billingRecords: storeBillingRecords,
     registerStaffAccount,
-    updateStaffAccount,
     deleteStaffAccount,
     toggleStaffBlock,
     changeStaffPassword,
@@ -150,7 +147,48 @@ export default function SuperUserAdminPage() {
     adjustSalary,
     toggleSchoolSuspension,
     reconcileSeedsWithStore
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((state) => ({
+      institutionsList: state.institutionsList,
+      activeSchoolId: state.activeSchoolId,
+      selectSchool: state.selectSchool,
+      createInstitution: state.createInstitution,
+      updateInstitution: state.updateInstitution,
+      deleteInstitution: state.deleteInstitution,
+      schoolSettings: state.schoolSettings,
+      campusesList: state.campusesList,
+      detailedStudents: state.detailedStudents,
+      groupsList: state.groupsList,
+      subjectsList: state.subjectsList,
+      teachersList: state.teachersList,
+      toggleUserBlock: state.toggleUserBlock,
+      changeUserPassword: state.changeUserPassword,
+      registerStudent: state.registerStudent,
+      bulkRegisterStudents: state.bulkRegisterStudents,
+      registerTeacher: state.registerTeacher,
+      createSubject: state.createSubject,
+      deleteSubject: state.deleteSubject,
+      updateGroupAnnualPlan: state.updateGroupAnnualPlan,
+      updateSubjectSyllabus: state.updateSubjectSyllabus,
+      createCampus: state.createCampus,
+      updateCampus: state.updateCampus,
+      createGroup: state.createGroup,
+      staffUsers: state.staffUsers,
+      staffPayroll: state.staffPayroll,
+      billingRecords: state.billingRecords,
+      registerStaffAccount: state.registerStaffAccount,
+      deleteStaffAccount: state.deleteStaffAccount,
+      toggleStaffBlock: state.toggleStaffBlock,
+      changeStaffPassword: state.changeStaffPassword,
+      directorLimits: state.directorLimits,
+      updateDirectorLimits: state.updateDirectorLimits,
+      updatePayrollRecord: state.updatePayrollRecord,
+      dispersePayrollBatch: state.dispersePayrollBatch,
+      adjustSalary: state.adjustSalary,
+      toggleSchoolSuspension: state.toggleSchoolSuspension,
+      reconcileSeedsWithStore: state.reconcileSeedsWithStore,
+    }))
+  );
 
   useEffect(() => {
     reconcileSeedsWithStore?.();
@@ -206,6 +244,7 @@ export default function SuperUserAdminPage() {
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [selectedLimitsSchoolId, setSelectedLimitsSchoolId] = useState<string>('sch-jjrosseau');
   const [schoolDirectorySearch, setSchoolDirectorySearch] = useState<string>('');
+  const deferredSchoolDirectorySearch = useDeferredValue(schoolDirectorySearch);
   const [schoolDirectoryCategory, setSchoolDirectoryCategory] = useState<'all' | 'official' | 'independent' | 'sandbox'>('all');
 
   // Estados y Métricas del Sector Corporativo B2B (CEO)
@@ -357,6 +396,7 @@ export default function SuperUserAdminPage() {
   const [workshopDetailTab, setWorkshopDetailTab] = useState<'syllabus' | 'annual_plans' | 'students'>('syllabus');
   const [selectedGroupForPlan, setSelectedGroupForPlan] = useState<string>('grp-jar-4a');
   const [workshopStudentSearch, setWorkshopStudentSearch] = useState('');
+  const deferredWorkshopStudentSearch = useDeferredValue(workshopStudentSearch);
   const [showEditAnnualPlanModal, setShowEditAnnualPlanModal] = useState(false);
   const [showAddTopicModal, setShowAddTopicModal] = useState(false);
 
@@ -450,17 +490,37 @@ export default function SuperUserAdminPage() {
   const [accountsControlModalSchoolId, setAccountsControlModalSchoolId] = useState<string | null>(null);
 
   useEffect(() => {
-    const instIds = (institutionsList || []).map((i) => i.id);
-    hydrateAllSchoolsFromServer(instIds);
+    if (authLoading || !user) return;
+    const roleLower = String(user.role || '').toLowerCase();
+    const canInspectOrg =
+      isSuperUser ||
+      roleLower === 'owner' ||
+      roleLower === 'ceo' ||
+      roleLower === 'director';
+    if (!canInspectOrg) return;
+
+    const authorizedSchoolId = normalizeOrgSchoolId(user.school_id || effectiveSchoolId || '');
+    const instIds = isSuperUser ? (institutionsList || []).map((i) => i.id) : [];
+
+    if (isSuperUser) {
+      hydrateAllSchoolsFromServer(instIds, { isSuperUser: true });
+    } else if (authorizedSchoolId) {
+      hydrateFromServer(authorizedSchoolId);
+    }
 
     if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
       try {
         const bc = new BroadcastChannel('iskool_org_realtime_v1');
         bc.onmessage = (ev) => {
-          if (ev?.data?.schoolId) {
-            hydrateFromServer(ev.data.schoolId);
-          } else {
-            hydrateAllSchoolsFromServer(instIds);
+          const eventSchoolId = ev?.data?.schoolId ? normalizeOrgSchoolId(ev.data.schoolId) : '';
+          if (isSuperUser) {
+            if (eventSchoolId) {
+              hydrateFromServer(eventSchoolId);
+            } else {
+              hydrateAllSchoolsFromServer(instIds, { isSuperUser: true });
+            }
+          } else if (authorizedSchoolId && (!eventSchoolId || eventSchoolId === authorizedSchoolId)) {
+            hydrateFromServer(authorizedSchoolId);
           }
         };
         return () => bc.close();
@@ -469,7 +529,7 @@ export default function SuperUserAdminPage() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, user?.id, user?.role, user?.school_id, isSuperUser]);
 
   const globalAccountsTotals = useMemo(() => {
     const schoolIds = Array.from(
@@ -561,6 +621,7 @@ export default function SuperUserAdminPage() {
   const [selectedCampusDetail, setSelectedCampusDetail] = useState<Campus | null>(null);
   const [campusDetailTab, setCampusDetailTab] = useState<'grupos' | 'alumnos' | 'profesores' | 'config'>('grupos');
   const [campusSearchStudent, setCampusSearchStudent] = useState('');
+  const deferredCampusSearchStudent = useDeferredValue(campusSearchStudent);
 
   // Estados para Creación y Edición de Planteles
   const [showAddCampusModal, setShowAddCampusModal] = useState(false);
@@ -714,17 +775,30 @@ export default function SuperUserAdminPage() {
   // Manejo de Subida de Logotipo de Colegio (compresión WebP obligatoria Regla 3)
   const handleSchoolLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, schoolId: string) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const processed = file.type.startsWith('image/')
-        ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
-        : file;
+    if (!file) return;
+    if (isSvgFile(file) || !isRasterImageFile(file)) {
+      showToast('⚠️ Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP.');
+      e.target.value = '';
+      return;
+    }
+    try {
+      const processed = await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 });
+      if (processed.size > 400 * 1024) {
+        showToast('⚠️ El logotipo comprimido supera el límite institucional de 400 KB.');
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         const logoData = reader.result as string;
         updateInstitution(schoolId, { logoUrl: logoData });
-        showToast('🎨 Logotipo escolar actualizado correctamente.');
+        showToast('🎨 Logotipo escolar optimizado y actualizado correctamente.');
       };
       reader.readAsDataURL(processed);
+    } catch (err: any) {
+      showToast(`⚠️ ${err?.message || 'No se pudo comprimir el logotipo por debajo de 400 KB.'}`);
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -1167,18 +1241,19 @@ export default function SuperUserAdminPage() {
   // Manejo de Subida de Imagen del Taller (compresión WebP obligatoria Regla 3)
   const handleWorkshopImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+    if (!file) return;
+    try {
+      if (isSvgFile(file) || !isRasterImageFile(file)) {
         showToast('⚠️ Por seguridad e integridad visual, utiliza imágenes rasterizadas (PNG/JPG/WebP).');
-        e.target.value = '';
         return;
       }
-      const processed = file.type.startsWith('image/')
-        ? await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 }).catch(() => file)
-        : file;
+      const processed = await compressImageFile(file, {
+        maxWidth: 1024,
+        maxHeight: 1024,
+        maxSizeBytes: 300 * 1024,
+      });
       if (processed.size > 400 * 1024) {
         showToast('⚠️ La imagen comprimida supera el límite institucional de 400 KB.');
-        e.target.value = '';
         return;
       }
       const reader = new FileReader();
@@ -1186,6 +1261,10 @@ export default function SuperUserAdminPage() {
         setNewWorkshopForm(prev => ({ ...prev, image_url: reader.result as string }));
       };
       reader.readAsDataURL(processed);
+    } catch (err: any) {
+      showToast(`⚠️ ${err?.message || 'No fue posible comprimir la imagen del taller (PNG/JPG/WebP).'}`);
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -1495,13 +1574,14 @@ export default function SuperUserAdminPage() {
       const matchGroup = st.group_id === selectedGroupForPlan || 
         (targetGroup && st.campus_name === targetGroup.campus_name && st.grade === targetGroup.grade);
       
-      const matchSearch = workshopStudentSearch === '' || 
-        `${st.first_name} ${st.last_name_1}`.toLowerCase().includes(workshopStudentSearch.toLowerCase()) ||
-        (st.curp && st.curp.toLowerCase().includes(workshopStudentSearch.toLowerCase()));
+      const workshopQ = deferredWorkshopStudentSearch.toLowerCase();
+      const matchSearch = deferredWorkshopStudentSearch === '' || 
+        `${st.first_name} ${st.last_name_1}`.toLowerCase().includes(workshopQ) ||
+        (st.curp && st.curp.toLowerCase().includes(workshopQ));
 
       return matchGroup && matchSearch;
     });
-  }, [detailedStudents, groupsList, selectedGroupForPlan, workshopStudentSearch]);
+  }, [detailedStudents, groupsList, selectedGroupForPlan, deferredWorkshopStudentSearch]);
 
   // Planeación anual activa para el grupo seleccionado
   const activeGroupPlan: GroupAnnualPlan | null = useMemo(() => {
@@ -1928,8 +2008,8 @@ export default function SuperUserAdminPage() {
                     if (schoolDirectoryCategory === 'official' && (isTest || isIndependent)) return false;
                     if (schoolDirectoryCategory === 'independent' && !isIndependent) return false;
                     if (schoolDirectoryCategory === 'sandbox' && !isTest) return false;
-                    if (schoolDirectorySearch.trim()) {
-                      const q = schoolDirectorySearch.toLowerCase().trim();
+                    if (deferredSchoolDirectorySearch.trim()) {
+                      const q = deferredSchoolDirectorySearch.toLowerCase().trim();
                       const matchName = inst.name.toLowerCase().includes(q);
                       const matchCct = (inst.cct || '').toLowerCase().includes(q);
                       const matchAddress = (inst.address || '').toLowerCase().includes(q);
@@ -2027,6 +2107,7 @@ export default function SuperUserAdminPage() {
                                 schoolLogoFileInputRef.current?.click();
                               }}
                               title="Subir o Cambiar Logotipo Escolar"
+                              aria-label={`Subir o cambiar logotipo escolar de ${inst.name}`}
                               className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm cursor-pointer transition-transform hover:scale-110"
                             >
                               <ImageIcon className="h-3.5 w-3.5" />
@@ -2272,7 +2353,8 @@ export default function SuperUserAdminPage() {
                               setIsAdminEmailModalOpen(true);
                             }}
                             className="p-2.5 rounded-xl border border-blue-200 hover:border-blue-400 bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
-                            title={`Abrir Email Institucional, Triage Cognitivo y Conexión Google para ${inst.name}`}
+                            title={`Abrir Email Institucional, Triage Cognitivo y Sincronización Institucional para ${inst.name}`}
+                            aria-label={`Abrir Email Institucional, Triage Cognitivo y Sincronización Institucional para ${inst.name}`}
                           >
                             <Mail className="h-3.5 w-3.5 text-blue-600" />
                           </button>
@@ -2286,6 +2368,7 @@ export default function SuperUserAdminPage() {
                             }}
                             className="p-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
                             title={`Eliminar completamente ${inst.name} del sistema`}
+                            aria-label={`Eliminar completamente ${inst.name} del sistema`}
                           >
                             <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                           </button>
@@ -2334,6 +2417,7 @@ export default function SuperUserAdminPage() {
                             setShowCorporateStudio(true);
                           }}
                           title="Gestionar Identidad & Logotipos Oficiales de Empresas"
+                          aria-label="Gestionar identidad y logotipos oficiales de empresas"
                           className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-xl bg-white text-slate-700 hover:text-indigo-600 border border-slate-200 shadow-sm cursor-pointer transition-transform hover:scale-110"
                         >
                           <ImageIcon className="h-3.5 w-3.5" />
@@ -2589,6 +2673,7 @@ export default function SuperUserAdminPage() {
                       }
                     }}
                     title="Cambiar Logotipo del Colegio"
+                    aria-label="Cambiar logotipo del colegio"
                     className="absolute -bottom-1 -right-1 p-1 rounded-lg bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm cursor-pointer"
                   >
                     <ImageIcon className="h-3 w-3" />
@@ -2665,7 +2750,7 @@ export default function SuperUserAdminPage() {
               <button
                 onClick={() => setIsAdminEmailModalOpen(true)}
                 className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black shadow-md shadow-blue-500/20 transition-all hover:scale-102 cursor-pointer shrink-0"
-                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Sincronización Institucional (15 Fases)"
               >
                 <Mail className="h-4 w-4 text-white" />
                 <span>Email Institucional</span>
@@ -2729,6 +2814,7 @@ export default function SuperUserAdminPage() {
               type="button"
               onClick={() => scrollTabs('left')}
               title="Desplazar menú hacia la izquierda"
+              aria-label="Desplazar menú hacia la izquierda"
               className="hidden md:flex h-8 w-8 rounded-lg items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 shrink-0 transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -2890,7 +2976,7 @@ export default function SuperUserAdminPage() {
                 type="button"
                 onClick={() => setIsAdminEmailModalOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 text-blue-700 hover:text-blue-900 hover:bg-blue-50 border border-blue-200 shadow-2xs"
-                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Sincronización Institucional (15 Fases)"
               >
                 <Mail className="h-4 w-4 text-blue-600" />
                 <span>Email & Triage</span>
@@ -2902,6 +2988,7 @@ export default function SuperUserAdminPage() {
               type="button"
               onClick={() => scrollTabs('right')}
               title="Desplazar menú hacia la derecha"
+              aria-label="Desplazar menú hacia la derecha"
               className="hidden md:flex h-8 w-8 rounded-lg items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 shrink-0 transition-colors cursor-pointer"
             >
               <ChevronRight className="h-4 w-4" />
@@ -3995,6 +4082,7 @@ export default function SuperUserAdminPage() {
                                     setTimeout(() => setCopiedStaffPasswordId(null), 2000);
                                   }}
                                   title="Copiar contraseña"
+                                  aria-label={`Copiar contraseña de ${staff.first_name}`}
                                   className="ml-1 p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
                                 >
                                   {copiedStaffPasswordId === staff.id ? (
@@ -4010,6 +4098,7 @@ export default function SuperUserAdminPage() {
                                     showToast(`🔑 Nueva contraseña generada para ${staff.first_name}: ${newP}`);
                                   }}
                                   title="Regenerar contraseña aleatoria"
+                                  aria-label={`Regenerar contraseña aleatoria de ${staff.first_name}`}
                                   className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
                                 >
                                   <RefreshCw className="h-3.5 w-3.5" />
@@ -4036,6 +4125,7 @@ export default function SuperUserAdminPage() {
                                     showToast(isBlocked ? `✅ Cuenta de ${staff.first_name} reactivada.` : `⛔ Cuenta de ${staff.first_name} suspendida.`);
                                   }}
                                   title={isBlocked ? "Reactivar Acceso" : "Suspender Acceso"}
+                                  aria-label={isBlocked ? `Reactivar acceso de ${staff.first_name}` : `Suspender acceso de ${staff.first_name}`}
                                   className={`p-2 rounded-xl border transition-all cursor-pointer ${
                                     isBlocked
                                       ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600/30'
@@ -4053,6 +4143,7 @@ export default function SuperUserAdminPage() {
                                     }
                                   }}
                                   title="Eliminar Cuenta"
+                                  aria-label={`Eliminar cuenta de ${staff.first_name} ${staff.last_name}`}
                                   className="p-2 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600/30 transition-all cursor-pointer"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -4557,6 +4648,7 @@ export default function SuperUserAdminPage() {
                               }
                             }}
                             title="Eliminar Taller"
+                            aria-label={`Eliminar taller ${opt.name}`}
                             className="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -4711,19 +4803,32 @@ export default function SuperUserAdminPage() {
                     <span>Cambiar Imagen</span>
                     <input aria-label="Subir archivo o comprobante"
                       type="file"
-                      accept="image/*"
+                      accept="image/png,image/jpeg,image/webp"
                       className="hidden"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          const processed = file.type.startsWith('image/')
-                            ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
-                            : file;
+                        if (!file) return;
+                        if (isSvgFile(file) || !isRasterImageFile(file)) {
+                          showToast('⚠️ Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP.');
+                          e.target.value = '';
+                          return;
+                        }
+                        try {
+                          const processed = await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 });
+                          if (processed.size > 400 * 1024) {
+                            showToast('⚠️ El logotipo comprimido supera el límite institucional de 400 KB.');
+                            e.target.value = '';
+                            return;
+                          }
                           const reader = new FileReader();
                           reader.onloadend = () => {
                             setInstEditForm(prev => ({ ...prev, logoUrl: reader.result as string }));
                           };
                           reader.readAsDataURL(processed);
+                        } catch (err: any) {
+                          showToast(`⚠️ ${err?.message || 'No se pudo comprimir el logotipo por debajo de 400 KB.'}`);
+                        } finally {
+                          e.target.value = '';
                         }
                       }}
                     />
@@ -5145,6 +5250,7 @@ export default function SuperUserAdminPage() {
                               <button
                                 onClick={() => setSelectedPayrollRecordForStub(record)}
                                 title="Ver Recibo Digital de Nómina"
+                                aria-label={`Ver recibo digital de nómina de ${record.employee_name}`}
                                 className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
                               >
                                 <Receipt className="h-4 w-4 text-indigo-400" />
@@ -5154,6 +5260,7 @@ export default function SuperUserAdminPage() {
                               <button
                                 onClick={() => handleOpenAdjustSalary(record)}
                                 title="Ajustar Sueldo Base o Bonos"
+                                aria-label={`Ajustar sueldo base o bonos de ${record.employee_name}`}
                                 className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="h-4 w-4 text-amber-400" />
@@ -5167,6 +5274,7 @@ export default function SuperUserAdminPage() {
                                     showToast(`✅ Dispersión SPEI procesada para ${record.employee_name}`);
                                   }}
                                   title="Dispersar Pago Ahora"
+                                  aria-label={`Dispersar pago ahora para ${record.employee_name}`}
                                   className="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 transition-all cursor-pointer"
                                 >
                                   <Check className="h-4 w-4" />
@@ -6326,7 +6434,7 @@ export default function SuperUserAdminPage() {
                   <input aria-label="Subir archivo o comprobante"
                     type="file"
                     ref={workshopImageRef}
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={handleWorkshopImageUpload}
                     className="hidden"
                   />
@@ -6772,19 +6880,32 @@ export default function SuperUserAdminPage() {
                     <span>Subir</span>
                     <input aria-label="Subir archivo o comprobante"
                       type="file"
-                      accept="image/*"
+                      accept="image/png,image/jpeg,image/webp"
                       className="hidden"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          const processed = file.type.startsWith('image/')
-                            ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
-                            : file;
+                        if (!file) return;
+                        if (isSvgFile(file) || !isRasterImageFile(file)) {
+                          showToast('⚠️ Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP.');
+                          e.target.value = '';
+                          return;
+                        }
+                        try {
+                          const processed = await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 });
+                          if (processed.size > 400 * 1024) {
+                            showToast('⚠️ El logotipo comprimido supera el límite institucional de 400 KB.');
+                            e.target.value = '';
+                            return;
+                          }
                           const reader = new FileReader();
                           reader.onloadend = () => {
                             setNewSchoolForm(prev => ({ ...prev, logoUrl: reader.result as string }));
                           };
                           reader.readAsDataURL(processed);
+                        } catch (err: any) {
+                          showToast(`⚠️ ${err?.message || 'No se pudo comprimir el logotipo por debajo de 400 KB.'}`);
+                        } finally {
+                          e.target.value = '';
                         }
                       }}
                     />
@@ -7062,7 +7183,7 @@ export default function SuperUserAdminPage() {
                         .filter(s => s.campus_name?.toLowerCase() === selectedCampusDetail.name.toLowerCase())
                         .filter(s => {
                           const fullName = `${s.first_name} ${s.last_name_1}`.toLowerCase();
-                          const q = campusSearchStudent.toLowerCase();
+                          const q = deferredCampusSearchStudent.toLowerCase();
                           return fullName.includes(q) || (s.curp && s.curp.toLowerCase().includes(q)) || (s.grade && s.grade.toLowerCase().includes(q));
                         })
                         .map(st => (
@@ -7720,7 +7841,7 @@ export default function SuperUserAdminPage() {
       <input aria-label="Subir archivo o comprobante"
         type="file"
         ref={schoolLogoFileInputRef}
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webp"
         className="hidden"
         onChange={(e) => {
           if (editingSchoolLogoId) {
@@ -7966,7 +8087,7 @@ export default function SuperUserAdminPage() {
         onTriggerToast={(msg) => setDeletionFeedback(msg)}
       />
 
-      {/* Modal de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases) */}
+      {/* Modal de Correo Institucional, Triage Cognitivo y Sincronización Institucional (15 Fases) */}
       {isAdminEmailModalOpen && (
         <CEOEmailCommunicationsModal
           key={currentSchool?.id || effectiveSchoolId || 'sch-default'}

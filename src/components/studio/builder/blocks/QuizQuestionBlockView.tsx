@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { QuizQuestionBlock } from '@/types/studioBlocks';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import { 
   Plus, 
   Trash2, 
@@ -55,10 +55,21 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
   // Subir imagen local comprimida (Regla 3) via FileReader
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const processed = file.type.startsWith('image/')
-        ? await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 }).catch(() => file)
-        : file;
+    if (!file) return;
+
+    if (isSvgFile(file) || !isRasterImageFile(file)) {
+      alert('Por seguridad y compresión obligatoria, sube la imagen en formato PNG, JPG o WebP.');
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const processed = await compressImageFile(file, { maxWidth: 1024, maxHeight: 1024, maxSizeBytes: 300 * 1024 });
+      if (processed.size > 400 * 1024) {
+        alert('La imagen comprimida supera el límite institucional de 400 KB.');
+        e.target.value = '';
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
@@ -66,6 +77,10 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
         }
       };
       reader.readAsDataURL(processed);
+    } catch (err: any) {
+      alert(err?.message || 'No se pudo comprimir la imagen por debajo del límite institucional de 400 KB.');
+    } finally {
+      e.target.value = '';
     }
   };
 
@@ -139,7 +154,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
                 <span>Subir Archivo</span>
                 <input aria-label="Subir archivo o comprobante"
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp"
                   onChange={handleFileUpload}
                   className="hidden"
                 />

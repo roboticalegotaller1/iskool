@@ -1,37 +1,18 @@
 "use client";
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { GUIDE_ROLE_DATA } from '@/data/guideRoleContent';
-import { 
-  HelpCircle, 
-  X, 
-  Sparkles, 
-  ArrowRight, 
-  ExternalLink, 
-  GraduationCap, 
-  Gamepad2, 
-  Users, 
-  ShieldCheck, 
-  BookOpen, 
-  Globe,
-  Database,
-  Heart,
-  Smile,
-  Cpu
-} from 'lucide-react';
-
+import { HelpCircle } from 'lucide-react';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
-import { useAccessibleDialog } from '@/hooks/useAccessibleDialog';
+
+const GlobalHelpDrawer = dynamic(() => import('./GlobalHelpDrawer'), {
+  ssr: false,
+});
 
 export const GlobalHelpFab: React.FC = () => {
   const pathname = usePathname();
-  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-
-  useAccessibleDialog(isOpen, () => setIsOpen(false));
 
   // Integración con el estado del Taller de Actividades para evitar solapar botones de configuración
   const isNodeConfigDrawerOpen = useActivityBuilderStore((s) => s.isNodeConfigDrawerOpen);
@@ -43,37 +24,14 @@ export const GlobalHelpFab: React.FC = () => {
 
   const shouldHideFab = isOpen || isNodeConfigDrawerOpen || isExtendedMenuOpen || isPreviewModalOpen;
 
-  const isDirectorOrAdmin = Boolean(
-    user && ['superadmin', 'admin', 'director', 'coordinator', 'owner'].includes(user.role as any)
-  );
-
-  // Detectar rol actual basado estrictamente en el nivel jerárquico del usuario
-  const getActiveRole = (): 'teacher' | 'student' | 'parent' | 'admin' => {
-    if (user) {
-      if (user.role === 'student') return 'student';
-      if (user.role === 'teacher') return 'teacher';
-      if (user.role === 'parent' || user.role === 'tutor') return 'parent';
-      if (isDirectorOrAdmin) {
-        if (pathname.startsWith('/teacher')) return 'teacher';
-        if (pathname.startsWith('/student')) return 'student';
-        if (pathname.startsWith('/parent')) return 'parent';
-        return 'admin';
-      }
-    }
-    if (pathname.startsWith('/teacher')) return 'teacher';
-    if (pathname.startsWith('/student')) return 'student';
-    if (pathname.startsWith('/parent')) return 'parent';
-    return 'student';
-  };
-
-  const role = getActiveRole();
-  const roleData = GUIDE_ROLE_DATA[role] || GUIDE_ROLE_DATA.student;
-
   return (
     <>
-      {/* Botón Flotante No Invasivo en la esquina inferior derecha: se oculta cuando se despliega un panel lateral o el propio menú de ayuda */}
+      {/* Botón Flotante No Invasivo en la esquina inferior derecha */}
       {!shouldHideFab && (
-        <aside aria-label="Asistencia Rápida" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 print:hidden transition-all duration-300">
+        <aside
+          aria-label="Asistencia Rápida"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 print:hidden transition-all duration-300"
+        >
           <button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -86,233 +44,8 @@ export const GlobalHelpFab: React.FC = () => {
         </aside>
       )}
 
-      {/* Cajón Lateral Deslizante de Asistencia Rápida */}
-      {isOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Asistencia Rápida ISkool"
-          className="fixed inset-0 z-50 overflow-hidden print:hidden"
-        >
-          {/* Fondo semi-transparente */}
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in"
-            onClick={() => setIsOpen(false)}
-          />
-
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
-            <div className="w-screen max-w-md bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 shadow-2xl flex flex-col justify-between animate-slide-in-right">
-              {/* Cabecera del Cajón */}
-              <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between bg-slate-50 dark:bg-zinc-850">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase text-slate-900 dark:text-white">
-                      Asistencia Rápida ISkool
-                    </h3>
-                    <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
-                      {roleData.roleBadge}
-                    </span>
-                  </div>
-                </div>
-
-                <button aria-label="Cerrar"
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 cursor-pointer transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Contenido Desplazable del Cajón */}
-              <div className="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
-                {/* Resumen del Rol */}
-                <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 space-y-2">
-                  <h4 className="text-xs font-black text-purple-900 dark:text-purple-200">
-                    {roleData.roleTitle}
-                  </h4>
-                  <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed">
-                    {roleData.heroDescription}
-                  </p>
-                </div>
-
-                {/* Pasos Rápidos Recomendados */}
-                <div className="space-y-3">
-                  <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
-                    Flujo de Trabajo Recomendado:
-                  </h4>
-
-                  <div className="space-y-2">
-                    {roleData.steps.slice(0, 3).map((st) => (
-                      <div 
-                        key={st.stepNumber}
-                        className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-750 flex items-start gap-2.5"
-                      >
-                        <span className="w-5 h-5 rounded-md bg-purple-600 text-white font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                          {st.stepNumber}
-                        </span>
-                        <div className="space-y-0.5">
-                          <strong className="text-slate-900 dark:text-white font-bold block">{st.title}</strong>
-                          <p className="text-[11px] text-slate-500 dark:text-zinc-400">{st.subtitle}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bóveda Curricular & Simuladores Rápidos (si es docente) */}
-                {role === 'teacher' && (
-                  <div className="space-y-2.5">
-                    <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-indigo-800 dark:text-indigo-300">
-                        <Database className="w-3.5 h-3.5" />
-                        <span>Bóveda Curricular (703 Nodos NEM)</span>
-                      </div>
-                      <p className="text-[11px] text-indigo-900 dark:text-indigo-200">
-                        Consulta planeaciones oficiales con búsqueda instantánea (&lt;5ms) y videoteca pedagógica verificada.
-                      </p>
-                      <div className="flex items-center gap-3 pt-0.5">
-                        <Link
-                          href="/teacher"
-                          onClick={() => setIsOpen(false)}
-                          className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 underline"
-                        >
-                          Abrir Planificador ➔
-                        </Link>
-                        <Link
-                          href="/guide?role=teacher#boveda"
-                          onClick={() => setIsOpen(false)}
-                          className="text-[11px] font-bold text-purple-700 dark:text-purple-300 underline"
-                        >
-                          Ver en Guía ➔
-                        </Link>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-950 dark:text-cyan-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-cyan-800 dark:text-cyan-300">
-                        <Globe className="w-3.5 h-3.5" />
-                        <span>50 Simuladores Web Listos</span>
-                      </div>
-                      <p className="text-[11px] text-cyan-900 dark:text-cyan-200">
-                        Encuentra laboratorios interactivos de PhET, GeoGebra, Desmos y NASA en la guía completa.
-                      </p>
-                      <Link
-                        href="/guide?role=teacher#simuladores"
-                        onClick={() => setIsOpen(false)}
-                        className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
-                      >
-                        Ver directorio completo ➔
-                      </Link>
-                    </div>
-                  </div>
-                )}
-
-                {/* Acciones Rápidas para Alumnos */}
-                {role === 'student' && (
-                  <div className="space-y-2.5">
-                    <div className="p-3.5 rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-200 dark:border-pink-800 text-pink-950 dark:text-pink-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-pink-800 dark:text-pink-300">
-                        <Heart className="w-3.5 h-3.5" />
-                        <span>Compañero Místico & Santuario</span>
-                      </div>
-                      <p className="text-[11px] text-pink-900 dark:text-pink-200">
-                        Acaricia a tu mascota para ganar Vínculo EXP y descubre las 5 etapas evolutivas por tareas escolares.
-                      </p>
-                      <Link
-                        href="/guide?role=student#mascotas-showcase"
-                        onClick={() => setIsOpen(false)}
-                        className="text-[11px] font-bold text-pink-700 dark:text-pink-300 underline block"
-                      >
-                        Ver guía de evolución y razas ➔
-                      </Link>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-purple-800 dark:text-purple-300">
-                        <Smile className="w-3.5 h-3.5" />
-                        <span>Avatar Anime Shonen / Hechicera</span>
-                      </div>
-                      <p className="text-[11px] text-purple-900 dark:text-purple-200">
-                        Personaliza peinados, capas, varitas y desbloquea animaciones de magia y celebración.
-                      </p>
-                      <Link
-                        href="/student/avatar"
-                        onClick={() => setIsOpen(false)}
-                        className="text-[11px] font-bold text-purple-700 dark:text-purple-300 underline block"
-                      >
-                        Abrir Personalizador ➔
-                      </Link>
-                    </div>
-                  </div>
-                )}
-
-                {/* Acciones Rápidas para Administradores / Super Usuario */}
-                {role === 'admin' && (
-                  <div className="space-y-2.5">
-                    <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-950 dark:text-cyan-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-cyan-800 dark:text-cyan-300">
-                        <Cpu className="w-3.5 h-3.5" />
-                        <span>Auditoría de Tokens en Tiempo Real</span>
-                      </div>
-                      <p className="text-[11px] text-cyan-900 dark:text-cyan-200">
-                        Monitorea el consumo de tokens del Motor de IA y el ahorro &gt;85% de la Bóveda Curricular.
-                      </p>
-                      <Link
-                        href="/admin"
-                        onClick={() => setIsOpen(false)}
-                        className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
-                      >
-                        Portal Super Usuario ➔
-                      </Link>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200 space-y-2">
-                      <div className="flex items-center gap-1.5 font-black text-xs text-amber-800 dark:text-amber-300">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Suspensión & Preservación Curricular</span>
-                      </div>
-                      <p className="text-[11px] text-amber-900 dark:text-amber-200">
-                        Interruptor deslizante de activación escolar y protección del acervo del Prof. Israel López Ángeles.
-                      </p>
-                      <Link
-                        href="/guide?role=admin#suspension-preservacion"
-                        onClick={() => setIsOpen(false)}
-                        className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block"
-                      >
-                        Ver protocolo institucional ➔
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Pie del Cajón con Botón a Guía Completa */}
-              <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-850 space-y-2">
-                <Link
-                  href={`/guide?role=${role}`}
-                  onClick={() => setIsOpen(false)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 hover:from-purple-700 transition-all text-center"
-                >
-                  <span>
-                    {role === 'student' 
-                      ? 'Abrir Guía Oficial de Alumno' 
-                      : role === 'teacher' 
-                        ? 'Abrir Guía Oficial Docente' 
-                        : role === 'parent' 
-                          ? 'Abrir Guía del Portal Familiar' 
-                          : 'Abrir Centro de Ayuda (Acceso Dirección)'}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Cajón Lateral cargado de forma diferida solo al abrir */}
+      {isOpen && <GlobalHelpDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} />}
     </>
   );
 };

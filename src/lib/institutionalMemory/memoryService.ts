@@ -24,9 +24,36 @@ import { supabase } from '../supabaseClient';
 
 export type { MemoryManifestEntry };
 
-// Caché volátil en memoria para manifest.json de Supabase Storage con TTL de 60 segundos
-let manifestCache: { data: MemoryManifestEntry[]; timestamp: number } | null = null;
+// Caché volátil en memoria para manifest.json de Almacenamiento en la Nube (60s positivo / 45s negativo)
+let manifestCache: { data: MemoryManifestEntry[] | null; timestamp: number; ttlMs: number } | null = null;
 const MANIFEST_TTL_MS = 60 * 1000;
+const MANIFEST_NEGATIVE_TTL_MS = 45 * 1000;
+
+// Caché volátil en memoria para loadAllMemories() (TTL 60s, invalidado en escrituras)
+let allMemoriesCache: { data: InstitutionalMemoryDocument[]; timestamp: number; dirKey: string } | null = null;
+const ALL_MEMORIES_TTL_MS = 60 * 1000;
+
+async function runWithBoundedConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<R>
+): Promise<R[]> {
+  if (items.length === 0) return [];
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(1, limit), items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (true) {
+        const idx = nextIndex++;
+        if (idx >= items.length) break;
+        results[idx] = await worker(items[idx]);
+      }
+    })
+  );
+  return results;
+}
 
 
 export function cleanString(str: string): string {
@@ -102,7 +129,7 @@ export class InstitutionalMemoryService {
   }): Promise<{ synced: boolean; commitSha?: string; error?: string }> {
     const token = process.env.REPO_ACCESS_TOKEN || process.env.GITHUB_TOKEN || process.env.CENTRAL_REPO_TOKEN;
     if (!token) {
-      console.warn('[Memoria Institucional GitOps] Advertencia: Token de sincronización con el Repositorio Central no configurado (REPO_ACCESS_TOKEN / GITHUB_TOKEN). Conmutando a Almacenamiento en la Nube (Cloud Storage) como persistencia primaria.');
+      console.warn('[Memoria Institucional GitOps] Advertencia: Token de sincronización con el Repositorio Central no configurado (REPO_ACCESS_TOKEN / CENTRAL_REPO_TOKEN). Conmutando a Almacenamiento en la Nube (Cloud Storage) como persistencia primaria.');
       return { synced: false, error: 'Token de sincronización institucional no configurado; conmutado a Cloud Storage' };
     }
 
@@ -131,6 +158,7 @@ export class InstitutionalMemoryService {
         let currentSha: string | undefined = undefined;
         const checkRes = await fetch(`${apiUrl}?ref=${branch}`, {
           method: 'GET',
+          signal: AbortSignal.timeout(8000),
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github.v3+json',
@@ -146,6 +174,7 @@ export class InstitutionalMemoryService {
         // 2. Transmitir commit a la rama principal del Repositorio Central con SHA si existe
         const commitRes = await fetch(apiUrl, {
           method: 'PUT',
+          signal: AbortSignal.timeout(8000),
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github.v3+json',
@@ -393,28 +422,31 @@ export class InstitutionalMemoryService {
   }
 
   /**
-   * Descarga el manifest.json desde Supabase Storage con soporte de caché volátil en memoria (TTL 60s).
+   * Descarga el manifest.json desde Almacenamiento en la Nube con soporte de caché volátil en memoria
+   * (TTL 60s para hit positivo, TTL 45s para caché negativo cuando está vacío o ausente).
    */
   static async fetchManifestFromCloudStorage(): Promise<MemoryManifestEntry[] | null> {
     const now = Date.now();
-    if (manifestCache && (now - manifestCache.timestamp < MANIFEST_TTL_MS)) {
+    if (manifestCache && (now - manifestCache.timestamp < manifestCache.ttlMs)) {
       return manifestCache.data;
     }
 
     const { entries } = await this.fetchFreshManifestFromCloudStorage();
     if (entries && entries.length > 0) {
-      manifestCache = { data: entries, timestamp: now };
+      manifestCache = { data: entries, timestamp: now, ttlMs: MANIFEST_TTL_MS };
       return entries;
     }
 
+    manifestCache = { data: null, timestamp: now, ttlMs: MANIFEST_NEGATIVE_TTL_MS };
     return null;
   }
 
   /**
-   * Carga masiva o autogeneración de manifest.json consolidado en Supabase Storage.
+   * Carga masiva o autogeneración de manifest.json consolidado en Almacenamiento en la Nube.
    * Aplica ordenamiento cronológico y deduplicación atómica garantizada.
    */
   static async uploadFullManifest(bucketName: string, entries: MemoryManifestEntry[]): Promise<void> {
+    manifestCache = null;
     const orderedEntries = this.mergeAndSortManifestEntries(entries, []);
     const manifestJson = JSON.stringify(orderedEntries, null, 2);
 
@@ -443,10 +475,13 @@ export class InstitutionalMemoryService {
       }
     }
 
-    manifestCache = {
-      data: orderedEntries,
-      timestamp: Date.now()
-    };
+    manifestCache = orderedEntries.length > 0
+      ? {
+          data: orderedEntries,
+          timestamp: Date.now(),
+          ttlMs: MANIFEST_TTL_MS
+        }
+      : null;
   }
 
 
@@ -525,6 +560,7 @@ export class InstitutionalMemoryService {
 
     // 6. Escritura atómica en disco (o /tmp en entornos serverless de solo lectura)
     fs.writeFileSync(fullPath, fileContent, 'utf8');
+    allMemoriesCache = null;
 
     const documentId = `memoria-${input.academic_cycle}-${input.grade}-${safeSubject}-${safeTopic}-${safeCohort}`.toLowerCase();
 
@@ -552,49 +588,57 @@ export class InstitutionalMemoryService {
     const commitMessage = `[skip ci] [amplify skip]: persistencia de memoria institucional ${input.academic_cycle}/${filename}`;
 
     if (isProductionOrCloud || hasGitToken) {
+      const manifestEntry: MemoryManifestEntry = {
+        id: documentId,
+        fileName: filename,
+        filePath: repoRelativePath,
+        ciclo: input.academic_cycle,
+        grado: String(input.grade),
+        asignatura: input.subject,
+        tema: input.topic,
+        fecha: new Date().toISOString(),
+        resumen_didactico: input.sections.contextoDiagnostico?.slice(0, 300),
+        adecuaciones_clave: input.sections.adaptacionesExitosas?.slice(0, 5) || [],
+        palabras_clave: [
+          cleanString(input.subject),
+          cleanString(input.topic),
+          `grado_${input.grade}`,
+          `ciclo_${input.academic_cycle}`
+        ]
+      };
+
       if (options?.deferGitSync) {
         remoteGitSynced = true; // GitOps diferido para ejecución asíncrona no bloqueante
-      } else {
         try {
-          const gitResult = await this.syncToCentralRepository({
+          const storageResult = await this.syncToCloudStorage(repoRelativePath, fileContent, manifestEntry);
+          storageSynced = storageResult.synced;
+        } catch {
+          // Fallback silencioso para no interrumpir el flujo del docente
+        }
+      } else {
+        const [remoteOutcome, cloudOutcome] = await Promise.allSettled([
+          this.syncToCentralRepository({
             relativeRepoPath: repoRelativePath,
             fileContent,
             commitMessage
-          });
+          }),
+          this.syncToCloudStorage(repoRelativePath, fileContent, manifestEntry)
+        ]);
+
+        if (remoteOutcome.status === 'fulfilled') {
+          const gitResult = remoteOutcome.value;
           remoteGitSynced = gitResult.synced;
           remoteGitCommit = gitResult.commitSha;
           if (!gitResult.synced && gitResult.error) {
             syncWarning = `GitOps: ${gitResult.error}`;
           }
-        } catch (err: any) {
-          syncWarning = `GitOps Error: ${err.message}`;
+        } else {
+          syncWarning = `GitOps Error: ${remoteOutcome.reason?.message || String(remoteOutcome.reason)}`;
         }
-      }
 
-      try {
-        const manifestEntry: MemoryManifestEntry = {
-          id: documentId,
-          fileName: filename,
-          filePath: repoRelativePath,
-          ciclo: input.academic_cycle,
-          grado: String(input.grade),
-          asignatura: input.subject,
-          tema: input.topic,
-          fecha: new Date().toISOString(),
-          resumen_didactico: input.sections.contextoDiagnostico?.slice(0, 300),
-          adecuaciones_clave: input.sections.adaptacionesExitosas?.slice(0, 5) || [],
-          palabras_clave: [
-            cleanString(input.subject),
-            cleanString(input.topic),
-            `grado_${input.grade}`,
-            `ciclo_${input.academic_cycle}`
-          ]
-        };
-
-        const storageResult = await this.syncToCloudStorage(repoRelativePath, fileContent, manifestEntry);
-        storageSynced = storageResult.synced;
-      } catch (err: any) {
-        // Fallback silencioso para no interrumpir el flujo del docente
+        if (cloudOutcome.status === 'fulfilled') {
+          storageSynced = cloudOutcome.value.synced;
+        }
       }
     }
 
@@ -737,13 +781,31 @@ ${input.sections.procedenciaTrazabilidad || 'Registro generado automáticamente 
   }
 
   /**
+   * Invalida explícitamente la caché en memoria de documentos de Memoria Institucional.
+   */
+  static invalidateMemoriesCache(): void {
+    allMemoriesCache = null;
+  }
+
+  /**
    * Carga y parsea recursivamente todas las Memorias Institucionales de la Bóveda Curricular.
    * En entornos serverless, escanea tanto el bundle estático como el directorio temporal /tmp.
+   * Mantiene una caché en memoria con TTL de 60 segundos invalidada automáticamente al escribir.
    */
   static loadAllMemories(): InstitutionalMemoryDocument[] {
     const primaryDir = this.getBaseMemoryDirectory(false);
     const tempBase = process.env.TMPDIR || '/tmp';
     const tempMemoryDir = path.join(tempBase, 'iskool', 'planeaciones', 'Memorias_Institucionales');
+
+    const dirKey = `${primaryDir}|${tempMemoryDir}`;
+    const now = Date.now();
+    if (
+      allMemoriesCache &&
+      allMemoriesCache.dirKey === dirKey &&
+      (now - allMemoriesCache.timestamp < ALL_MEMORIES_TTL_MS)
+    ) {
+      return allMemoriesCache.data;
+    }
 
     const searchDirs = [primaryDir];
     if (fs.existsSync(tempMemoryDir) && tempMemoryDir !== primaryDir) {
@@ -787,7 +849,9 @@ ${input.sections.procedenciaTrazabilidad || 'Registro generado automáticamente 
       }
     }
 
-    return Array.from(documentsMap.values());
+    const result = Array.from(documentsMap.values());
+    allMemoriesCache = { data: result, timestamp: now, dirKey };
+    return result;
   }
 
   /**
@@ -840,29 +904,36 @@ ${input.sections.procedenciaTrazabilidad || 'Registro generado automáticamente 
       });
       if (listErr || !rootItems) return [];
 
-      const documents: InstitutionalMemoryDocument[] = [];
+      const folderNames: string[] = [];
+      const rootMdPaths: string[] = [];
 
       for (const item of rootItems) {
         if (!item.id && item.name) {
-          // Es subdirectorio de ciclo escolar (ej. 2025-2026)
-          const { data: subFiles } = await supabase.storage.from(bucketName).list(item.name, {
-            limit: 100
-          });
-          if (subFiles) {
-            for (const file of subFiles) {
-              if (file.name.endsWith('.md')) {
-                const doc = await this.downloadAndParseStorageFile(bucketName, `${item.name}/${file.name}`);
-                if (doc) documents.push(doc);
-              }
-            }
-          }
+          folderNames.push(item.name);
         } else if (item.name.endsWith('.md')) {
-          const doc = await this.downloadAndParseStorageFile(bucketName, item.name);
-          if (doc) documents.push(doc);
+          rootMdPaths.push(item.name);
         }
       }
 
-      return documents;
+      // Listar subcarpetas de ciclos escolares en paralelo con concurrencia acotada (6)
+      const nestedMdPaths = await runWithBoundedConcurrency(folderNames, 6, async (folderName) => {
+        const { data: subFiles } = await supabase.storage.from(bucketName).list(folderName, {
+          limit: 100
+        });
+        if (!subFiles) return [] as string[];
+        return subFiles
+          .filter(file => file.name.endsWith('.md'))
+          .map(file => `${folderName}/${file.name}`);
+      });
+
+      const allMdPaths = [...rootMdPaths, ...nestedMdPaths.flat()];
+
+      // Descargar y parsear archivos Markdown en paralelo con concurrencia acotada (6)
+      const downloaded = await runWithBoundedConcurrency(allMdPaths, 6, (storagePath) =>
+        this.downloadAndParseStorageFile(bucketName, storagePath)
+      );
+
+      return downloaded.filter((doc): doc is InstitutionalMemoryDocument => doc !== null);
     } catch (err) {
       console.warn('[InstitutionalMemoryService] Advertencia al consultar Cloud Storage multi-lambda:', err);
       return [];
@@ -1243,15 +1314,14 @@ Instrucción pedagógica: Integra explícitamente estas experiencias previas en 
   }
 
   static scanMarkdownFilesRecursively(dir: string): string[] {
-    let results: string[] = [];
+    const results: string[] = [];
     if (!fs.existsSync(dir)) return results;
-    const list = fs.readdirSync(dir);
-    for (const file of list) {
-      const fullPath = path.join(dir, file);
-      const stat = fs.statSync(fullPath);
-      if (stat && stat.isDirectory()) {
-        results = results.concat(this.scanMarkdownFilesRecursively(fullPath));
-      } else if (file.endsWith('.md')) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        results.push(...this.scanMarkdownFilesRecursively(fullPath));
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
         results.push(fullPath);
       }
     }

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 
 export interface CatchupSummary {
   period_label: string;
@@ -23,21 +23,27 @@ export interface CatchupSummary {
 
 export class ExecutiveCatchupService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   static async generateCatchup(schoolId: string, sinceDate?: string): Promise<CatchupSummary> {
     const supabase = this.getSupabase();
     const threshold = sinceDate ?? new Date(Date.now() - 8 * 3600 * 1000).toISOString();
 
-    const { data: matters } = await supabase
-      .from('inbox_matters')
-      .select('*')
-      .eq('school_id', schoolId)
-      .gte('created_at', threshold);
+    const [{ data: matters }, { data: patterns }] = await Promise.all([
+      supabase
+        .from('inbox_matters')
+        .select('id, matter_code, title, why_shown_to_director, category, reincidence_count, destination')
+        .eq('school_id', schoolId)
+        .gte('created_at', threshold)
+        .limit(50),
+      supabase
+        .from('inbox_patterns')
+        .select('pattern_title, pattern_description')
+        .eq('school_id', schoolId)
+        .eq('status', 'ACTIVE')
+        .limit(3)
+    ]);
 
     const allMatters = matters ?? [];
     const totalReceived = allMatters.reduce((acc, m) => acc + (m.reincidence_count || 1), 0);
@@ -45,13 +51,6 @@ export class ExecutiveCatchupService {
     const delegated = allMatters.filter(m => m.destination === 'DELEGAR').length;
     const monitored = allMatters.filter(m => m.destination === 'VIGILAR').length;
     const needsDirector = allMatters.filter(m => m.destination === 'DIRECCION');
-
-    const { data: patterns } = await supabase
-      .from('inbox_patterns')
-      .select('pattern_title, pattern_description')
-      .eq('school_id', schoolId)
-      .eq('status', 'ACTIVE')
-      .limit(3);
 
     const briefText = `Desde tu último resumen, se procesaron ${totalReceived} correos recibidos. ` +
       `✓ ${noDirector} fueron resueltos por procedimiento institucional. ` +

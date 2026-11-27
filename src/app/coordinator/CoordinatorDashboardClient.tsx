@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
-import { compressImageFile } from '@/utils/imageCompressor';
+import { compressImageFile, isRasterImageFile, isSvgFile } from '@/utils/imageCompressor';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
 import { InstitutionalMemoryOverview } from '@/components/coordinator/InstitutionalMemoryOverview';
 import { useComingSoon } from '@/components/ui/ComingSoonModal';
@@ -285,10 +285,24 @@ export default function CoordinatorDashboard() {
     file: File, 
     onSuccess: (logoUrl: string, colors?: { primary: string; secondary: string; accent: string }) => void
   ) => {
+    if (isSvgFile(file) || !isRasterImageFile(file)) {
+      alert('Por seguridad y compresión obligatoria, sube el logotipo en formato PNG, JPG o WebP.');
+      return;
+    }
+
     void (async () => {
-      const processedFile = file.type.startsWith('image/')
-        ? await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 }).catch(() => file)
-        : file;
+      let processedFile: File;
+      try {
+        processedFile = await compressImageFile(file, { maxWidth: 512, maxHeight: 512, maxSizeBytes: 250 * 1024 });
+        if (processedFile.size > 400 * 1024) {
+          alert('El logotipo procesado supera el límite institucional de 400 KB tras la compresión.');
+          return;
+        }
+      } catch (err: any) {
+        alert(err?.message || 'No se pudo comprimir el logotipo por debajo del límite institucional de 400 KB.');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
@@ -1797,7 +1811,7 @@ export default function CoordinatorDashboard() {
 
                     <div className="flex flex-col gap-2 flex-1 text-center sm:text-left">
                       <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                        Sube una imagen de tu escuela (.png, .jpg, .svg). Se extraerán automáticamente los colores principales para el tema.
+                        Sube una imagen de tu escuela (.png, .jpg, .webp). Se extraerán automáticamente los colores principales para el tema.
                       </p>
                       <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
                         <label className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-md shadow-violet-500/10 flex items-center gap-1.5">
@@ -1805,7 +1819,7 @@ export default function CoordinatorDashboard() {
                           Cargar Nuevo Logotipo
                           <input aria-label="Subir archivo o comprobante"
                             type="file"
-                            accept="image/*"
+                            accept="image/png,image/jpeg,image/webp"
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
@@ -1819,6 +1833,7 @@ export default function CoordinatorDashboard() {
                                   alert('¡Logotipo actualizado y colores extraídos correctamente!');
                                 });
                               }
+                              e.target.value = '';
                             }}
                           />
                         </label>
@@ -2293,12 +2308,12 @@ export default function CoordinatorDashboard() {
                         <label className="p-6 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-2 text-center hover:bg-zinc-50 dark:hover:bg-zinc-950 transition-colors cursor-pointer block">
                           <Upload className="h-8 w-8 text-zinc-400" />
                           <div>
-                            <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Sube el logotipo (.png, .jpg, .svg)</p>
+                            <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Sube el logotipo (.png, .jpg, .webp)</p>
                             <p className="text-[9.5px] text-zinc-400">Extraeremos el color principal de forma dinámica</p>
                           </div>
                           <input aria-label="Subir archivo o comprobante"
                             type="file"
-                            accept="image/*"
+                            accept="image/png,image/jpeg,image/webp"
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
@@ -2312,6 +2327,7 @@ export default function CoordinatorDashboard() {
                                   setShowColorSuccess(true);
                                 });
                               }
+                              e.target.value = '';
                             }}
                           />
                         </label>

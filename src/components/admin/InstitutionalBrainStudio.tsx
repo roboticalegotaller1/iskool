@@ -54,6 +54,7 @@ import {
   buildSchoolInstitutionalGraph
 } from '@/services/institutionalGraphEngine';
 import { isCorporateInstitution, isPlatformSuperUser } from '@/types';
+import { useShallow } from 'zustand/react/shallow';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -142,6 +143,16 @@ function renderTerminalMarkdown(content?: string | null) {
   );
 }
 
+// Nubes de nebulosa estáticas por clúster (elevadas a nivel de módulo para evitar asignaciones por cuadro)
+const BRAIN_NEBULAE = [
+  { x: -350, y: -200, color: 'rgba(16, 185, 129, 0.08)', r: 280 }, // Verde pedagógico
+  { x: 350, y: -200, color: 'rgba(6, 182, 212, 0.08)', r: 280 },  // Cian fiscal
+  { x: -350, y: 200, color: 'rgba(244, 63, 94, 0.08)', r: 260 },  // Rosa médico
+  { x: 350, y: 200, color: 'rgba(168, 85, 247, 0.08)', r: 260 }, // Púrpura CRM
+  { x: 0, y: 350, color: 'rgba(236, 72, 153, 0.08)', r: 280 },   // Fucsia game
+  { x: 0, y: -380, color: 'rgba(245, 158, 11, 0.08)', r: 260 }   // Ámbar sedes
+] as const;
+
 // ============================================================================
 // PROPS DEL COMPONENTE ESTUDIO DEL CEREBRO INSTITUCIONAL
 // ============================================================================
@@ -183,7 +194,23 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     schedulesList,
     studentDeletionAuditLogs,
     activeSchoolId
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((state) => ({
+      institutionsList: state.institutionsList,
+      campusesList: state.campusesList,
+      detailedStudents: state.detailedStudents,
+      teachersList: state.teachersList,
+      groupsList: state.groupsList,
+      subjectsList: state.subjectsList,
+      billingRecords: state.billingRecords,
+      attendanceList: state.attendanceList,
+      staffPayroll: state.staffPayroll,
+      parentMessages: state.parentMessages,
+      schedulesList: state.schedulesList,
+      studentDeletionAuditLogs: state.studentDeletionAuditLogs,
+      activeSchoolId: state.activeSchoolId,
+    }))
+  );
 
   const effectiveSchoolId = schoolId || activeSchoolId || institutionsList[0]?.id || 'sch-test-case';
 
@@ -228,15 +255,24 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [isCardMinimized, setIsCardMinimized] = useState<boolean>(false);
 
-  // Estados de Cámara: Zoom & Pan
+  // Estados de Cámara: Zoom (HUD) & Refs mutables de alta frecuencia para el bucle rAF persistente
   const [zoom, setZoom] = useState<number>(0.38); // Inicial en vista macro cósmica
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState<boolean>(false);
+  const zoomRef = useRef<number>(0.38);
+  const panRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const isPanningRef = useRef<boolean>(false);
+  const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
   const startPanRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const touchDataRef = useRef<{ x: number; y: number; dist: number }>({ x: 0, y: 0, dist: 0 });
   const hasAutoCenteredRef = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const setZoomSynced = useCallback((nextOrUpdater: number | ((prev: number) => number)) => {
+    const nextZoom =
+      typeof nextOrUpdater === 'function' ? nextOrUpdater(zoomRef.current) : nextOrUpdater;
+    zoomRef.current = nextZoom;
+    setZoom(nextZoom);
+  }, []);
 
   // Animación de cámara cinemática
   const cameraAnimRef = useRef<number | null>(null);
@@ -382,12 +418,13 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     setNodes(baseNodes);
     setEdges(baseEdges);
     // Reiniciar vista centrada
-    if (containerRef.current) {
-      const { clientWidth, clientHeight } = containerRef.current;
-      setPan({ x: clientWidth / 2, y: clientHeight / 2 });
-      setZoom(0.42);
+    const width = canvasSizeRef.current.width || containerRef.current?.clientWidth || 0;
+    const height = canvasSizeRef.current.height || containerRef.current?.clientHeight || 0;
+    if (width > 0 && height > 0) {
+      panRef.current = { x: width / 2, y: height / 2 };
+      setZoomSynced(0.42);
     }
-  }, [effectiveSchoolId, baseNodes, baseEdges]);
+  }, [effectiveSchoolId, baseNodes, baseEdges, setZoomSynced]);
 
   // Notificación flotante de acción directiva
   const [actionToast, setActionToast] = useState<string | null>(null);
@@ -474,17 +511,19 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     return list;
   }, [nodes, filterCluster, searchFilter]);
 
-  // Transición suave de cámara (fly-to)
+  // Transición suave de cámara (fly-to) sobre refs sin reiniciar el bucle rAF ni provocar 60 re-renders/s
   const flyTo = useCallback((targetX: number, targetY: number, targetZoom: number, durationMs = 600) => {
-    if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
-    const startX = pan.x;
-    const startY = pan.y;
-    const startZ = zoom;
+    const width = canvasSizeRef.current.width || containerRef.current?.clientWidth || 0;
+    const height = canvasSizeRef.current.height || containerRef.current?.clientHeight || 0;
+    if (!(width > 0 && height > 0)) return;
+    const startX = panRef.current.x;
+    const startY = panRef.current.y;
+    const startZ = zoomRef.current;
+    let lastHudZoomOut = startZ < 0.65;
 
     // Queremos que el punto (targetX, targetY) quede en el centro de la pantalla
-    const destPanX = clientWidth / 2 - targetX * targetZoom;
-    const destPanY = clientHeight / 2 - targetY * targetZoom;
+    const destPanX = width / 2 - targetX * targetZoom;
+    const destPanY = height / 2 - targetY * targetZoom;
 
     const startTime = performance.now();
     if (cameraAnimRef.current) cancelAnimationFrame(cameraAnimRef.current);
@@ -499,18 +538,34 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       const curY = startY + (destPanY - startY) * ease;
       const curZ = startZ + (targetZoom - startZ) * ease;
 
-      setPan({ x: curX, y: curY });
-      setZoom(curZ);
+      panRef.current = { x: curX, y: curY };
+      zoomRef.current = curZ;
+
+      const curHudZoomOut = curZ < 0.65;
+      if (curHudZoomOut !== lastHudZoomOut) {
+        lastHudZoomOut = curHudZoomOut;
+        setZoom(curZ);
+      }
 
       if (progress < 1) {
         cameraAnimRef.current = requestAnimationFrame(animate);
       } else {
         cameraAnimRef.current = null;
+        setZoom(targetZoom);
       }
     };
 
     cameraAnimRef.current = requestAnimationFrame(animate);
-  }, [pan.x, pan.y, zoom]);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (cameraAnimRef.current) {
+        cancelAnimationFrame(cameraAnimRef.current);
+        cameraAnimRef.current = null;
+      }
+    };
+  }, []);
 
   // Centrado en nodo
   const centerOnNode = useCallback((node: BrainNode, targetZoom = 1.35) => {
@@ -696,11 +751,10 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   }, [initialQuery, executeQuery]);
 
   // Controles de zoom manual
-  const handleZoomIn = () => setZoom(z => Math.min(2.8, z * 1.25));
-  const handleZoomOut = () => setZoom(z => Math.max(0.18, z * 0.8));
+  const handleZoomIn = () => setZoomSynced(z => Math.min(2.8, z * 1.25));
+  const handleZoomOut = () => setZoomSynced(z => Math.max(0.18, z * 0.8));
   const handleResetView = () => {
     if (!containerRef.current) return;
-    const { clientWidth, clientHeight } = containerRef.current;
     flyTo(0, 0, 0.42, 500);
     setSelectedNodeId(`core-${effectiveSchoolId}`);
   };
@@ -897,261 +951,347 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     setTimeout(() => setCopiedNotification(false), 2200);
   };
 
+  // Instantánea de datos de grafo leída por el bucle rAF persistente (evita desmontar/reiniciar rAF en cada cambio de pan/zoom/hover)
+  const renderDataRef = useRef({
+    edges,
+    filteredNodes,
+    nodeMap,
+    selectedNodeId,
+    hoveredNodeId,
+    activeEdges,
+    isCorporate,
+  });
+  useEffect(() => {
+    renderDataRef.current = {
+      edges,
+      filteredNodes,
+      nodeMap,
+      selectedNodeId,
+      hoveredNodeId,
+      activeEdges,
+      isCorporate,
+    };
+  }, [edges, filteredNodes, nodeMap, selectedNodeId, hoveredNodeId, activeEdges, isCorporate]);
+
   // ============================================================================
   // MOTOR DE RENDERIZADO CANVAS 2D DE ALTA VELOCIDAD (60 FPS & RETINA HIDPI)
   // DOBLE ESCALA: Zoom In (Imagen 2) vs Zoom Out Galáctico (Imagen 3)
   // ============================================================================
   useEffect(() => {
+    if (!isOpen && !isEmbeddedView) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId: number | null = null;
+    let isDocVisible = typeof document === 'undefined' ? true : !document.hidden;
+    let isInViewport = true;
+
+    const scheduleFrame = () => {
+      if (animationFrameId === null && isDocVisible && isInViewport) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    const stopFrame = () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    };
 
     const render = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
+      animationFrameId = null;
+      if (!isDocVisible || !isInViewport) return;
 
-      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      let width = canvasSizeRef.current.width;
+      let height = canvasSizeRef.current.height;
+      if (!(width > 0 && height > 0)) {
+        width = canvas.clientWidth;
+        height = canvas.clientHeight;
+        if (width > 0 && height > 0) {
+          canvasSizeRef.current = { width, height };
+        }
       }
 
-      ctx.save();
-      ctx.scale(dpr, dpr);
-      ctx.clearRect(0, 0, width, height);
+      if (width > 0 && height > 0) {
+        const targetW = Math.round(width * dpr);
+        const targetH = Math.round(height * dpr);
+        if (canvas.width !== targetW || canvas.height !== targetH) {
+          canvas.width = targetW;
+          canvas.height = targetH;
+        }
 
-      // Espacio transformado de la cámara
-      ctx.save();
-      ctx.translate(pan.x, pan.y);
-      ctx.scale(zoom, zoom);
+        const currentPan = panRef.current;
+        const currentZoom = zoomRef.current;
+        const {
+          edges: curEdges,
+          filteredNodes: curFilteredNodes,
+          nodeMap: curNodeMap,
+          selectedNodeId: curSelectedNodeId,
+          hoveredNodeId: curHoveredNodeId,
+          activeEdges: curActiveEdges,
+          isCorporate: curIsCorporate,
+        } = renderDataRef.current;
 
-      const isZoomOut = zoom < 0.65;
-      const time = performance.now() * 0.0015;
+        ctx.save();
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, width, height);
 
-      // 1. ANILLO CÓSMICO EXTERIOR (Esfera Galáctica de Imagen 3)
-      if (isZoomOut) {
-        // Anillo exterior guía
-        ctx.beginPath();
-        ctx.arc(0, 0, 880, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(99, 102, 241, 0.12)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([8, 8]);
-        ctx.stroke();
-        ctx.setLineDash([]);
+        // Espacio transformado de la cámara
+        ctx.save();
+        ctx.translate(currentPan.x, currentPan.y);
+        ctx.scale(currentZoom, currentZoom);
 
-        // Anillo interior sutil
-        ctx.beginPath();
-        ctx.arc(0, 0, 520, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        const isZoomOut = currentZoom < 0.65;
+        const time = performance.now() * 0.0015;
 
-        // Nubes de nebulosa por clúster (gradientes radiales suaves)
-        const nebulae = [
-          { x: -350, y: -200, color: 'rgba(16, 185, 129, 0.08)', r: 280 }, // Verde pedagógico
-          { x: 350, y: -200, color: 'rgba(6, 182, 212, 0.08)', r: 280 },  // Cian fiscal
-          { x: -350, y: 200, color: 'rgba(244, 63, 94, 0.08)', r: 260 },  // Rosa médico
-          { x: 350, y: 200, color: 'rgba(168, 85, 247, 0.08)', r: 260 }, // Púrpura CRM
-          { x: 0, y: 350, color: 'rgba(236, 72, 153, 0.08)', r: 280 },   // Fucsia game
-          { x: 0, y: -380, color: 'rgba(245, 158, 11, 0.08)', r: 260 }   // Ámbar sedes
-        ];
-
-        nebulae.forEach(neb => {
-          const g = ctx.createRadialGradient(neb.x, neb.y, 10, neb.x, neb.y, neb.r);
-          g.addColorStop(0, neb.color);
-          g.addColorStop(1, 'transparent');
-          ctx.fillStyle = g;
+        // 1. ANILLO CÓSMICO EXTERIOR (Esfera Galáctica de Imagen 3)
+        if (isZoomOut) {
+          // Anillo exterior guía
           ctx.beginPath();
-          ctx.arc(neb.x, neb.y, neb.r, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      }
-
-      // 2. RENDERIZADO DE ARISTAS Y FILAMENTOS SINÁPTICOS
-      edges.forEach(edge => {
-        const sourceNode = nodeMap.get(edge.source);
-        const targetNode = nodeMap.get(edge.target);
-        if (!sourceNode || !targetNode) return;
-
-        const isConnectedToSelected =
-          edge.source === selectedNodeId || edge.target === selectedNodeId;
-        const isHovered =
-          edge.source === hoveredNodeId || edge.target === hoveredNodeId;
-
-        ctx.beginPath();
-        ctx.moveTo(sourceNode.x, sourceNode.y);
-        ctx.lineTo(targetNode.x, targetNode.y);
-
-        if (edge.isBridge) {
-          // NOTA PUENTE: Enlace inter-clúster destacado (Imagen 2)
-          ctx.lineWidth = isConnectedToSelected || isHovered ? 2.5 : 1.8;
-          ctx.strokeStyle = isConnectedToSelected || isHovered ? '#A5B4FC' : 'rgba(129, 140, 248, 0.45)';
-          ctx.setLineDash([6, 4]);
+          ctx.arc(0, 0, 880, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(99, 102, 241, 0.12)';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([8, 8]);
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Etiqueta flotante del puente en Zoom In
-          if (!isZoomOut && zoom >= 0.75 && edge.label) {
-            const mx = (sourceNode.x + targetNode.x) / 2;
-            const my = (sourceNode.y + targetNode.y) / 2;
-            ctx.save();
-            ctx.font = 'bold 9px monospace';
-            const textMetrics = ctx.measureText(edge.label);
-            const pw = textMetrics.width + 10;
-            const ph = 14;
-
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-            ctx.strokeStyle = 'rgba(129, 140, 248, 0.5)';
-            ctx.lineWidth = 1;
-            ctx.roundRect(mx - pw / 2, my - ph / 2, pw, ph, 4);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = '#C7D2FE';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(edge.label, mx, my);
-            ctx.restore();
-          }
-        } else {
-          // Aristas estándar
-          if (isZoomOut) {
-            // Filamentos sutiles en Zoom Out para recrear la maraña cósmica de Imagen 3
-            ctx.lineWidth = 0.75;
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)';
-          } else {
-            ctx.lineWidth = isConnectedToSelected || isHovered ? 2.2 : Math.max(0.9, edge.strength * 0.75);
-            ctx.strokeStyle = isConnectedToSelected || isHovered
-              ? '#818CF8'
-              : 'rgba(51, 65, 85, 0.45)';
-          }
-          ctx.stroke();
-        }
-      });
-
-      // 3. RENDERIZADO DE NODOS DE CONOCIMIENTO
-      filteredNodes.forEach(node => {
-        const isSelected = node.id === selectedNodeId;
-        const isHovered = node.id === hoveredNodeId;
-        const isConnected = activeEdges.has(node.id);
-        const cfg = getClusterConfig(node.cluster, isCorporate);
-
-        ctx.save();
-        ctx.translate(node.x, node.y);
-
-        // Opacidad adaptativa
-        if (selectedNodeId && !isSelected && !isConnected && !isHovered && !isZoomOut) {
-          ctx.globalAlpha = 0.35;
-        }
-
-        // HALO NEÓN AL ESTAR SELECCIONADO O HOVERED
-        if (isSelected || isHovered) {
-          ctx.save();
-          ctx.shadowColor = cfg.glow;
-          ctx.shadowBlur = isSelected ? 26 : 16;
+          // Anillo interior sutil
           ctx.beginPath();
-          ctx.arc(0, 0, node.radius + (isSelected ? 6 : 3), 0, Math.PI * 2);
-          ctx.strokeStyle = cfg.color;
-          ctx.lineWidth = isSelected ? 3 : 2;
+          ctx.arc(0, 0, 520, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+          ctx.lineWidth = 1;
           ctx.stroke();
-          ctx.restore();
 
-          // Anillo de pulso animado para el nodo seleccionado
-          if (isSelected) {
-            const pulseR = node.radius + 8 + Math.sin(time * 3) * 4;
+          // Nubes de nebulosa por clúster (gradientes radiales suaves)
+          BRAIN_NEBULAE.forEach(neb => {
+            const g = ctx.createRadialGradient(neb.x, neb.y, 10, neb.x, neb.y, neb.r);
+            g.addColorStop(0, neb.color);
+            g.addColorStop(1, 'transparent');
+            ctx.fillStyle = g;
             ctx.beginPath();
-            ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
-            ctx.strokeStyle = cfg.color;
-            ctx.lineWidth = 1.2;
-            ctx.setLineDash([4, 4]);
+            ctx.arc(neb.x, neb.y, neb.r, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        // 2. RENDERIZADO DE ARISTAS Y FILAMENTOS SINÁPTICOS
+        curEdges.forEach(edge => {
+          const sourceNode = curNodeMap.get(edge.source);
+          const targetNode = curNodeMap.get(edge.target);
+          if (!sourceNode || !targetNode) return;
+
+          const isConnectedToSelected =
+            edge.source === curSelectedNodeId || edge.target === curSelectedNodeId;
+          const isHovered =
+            edge.source === curHoveredNodeId || edge.target === curHoveredNodeId;
+
+          ctx.beginPath();
+          ctx.moveTo(sourceNode.x, sourceNode.y);
+          ctx.lineTo(targetNode.x, targetNode.y);
+
+          if (edge.isBridge) {
+            // NOTA PUENTE: Enlace inter-clúster destacado (Imagen 2)
+            ctx.lineWidth = isConnectedToSelected || isHovered ? 2.5 : 1.8;
+            ctx.strokeStyle = isConnectedToSelected || isHovered ? '#A5B4FC' : 'rgba(129, 140, 248, 0.45)';
+            ctx.setLineDash([6, 4]);
             ctx.stroke();
             ctx.setLineDash([]);
+
+            // Etiqueta flotante del puente en Zoom In
+            if (!isZoomOut && currentZoom >= 0.75 && edge.label) {
+              const mx = (sourceNode.x + targetNode.x) / 2;
+              const my = (sourceNode.y + targetNode.y) / 2;
+              ctx.save();
+              ctx.font = 'bold 9px monospace';
+              const textMetrics = ctx.measureText(edge.label);
+              const pw = textMetrics.width + 10;
+              const ph = 14;
+
+              ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+              ctx.strokeStyle = 'rgba(129, 140, 248, 0.5)';
+              ctx.lineWidth = 1;
+              ctx.roundRect(mx - pw / 2, my - ph / 2, pw, ph, 4);
+              ctx.fill();
+              ctx.stroke();
+
+              ctx.fillStyle = '#C7D2FE';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(edge.label, mx, my);
+              ctx.restore();
+            }
+          } else {
+            // Aristas estándar
+            if (isZoomOut) {
+              // Filamentos sutiles en Zoom Out para recrear la maraña cósmica de Imagen 3
+              ctx.lineWidth = 0.75;
+              ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)';
+            } else {
+              ctx.lineWidth = isConnectedToSelected || isHovered ? 2.2 : Math.max(0.9, edge.strength * 0.75);
+              ctx.strokeStyle = isConnectedToSelected || isHovered
+                ? '#818CF8'
+                : 'rgba(51, 65, 85, 0.45)';
+            }
+            ctx.stroke();
           }
-        }
+        });
 
-        // CÍRCULO BASE DEL NODO
-        ctx.beginPath();
-        ctx.arc(0, 0, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? cfg.color : '#0F172A';
-        ctx.fill();
+        // 3. RENDERIZADO DE NODOS DE CONOCIMIENTO
+        curFilteredNodes.forEach(node => {
+          const isSelected = node.id === curSelectedNodeId;
+          const isHovered = node.id === curHoveredNodeId;
+          const isConnected = curActiveEdges.has(node.id);
+          const cfg = getClusterConfig(node.cluster, curIsCorporate);
 
-        ctx.lineWidth = isSelected ? 3 : (node.tier === 'macro' ? 2.5 : 1.5);
-        ctx.strokeStyle = cfg.color;
-        ctx.stroke();
+          ctx.save();
+          ctx.translate(node.x, node.y);
 
-        // En Zoom Out: los nodos brillan como estrellas luminosas
-        if (isZoomOut) {
+          // Opacidad adaptativa
+          if (curSelectedNodeId && !isSelected && !isConnected && !isHovered && !isZoomOut) {
+            ctx.globalAlpha = 0.35;
+          }
+
+          // HALO NEÓN AL ESTAR SELECCIONADO O HOVERED
+          if (isSelected || isHovered) {
+            ctx.save();
+            ctx.shadowColor = cfg.glow;
+            ctx.shadowBlur = isSelected ? 26 : 16;
+            ctx.beginPath();
+            ctx.arc(0, 0, node.radius + (isSelected ? 6 : 3), 0, Math.PI * 2);
+            ctx.strokeStyle = cfg.color;
+            ctx.lineWidth = isSelected ? 3 : 2;
+            ctx.stroke();
+            ctx.restore();
+
+            // Anillo de pulso animado para el nodo seleccionado
+            if (isSelected) {
+              const pulseR = node.radius + 8 + Math.sin(time * 3) * 4;
+              ctx.beginPath();
+              ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+              ctx.strokeStyle = cfg.color;
+              ctx.lineWidth = 1.2;
+              ctx.setLineDash([4, 4]);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+
+          // CÍRCULO BASE DEL NODO
           ctx.beginPath();
-          ctx.arc(0, 0, Math.max(2, node.radius * 0.4), 0, Math.PI * 2);
-          ctx.fillStyle = cfg.color;
+          ctx.arc(0, 0, node.radius, 0, Math.PI * 2);
+          ctx.fillStyle = isSelected ? cfg.color : '#0F172A';
           ctx.fill();
-        }
 
-        // TEXTO / SÍMBOLO CENTRAL DENTRO DEL NODO (Solo si hay suficiente zoom o es macro)
-        if (!isZoomOut || node.tier === 'macro') {
-          ctx.fillStyle = isSelected ? '#0F172A' : '#FFFFFF';
-          ctx.font = `bold ${node.radius > 26 ? '12px' : node.radius > 16 ? '10px' : '8px'} monospace`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
+          ctx.lineWidth = isSelected ? 3 : (node.tier === 'macro' ? 2.5 : 1.5);
+          ctx.strokeStyle = cfg.color;
+          ctx.stroke();
 
-          const symbolText = node.cluster === 'core'
-            ? 'CORE'
-            : node.tier === 'macro'
-              ? cfg.iconSymbol
-              : node.title.charAt(0);
+          // En Zoom Out: los nodos brillan como estrellas luminosas
+          if (isZoomOut) {
+            ctx.beginPath();
+            ctx.arc(0, 0, Math.max(2, node.radius * 0.4), 0, Math.PI * 2);
+            ctx.fillStyle = cfg.color;
+            ctx.fill();
+          }
 
-          ctx.fillText(symbolText, 0, 1);
-        }
+          // TEXTO / SÍMBOLO CENTRAL DENTRO DEL NODO (Solo si hay suficiente zoom o es macro)
+          if (!isZoomOut || node.tier === 'macro') {
+            ctx.fillStyle = isSelected ? '#0F172A' : '#FFFFFF';
+            ctx.font = `bold ${node.radius > 26 ? '12px' : node.radius > 16 ? '10px' : '8px'} monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-        // ETIQUETAS DE TEXTO EXTERIORES (LOD - Level of Detail)
-        // Regla: En Zoom Out (< 0.65x) ocultar etiquetas pequeñas (Imagen 3).
-        // En Zoom In (>= 0.65x) mostrar etiquetas nítidas (Imagen 2).
-        const shouldShowLabel = !isZoomOut || node.tier === 'macro' || isSelected || isHovered;
+            const symbolText = node.cluster === 'core'
+              ? 'CORE'
+              : node.tier === 'macro'
+                ? cfg.iconSymbol
+                : node.title.charAt(0);
 
-        if (shouldShowLabel) {
-          const fontSize = node.tier === 'macro' ? 12 : node.tier === 'meso' ? 10 : 9;
-          ctx.font = `${node.tier === 'macro' || isSelected ? 'bold' : 'normal'} ${fontSize}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
+            ctx.fillText(symbolText, 0, 1);
+          }
 
-          const labelY = node.radius + 5;
-          const displayTitle = node.title.length > 24 ? `${node.title.slice(0, 22)}…` : node.title;
+          // ETIQUETAS DE TEXTO EXTERIORES (LOD - Level of Detail)
+          // Regla: En Zoom Out (< 0.65x) ocultar etiquetas pequeñas (Imagen 3).
+          // En Zoom In (>= 0.65x) mostrar etiquetas nítidas (Imagen 2).
+          const shouldShowLabel = !isZoomOut || node.tier === 'macro' || isSelected || isHovered;
 
-          // Sombra para máxima legibilidad sobre filamentos
-          ctx.shadowColor = '#020617';
-          ctx.shadowBlur = 4;
-          ctx.fillStyle = isSelected ? '#FFFFFF' : '#CBD5E1';
-          ctx.fillText(displayTitle, 0, labelY);
-          ctx.shadowBlur = 0;
-        }
+          if (shouldShowLabel) {
+            const fontSize = node.tier === 'macro' ? 12 : node.tier === 'meso' ? 10 : 9;
+            ctx.font = `${node.tier === 'macro' || isSelected ? 'bold' : 'normal'} ${fontSize}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            const labelY = node.radius + 5;
+            const displayTitle = node.title.length > 24 ? `${node.title.slice(0, 22)}…` : node.title;
+
+            // Sombra para máxima legibilidad sobre filamentos
+            ctx.shadowColor = '#020617';
+            ctx.shadowBlur = 4;
+            ctx.fillStyle = isSelected ? '#FFFFFF' : '#CBD5E1';
+            ctx.fillText(displayTitle, 0, labelY);
+            ctx.shadowBlur = 0;
+          }
+
+          ctx.restore();
+        });
 
         ctx.restore();
-      });
+        ctx.restore();
+      }
 
-      ctx.restore();
-      ctx.restore();
-
-      animationFrameId = requestAnimationFrame(render);
+      scheduleFrame();
     };
 
-    animationFrameId = requestAnimationFrame(render);
+    const handleVisibilityChange = () => {
+      isDocVisible = !document.hidden;
+      if (isDocVisible && isInViewport) {
+        scheduleFrame();
+      } else {
+        stopFrame();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    let io: IntersectionObserver | null = null;
+    const observedTarget = containerRef.current || canvas;
+    if (typeof IntersectionObserver !== 'undefined' && observedTarget) {
+      io = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          isInViewport = Boolean(entry?.isIntersecting);
+          if (isDocVisible && isInViewport) {
+            scheduleFrame();
+          } else {
+            stopFrame();
+          }
+        },
+        { threshold: 0.01 }
+      );
+      io.observe(observedTarget);
+    }
+
+    scheduleFrame();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopFrame();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (io) io.disconnect();
     };
-  }, [pan, zoom, nodes, edges, selectedNodeId, hoveredNodeId, activeEdges, filteredNodes, nodeMap]);
+  }, [isOpen, isEmbeddedView, viewMode]);
 
   // ============================================================================
   // INTERACCIÓN CON RATÓN Y TÁCTIL EN CANVAS
   // ============================================================================
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setIsPanning(true);
+    isPanningRef.current = true;
     startPanRef.current = {
-      x: e.clientX - pan.x,
-      y: e.clientY - pan.y
+      x: e.clientX - panRef.current.x,
+      y: e.clientY - panRef.current.y
     };
   };
 
@@ -1159,11 +1299,11 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    if (isPanning) {
-      setPan({
+    if (isPanningRef.current) {
+      panRef.current = {
         x: e.clientX - startPanRef.current.x,
         y: e.clientY - startPanRef.current.y
-      });
+      };
       return;
     }
 
@@ -1172,13 +1312,14 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const worldX = (mouseX - pan.x) / zoom;
-    const worldY = (mouseY - pan.y) / zoom;
+    const currentZoom = zoomRef.current;
+    const worldX = (mouseX - panRef.current.x) / currentZoom;
+    const worldY = (mouseY - panRef.current.y) / currentZoom;
 
     let hitNode: BrainNode | null = null;
     for (let i = filteredNodes.length - 1; i >= 0; i--) {
       const node = filteredNodes[i];
-      const hitRadius = Math.max(node.radius, 14 / zoom);
+      const hitRadius = Math.max(node.radius, 14 / currentZoom);
       const dx = worldX - node.x;
       const dy = worldY - node.y;
       if (dx * dx + dy * dy <= hitRadius * hitRadius) {
@@ -1188,16 +1329,16 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     }
 
     if (hitNode) {
-      setHoveredNodeId(hitNode.id);
+      if (hoveredNodeId !== hitNode.id) setHoveredNodeId(hitNode.id);
       canvas.style.cursor = 'pointer';
     } else {
       if (hoveredNodeId !== null) setHoveredNodeId(null);
-      canvas.style.cursor = isPanning ? 'grabbing' : 'grab';
+      canvas.style.cursor = isPanningRef.current ? 'grabbing' : 'grab';
     }
   };
 
   const handleMouseUp = () => {
-    setIsPanning(false);
+    isPanningRef.current = false;
   };
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1208,12 +1349,13 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const worldX = (mouseX - pan.x) / zoom;
-    const worldY = (mouseY - pan.y) / zoom;
+    const currentZoom = zoomRef.current;
+    const worldX = (mouseX - panRef.current.x) / currentZoom;
+    const worldY = (mouseY - panRef.current.y) / currentZoom;
 
     for (let i = filteredNodes.length - 1; i >= 0; i--) {
       const node = filteredNodes[i];
-      const hitRadius = Math.max(node.radius, 14 / zoom);
+      const hitRadius = Math.max(node.radius, 14 / currentZoom);
       const dx = worldX - node.x;
       const dy = worldY - node.y;
       if (dx * dx + dy * dy <= hitRadius * hitRadius) {
@@ -1233,26 +1375,27 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
+    const currentZoom = zoomRef.current;
     const zoomFactor = e.deltaY < 0 ? 1.14 : 0.88;
-    const newZoom = Math.max(0.18, Math.min(2.8, zoom * zoomFactor));
+    const newZoom = Math.max(0.18, Math.min(2.8, currentZoom * zoomFactor));
 
-    const newPanX = mouseX - (mouseX - pan.x) * (newZoom / zoom);
-    const newPanY = mouseY - (mouseY - pan.y) * (newZoom / zoom);
+    const newPanX = mouseX - (mouseX - panRef.current.x) * (newZoom / currentZoom);
+    const newPanY = mouseY - (mouseY - panRef.current.y) * (newZoom / currentZoom);
 
-    setZoom(newZoom);
-    setPan({ x: newPanX, y: newPanY });
+    panRef.current = { x: newPanX, y: newPanY };
+    setZoomSynced(newZoom);
   };
 
   // Soporte táctil móvil/tablet (pinch to zoom y drag pan)
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
     if (e.touches.length === 1) {
-      setIsPanning(true);
+      isPanningRef.current = true;
       startPanRef.current = {
-        x: e.touches[0].clientX - pan.x,
-        y: e.touches[0].clientY - pan.y
+        x: e.touches[0].clientX - panRef.current.x,
+        y: e.touches[0].clientY - panRef.current.y
       };
     } else if (e.touches.length === 2) {
-      setIsPanning(false);
+      isPanningRef.current = false;
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.hypot(dx, dy);
@@ -1263,11 +1406,11 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (e.touches.length === 1 && isPanning) {
-      setPan({
+    if (e.touches.length === 1 && isPanningRef.current) {
+      panRef.current = {
         x: e.touches[0].clientX - startPanRef.current.x,
         y: e.touches[0].clientY - startPanRef.current.y
-      });
+      };
     } else if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -1275,16 +1418,17 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       const prevDist = touchDataRef.current.dist;
 
       if (prevDist > 0) {
+        const currentZoom = zoomRef.current;
         const factor = dist / prevDist;
-        const newZoom = Math.max(0.18, Math.min(2.8, zoom * factor));
+        const newZoom = Math.max(0.18, Math.min(2.8, currentZoom * factor));
         const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
         const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
 
-        const newPanX = mx - (mx - pan.x) * (newZoom / zoom);
-        const newPanY = my - (my - pan.y) * (newZoom / zoom);
+        const newPanX = mx - (mx - panRef.current.x) * (newZoom / currentZoom);
+        const newPanY = my - (my - panRef.current.y) * (newZoom / currentZoom);
 
-        setZoom(newZoom);
-        setPan({ x: newPanX, y: newPanY });
+        panRef.current = { x: newPanX, y: newPanY };
+        setZoomSynced(newZoom);
       }
 
       touchDataRef.current.dist = dist;
@@ -1292,12 +1436,13 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   };
 
   const handleTouchEnd = () => {
-    setIsPanning(false);
+    isPanningRef.current = false;
     touchDataRef.current.dist = 0;
   };
 
-  // Centrado inicial y adaptativo mediante ResizeObserver
+  // Centrado inicial y caché de dimensiones del canvas mediante ResizeObserver (evita lecturas de layout por cuadro)
   useEffect(() => {
+    if (!isOpen && !isEmbeddedView) return;
     const el = containerRef.current;
     if (!el) return;
 
@@ -1305,9 +1450,10 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
+          canvasSizeRef.current = { width, height };
           if (!hasAutoCenteredRef.current) {
             hasAutoCenteredRef.current = true;
-            setPan({ x: width / 2, y: height / 2 });
+            panRef.current = { x: width / 2, y: height / 2 };
           }
         }
       }
@@ -1315,15 +1461,14 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [isOpen, isEmbeddedView, viewMode]);
 
   // Re-centrar al conmutar entre vistas split y constelación completa
   useEffect(() => {
-    if (containerRef.current) {
-      const { clientWidth, clientHeight } = containerRef.current;
-      if (clientWidth > 0 && clientHeight > 0) {
-        setPan({ x: clientWidth / 2, y: clientHeight / 2 });
-      }
+    const width = canvasSizeRef.current.width || containerRef.current?.clientWidth || 0;
+    const height = canvasSizeRef.current.height || containerRef.current?.clientHeight || 0;
+    if (width > 0 && height > 0) {
+      panRef.current = { x: width / 2, y: height / 2 };
     }
   }, [viewMode]);
 

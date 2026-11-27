@@ -88,7 +88,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
         imageUrl: m.imageUrl || avatarImageUrl || '/images/history/francisco_villa_avatar.png',
         script: idx === 0 && narratorScript 
           ? narratorScript 
-          : (m.narrativeCaption || m.description || `${characterName}: acontecimiento histórico en ${m.locationName || 'México'}.`),
+          : (m.narrativeCaption || m.description || `Soy ${characterName}; te comparto este acontecimiento histórico vivido en ${m.locationName || 'México'}.`),
         cameraMovement: (['zoom_in', 'pan_slow', 'gallop_sweep', 'dawn_ascend'][idx % 4]) as HistoricalCapsule['cameraMovement'],
         youtubeUrl: idx === 0 ? videoUrl : undefined
       }));
@@ -102,7 +102,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'Toma de Ciudad Juárez (1911)',
           duration: 18,
           imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
-          script: narratorScript || 'Mayo de 1911. Francisco Villa y las fuerzas revolucionarias asaltan Ciudad Juárez, desmoronando la dictadura de Porfirio Díaz.',
+          script: narratorScript || 'Mayo de 1911. Al frente de mis fuerzas revolucionarias asalté Ciudad Juárez perforando paredes de adobe hasta tomar la aduana y desmoronar la dictadura de Porfirio Díaz.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
         },
@@ -111,7 +111,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'Batalla de Zacatecas (1914)',
           duration: 20,
           imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
-          script: '23 de junio de 1914. La legendaria División del Norte toma el Cerro de la Bufa en una épica carga de artillería e infantería, sellando el destino de Victoriano Huerta.',
+          script: '23 de junio de 1914. Al mando de mi legendaria División del Norte tomé el Cerro de la Bufa en una carga incontenible de artillería e infantería, sellando el destino del usurpador Victoriano Huerta.',
           cameraMovement: 'pan_slow'
         },
         {
@@ -119,7 +119,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'El Pacto de Xochimilco y Entrada a CDMX (1914)',
           duration: 16,
           imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
-          script: 'Diciembre de 1914. Francisco Villa y Emiliano Zapata sellan el pacto de hermandad campesina en Xochimilco y desfilan al frente de sus tropas populares.',
+          script: 'Diciembre de 1914. Sellé con mi compadre Emiliano Zapata el pacto de hermandad campesina en Xochimilco y desfilé al frente de mis tropas populares por la capital.',
           cameraMovement: 'gallop_sweep'
         },
         {
@@ -127,7 +127,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'Incursión en Columbus y la Punitiva (1916)',
           duration: 18,
           imageUrl: '/images/history/villa_columbus_comic_4.png',
-          script: 'Marzo de 1916. En respuesta a las agresiones y embargos, Villa cruza la frontera y ataca Columbus, burlando luego la expedición punitiva de Pershing.',
+          script: 'Marzo de 1916. En respuesta a las agresiones y embargos crucé la frontera y ataqué Columbus, burlando durante once meses en la sierra a la expedición punitiva de Pershing.',
           cameraMovement: 'dawn_ascend'
         }
       ];
@@ -140,7 +140,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: `${characterName}: La Conspiración Clandestina`,
           duration: durationSeconds || 15,
           imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
-          script: narratorScript || 'Santiago de Querétaro, agosto de 1810. Bajo la apariencia de tertulias literarias, en la Casa del Corregimiento se gesta la independencia.',
+          script: narratorScript || 'Santiago de Querétaro, agosto de 1810. Bajo la apariencia de tertulias literarias, en mi Casa del Corregimiento organicé junto a los patriotas la conspiración por la independencia.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
         },
@@ -149,7 +149,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'El Taconeo en la Soledad de la Alcoba',
           duration: 18,
           imageUrl: '/images/history/josefa_taconeo_comic_2.png',
-          script: '15 de septiembre de 1810. Encerrada bajo llave por su esposo, Josefa no duda: tres golpes secos de sus zapatillas alertan al alcaide Ignacio Pérez.',
+          script: '15 de septiembre de 1810. Encerrada bajo llave por mi esposo para protegerme, no dudé un instante: tres golpes secos de mis zapatillas alertaron al alcaide Ignacio Pérez.',
           cameraMovement: 'pan_slow'
         },
         {
@@ -157,7 +157,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'La Cabalgata Nocturna por la Libertad',
           duration: 16,
           imageUrl: '/images/history/josefa_alerta_comic_3.png',
-          script: 'Bajo el manto de la noche colonial, Ignacio Pérez cabalga sin tregua hacia San Miguel y Dolores, avisando a los líderes antes del cateo virreinal.',
+          script: 'Bajo el manto de aquella noche colonial envié al leal Ignacio Pérez a cabalgar sin tregua hacia San Miguel y Dolores para avisar a nuestros compañeros antes del cateo virreinal.',
           cameraMovement: 'gallop_sweep'
         },
         {
@@ -165,7 +165,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'El Grito de Dolores y el Alba de la Patria',
           duration: 20,
           imageUrl: '/images/history/hidalgo_grito_comic_4.png',
-          script: 'Madrugada del 16 de septiembre de 1810. Advertido a tiempo por Josefa, el cura Miguel Hidalgo repica la campana parroquial llamando a la libertad.',
+          script: 'Madrugada del 16 de septiembre de 1810. Advertido a tiempo por mi aviso desde Querétaro, el cura Miguel Hidalgo repicó la campana parroquial llamando al pueblo a la libertad.',
           cameraMovement: 'dawn_ascend'
         }
       ];
@@ -178,7 +178,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'Los Talleres Populares de Dolores',
           duration: 18,
           imageUrl: '/images/history/hidalgo_talleres.jpg',
-          script: narratorScript || 'En lugar de limitarse a oficios religiosos, Hidalgo enseña alfarería, cultivo de la vid y telares a indígenas y mestizos para romper la dependencia virreinal.',
+          script: narratorScript || 'En mi curato de Dolores no me limité a los oficios religiosos: enseñé alfarería, cultivo de la vid y telares a indígenas y mestizos para romper la dependencia virreinal.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
         },
@@ -187,7 +187,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'El Grito de Independencia en el Atrio',
           duration: 20,
           imageUrl: '/images/history/hidalgo_grito_comic_4.png',
-          script: 'Con el repicar de la campana parroquial y el estandarte guadalupano en mano, Hidalgo llama al pueblo a sacudirse trescientos años de tiranía virreinal.',
+          script: 'Con el repicar de mi campana parroquial y el estandarte guadalupano en mis manos, llamé al pueblo en el atrio de Dolores a sacudirse trescientos años de tiranía virreinal.',
           cameraMovement: 'dawn_ascend'
         },
         {
@@ -195,7 +195,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'La Toma de la Alhóndiga de Granaditas',
           duration: 18,
           imageUrl: '/images/history/alhondiga_granaditas.jpg',
-          script: 'Ante el refugio de las autoridades virreinales en la fortaleza granera, el minero El Pípila quema la puerta principal con una losa en la espalda permitiendo la victoria patriota.',
+          script: 'Cuando las autoridades virreinales se refugiaron en la fortaleza granera de Guanajuato, el valor del minero El Pípila incendió el portón permitiéndonos conquistar la Alhóndiga de Granaditas.',
           cameraMovement: 'pan_slow'
         },
         {
@@ -203,7 +203,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           title: 'El Decreto Histórico de Abolición de la Esclavitud',
           duration: 22,
           imageUrl: '/images/history/hidalgo_decreto_abolicion.jpg',
-          script: '6 de diciembre de 1810. En Guadalajara, Don Miguel Hidalgo promulga el histórico bando que declara totalmente libres a los esclavos y suprime los tributos de castas en América.',
+          script: '6 de diciembre de 1810. En Guadalajara firmé y promulgué el histórico bando con el que declaré totalmente libres a todos los esclavos y suprimí los tributos de castas en América.',
           cameraMovement: 'gallop_sweep'
         }
       ];
@@ -215,7 +215,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
         title: title || `${characterName}: Acontecimiento Clave`,
         duration: durationSeconds || 18,
         imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.png',
-        script: narratorScript || shortBio || `${characterName} transformó la historia con su liderazgo y convicción patriótica.`,
+        script: narratorScript || shortBio || `Soy ${characterName}; marqué el rumbo de mi tiempo histórico con liderazgo y firme convicción patriótica.`,
         cameraMovement: 'zoom_in',
         youtubeUrl: videoUrl
       }

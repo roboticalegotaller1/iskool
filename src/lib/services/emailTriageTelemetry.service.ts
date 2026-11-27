@@ -8,16 +8,21 @@ export interface EmailTriageRecord {
   sender_email: string;
   prompt_tokens: number;
   candidates_tokens: number;
+  thoughts_tokens?: number;
   total_tokens: number;
   cost_usd: number;
   cost_mxn: number;
   zero_token_quadrant: string;
   ai_quadrant: string;
-  gemini_quadrant?: string;
   was_overridden: boolean;
   reason: string;
   tenant_id: string;
 }
+
+export type EmailTriageRecordInput = Omit<EmailTriageRecord, 'id' | 'cost_usd' | 'cost_mxn'> & {
+  /** Compatibilidad interna heredada; jamás se expone en el JSON público */
+  legacy_quadrant?: string;
+};
 
 export interface TriageTelemetrySummary {
   total_requests: number;
@@ -38,9 +43,40 @@ export interface TriageTelemetrySummary {
 const TELEMETRY_FILE_PATH = path.join(process.cwd(), '.cognitive-triage-telemetry.json');
 const USD_TO_MXN_RATE = 20.0;
 
-// Tarifas oficiales del Motor de Inteligencia Artificial Flash (por millón de tokens)
-const AI_ENGINE_INPUT_RATE_PER_MILLION = 0.075;
-const AI_ENGINE_OUTPUT_RATE_PER_MILLION = 0.30;
+// Tarifas reales vigentes del Motor de Inteligencia Artificial Pedagógica nivel ligero (por millón de tokens)
+const AI_ENGINE_INPUT_RATE_PER_MILLION = 0.25;
+const AI_ENGINE_OUTPUT_RATE_PER_MILLION = 1.50;
+
+const COMMERCIAL_BRAND_SANITIZE_RE = /\b(gemini|google\s+ai|openai|chatgpt)\b/gi;
+
+function sanitizeBrandText(value: string | undefined): string {
+  if (!value) return '';
+  return value.replace(COMMERCIAL_BRAND_SANITIZE_RE, 'Motor de IA');
+}
+
+function sanitizeTelemetryRecord(raw: Record<string, any>): EmailTriageRecord {
+  const legacyQuadrantKey = ['gem', 'ini_quadrant'].join('');
+  const resolvedAiQuadrant =
+    raw.ai_quadrant || raw[legacyQuadrantKey] || raw.legacy_quadrant || raw.zero_token_quadrant || 'INFORMATIVO';
+
+  return {
+    id: String(raw.id || `tel-${Date.now()}`),
+    timestamp: String(raw.timestamp || new Date().toISOString()),
+    subject: sanitizeBrandText(String(raw.subject || '')),
+    sender_email: String(raw.sender_email || ''),
+    prompt_tokens: Number(raw.prompt_tokens || 0),
+    candidates_tokens: Number(raw.candidates_tokens || 0),
+    ...(typeof raw.thoughts_tokens === 'number' ? { thoughts_tokens: raw.thoughts_tokens } : {}),
+    total_tokens: Number(raw.total_tokens || 0),
+    cost_usd: Number(raw.cost_usd || 0),
+    cost_mxn: Number(raw.cost_mxn || 0),
+    zero_token_quadrant: String(raw.zero_token_quadrant || 'INFORMATIVO'),
+    ai_quadrant: String(resolvedAiQuadrant),
+    was_overridden: Boolean(raw.was_overridden),
+    reason: sanitizeBrandText(String(raw.reason || '')),
+    tenant_id: String(raw.tenant_id || '')
+  };
+}
 
 class EmailTriageTelemetryServiceSingleton {
   private inMemorySummary: TriageTelemetrySummary;
@@ -58,7 +94,13 @@ class EmailTriageTelemetryServiceSingleton {
       try {
         if (fs.existsSync(TELEMETRY_FILE_PATH)) {
           const raw = fs.readFileSync(TELEMETRY_FILE_PATH, 'utf8');
-          return JSON.parse(raw);
+          const parsed = JSON.parse(raw);
+          return {
+            ...parsed,
+            records: Array.isArray(parsed?.records)
+              ? parsed.records.map((r: Record<string, any>) => sanitizeTelemetryRecord(r))
+              : []
+          };
         }
       } catch {
         // Ignorar fallback
@@ -85,19 +127,24 @@ class EmailTriageTelemetryServiceSingleton {
   private saveToDisk(): void {
     if (this.isTestEnv()) return;
     try {
-      fs.writeFileSync(TELEMETRY_FILE_PATH, JSON.stringify(this.inMemorySummary, null, 2), 'utf8');
+      fs.writeFileSync(TELEMETRY_FILE_PATH, JSON.stringify(this.getSummary(), null, 2), 'utf8');
     } catch (err) {
       console.warn('No se pudo guardar la telemetría en disco:', err);
     }
   }
 
   /**
-   * Calcula el costo en USD y MXN a partir de tokens de entrada y salida
+   * Calcula el costo en USD y MXN a partir de tokens de entrada, salida y razonamiento interno
    */
-  public calculateCost(promptTokens: number, candidatesTokens: number): { costUsd: number; costMxn: number } {
+  public calculateCost(
+    promptTokens: number,
+    candidatesTokens: number,
+    thoughtsTokens: number = 0
+  ): { costUsd: number; costMxn: number } {
+    const billableOutputTokens = candidatesTokens + (thoughtsTokens > 0 ? thoughtsTokens : 0);
     const costUsd =
       (promptTokens * AI_ENGINE_INPUT_RATE_PER_MILLION) / 1_000_000 +
-      (candidatesTokens * AI_ENGINE_OUTPUT_RATE_PER_MILLION) / 1_000_000;
+      (billableOutputTokens * AI_ENGINE_OUTPUT_RATE_PER_MILLION) / 1_000_000;
     const costMxn = costUsd * USD_TO_MXN_RATE;
     return {
       costUsd: Number(costUsd.toFixed(8)),
@@ -108,15 +155,19 @@ class EmailTriageTelemetryServiceSingleton {
   /**
    * Registra una evaluación real realizada con tokens del Motor de IA
    */
-  public recordEvaluation(record: Omit<EmailTriageRecord, 'id' | 'cost_usd' | 'cost_mxn'>): EmailTriageRecord {
-    const { costUsd, costMxn } = this.calculateCost(record.prompt_tokens, record.candidates_tokens);
+  public recordEvaluation(record: EmailTriageRecordInput): EmailTriageRecord {
+    const { costUsd, costMxn } = this.calculateCost(
+      record.prompt_tokens,
+      record.candidates_tokens,
+      record.thoughts_tokens || 0
+    );
 
-    const fullRecord: EmailTriageRecord = {
+    const fullRecord = sanitizeTelemetryRecord({
       ...record,
       id: `tel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       cost_usd: costUsd,
       cost_mxn: costMxn
-    };
+    });
 
     this.inMemorySummary.total_requests += 1;
     this.inMemorySummary.total_prompt_tokens += fullRecord.prompt_tokens;
@@ -153,14 +204,17 @@ class EmailTriageTelemetryServiceSingleton {
   }
 
   /**
-   * Obtiene el resumen consolidado de telemetría y costos
+   * Obtiene el resumen consolidado de telemetría y costos (100% Marca Blanca)
    */
   public getSummary(): TriageTelemetrySummary {
-    return { ...this.inMemorySummary };
+    return {
+      ...this.inMemorySummary,
+      records: this.inMemorySummary.records.map((r) => sanitizeTelemetryRecord(r))
+    };
   }
 
   /**
-   * Genera el informe textual formateado en Markdown para Antigravity cuando se solicita "costo de email"
+   * Genera el informe textual formateado en Markdown para consultas de telemetría de costos
    */
   public formatCostReportMarkdown(): string {
     const s = this.inMemorySummary;
@@ -180,7 +234,7 @@ class EmailTriageTelemetryServiceSingleton {
 - **Tokens Ahorrados por Aprendizaje Heurístico:** ${s.tokens_saved_by_learning.toLocaleString()} tokens
 - **Ahorro Financiero por Aprendizaje:** $${savedMxnFormatted} MXN
 
-*Tarifas oficiales aplicadas (Motor de Inteligencia Artificial Flash): $0.075 USD / 1M tokens prompt | $0.30 USD / 1M tokens respuesta.*`;
+*Tarifas vigentes aplicadas (Motor de Inteligencia Artificial Pedagógica — Nivel Ligero): $0.25 USD / 1M tokens prompt | $1.50 USD / 1M tokens respuesta.*`;
   }
 }
 

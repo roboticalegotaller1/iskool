@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
             updated_at: new Date().toISOString()
           })
           .eq('id', invoiceId)
-          .select('*, parent:profiles(*), student:students(*)')
+          .select('school_id, parent_id, total_amount')
           .maybeSingle();
 
         if (invoiceError) {
@@ -64,47 +64,61 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // B. Registrar en payments_history (solo insertar si tenemos school_id/invoice_id UUID válidos)
+      // B. Registrar en payments_history y consultar perfil fiscal en paralelo
       const receiptNumber = `REC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
       const resolvedSchoolId = updatedInvoice?.school_id;
       const resolvedParentId = updatedInvoice?.parent_id;
       const resolvedAmount = amount > 0 ? amount : (updatedInvoice?.total_amount || 3450.00);
+      const hasValidSchoolUuid = UUID_REGEX.test(String(resolvedSchoolId || ''));
+      const hasValidParentUuid = UUID_REGEX.test(String(resolvedParentId || ''));
 
-      if (canQueryUuidInvoice && UUID_REGEX.test(String(resolvedSchoolId || '')) && UUID_REGEX.test(String(resolvedParentId || ''))) {
-        const { error: historyError } = await db
-          .from('payments_history')
-          .insert({
-            school_id: resolvedSchoolId,
-            invoice_id: invoiceId,
-            parent_id: resolvedParentId,
-            amount: resolvedAmount,
-            currency: 'MXN',
-            payment_method: paymentMethod,
-            status: 'succeeded',
-            gateway_provider: 'PaymentGateway',
-            gateway_transaction_id: transactionId,
-            net_amount: resolvedAmount,
-            receipt_number: receiptNumber,
-            paid_at: new Date().toISOString()
-          });
+      const insertHistoryTask = (async () => {
+        if (!canQueryUuidInvoice || !hasValidSchoolUuid || !hasValidParentUuid) return;
+        try {
+          const { error: historyError } = await db
+            .from('payments_history')
+            .insert({
+              school_id: resolvedSchoolId,
+              invoice_id: invoiceId,
+              parent_id: resolvedParentId,
+              amount: resolvedAmount,
+              currency: 'MXN',
+              payment_method: paymentMethod,
+              status: 'succeeded',
+              gateway_provider: 'PaymentGateway',
+              gateway_transaction_id: transactionId,
+              net_amount: resolvedAmount,
+              receipt_number: receiptNumber,
+              paid_at: new Date().toISOString()
+            });
 
-        if (historyError) {
-          console.warn('[Payment Webhook] Aviso al registrar historial de pago:', historyError.message);
+          if (historyError) {
+            console.warn('[Payment Webhook] Aviso al registrar historial de pago:', historyError.message);
+          }
+        } catch (histErr: any) {
+          console.warn('[Payment Webhook] Aviso al registrar historial de pago:', histErr?.message);
         }
-      }
+      })();
+
+      const fetchBillingProfileTask = (async (): Promise<any> => {
+        if (!hasValidParentUuid) return null;
+        try {
+          const { data: bpData, error: bpErr } = await db
+            .from('billing_profiles')
+            .select('auto_invoice_on_payment, postal_code, rfc, tax_name, tax_regime, cfdi_use, billing_email')
+            .eq('parent_id', resolvedParentId)
+            .maybeSingle();
+          return !bpErr ? bpData : null;
+        } catch (bpFetchErr: any) {
+          console.warn('[Payment Webhook] Aviso al consultar perfil fiscal:', bpFetchErr?.message);
+          return null;
+        }
+      })();
+
+      const [, billingProfile] = await Promise.all([insertHistoryTask, fetchBillingProfileTask]);
 
       // 3. Trigger: Facturación Automática SAT (CFDI 4.0) vía Adaptador PAC Oficial
       try {
-        let billingProfile: any = null;
-        if (UUID_REGEX.test(String(resolvedParentId || ''))) {
-          const { data: bpData, error: bpErr } = await db
-            .from('billing_profiles')
-            .select('*')
-            .eq('parent_id', resolvedParentId)
-            .maybeSingle();
-          if (!bpErr) billingProfile = bpData;
-        }
-
         const shouldAutoInvoice = billingProfile ? billingProfile.auto_invoice_on_payment !== false : true;
 
         if (shouldAutoInvoice) {

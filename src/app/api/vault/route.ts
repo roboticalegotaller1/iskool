@@ -19,6 +19,11 @@ import { renderSanitizedMarkdown, invalidateVaultCache } from '@/lib/vaultMarkdo
 import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
+import {
+  normalizeSearchText,
+  extractMeaningfulTopicTokens,
+  normalizeCanonicalGrade
+} from '@/lib/curriculumNormalizer';
 
 /**
  * Obtiene el directorio raíz canónico de las planeaciones pedagógicas.
@@ -69,14 +74,13 @@ const VaultPlanningSchema = z.object({
   isSuperUser: z.boolean().optional()
 });
 
-const SPANISH_STOPWORDS = new Set([
-  'de', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas',
-  'en', 'y', 'a', 'para', 'por', 'con', 'sin', 'al', 'del',
-  'que', 'como', 'sobre', 'su', 'sus', 'mi', 'mis', 'tu', 'tus',
+// Palabras vacías auxiliares de consulta en Bóveda.
+// IMPORTANTE: Preserva ordinales (primero, segundo, tercero...) y "grado" para temas como "Ecuaciones de segundo grado".
+const EXTRA_VAULT_STOPWORDS = new Set([
+  'con', 'sin', 'su', 'sus', 'mi', 'mis', 'tu', 'tus',
   'alumnos', 'alumnas', 'estudiantes', 'ninos', 'ninas',
-  'segundo', 'tercero', 'cuarto', 'quinto', 'sexto', 'primer', 'primero',
-  'grado', 'grados', 'fase', 'fases', 'clase', 'tema', 'planeacion',
-  'planeaciones', 'proyecto', 'proyectos', 'sesion', 'sesiones',
+  'fase', 'fases', 'planeacion', 'planeaciones', 'proyecto',
+  'proyectos', 'sesion', 'sesiones',
   'hice', 'daba', 'resultado', 'hacer', 'crear', 'generar', 'verificar'
 ]);
 
@@ -91,19 +95,33 @@ function sanitizeFolderName(str: string): string {
   return safe || 'General';
 }
 
-function getAllMarkdownFiles(dirPath: string): string[] {
-  let results: string[] = [];
-  if (!fs.existsSync(dirPath)) return results;
-  const list = fs.readdirSync(dirPath);
-  for (const file of list) {
-    const filePath = path.join(dirPath, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getAllMarkdownFiles(filePath));
-    } else if (file.endsWith('.md')) {
+async function getAllMarkdownFiles(dirPath: string): Promise<string[]> {
+  let entries: fs.Dirent[];
+  try {
+    entries = await fs.promises.readdir(/*turbopackIgnore: true*/ dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+
+  const results: string[] = [];
+  const subDirPromises: Promise<string[]>[] = [];
+
+  for (const entry of entries) {
+    const filePath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      subDirPromises.push(getAllMarkdownFiles(filePath));
+    } else if (entry.isFile() && entry.name.endsWith('.md')) {
       results.push(filePath);
     }
   }
+
+  if (subDirPromises.length > 0) {
+    const nested = await Promise.all(subDirPromises);
+    for (const files of nested) {
+      results.push(...files);
+    }
+  }
+
   return results;
 }
 
@@ -130,58 +148,117 @@ interface CachedNodeMeta {
   cleanPda: string;
 }
 
-// Caché de Nivel 1: Índice de metadatos de archivos en disco (TTL: 10 min)
+// Caché de Nivel 1: Índice de metadatos de archivos en disco (TTL: 10 min) con single-flight deduplication
 let vaultIndexCache: CachedNodeMeta[] | null = null;
+let vaultIndexDir = '';
 let lastIndexTime = 0;
+let vaultIndexInFlight: Promise<CachedNodeMeta[]> | null = null;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
-// Caché de Nivel 2: Resultados parseados de planeaciones en memoria (< 5ms)
+// Caché de Nivel 2: Resultados parseados de planeaciones en memoria (< 5ms), acotado a 200 entradas (LRU)
 const parsedPlanningCache = new Map<string, { planning: any; timestamp: number }>();
 const PARSED_CACHE_TTL_MS = 15 * 60 * 1000;
+const PARSED_CACHE_MAX_ENTRIES = 200;
 
-function getOrBuildVaultIndex(planningsDir: string): CachedNodeMeta[] {
+function getParsedPlanningFromCache(cacheKey: string): any | null {
+  const cachedEntry = parsedPlanningCache.get(cacheKey);
+  if (!cachedEntry) return null;
+  if (Date.now() - cachedEntry.timestamp >= PARSED_CACHE_TTL_MS) {
+    parsedPlanningCache.delete(cacheKey);
+    return null;
+  }
+  // Promover a más reciente (LRU)
+  parsedPlanningCache.delete(cacheKey);
+  parsedPlanningCache.set(cacheKey, cachedEntry);
+  return cachedEntry.planning;
+}
+
+function setParsedPlanningInCache(cacheKey: string, planning: any): void {
+  if (parsedPlanningCache.has(cacheKey)) {
+    parsedPlanningCache.delete(cacheKey);
+  }
+  parsedPlanningCache.set(cacheKey, { planning, timestamp: Date.now() });
+  while (parsedPlanningCache.size > PARSED_CACHE_MAX_ENTRIES) {
+    const oldestKey = parsedPlanningCache.keys().next().value;
+    if (oldestKey === undefined) break;
+    parsedPlanningCache.delete(oldestKey);
+  }
+}
+
+async function buildVaultIndexAsync(planningsDir: string): Promise<CachedNodeMeta[]> {
+  const allFiles = await getAllMarkdownFiles(planningsDir);
+  const newIndex: CachedNodeMeta[] = new Array(allFiles.length);
+  let nextIdx = 0;
+  const workerCount = Math.min(16, Math.max(1, allFiles.length));
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      const buf = Buffer.alloc(1536);
+      while (true) {
+        const idx = nextIdx++;
+        if (idx >= allFiles.length) break;
+        const filePath = allFiles[idx];
+        const filename = path.basename(filePath);
+        const cleanFilename = cleanString(filename);
+        const cleanPath = cleanString(filePath);
+
+        // Extracción ultrarrápida de tema y PDA desde cabecera YAML (primeros 1.5 KB)
+        let cleanPda = '';
+        let fh: fs.promises.FileHandle | null = null;
+        try {
+          fh = await fs.promises.open(/*turbopackIgnore: true*/ filePath, 'r');
+          const { bytesRead } = await fh.read(buf, 0, 1536, 0);
+          const head = buf.subarray(0, bytesRead).toString('utf8');
+          const temaMatch = head.match(/^(?:tema|title):\s*"?([^\n"]+)"?/im);
+          const pdaMatch = head.match(/^pda:\s*"?([^\n"]+)"?/im);
+          cleanPda = normalizeSearchText([temaMatch?.[1] || '', pdaMatch?.[1] || ''].filter(Boolean).join(' '));
+        } catch {
+          // Continuar si el archivo no se pudo leer
+        } finally {
+          if (fh) {
+            await fh.close().catch(() => {});
+          }
+        }
+
+        // Extracción ultrarrápida de tema normalizado desde el nombre del archivo
+        const cleanTopic = normalizeSearchText(
+          cleanFilename.replace(/^planeacion_/, '').replace(/\.md$/, '')
+        );
+
+        newIndex[idx] = {
+          filePath,
+          filename,
+          cleanFilename,
+          cleanPath,
+          cleanTopic,
+          cleanPda
+        };
+      }
+    })
+  );
+
+  vaultIndexCache = newIndex;
+  vaultIndexDir = planningsDir;
+  lastIndexTime = Date.now();
+  return newIndex;
+}
+
+async function getOrBuildVaultIndex(planningsDir: string): Promise<CachedNodeMeta[]> {
   const now = Date.now();
-  if (vaultIndexCache && (now - lastIndexTime) < CACHE_TTL_MS) {
+  if (vaultIndexCache && vaultIndexDir === planningsDir && (now - lastIndexTime) < CACHE_TTL_MS) {
     return vaultIndexCache;
   }
 
-  const allFiles = getAllMarkdownFiles(planningsDir);
-  const newIndex: CachedNodeMeta[] = [];
-
-  for (const filePath of allFiles) {
-    const filename = path.basename(filePath);
-    const cleanFilename = cleanString(filename);
-    const cleanPath = cleanString(filePath);
-
-    // Extracción ultrarrápida de tema y PDA desde cabecera YAML (primeros 1.5 KB)
-    let cleanPda = '';
-    try {
-      const fd = fs.openSync(/*turbopackIgnore: true*/ filePath, 'r');
-      const buf = Buffer.alloc(1536);
-      const bytesRead = fs.readSync(fd, buf, 0, 1536, 0);
-      fs.closeSync(fd);
-      const head = buf.subarray(0, bytesRead).toString('utf8');
-      const temaMatch = head.match(/^(?:tema|title):\s*"?([^\n"]+)"?/im);
-      const pdaMatch = head.match(/^pda:\s*"?([^\n"]+)"?/im);
-      cleanPda = cleanString([temaMatch?.[1] || '', pdaMatch?.[1] || ''].filter(Boolean).join(' '));
-    } catch { }
-
-    // Extracción ultrarrápida de tema desde el nombre del archivo
-    const cleanTopic = cleanFilename.replace(/^planeacion_/, '').replace(/\.md$/, '').replace(/_/g, ' ');
-
-    newIndex.push({
-      filePath,
-      filename,
-      cleanFilename,
-      cleanPath,
-      cleanTopic,
-      cleanPda
-    });
+  if (vaultIndexInFlight && vaultIndexDir === planningsDir) {
+    return vaultIndexInFlight;
   }
 
-  vaultIndexCache = newIndex;
-  lastIndexTime = now;
-  return newIndex;
+  vaultIndexDir = planningsDir;
+  vaultIndexInFlight = buildVaultIndexAsync(planningsDir).finally(() => {
+    vaultIndexInFlight = null;
+  });
+
+  return vaultIndexInFlight;
 }
 
 export async function GET(request: NextRequest) {
@@ -214,18 +291,32 @@ export async function GET(request: NextRequest) {
 
     const { q: query, level: levelParam, grade: gradeParam, subject: subjectParam, sessions: sessionsParam } = parsedQuery.data;
     const sessionCount = parseInt(sessionsParam || '10', 10) || 10;
-    const cleanQuery = cleanString(query);
+    const cleanQuery = normalizeSearchText(query);
+    const canonicalGrade = gradeParam
+      ? (normalizeCanonicalGrade(gradeParam) ||
+          normalizeCanonicalGrade(gradeParam.replace(/\b([1-6]\s*[°ºª]?)\s*[a-z]\b/gi, '$1')) ||
+          (levelParam ? normalizeCanonicalGrade(`${gradeParam} ${levelParam}`) : null))
+      : null;
 
-    // Verificación de Caché de Nivel 2 en Memoria (Respuesta ultrarrápida)
-    const cacheKey = `${cleanQuery}|${levelParam}|${gradeParam}|${subjectParam}|${sessionCount}`;
-    const cachedEntry = parsedPlanningCache.get(cacheKey);
-    if (cachedEntry && (Date.now() - cachedEntry.timestamp < PARSED_CACHE_TTL_MS)) {
-      return NextResponse.json(cachedEntry.planning, {
+    // Verificación de Caché de Nivel 2 en Memoria con clave normalizada (Respuesta ultrarrápida)
+    const normalizedCacheLevel = normalizeSearchText(levelParam);
+    const normalizedCacheGrade = canonicalGrade
+      ? canonicalGrade.canonicalSlug
+      : normalizeSearchText(gradeParam);
+    const normalizedCacheSubject = normalizeSearchText(subjectParam);
+    const cacheKey = `${cleanQuery}|${normalizedCacheLevel}|${normalizedCacheGrade}|${normalizedCacheSubject}|${sessionCount}`;
+    const cachedPlanning = getParsedPlanningFromCache(cacheKey);
+    if (cachedPlanning) {
+      return NextResponse.json(cachedPlanning, {
         headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' }
       });
     }
 
-    const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2 && !SPANISH_STOPWORDS.has(w));
+    const meaningfulTokens = extractMeaningfulTopicTokens(query);
+    const filteredTokens = meaningfulTokens.filter(
+      w => w.length >= 2 && !EXTRA_VAULT_STOPWORDS.has(w)
+    );
+    const queryWords = filteredTokens.length > 0 ? filteredTokens : meaningfulTokens.filter(w => w.length >= 2);
     const isSearchingIndependence = /independ|hidalgo|morelos|allende|aldama|josefa|iturbide|dolores|insurg/i.test(cleanQuery);
     const isSearchingRevolution = !isSearchingIndependence && /revoluc|madero|zapata|villa|carranza|porfir/i.test(cleanQuery);
     
@@ -234,7 +325,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ found: false, note: null }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' } });
     }
 
-    const allIndexed = getOrBuildVaultIndex(planningsDir);
+    const allIndexed = await getOrBuildVaultIndex(planningsDir);
 
     // Filtrado estricto por nivel educativo
     let candidateNodes = allIndexed;
@@ -260,7 +351,19 @@ export async function GET(request: NextRequest) {
 
     if (gradeParam) {
       const cleanGrade = cleanString(gradeParam);
-      const filtered = candidateNodes.filter(n => n.cleanPath.includes(cleanGrade));
+      const gradePatterns = canonicalGrade
+        ? Array.from(
+            new Set([
+              ...canonicalGrade.folderPatterns.map(p => cleanString(p)),
+              cleanString(canonicalGrade.canonicalSlug),
+              cleanGrade
+            ])
+          )
+        : [cleanGrade];
+
+      const filtered = candidateNodes.filter(n =>
+        gradePatterns.some(pat => pat.length >= 2 && n.cleanPath.includes(pat))
+      );
       if (filtered.length > 0) candidateNodes = filtered;
     }
 
@@ -310,9 +413,11 @@ export async function GET(request: NextRequest) {
       let topicMatches = 0;
 
       // Bono de coincidencia de frase completa directa (+10)
+      const cleanQuerySlug = cleanQuery.replace(/\s+/g, '_');
       if (
         cleanQuery.length >= 3 &&
         (node.cleanFilename.includes(cleanQuery) ||
+          node.cleanFilename.includes(cleanQuerySlug) ||
           node.cleanTopic.includes(cleanQuery) ||
           node.cleanPda.includes(cleanQuery))
       ) {
@@ -337,7 +442,17 @@ export async function GET(request: NextRequest) {
       });
 
       if (levelParam && node.cleanPath.includes(cleanString(levelParam))) score += 2;
-      if (gradeParam && node.cleanPath.includes(cleanString(gradeParam))) score += 2;
+      if (gradeParam) {
+        const gradeBonusPatterns = canonicalGrade
+          ? [
+              ...canonicalGrade.folderPatterns.map(p => cleanString(p)),
+              cleanString(canonicalGrade.canonicalSlug)
+            ]
+          : [cleanString(gradeParam)];
+        if (gradeBonusPatterns.some(pat => pat.length >= 2 && node.cleanPath.includes(pat))) {
+          score += 2;
+        }
+      }
       if (subjectParam && node.cleanPath.includes(cleanString(subjectParam))) score += 2;
 
       if (topicMatches > 0 && score >= effectiveMinScore && score > bestScore) {
@@ -480,8 +595,8 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      // Guardar en Caché Nivel 2
-      parsedPlanningCache.set(cacheKey, { planning: responsePayload, timestamp: Date.now() });
+      // Guardar en Caché Nivel 2 (LRU acotado a 200 entradas)
+      setParsedPlanningInCache(cacheKey, responsePayload);
 
       return NextResponse.json(responsePayload, {
         headers: {
@@ -588,10 +703,10 @@ export async function POST(request: NextRequest) {
 
     const targetDir = path.join(/*turbopackIgnore: true*/ planningsDir, levelFolder, gradeFolder, subjectFolder);
     
-    // Verificación de seguridad de ruta (evita Path Traversal)
+    // Verificación de seguridad de ruta (evita Path Traversal y colisiones por prefijo)
     const resolvedPath = path.resolve(/*turbopackIgnore: true*/ targetDir);
     const resolvedVault = path.resolve(/*turbopackIgnore: true*/ planningsDir);
-    if (!resolvedPath.startsWith(resolvedVault)) {
+    if (resolvedPath !== resolvedVault && !resolvedPath.startsWith(resolvedVault + path.sep)) {
       return NextResponse.json({ success: false, error: 'Ruta no permitida' }, { status: 403 });
     }
 
@@ -603,7 +718,10 @@ export async function POST(request: NextRequest) {
 
     const safeTitle = planning.title.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s_-]/g, '').trim().replace(/\s+/g, '_');
     const filename = `Planeacion_${safeTitle}_${Date.now()}.md`;
-    const filePath = path.join(targetDir, filename);
+    const filePath = path.resolve(targetDir, filename);
+    if (!filePath.startsWith(resolvedVault + path.sep)) {
+      return NextResponse.json({ success: false, error: 'Ruta de archivo no permitida' }, { status: 403 });
+    }
 
     const formattedSpanishDate = formatSpanishDateInLetters(new Date());
 
@@ -659,6 +777,7 @@ ${planning.materiales || ''}
     try {
       fs.writeFileSync(filePath, markdownContent, 'utf8');
       vaultIndexCache = null; // Invalidar caché de archivos
+      vaultIndexInFlight = null;
       parsedPlanningCache.clear(); // Invalidar caché de respuestas parseadas
       invalidateVaultCache(); // Invalidar caché de Bóveda Curricular SSG/ISR
       console.log(`✅ Planeación guardada en Bóveda Curricular estructurada por Nivel/Grado/Materia: ${filePath}`);

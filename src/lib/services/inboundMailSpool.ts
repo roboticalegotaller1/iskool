@@ -15,6 +15,10 @@ export interface QueuedInboundEmail extends InboundEmailDTO {
   is_processed: boolean;
 }
 
+// Límites estrictos de memoria para el búfer circular por tenant y el registro de títulos procesados
+const MAX_SPOOL_EMAILS_PER_TENANT = 200;
+const MAX_PROCESSED_TITLES = 5000;
+
 // Búfer global adjunto a globalThis para persistencia entre invocaciones
 const globalMailSpool: Map<string, QueuedInboundEmail[]> =
   (globalThis as any).__iSkoolGlobalMailSpool ||
@@ -58,6 +62,9 @@ export const InboundMailSpoolService = {
     };
 
     queue.push(queuedItem);
+    if (queue.length > MAX_SPOOL_EMAILS_PER_TENANT) {
+      queue.splice(0, queue.length - MAX_SPOOL_EMAILS_PER_TENANT);
+    }
     globalMailSpool.set(tenantId, queue);
     return queuedItem;
   },
@@ -88,7 +95,15 @@ export const InboundMailSpoolService = {
     for (const item of queue) {
       if (idSet.has(item.id)) {
         item.is_processed = true;
-        processedTitleSet.add(`${tenantId}:${normalizeSubject(item.subject)}`);
+        const processedKey = `${tenantId}:${normalizeSubject(item.subject)}`;
+        if (!processedTitleSet.has(processedKey)) {
+          while (processedTitleSet.size >= MAX_PROCESSED_TITLES) {
+            const oldestKey = processedTitleSet.keys().next().value;
+            if (oldestKey === undefined) break;
+            processedTitleSet.delete(oldestKey);
+          }
+          processedTitleSet.add(processedKey);
+        }
       }
     }
     globalMailSpool.set(tenantId, queue);

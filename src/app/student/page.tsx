@@ -60,6 +60,40 @@ const ISkoolActivityPlayer = dynamic(
   }
 );
 
+const HatchingCinematicModal = dynamic(
+  () => import('@/components/pet/HatchingCinematicModal').then((mod) => mod.HatchingCinematicModal),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Preparando cinemática de eclosión"
+        className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/85 backdrop-blur-md"
+      >
+        <Loader message="Preparando cinemática de eclosión..." />
+      </div>
+    ),
+  }
+);
+
+const PetHomeSanctuaryModal = dynamic(
+  () => import('@/components/pet/PetHomeSanctuaryModal').then((mod) => mod.PetHomeSanctuaryModal),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Abriendo santuario de tu compañero"
+        className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/80 backdrop-blur-md"
+      >
+        <Loader message="Abriendo santuario de tu compañero..." />
+      </div>
+    ),
+  }
+);
+
 import { 
   Flame, 
   Coins, 
@@ -83,8 +117,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { LivingCompanionEngine } from '@/components/pet/LivingCompanionEngine';
 import { PetSvgRenderer } from '@/components/pet/PetSvgRenderer';
-import { HatchingCinematicModal } from '@/components/pet/HatchingCinematicModal';
-import { PetHomeSanctuaryModal } from '@/components/pet/PetHomeSanctuaryModal';
 import { ELEMENTAL_PET_RACES } from '@/components/pet/types';
 import { StudentMissionFocusBanner } from '@/components/ergonomics/StudentMissionFocusBanner';
 
@@ -144,6 +176,44 @@ export default function StudentDashboard() {
       router.replace('/login');
     }
   }, [user, loading, router]);
+
+  // Cierre accesible por tecla Escape (WCAG 2.2 AA) para los modales del portal estudiantil
+  React.useEffect(() => {
+    const anyModalOpen = Boolean(
+      victoryCelebration ||
+      activePlayingQuest ||
+      isPetModalOpen ||
+      isHatchingModalOpen ||
+      isSanctuaryHomeOpen ||
+      isCustomizerOpen
+    );
+    if (!anyModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (victoryCelebration) {
+        setVictoryCelebration(null);
+      } else if (activePlayingQuest) {
+        setActivePlayingQuest(null);
+      } else if (isPetModalOpen) {
+        setIsPetModalOpen(false);
+      } else if (isHatchingModalOpen) {
+        setIsHatchingModalOpen(false);
+      } else if (isSanctuaryHomeOpen) {
+        setIsSanctuaryHomeOpen(false);
+      } else if (isCustomizerOpen) {
+        setIsCustomizerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    victoryCelebration,
+    activePlayingQuest,
+    isPetModalOpen,
+    isHatchingModalOpen,
+    isSanctuaryHomeOpen,
+    isCustomizerOpen,
+  ]);
 
   const rawStats = useCurrentStudentStats();
   const rawAvatar = useCurrentStudentAvatar();
@@ -448,7 +518,7 @@ export default function StudentDashboard() {
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative selection:bg-amber-500 selection:text-black">
       
       {/* Fondo ambiental cósmico / gamer */}
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.15)_0%,rgba(15,23,42,0)_70%)] pointer-events-none z-0" />
+      <div aria-hidden="true" className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(99,102,241,0.15)_0%,rgba(15,23,42,0)_70%)] pointer-events-none z-0" />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 relative z-10">
         <StudentMissionFocusBanner
@@ -948,7 +1018,12 @@ export default function StudentDashboard() {
           ZONA 3: REPRODUCTOR INTERACTIVO EN SUSPENSE (PATRÓN FACTORY)
           ========================================================================= */}
       {activePlayingQuest && convertedActivityData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Desafío en progreso: ${activePlayingQuest.title}`}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+        >
           <div className="relative w-full max-w-5xl h-[90vh] bg-slate-950 rounded-3xl border border-indigo-500/40 shadow-2xl flex flex-col overflow-hidden">
             
             {/* Header del Modal del Reproductor */}
@@ -972,6 +1047,7 @@ export default function StudentDashboard() {
                 onClick={() => setActivePlayingQuest(null)}
                 className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
                 title="Cerrar Desafío"
+                aria-label="Cerrar desafío"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1010,7 +1086,12 @@ export default function StudentDashboard() {
           MODAL DE CELEBRACIÓN DE VICTORIA / RECOMPENSA
           ========================================================================= */}
       {victoryCelebration && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Misión conquistada"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+        >
           <div className="relative w-full max-w-md bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/50 rounded-3xl p-6 text-center shadow-2xl space-y-4">
             <div className="w-20 h-20 mx-auto rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center text-4xl shadow-lg shadow-amber-500/30 animate-bounce">
               🏆
@@ -1053,7 +1134,12 @@ export default function StudentDashboard() {
       />
 
       {isPetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Centro de cuidado de tu mascota"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+        >
           <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-slate-900 rounded-3xl shadow-2xl p-5 sm:p-6 border border-slate-800 text-white">
             <h3 className="text-lg font-black text-white flex items-center gap-2 mb-4">
               ✨ Centro de Cuidado de tu Mascota
@@ -1166,22 +1252,26 @@ export default function StudentDashboard() {
       )}
 
       {/* Cinemática de Eclosión */}
-      <HatchingCinematicModal
-        isOpen={isHatchingModalOpen}
-        assignedRace={avatar?.pet_type || 'cryo_dragon'}
-        studentName={avatar?.avatar_name || user?.first_name || 'Estudiante'}
-        onConfirmBond={async (race, petName) => {
-          await hatchStudentEgg(activeStudentId, race, petName);
-          setIsHatchingModalOpen(false);
-        }}
-        onClose={() => setIsHatchingModalOpen(false)}
-      />
+      {isHatchingModalOpen && (
+        <HatchingCinematicModal
+          isOpen={isHatchingModalOpen}
+          assignedRace={avatar?.pet_type || 'cryo_dragon'}
+          studentName={avatar?.avatar_name || user?.first_name || 'Estudiante'}
+          onConfirmBond={async (race, petName) => {
+            await hatchStudentEgg(activeStudentId, race, petName);
+            setIsHatchingModalOpen(false);
+          }}
+          onClose={() => setIsHatchingModalOpen(false)}
+        />
+      )}
 
       {/* Santuario y Hogar del Compañero */}
-      <PetHomeSanctuaryModal
-        isOpen={isSanctuaryHomeOpen}
-        onClose={() => setIsSanctuaryHomeOpen(false)}
-      />
+      {isSanctuaryHomeOpen && (
+        <PetHomeSanctuaryModal
+          isOpen={isSanctuaryHomeOpen}
+          onClose={() => setIsSanctuaryHomeOpen(false)}
+        />
+      )}
 
     </div>
   );

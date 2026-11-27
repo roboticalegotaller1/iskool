@@ -13,7 +13,7 @@ import { convertXlsxBufferToCsv } from '@/utils/safeXlsxToCsv';
 import { GET as getRedisenosDoc, resolveRedesignDocFile } from '@/app/api/redisenos-docs/route';
 
 describe('Auditoría Quirúrgica Integral 360° — Verificación de Mejoras y Blindaje', () => {
-  it('1. Validador de archivos bloquea dobles extensiones peligrosas y respeta SVG / escalado Regla 3', async () => {
+  it('1. Validador de archivos bloquea dobles extensiones peligrosas, rechaza SVG y exige compresión Regla 3', async () => {
     expect(isSafeUploadFileName('evidencia_alumno.webp')).toBe(true);
     expect(isSafeUploadFileName('shell.php.png')).toBe(false);
     expect(isSafeUploadFileName('payload.phtml')).toBe(false);
@@ -25,8 +25,15 @@ describe('Auditoría Quirúrgica Integral 360° — Verificación de Mejoras y B
       type: 'image/svg+xml',
     });
     const svgFile = new File([svgBlob], 'logo_institucional.svg', { type: 'image/svg+xml' });
-    const processed = await compressImageFile(svgFile);
-    expect(processed.name).toBe('logo_institucional.svg');
+    await expect(compressImageFile(svgFile)).rejects.toThrow(/SVG/i);
+
+    const emptyMimeSvg = new File([svgBlob], 'vector_oculto.svg', { type: '' });
+    await expect(compressImageFile(emptyMimeSvg)).rejects.toThrow(/SVG/i);
+
+    const bigUncompressiblePng = new File([new Uint8Array(500 * 1024)], 'foto_movil.png', {
+      type: '',
+    });
+    await expect(compressImageFile(bigUncompressiblePng)).rejects.toThrow();
   });
 
   it('2. Validador perimetral anti-SSRF bloquea direcciones IPv4-mapeadas sobre IPv6', () => {

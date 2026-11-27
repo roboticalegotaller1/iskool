@@ -17,6 +17,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { SortableBlockWrapper } from './SortableBlockWrapper';
 import { NodeGraphBoard } from './NodeGraphBoard';
@@ -37,16 +38,17 @@ import {
 } from 'lucide-react';
 
 export const WorkspaceArea: React.FC = () => {
-  const { 
-    blocks, 
-    reorderBlocks, 
-    addBlock, 
-    loadPresetBlocks,
-    isExtendedMenuOpen,
-    setIsExtendedMenuOpen,
-    zoomLevel,
+  const {
+    blocks,
+    reorderBlocks,
     autoLayoutNodes
-  } = useActivityBuilderStore();
+  } = useActivityBuilderStore(
+    useShallow((state) => ({
+      blocks: state.blocks,
+      reorderBlocks: state.reorderBlocks,
+      autoLayoutNodes: state.autoLayoutNodes,
+    }))
+  );
 
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
   const [activeId, setActiveId] = useState<string | null>(null);

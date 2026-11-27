@@ -105,6 +105,13 @@ class RetroSoundEngine {
       bassFilter.connect(bassGain);
       bassGain.connect(this.masterGain || this.ctx.destination);
       
+      bassOsc.onended = () => {
+        try {
+          bassOsc.disconnect();
+          bassFilter.disconnect();
+          bassGain.disconnect();
+        } catch {}
+      };
       bassOsc.start(now);
       bassOsc.stop(now + 0.24);
       
@@ -133,6 +140,18 @@ class RetroSoundEngine {
         melDelay.connect(delayGain);
         delayGain.connect(this.masterGain || this.ctx.destination);
         
+        melOsc.onended = () => {
+          try {
+            melOsc.disconnect();
+          } catch {}
+          setTimeout(() => {
+            try {
+              melGain.disconnect();
+              melDelay.disconnect();
+              delayGain.disconnect();
+            } catch {}
+          }, 200);
+        };
         melOsc.start(now);
         melOsc.stop(now + 0.45);
       }

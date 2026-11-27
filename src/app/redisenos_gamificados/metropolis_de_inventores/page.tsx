@@ -153,7 +153,7 @@ const STEAMPUNK_CATALOG: SteampunkGear[] = [
     category: 'Atuendo Base',
     stats: '+10% Eficiencia en Reparaciones',
     description: 'Chaleco de cuero curtido con correas de latón y compartimento reforzado para instrumentos de calibración.',
-    image: '/redisenos_assets/metropolis/inventor_base_taller.jpg',
+    image: '/redisenos_assets/metropolis/inventor_base_taller.webp',
     rarity: 'Común',
     badgeColor: 'from-slate-600 to-slate-700'
   },
@@ -163,7 +163,7 @@ const STEAMPUNK_CATALOG: SteampunkGear[] = [
     category: 'Prótesis Biónica',
     stats: '+40% Par Motor Mecánico · 120 PSI',
     description: 'Pistón neumático doble de cobre con articulaciones de engranes helicoidales para manipular válvulas de vapor de alta presión.',
-    image: '/redisenos_assets/metropolis/inventor_brazo_bionico.jpg',
+    image: '/redisenos_assets/metropolis/inventor_brazo_bionico.webp',
     rarity: 'Épico',
     badgeColor: 'from-amber-600 to-amber-700'
   },
@@ -173,7 +173,7 @@ const STEAMPUNK_CATALOG: SteampunkGear[] = [
     category: 'Óptica',
     stats: '+35% Visión Térmica y Espectral',
     description: 'Lentes bicóncavas ajustables con filtros polarizados para inspeccionar arcos voltaicos y fugas de vapor invisible.',
-    image: '/redisenos_assets/metropolis/inventor_goggles_bronce.jpg',
+    image: '/redisenos_assets/metropolis/inventor_goggles_bronce.webp',
     rarity: 'Raro',
     badgeColor: 'from-emerald-600 to-teal-700'
   },
@@ -183,7 +183,7 @@ const STEAMPUNK_CATALOG: SteampunkGear[] = [
     category: 'Autómata',
     stats: '+50% Alcance de Inspección Aérea',
     description: 'Micro-orquidóptero propulsado por escape de vapor presurizado y giroscopio de precisión para patrullar los distritos.',
-    image: '/redisenos_assets/metropolis/inventor_dron_vapor.jpg',
+    image: '/redisenos_assets/metropolis/inventor_dron_vapor.webp',
     rarity: 'Épico',
     badgeColor: 'from-cyan-600 to-blue-700'
   },
@@ -193,7 +193,7 @@ const STEAMPUNK_CATALOG: SteampunkGear[] = [
     category: 'Reactor Personal',
     stats: '+380V Campo Deflector Cuántico',
     description: 'Minibobina toroidal de resonancia magnética que almacena cargas electrostáticas y estabiliza sobrecargas en la red.',
-    image: '/redisenos_assets/metropolis/inventor_mochila_tesla.jpg',
+    image: '/redisenos_assets/metropolis/inventor_mochila_tesla.webp',
     rarity: 'Legendario',
     badgeColor: 'from-purple-600 to-indigo-800'
   }
@@ -680,7 +680,7 @@ export default function MetropolisDeInventoresPage() {
             
             {/* IMAGEN MAESTRA DE FONDO OFICIAL (16:9) */}
             <img 
-              src="/redisenos_assets/gamification_secundaria_metropolis_stem_1792732869540.jpg"
+              src="/redisenos_assets/gamification_secundaria_metropolis_stem_1792732869540.webp"
               alt="Metrópolis de Inventores Steamporium Smart City"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.01]"
             />
@@ -1124,7 +1124,7 @@ export default function MetropolisDeInventoresPage() {
                 <div className="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-600/40 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <img 
-                      src="/redisenos_assets/torneo_tcg/tcg_card_nikola_tesla.jpg"
+                      src="/redisenos_assets/torneo_tcg/tcg_card_nikola_tesla.webp"
                       alt="Nikola Tesla"
                       className="w-12 h-12 rounded-xl object-cover border border-amber-400/50 shadow-md"
                     />
@@ -1296,7 +1296,7 @@ export default function MetropolisDeInventoresPage() {
                   
                   {customizerMode === '3d_renders' ? (
                     <img
-                      src={STEAMPUNK_CATALOG.find(i => i.id === selectedInventorItem)?.image || '/redisenos_assets/metropolis/inventor_base_taller.jpg'}
+                      src={STEAMPUNK_CATALOG.find(i => i.id === selectedInventorItem)?.image || '/redisenos_assets/metropolis/inventor_base_taller.webp'}
                       alt="Inventor STEM 3D"
                       className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
                     />

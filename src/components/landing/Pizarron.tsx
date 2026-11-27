@@ -229,24 +229,26 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
 
   // ---------- Dedo y mouse ----------
 
-  const registrar = (
-    tablero: HTMLDivElement,
+  const agregarPunto = (
+    rect: DOMRect,
     clientX: number,
     clientY: number,
     inicioDeTrazo: boolean,
     ahora?: number,
-  ) => {
-    if (listoRef.current || trazo.current.length >= MAX_TRACE_POINTS) return
-    const rect = tablero.getBoundingClientRect()
-    if (!(rect.width > 0 && rect.height > 0)) return
+  ): boolean => {
+    if (listoRef.current || trazo.current.length >= MAX_TRACE_POINTS) return false
     const x = redondear(recortar01((clientX - rect.left) / rect.width))
     const y = redondear(recortar01((clientY - rect.top) / rect.height))
     const previo = trazo.current[trazo.current.length - 1]
-    if (!inicioDeTrazo && previo && Math.hypot(x - previo.x, y - previo.y) < DIEZMADO) return
+    if (!inicioDeTrazo && previo && Math.hypot(x - previo.x, y - previo.y) < DIEZMADO) return false
     const punto = { x, y, t: tiempo(ahora) }
     if (inicioDeTrazo) cortes.current.add(trazo.current.length)
     trazo.current.push(punto)
     borrarTramo(punto, inicioDeTrazo ? null : previo)
+    return true
+  }
+
+  const evaluarYAvisar = () => {
     // Al llegar al tope se da por terminado: quien repasó mucho la misma zona no debe quedarse
     // atorada; el servidor recalcula la cobertura y, si es baja, lo entrega etiquetado.
     // "¡Listo!" solo cuando el servidor también lo aceptará como borrado de persona: suficiente
@@ -287,19 +289,28 @@ export function Pizarron({ onChange, resetKey, error }: PizarronProps) {
       // Sin captura el borrado sigue funcionando dentro del pizarrón.
     }
     modo.current = 'pointer'
-    registrar(e.currentTarget, e.clientX, e.clientY, true)
+    const rect = e.currentTarget.getBoundingClientRect()
+    if (!(rect.width > 0 && rect.height > 0)) return
+    if (agregarPunto(rect, e.clientX, e.clientY, true)) evaluarYAvisar()
   }
 
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerId !== puntero.current || listoRef.current || tecladoActivo() || !esEventoConfiable(e.nativeEvent)) return
+    if (trazo.current.length >= MAX_TRACE_POINTS) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    if (!(rect.width > 0 && rect.height > 0)) return
     // El navegador agrupa varios movimientos en un solo evento cuando la pantalla va lenta; se
     // registran todos para que el trazo no llegue con huecos desde un equipo modesto.
     const finos = e.nativeEvent.getCoalescedEvents?.() ?? []
+    let agregado = false
     if (finos.length > 1) {
-      for (const f of finos) registrar(e.currentTarget, f.clientX, f.clientY, false, f.timeStamp)
+      for (const f of finos) {
+        if (agregarPunto(rect, f.clientX, f.clientY, false, f.timeStamp)) agregado = true
+      }
     } else {
-      registrar(e.currentTarget, e.clientX, e.clientY, false)
+      agregado = agregarPunto(rect, e.clientX, e.clientY, false)
     }
+    if (agregado) evaluarYAvisar()
   }
 
   const soltar = (e: PointerEvent<HTMLDivElement>) => {

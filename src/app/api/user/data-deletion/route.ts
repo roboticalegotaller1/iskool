@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { validateApiAuth } from '@/lib/authValidator';
 import { getServiceSupabaseClient } from '@/lib/supabaseServer';
+import { isPlatformSuperUser } from '@/types';
 
 export const runtime = 'nodejs';
 
@@ -42,11 +43,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Prevención de IDOR: Solo administradores pueden solicitar supresión de cuentas ajenas
+    // Prevención estricta de IDOR: solo Super Usuario de plataforma puede suprimir cuentas ajenas
     if (auth.authenticated && auth.user) {
-      const isSuperUser = auth.user.role === 'superadmin' || auth.user.role === 'admin' || auth.user.role === 'owner';
+      const isSuperUser = isPlatformSuperUser(auth.user as any);
       const currentUserEmail = (auth.user.email || '').toLowerCase().trim();
-      if (!isSuperUser && currentUserEmail && currentUserEmail !== requestedEmail) {
+      if (!isSuperUser && (!currentUserEmail || currentUserEmail !== requestedEmail)) {
         return NextResponse.json(
           { success: false, error: 'Acceso no autorizado: No cuenta con permisos para suprimir datos de otra cuenta.' },
           { status: 403 }
@@ -71,33 +72,35 @@ export async function POST(req: NextRequest) {
 
       const targetProfileId = matchedProfile?.id;
       if (targetProfileId) {
-        const cleanups: Array<{ table: string; op: PromiseLike<{ error: any }> }> = [
+        // Purga paralela de tablas dependientes respetando integridad referencial antes de anonimizar el perfil
+        const childCleanups: Array<{ table: string; op: PromiseLike<{ error: any }> }> = [
           { table: 'student_messages', op: db.from('student_messages').delete().eq('student_id', targetProfileId) },
           { table: 'student_inventory', op: db.from('student_inventory').delete().eq('student_id', targetProfileId) },
           { table: 'billing_profiles', op: db.from('billing_profiles').delete().eq('parent_id', targetProfileId) },
-          { table: 'oauth_tokens', op: db.from('oauth_tokens').delete().eq('user_id', targetProfileId) },
-          {
-            table: 'profiles',
-            op: db
-              .from('profiles')
-              .update({
-                first_name: 'Usuario',
-                last_name: 'Suprimido',
-                phone: null,
-                email: `deleted-${Date.now()}-${targetProfileId}@deleted.iskool.mx`,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', targetProfileId)
-          }
+          { table: 'oauth_tokens', op: db.from('oauth_tokens').delete().eq('user_id', targetProfileId) }
         ];
 
-        for (const item of cleanups) {
-          try {
-            const res = await item.op;
-            if (!res?.error) purgedTables.push(item.table);
-          } catch {
-            // Continuar purga sobre el resto de tablas sin abortar transacción ARCO
+        const childResults = await Promise.allSettled(childCleanups.map(item => item.op));
+        childResults.forEach((settled, idx) => {
+          if (settled.status === 'fulfilled' && !settled.value?.error) {
+            purgedTables.push(childCleanups[idx].table);
           }
+        });
+
+        try {
+          const profileRes = await db
+            .from('profiles')
+            .update({
+              first_name: 'Usuario',
+              last_name: 'Suprimido',
+              phone: null,
+              email: `deleted-${Date.now()}-${targetProfileId}@deleted.iskool.mx`,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', targetProfileId);
+          if (!profileRes?.error) purgedTables.push('profiles');
+        } catch {
+          // Continuar sin abortar transacción ARCO
         }
       }
     } catch (dbErr) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   BookOpen, 
@@ -299,6 +299,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   };
 
   return (
+    <LazyMotion features={domAnimation}>
     <div className={`relative w-full ${isProjectorMode ? 'fixed inset-0 z-50 bg-black/95 p-2 sm:p-6 flex flex-col justify-between overflow-y-auto' : 'min-h-[640px] flex flex-col justify-between'}`}>
       {/* ================= BARRA SUPERIOR DE ACCIONES PEDAGÓGICAS ================= */}
       <div className="w-full flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/90 border border-amber-500/30 text-white backdrop-blur-xl shadow-xl z-20 mb-4">
@@ -382,7 +383,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
         <AnimatePresence mode="wait">
           {!isOpen ? (
             /* ================= PORTADA DEL LIBRO CERRADO (NANO BANANA 2.1 3D TOMO HISTÓRICO) ================= */
-            <motion.div
+            <m.div
               key="closed-book"
               initial={{ scale: 0.92, opacity: 0, rotateY: -15 }}
               animate={{ scale: 1, opacity: 1, rotateY: 0 }}
@@ -515,10 +516,10 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ) : (
             /* ================= PÁGINAS ABIERTAS DEL LIBRO MÁGICO ================= */
-            <motion.div
+            <m.div
               key="opened-book"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -576,7 +577,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                 <AnimatePresence mode="wait">
                   {/* PÁGINA 1: PORTADA INTERIOR & AVATAR VIVO INTRODUCTORIO */}
                   {currentPage === 0 && (
-                    <motion.div
+                    <m.div
                       key="page-0"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -663,12 +664,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
 
                   {/* PÁGINA 2: CÓMIC HISTÓRICO (4 MOMENTOS NOVELA GRÁFICA) */}
                   {currentPage === 1 && (
-                    <motion.div
+                    <m.div
                       key="page-1"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -683,12 +684,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         onMomentChange={setComicMomentIndex}
                         onSelectMomentOnMap={() => setCurrentPage(2)}
                       />
-                    </motion.div>
+                    </m.div>
                   )}
 
                   {/* PÁGINA 3: MAPA CARTOGRÁFICO SATELITAL DE HITOS */}
                   {currentPage === 2 && (
-                    <motion.div
+                    <m.div
                       key="page-2"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -699,12 +700,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         locations={data.keyLocations || []} 
                         characterName={data.characterName}
                       />
-                    </motion.div>
+                    </m.div>
                   )}
 
                   {/* PÁGINA 4: CÁPSULA CINEMATOGRÁFICA NARRADA */}
                   {currentPage === 3 && (
-                    <motion.div
+                    <m.div
                       key="page-3"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -721,12 +722,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         avatarImageUrl={data.avatarImageUrl}
                         shortBio={data.shortBio}
                       />
-                    </motion.div>
+                    </m.div>
                   )}
 
                   {/* PÁGINA 5: ENTREVISTA EN VIVO CON EL AVATAR HISTÓRICO */}
                   {currentPage === 4 && (
-                    <motion.div
+                    <m.div
                       key="page-4"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -744,12 +745,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         voicePitch={data.voicePitch}
                         oratoricalTone={data.oratoricalTone}
                       />
-                    </motion.div>
+                    </m.div>
                   )}
 
                   {/* PÁGINA 6: 5 PREGUNTAS CLAVE DE VERIFICACIÓN FORMATIVA */}
                   {currentPage === 5 && (
-                    <motion.div
+                    <m.div
                       key="page-5"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -853,14 +854,15 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                           </button>
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
     </div>
+    </LazyMotion>
   );
 };

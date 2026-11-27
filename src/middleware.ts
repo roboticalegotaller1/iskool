@@ -324,9 +324,15 @@ export async function middleware(request: NextRequest) {
   const isIntegrationApi = pathname.startsWith('/api/v1/integration');
   const isProtected = isIskoolProtected || isIbimeProtected || isIntegrationApi;
 
-  // Si la ruta es pública o de autenticación, permitir paso directo inyectando el tenant resuelto sanitizado
+  const isInboundWebhookPost =
+    pathname === '/api/mail/inbound' &&
+    request.method.toUpperCase() === 'POST' &&
+    Boolean(request.headers.get('x-inbound-webhook-secret')?.trim());
+
+  // Si la ruta es pública, de autenticación o webhook entrante con cabecera secreta verificada en ruta,
+  // permitir paso directo inyectando el tenant resuelto sanitizado.
   // NUNCA abortar con 404 en /login o /ibime/login ante presencia de cookies del tenant contrario
-  if (isPublicOrAuthPath(pathname) || !isProtected) {
+  if (isPublicOrAuthPath(pathname) || !isProtected || isInboundWebhookPost) {
     const requestHeaders = new Headers(strippedRequestHeaders);
     requestHeaders.set('x-resolved-tenant', targetTenantRequired);
     requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
@@ -406,12 +412,13 @@ export async function middleware(request: NextRequest) {
 
   // 3. Verificación Criptográfica Estricta de la Carga Útil
   let verifiedUser = await verifyMultiTenantToken(candidateToken);
+  let fallbackVerified: Awaited<ReturnType<typeof verifySessionToken>> = null;
   let userRole = verifiedUser?.role || '';
   let userTenant: TenantId = verifiedUser?.tenant_id || 'iskool';
   let userId = verifiedUser?.id || '';
 
   if (!verifiedUser) {
-    const fallbackVerified = await verifySessionToken(candidateToken);
+    fallbackVerified = await verifySessionToken(candidateToken);
     if (fallbackVerified) {
       userId = fallbackVerified.id;
       userRole = fallbackVerified.role;
@@ -436,8 +443,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const userSchoolId = (verifiedUser?.school_id || '').toLowerCase();
-  const userEmailLower = (verifiedUser?.email || '').toLowerCase();
+  const activeUser = verifiedUser || fallbackVerified;
+  const userSchoolId = (activeUser?.school_id || '').toLowerCase();
+  const userEmailLower = (activeUser?.email || '').toLowerCase();
   const isDemoAccount = userSchoolId === 'sch-demo-0001' || userEmailLower.startsWith('demo.');
   const isSuperUser = !isDemoAccount && userRole === 'superadmin';
 
@@ -613,9 +621,9 @@ export const config = {
      * Coincidir con todas las rutas de la aplicación excluyendo explícitamente:
      * - _next/static, _next/image, _next/data (archivos de compilación de Next.js)
      * - /404, /not-found (páginas de error para prevenir bucles de rewrite infinitos)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - assets estáticos institucionales (brand/, .svg, .png, etc.)
+     * - favicon.ico, sitemap.xml, manifest.webmanifest, robots.txt
+     * - assets estáticos institucionales (brand/, .svg, .png, .webp, .avif, etc.)
      */
-    '/((?!_next/static|_next/image|_next/data|_next/|favicon\\.ico|404|not-found|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|mp4|webm|wav|mp3|pdf|txt)$).*)',
+    '/((?!_next/static|_next/image|_next/data|_next/|favicon\\.ico|sitemap\\.xml|manifest\\.webmanifest|robots\\.txt|404|not-found|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff|woff2|ttf|eot|mp4|webm|wav|mp3|pdf|txt)$).*)',
   ]
 };

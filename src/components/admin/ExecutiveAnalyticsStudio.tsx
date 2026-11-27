@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import { useShallow } from 'zustand/react/shallow';
 import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { 
@@ -70,19 +72,40 @@ import {
   formatMXN, 
   Student360Detail 
 } from '@/services/executiveAnalyticsEngine';
-import ExecutiveChartVisualizer, { 
-  DebtorItem, 
-  matchStudentToCategory, 
-  matchReportRowToCategory 
+import type { DebtorItem } from './ExecutiveChartVisualizer';
+import {
+  matchStudentToCategory,
+  matchReportRowToCategory,
 } from './ExecutiveChartVisualizer';
-import { 
-  StrategicDimensionModal, 
+import type {
   StrategicDimensionDetailConfig,
-  StrategicDimensionKey 
+  StrategicDimensionKey,
 } from './StrategicDimensionModal';
 import { ExecutiveManagerialBriefingCard } from './ExecutiveManagerialBriefingCard';
-import { ExecutiveBoardReportDocument } from './ExecutiveBoardReportDocument';
 import { useDeviceViewport } from '@/hooks/useDeviceViewport';
+
+const ExecutiveChartVisualizer = dynamic(
+  () => import('./ExecutiveChartVisualizer'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full min-h-[260px] rounded-2xl border border-slate-200 bg-white p-6 flex flex-col items-center justify-center gap-2.5 shadow-2xs">
+        <div className="h-7 w-7 rounded-full border-2 border-indigo-500/20 border-t-indigo-600 animate-spin" />
+        <p className="text-xs font-semibold text-slate-500">Cargando visualización analítica...</p>
+      </div>
+    ),
+  }
+);
+
+const StrategicDimensionModal = dynamic(
+  () => import('./StrategicDimensionModal').then((mod) => mod.StrategicDimensionModal),
+  { ssr: false }
+);
+
+const ExecutiveBoardReportDocument = dynamic(
+  () => import('./ExecutiveBoardReportDocument').then((mod) => mod.ExecutiveBoardReportDocument),
+  { ssr: false }
+);
 
 interface ExecutiveAnalyticsStudioProps {
   onBack?: () => void;
@@ -264,7 +287,26 @@ export default function ExecutiveAnalyticsStudio({
     reconcileSeedsWithStore,
     studentDeletionAuditLogs,
     deleteStudent
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((s) => ({
+      institutionsList: s.institutionsList,
+      activeSchoolId: s.activeSchoolId,
+      selectSchool: s.selectSchool,
+      campusesList: s.campusesList,
+      detailedStudents: s.detailedStudents,
+      groupsList: s.groupsList,
+      teachersList: s.teachersList,
+      attendanceList: s.attendanceList,
+      billingRecords: s.billingRecords,
+      staffPayroll: s.staffPayroll,
+      subjectsList: s.subjectsList,
+      parentMessages: s.parentMessages,
+      schedulesList: s.schedulesList,
+      reconcileSeedsWithStore: s.reconcileSeedsWithStore,
+      studentDeletionAuditLogs: s.studentDeletionAuditLogs,
+      deleteStudent: s.deleteStudent,
+    }))
+  );
 
   // Permiso Directivo Estricto: Solo Directivos hacia arriba (director, owner, admin, superadmin) pueden eliminar alumnos
   const canDeleteStudent = Boolean(
@@ -2947,13 +2989,15 @@ export default function ExecutiveAnalyticsStudio({
       )}
 
       {/* Modal Forense para Detalles Reales de las Dimensiones Estratégicas del Radar CEO */}
-      <StrategicDimensionModal 
-        config={strategicDimensionConfig}
-        onClose={() => setStrategicDimensionConfig(null)}
-        onOpenExpediente={handleOpenStudentExpediente}
-        onNavigateTab={onNavigateTab}
-        schoolName={currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool'}
-      />
+      {strategicDimensionConfig && (
+        <StrategicDimensionModal 
+          config={strategicDimensionConfig}
+          onClose={() => setStrategicDimensionConfig(null)}
+          onOpenExpediente={handleOpenStudentExpediente}
+          onNavigateTab={onNavigateTab}
+          schoolName={currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool'}
+        />
+      )}
 
       </div>
 

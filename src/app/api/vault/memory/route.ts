@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { validateApiAuth, AuthValidationResult } from '@/lib/authValidator';
+import { isPlatformSuperUser } from '@/types';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
 import {
@@ -73,13 +74,15 @@ const MemoryIngestionRequestSchema = z.object({
   customFilename: z.string().trim().optional()
 });
 
+const MEMORY_STAFF_ROLES = new Set(['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo', 'billing', 'control_escolar', 'staff']);
+
 /**
  * Valida la autenticación para la ingestión segura.
  * Admite tanto el secreto de servidor a servidor (Rails Webhook Secret) como sesión autenticada de docente/admin.
  */
 async function validateIngestionSecurity(
   request: NextRequest
-): Promise<{ authorized: boolean; reason?: string; user?: AuthValidationResult['user'] }> {
+): Promise<{ authorized: boolean; status?: number; reason?: string; user?: AuthValidationResult['user'] }> {
   const authHeader = request.headers.get('authorization') || '';
   const ingestionKeyHeader = request.headers.get('x-ingestion-key') || '';
 
@@ -100,13 +103,13 @@ async function validateIngestionSecurity(
   const authResult = await validateApiAuth(request);
   if (authResult.authenticated && authResult.user) {
     const roleLower = (authResult.user.role || '').toLowerCase();
-    if (['teacher', 'director', 'coordinator', 'admin', 'superadmin', 'owner', 'ceo'].includes(roleLower)) {
+    if (MEMORY_STAFF_ROLES.has(roleLower)) {
       return { authorized: true, user: authResult.user };
     }
-    return { authorized: false, reason: 'Permisos insuficientes para escribir en la Bóveda Curricular.' };
+    return { authorized: false, status: 403, reason: 'Permisos insuficientes para escribir en la Bóveda Curricular.' };
   }
 
-  return { authorized: false, reason: 'No autorizado' };
+  return { authorized: false, status: 401, reason: 'No autorizado' };
 }
 
 /**
@@ -118,7 +121,10 @@ export async function POST(request: NextRequest) {
     // 1. Control de acceso
     const security = await validateIngestionSecurity(request);
     if (!security.authorized) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json(
+        { error: security.reason || 'No autorizado' },
+        { status: security.status || 401 }
+      );
     }
 
     // 2. Extracción y parsing del body
@@ -157,8 +163,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Interceptar cuentas demo antes de tocar la Bóveda Curricular
+    // 5. Verificación de propiedad institucional (institution_id / school_id) para usuarios no superadmin
     const memoryInput: CreateInstitutionalMemoryInput = parsed.data;
+    if (security.user && !isPlatformSuperUser(security.user)) {
+      const allowedInstitutions = new Set(
+        [security.user.school_id, security.user.tenant_id]
+          .filter((v): v is string => Boolean(v && v.trim()))
+          .map((v) => v.trim().toLowerCase())
+      );
+      const reqInst = memoryInput.institution_id.trim().toLowerCase();
+      const reqProvSchool = memoryInput.provenance?.school_id?.trim().toLowerCase();
+      const userSchoolLower = security.user.school_id?.trim().toLowerCase();
+
+      if (
+        allowedInstitutions.size === 0 ||
+        !allowedInstitutions.has(reqInst) ||
+        (reqProvSchool && userSchoolLower && reqProvSchool !== userSchoolLower) ||
+        (reqProvSchool && !userSchoolLower)
+      ) {
+        return NextResponse.json(
+          { error: 'Prohibido: No puedes registrar memorias curriculares para otra institución o plantel.' },
+          { status: 403 }
+        );
+      }
+
+      if (security.user.school_id && !memoryInput.provenance.school_id) {
+        memoryInput.provenance.school_id = security.user.school_id;
+      }
+    }
+
+    // 6. Interceptar cuentas demo antes de tocar la Bóveda Curricular
     if (
       isDemoSandboxContext({
         email: security.user?.email,
@@ -245,6 +279,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { error: 'Autenticación institucional requerida para consultar memorias curriculares.' },
         { status: 401 }
+      );
+    }
+
+    const roleLower = (authResult.user.role || '').toLowerCase();
+    if (!MEMORY_STAFF_ROLES.has(roleLower)) {
+      return NextResponse.json(
+        { error: 'Acceso denegado: Solo personal docente o directivo puede consultar memorias curriculares.' },
+        { status: 403 }
       );
     }
 

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabaseClient } from '@/lib/supabaseServer';
 
 export interface BrainContextItem {
   source_file: string;
@@ -17,10 +17,7 @@ export interface ProposedDraft {
 
 export class InstitutionalBrainService {
   private static getSupabase() {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return getServiceSupabaseClient();
   }
 
   static async querySchoolBrain(schoolId: string, intentQuery: string): Promise<BrainContextItem[]> {

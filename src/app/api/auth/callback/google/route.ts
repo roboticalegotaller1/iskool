@@ -8,6 +8,15 @@ import { verifyOAuthState } from '@/lib/security/oauthState';
 
 export const runtime = 'nodejs';
 
+function safeJsonForScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams;
@@ -17,7 +26,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       const safeError = escapeHtml(error);
-      const safeOrigin = JSON.stringify(origin);
+      const safeOrigin = safeJsonForScript(origin);
       return new NextResponse(
         `<!DOCTYPE html>
         <html lang="es">
@@ -50,7 +59,7 @@ export async function GET(req: NextRequest) {
                     window.opener.postMessage({
                       type: 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD',
                       provider: 'google',
-                      error: ${JSON.stringify(safeError)},
+                      error: ${safeJsonForScript(safeError)},
                       action: 'open_app_password_prompt'
                     }, ${safeOrigin});
                   } catch (e) {}
@@ -65,7 +74,7 @@ export async function GET(req: NextRequest) {
                   window.opener.postMessage({
                     type: 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD',
                     provider: 'google',
-                    error: ${JSON.stringify(safeError)},
+                    error: ${safeJsonForScript(safeError)},
                     action: 'open_app_password_prompt'
                   }, ${safeOrigin});
                 } catch (e) {}
@@ -108,7 +117,12 @@ export async function GET(req: NextRequest) {
     const flow: 'login' | 'workspace_connect' = stateVerification.payload.flow || 'login';
     const redirectUrl = sanitizeInternalRedirectUrl(stateVerification.payload.redirect || '', '');
 
-    // 2. Intercambiar código por tokens de Google
+    // Verificar identidad vinculada ANTES de intercambiar o persistir tokens OAuth
+    if (flow === 'workspace_connect' && !stateVerification.payload.userId) {
+      return new NextResponse('Estado OAuth sin identidad de origen autorizada.', { status: 403 });
+    }
+
+    // 2. Intercambiar código por tokens OAuth
     const tokens = await GoogleOAuthService.exchangeCodeForTokens(code, origin);
 
     // =========================================================================
@@ -116,20 +130,17 @@ export async function GET(req: NextRequest) {
     // Exclusivamente opera con los alcances autorizados: gmail.send y calendar.events
     // =========================================================================
     if (flow === 'workspace_connect') {
-      const boundUserId = stateVerification.payload.userId;
+      const boundUserId = stateVerification.payload.userId!;
       const boundSchoolId = stateVerification.payload.schoolId || (targetTenantId.startsWith('sch-') ? targetTenantId : 'sch-demo-0001');
       const boundRole = stateVerification.payload.role || 'director';
-      if (!boundUserId) {
-        return new NextResponse('Estado OAuth sin identidad de origen autorizada.', { status: 403 });
-      }
 
-      const safeEmail = JSON.stringify(tokens.email);
-      const safeName = JSON.stringify(tokens.name || 'Workspace Institucional');
+      const safeEmail = safeJsonForScript(tokens.email);
+      const safeName = safeJsonForScript(tokens.name || 'Workspace Institucional');
       const safeCount = 0;
-      const safeOrigin = JSON.stringify(origin);
+      const safeOrigin = safeJsonForScript(origin);
       const fallbackPath = redirectUrl && redirectUrl.startsWith('/') ? redirectUrl : '/director';
       const destinationUrl = `${fallbackPath}${fallbackPath.includes('?') ? '&' : '?'}oauth_success=1&email=${encodeURIComponent(tokens.email)}`;
-      const safeDestinationUrl = JSON.stringify(destinationUrl);
+      const safeDestinationUrl = safeJsonForScript(destinationUrl);
       const boundTenant = boundSchoolId === 'sch-ibime' || targetTenantId === 'e1000000-0000-0000-0000-000000000001' ? 'ibime' : 'iskool';
 
       const directorProfile = {
@@ -199,7 +210,7 @@ export async function GET(req: NextRequest) {
         localStorage.setItem('iskool_last_connected_email', ${safeEmail});
         localStorage.setItem('iskool_last_mail_verified', 'true');
         if (!sessionStorage.getItem('iskool_active_session_v2')) {
-          sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(${JSON.stringify(directorProfile)}));
+          sessionStorage.setItem('iskool_active_session_v2', JSON.stringify(${safeJsonForScript(directorProfile)}));
         }
       } catch (e) {}
 
@@ -243,11 +254,12 @@ export async function GET(req: NextRequest) {
     // FLUJO B: Inicio de Sesión Institucional Limpio (Login SSO)
     // =========================================================================
     const userEmail = tokens.email.toLowerCase().trim();
-    const isIbimeUser = userEmail.includes('ibime');
-    const resolvedTenant = isIbimeUser ? 'ibime' : 'iskool';
-
     // Resolver usuario canónico institucional si existe en catálogo
     const canonicalUser = resolveCanonicalDemoUser(userEmail);
+    const isIbimeUser =
+      userEmail.endsWith('@ibime.edu.mx') ||
+      canonicalUser?.school_id === 'sch-ibime';
+    const resolvedTenant = isIbimeUser ? 'ibime' : 'iskool';
 
     // DEFENSA ESTRICTA ANTI-ESCALAMIENTO DE PRIVILEGIOS:
     // Cuentas externas arbitrarias no pueden obtener roles elevados (admin, director, billing)
@@ -305,8 +317,8 @@ export async function GET(req: NextRequest) {
 
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
-    const safeTarget = JSON.stringify(targetPath);
-    const safeOrigin = JSON.stringify(origin);
+    const safeTarget = safeJsonForScript(targetPath);
+    const safeOrigin = safeJsonForScript(origin);
 
     const safeFirstName = escapeHtml(firstName);
     const safeLastName = escapeHtml(lastName);

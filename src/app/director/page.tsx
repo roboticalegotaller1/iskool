@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuth, isRoleTransitionInFlight } from '@/context/AuthContext';
 import { Header } from '@/components/Header';
 import {
@@ -90,7 +91,6 @@ export default function DirectorPortalPage() {
     teachersList,
     billingRecords,
     attendanceList,
-    staffUsers,
     schoolGovernance,
     directorLimits: directorLimitsStore,
     updateSchoolGovernance,
@@ -98,11 +98,31 @@ export default function DirectorPortalPage() {
     removeRestrictedTopic,
     toggleUserBlock,
     changeUserPassword,
-    toggleStaffBlock,
-    changeStaffPassword,
     registerStudent,
     registerTeacher
-  } = useSchoolAdminStore();
+  } = useSchoolAdminStore(
+    useShallow((state) => ({
+      institutionsList: state.institutionsList,
+      activeSchoolId: state.activeSchoolId,
+      selectSchool: state.selectSchool,
+      campusesList: state.campusesList,
+      detailedStudents: state.detailedStudents,
+      groupsList: state.groupsList,
+      subjectsList: state.subjectsList,
+      teachersList: state.teachersList,
+      billingRecords: state.billingRecords,
+      attendanceList: state.attendanceList,
+      schoolGovernance: state.schoolGovernance,
+      directorLimits: state.directorLimits,
+      updateSchoolGovernance: state.updateSchoolGovernance,
+      addRestrictedTopic: state.addRestrictedTopic,
+      removeRestrictedTopic: state.removeRestrictedTopic,
+      toggleUserBlock: state.toggleUserBlock,
+      changeUserPassword: state.changeUserPassword,
+      registerStudent: state.registerStudent,
+      registerTeacher: state.registerTeacher,
+    }))
+  );
 
   const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
 

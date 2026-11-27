@@ -41,15 +41,23 @@ export interface AcademicGraphNode {
 }
 
 export class AcademicGraph {
+  private static buildCache = new WeakMap<ParsedKnowledgeDocument[], AcademicGraph>();
+
   private nodes: Map<string, AcademicGraphNode> = new Map();
   private edges: AcademicGraphEdge[] = [];
   private outgoing: Map<string, AcademicGraphEdge[]> = new Map();
   private incoming: Map<string, AcademicGraphEdge[]> = new Map();
+  private cachedCycles: string[][] | null = null;
 
   /**
    * Construye el grafo a partir de los documentos curriculares cargados.
    */
   static build(docs: ParsedKnowledgeDocument[]): AcademicGraph {
+    const cached = AcademicGraph.buildCache.get(docs);
+    if (cached) {
+      return cached;
+    }
+
     const graph = new AcademicGraph();
 
     // 1. Registrar Nodos
@@ -98,6 +106,7 @@ export class AcademicGraph {
       node.assessed_by.forEach(a => addEdge(a, 'assessed_by'));
     }
 
+    AcademicGraph.buildCache.set(docs, graph);
     return graph;
   }
 
@@ -211,6 +220,10 @@ export class AcademicGraph {
    * Detecta dependencias circulares en las aristas de prerrequisitos.
    */
   detectCycles(): string[][] {
+    if (this.cachedCycles !== null) {
+      return this.cachedCycles;
+    }
+
     const visited = new Set<string>();
     const recStack = new Set<string>();
     const cycles: string[][] = [];
@@ -241,6 +254,7 @@ export class AcademicGraph {
       }
     }
 
+    this.cachedCycles = cycles;
     return cycles;
   }
 

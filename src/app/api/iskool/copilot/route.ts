@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Solo docentes y directivos pueden invocar el Copiloto Pedagógico.' }, { status: 403 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
+    }
     const { teacherId, sessionId, query } = body;
 
     if (!query) {
@@ -34,7 +37,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     return NextResponse.json(
-      { error: 'Error procesando consulta del Teacher Copilot', details: err.message },
+      {
+        error: 'Error procesando consulta del Teacher Copilot',
+        ...(process.env.NODE_ENV !== 'production' ? { details: err?.message } : {})
+      },
       { status: 500 }
     );
   }

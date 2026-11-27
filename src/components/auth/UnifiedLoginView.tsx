@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth, getDemoUser } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
@@ -28,14 +28,10 @@ import {
   Users,
   X
 } from 'lucide-react';
-import { useStudentStore } from '@/store/useStudentStore';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useNavigationStore } from '@/store/useNavigationStore';
-import { supabase } from '@/lib/supabaseClient';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import { isPlatformSuperUser } from '@/types';
-import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { FirstLoginPasswordRotationModal } from './FirstLoginPasswordRotationModal';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
@@ -48,7 +44,8 @@ import {
   DemoCategory,
   DemoAccount,
   GENERAL_DEMO_ACCOUNTS,
-  IBIME_DEMO_ACCOUNTS
+  IBIME_DEMO_ACCOUNTS,
+  resolveCanonicalDemoUser,
 } from '@/lib/auth/demoCatalog';
 
 export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
@@ -65,16 +62,29 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     isIbimeMode ? 'gestion' : 'docentes'
   );
   const [showDemoSelector, setShowDemoSelector] = useState<boolean>(!isPublicMode);
+  const [demoSchoolSuspended, setDemoSchoolSuspended] = useState<boolean>(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
   const [isCodeOrCurpMode, setIsCodeOrCurpMode] = useState(false);
   const [showQrBadgeModal, setShowQrBadgeModal] = useState(false);
+
+  // Cierre accesible por tecla Escape (WCAG 2.2 AA) para el modal de lector QR
+  React.useEffect(() => {
+    if (!showQrBadgeModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowQrBadgeModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showQrBadgeModal]);
 
   // Detección inteligente en vivo del rol según correo, matrícula o CURP escrito
   const detectedRoleLabel = React.useMemo(() => {
     const trimmed = email.trim().toLowerCase();
     if (trimmed.length < 3) return null;
     try {
-      const candidate = getDemoUser(trimmed);
+      const candidate = resolveCanonicalDemoUser(trimmed);
       if (candidate?.role) {
         if (candidate.role === 'superadmin' || candidate.role === 'admin' || candidate.role === 'ceo' || candidate.role === 'owner') {
           return 'Directivo / Superusuario detectado';
@@ -108,10 +118,35 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     username: string;
     currentTempPassword: string;
   } | null>(null);
-  const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
-  const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
   const getSafeBackUrl = useNavigationStore(state => state.getSafeBackUrl);
+
+  const switchStudentLazy = async (studentId: string) => {
+    const { useStudentStore } = await import('@/store/useStudentStore');
+    await useStudentStore.getState().switchStudent(studentId);
+  };
+
+  const selectSchoolLazy = async (schoolId: string | null) => {
+    const { useSchoolAdminStore } = await import('@/store/useSchoolAdminStore');
+    useSchoolAdminStore.getState().selectSchool(schoolId as any);
+  };
+
+  React.useEffect(() => {
+    if (isPublicMode || !showDemoSelector) return;
+    let active = true;
+    import('@/store/useSchoolAdminStore')
+      .then(({ useSchoolAdminStore }) => {
+        if (active) {
+          setDemoSchoolSuspended(
+            useSchoolAdminStore.getState().isSchoolSuspended(isIbimeMode ? 'sch-ibime' : 'sch-test-case')
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [isPublicMode, showDemoSelector, isIbimeMode]);
 
   // Si el usuario ya cuenta con una sesión activa válida para el tenant actual, redirigir limpiamente
   React.useEffect(() => {
@@ -149,46 +184,79 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     }
   }, [isIbimeMode, isPublicMode, isFullDemoMode, user, logout]);
 
-  // Listener para capturar el evento SIGNED_IN de Supabase Auth
+  // Listener diferido para capturar el evento SIGNED_IN del cliente Auth solo si existe callback OAuth o sesión local
   React.useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (event === 'SIGNED_IN' && currentSession?.user) {
-        setIsSubmitting(true);
-        const userEmail = currentSession.user.email || '';
-        const pool = isIbimeMode ? IBIME_DEMO_ACCOUNTS : GENERAL_DEMO_ACCOUNTS;
-        const matchedDemo = pool.find(d => d.email.toLowerCase() === userEmail.toLowerCase());
-        
-        const userProfile = matchedDemo ? {
-          id: matchedDemo.id,
-          first_name: matchedDemo.name.split(' ')[0],
-          last_name: matchedDemo.name.split(' ').slice(1).join(' '),
-          role: matchedDemo.role as any,
-          email: matchedDemo.email,
-          school_id: 'sch-ibime',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } : {
-          id: currentSession.user.id,
-          first_name: currentSession.user.user_metadata?.first_name || currentSession.user.user_metadata?.given_name || (currentSession.user.user_metadata?.full_name ? currentSession.user.user_metadata.full_name.split(' ')[0] : 'Docente/Estudiante'),
-          last_name: currentSession.user.user_metadata?.last_name || currentSession.user.user_metadata?.family_name || '',
-          role: (currentSession.user.app_metadata?.role || 'student') as any,
-          email: userEmail,
-          school_id: currentSession.user.app_metadata?.school_id || 'sch-ibime',
-          created_at: currentSession.user.created_at,
-          updated_at: new Date().toISOString()
-        };
-        if (isPlatformSuperUser(userProfile)) {
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('iskool_super_just_logged_in', 'true');
-          }
-          useSchoolAdminStore.getState().selectSchool(null as any);
+    if (typeof window === 'undefined') return;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') return;
+
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    const hasOAuthCallback =
+      hash.includes('access_token=') ||
+      hash.includes('refresh_token=') ||
+      search.includes('code=');
+    let hasSbStorageKey = false;
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && /^sb-.*-auth-token/.test(key)) {
+          hasSbStorageKey = true;
+          break;
         }
-        await routeUserByRole(userProfile);
       }
-    });
+    } catch {}
+
+    if (!hasOAuthCallback && !hasSbStorageKey) return;
+
+    let active = true;
+    let unsubscribe: (() => void) | null = null;
+
+    import('@/lib/supabaseClient')
+      .then(({ supabase }) => {
+        if (!active) return;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+          if (event === 'SIGNED_IN' && currentSession?.user) {
+            setIsSubmitting(true);
+            const userEmail = currentSession.user.email || '';
+            const pool = isIbimeMode ? IBIME_DEMO_ACCOUNTS : GENERAL_DEMO_ACCOUNTS;
+            const matchedDemo = pool.find(d => d.email.toLowerCase() === userEmail.toLowerCase());
+            
+            const userProfile = matchedDemo ? {
+              id: matchedDemo.id,
+              first_name: matchedDemo.name.split(' ')[0],
+              last_name: matchedDemo.name.split(' ').slice(1).join(' '),
+              role: matchedDemo.role as any,
+              email: matchedDemo.email,
+              school_id: 'sch-ibime',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            } : {
+              id: currentSession.user.id,
+              first_name: currentSession.user.user_metadata?.first_name || currentSession.user.user_metadata?.given_name || (currentSession.user.user_metadata?.full_name ? currentSession.user.user_metadata.full_name.split(' ')[0] : 'Docente/Estudiante'),
+              last_name: currentSession.user.user_metadata?.last_name || currentSession.user.user_metadata?.family_name || '',
+              role: (currentSession.user.app_metadata?.role || 'student') as any,
+              email: userEmail,
+              school_id: currentSession.user.app_metadata?.school_id || 'sch-ibime',
+              created_at: currentSession.user.created_at,
+              updated_at: new Date().toISOString()
+            };
+            if (isPlatformSuperUser(userProfile)) {
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+              }
+              await selectSchoolLazy(null);
+            }
+            await routeUserByRole(userProfile);
+          }
+        });
+        unsubscribe = () => subscription.unsubscribe();
+      })
+      .catch(() => {});
 
     return () => {
-      subscription.unsubscribe();
+      active = false;
+      unsubscribe?.();
     };
   }, [isIbimeMode]);
 
@@ -226,7 +294,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         document.documentElement.setAttribute('data-tenant', 'iskool');
         sessionStorage.setItem('iskool_super_just_logged_in', 'true');
       }
-      useSchoolAdminStore.getState().selectSchool(null as any);
+      await selectSchoolLazy(null);
       router.replace(targetSuperPath);
       setTimeout(() => {
         if (typeof window !== 'undefined') {
@@ -263,7 +331,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     const studentId = userProfile?.id;
 
     if (role === 'student' && studentId) {
-      await switchStudent(studentId);
+      await switchStudentLazy(studentId);
     }
 
     const isIbimeUser = isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'));
@@ -284,7 +352,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           targetPath = '/ibime/portal?view=ceo';
           break;
         case 'parent':
-          await switchStudent('std-ibime-montes-01');
+          await switchStudentLazy('std-ibime-montes-01');
           targetPath = '/parent';
           break;
         case 'coordinator':
@@ -317,7 +385,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('iskool_super_just_logged_in', 'true');
           }
-          useSchoolAdminStore.getState().selectSchool(null as any);
+          await selectSchoolLazy(null);
           targetPath = '/admin';
           break;
         case 'director':
@@ -336,7 +404,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               : '/teacher';
           break;
         case 'parent':
-          await switchStudent(
+          await switchStudentLazy(
             userProfile?.school_id === 'sch-demo-0001' ||
             userProfile?.email?.toLowerCase() === 'demo.familia@iskool.mx'
               ? 'std-demo-01'
@@ -347,13 +415,13 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         case 'student':
         default:
           if (userProfile?.id === 'std-demo-01' || userProfile?.school_id === 'sch-demo-0001') {
-            await switchStudent(userProfile.id || 'std-demo-01');
+            await switchStudentLazy(userProfile.id || 'std-demo-01');
           }
           targetPath = '/student';
           break;
       }
       if (userProfile?.school_id === 'sch-demo-0001') {
-        useSchoolAdminStore.getState().selectSchool('sch-demo-0001');
+        await selectSchoolLazy('sch-demo-0001');
       }
     }
 
@@ -389,7 +457,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('iskool_super_just_logged_in', 'true');
           }
-          useSchoolAdminStore.getState().selectSchool(null as any);
+          await selectSchoolLazy(null);
         }
         await routeUserByRole(result.user);
       } else {
@@ -440,7 +508,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('iskool_super_just_logged_in', 'true');
           }
-          useSchoolAdminStore.getState().selectSchool(null as any);
+          await selectSchoolLazy(null);
         }
         await routeUserByRole(result.user);
       } else {
@@ -459,12 +527,12 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   // Si el usuario ya está autenticado, no renderizar la pantalla de login para evitar parpadeos
   if (!authLoading && user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+      <main className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
           <p className="text-sm font-semibold text-slate-300">Sesión activa detectada. Regresando a tu espacio institucional...</p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -614,7 +682,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       </div>
 
       {/* Columna Derecha: Formulario Limpio & Perfiles de Demostración */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-16 z-10">
+      <main className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-16 z-10">
         <div className="w-full max-w-md flex flex-col gap-7">
           
           {/* Header del Formulario */}
@@ -674,14 +742,14 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               <div className="flex items-center gap-2 pt-1 border-t border-indigo-100 dark:border-indigo-800/40">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     if (isPlatformSuperUser(user)) {
                       if (typeof window !== 'undefined') {
                         sessionStorage.setItem('iskool_super_just_logged_in', 'true');
                       }
-                      useSchoolAdminStore.getState().selectSchool(null as any);
+                      await selectSchoolLazy(null);
                     }
-                    routeUserByRole(user);
+                    await routeUserByRole(user);
                   }}
                   className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
@@ -1013,7 +1081,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                   {/* Lista de Perfiles */}
                   <div className="flex flex-col gap-2 pt-1 max-h-80 overflow-y-auto pr-1">
                     {filteredDemoAccounts.map((demo) => {
-                      const isSuspended = isSchoolSuspended(isIbimeMode ? 'sch-ibime' : 'sch-test-case');
+                      const isSuspended = demoSchoolSuspended;
 
                       return (
                         <button
@@ -1092,11 +1160,16 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           </div>
 
         </div>
-      </div>
+      </main>
 
       {/* Modal de Lector de Gafete Escolar QR en 1 Toque */}
       {showQrBadgeModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Lector de gafete escolar QR"
+          className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+        >
           <div className="w-full max-w-md rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden">
             <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -1210,6 +1283,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           currentTempPassword={pendingRotation.currentTempPassword}
           onCancel={() => setPendingRotation(null)}
           onCompleteRotation={async (newPersonalPassword) => {
+            const { useOrganizationStore } = await import('@/store/useOrganizationStore');
             const rotRes = await useOrganizationStore
               .getState()
               .completeFirstLoginPasswordRotation(

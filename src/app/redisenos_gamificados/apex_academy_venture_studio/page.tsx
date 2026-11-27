@@ -148,7 +148,7 @@ const FOUNDER_CATALOG: FounderGear[] = [
     category: 'Traje Ejecutivo',
     stats: '+15% Confianza de Inversionistas',
     description: 'Blazer azul marino de corte sastre con forro de microfibra termorreguladora para jornadas intensivas de pitch y negociación.',
-    image: '/redisenos_assets/apex_studio/founder_base_pedestal.jpg',
+    image: '/redisenos_assets/apex_studio/founder_base_pedestal.webp',
     rarity: 'Profesional',
     badgeColor: 'from-slate-600 to-slate-800'
   },
@@ -158,7 +158,7 @@ const FOUNDER_CATALOG: FounderGear[] = [
     category: 'Óptica AR',
     stats: '+35% Precisión en Métricas MoM',
     description: 'Armazón de titanio con display HUD micro-OLED que proyecta estados de flujo de caja, burn-rate y ratios financieros en tiempo real.',
-    image: '/redisenos_assets/apex_studio/founder_lentes_ar.jpg',
+    image: '/redisenos_assets/apex_studio/founder_lentes_ar.webp',
     rarity: 'Senior',
     badgeColor: 'from-indigo-600 to-violet-800'
   },
@@ -168,7 +168,7 @@ const FOUNDER_CATALOG: FounderGear[] = [
     category: 'Seguridad & Datos',
     stats: '+40% Seguridad Criptográfica de Patentes',
     description: 'Carcasa de fibra de carbono reforzada con cerrojo biométrico y blindaje Faraday para transportar contratos y prototipos confidenciales.',
-    image: '/redisenos_assets/apex_studio/founder_maletin_ejecutivo.jpg',
+    image: '/redisenos_assets/apex_studio/founder_maletin_ejecutivo.webp',
     rarity: 'Founders Club',
     badgeColor: 'from-amber-600 to-yellow-800'
   },
@@ -178,7 +178,7 @@ const FOUNDER_CATALOG: FounderGear[] = [
     category: 'Distintivo de Élite',
     stats: 'Valuación Superior a $1M USD',
     description: 'Presea conmemorativa otorgada exclusivamente a fundadores estudiantiles cuyo proyecto superó la ronda de inversión ángel.',
-    image: '/redisenos_assets/apex_studio/founder_pin_unicornio.jpg',
+    image: '/redisenos_assets/apex_studio/founder_pin_unicornio.webp',
     rarity: 'Unicornio',
     badgeColor: 'from-purple-600 to-pink-800'
   }
@@ -598,7 +598,7 @@ export default function ApexAcademyVentureStudioPage() {
             
             {/* IMAGEN MAESTRA DE FONDO OFICIAL (16:9) */}
             <img 
-              src="/redisenos_assets/gamification_preparatoria_venture_studio_1792732893154.jpg"
+              src="/redisenos_assets/gamification_preparatoria_venture_studio_1792732893154.webp"
               alt="Apex Academy Venture Studio Hub 16:9"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.01]"
             />
@@ -1406,7 +1406,7 @@ export default function ApexAcademyVentureStudioPage() {
               >
                 <div className="flex items-center gap-3.5">
                   <img 
-                    src="/redisenos_assets/torneo_tcg/tcg_card_marie_curie.jpg"
+                    src="/redisenos_assets/torneo_tcg/tcg_card_marie_curie.webp"
                     alt="Marie Curie"
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-400/60 shadow-md"
                   />
@@ -1449,7 +1449,7 @@ export default function ApexAcademyVentureStudioPage() {
               >
                 <div className="flex items-center gap-3.5">
                   <img 
-                    src="/redisenos_assets/torneo_tcg/tcg_card_leonardo_davinci.jpg"
+                    src="/redisenos_assets/torneo_tcg/tcg_card_leonardo_davinci.webp"
                     alt="Leonardo da Vinci"
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-amber-400/60 shadow-md"
                   />
@@ -1574,7 +1574,7 @@ export default function ApexAcademyVentureStudioPage() {
                   
                   {customizerMode === '3d_renders' ? (
                     <img
-                      src={FOUNDER_CATALOG.find(i => i.id === selectedFounderItem)?.image || '/redisenos_assets/apex_studio/founder_base_pedestal.jpg'}
+                      src={FOUNDER_CATALOG.find(i => i.id === selectedFounderItem)?.image || '/redisenos_assets/apex_studio/founder_base_pedestal.webp'}
                       alt="Founder 3D"
                       className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
                     />

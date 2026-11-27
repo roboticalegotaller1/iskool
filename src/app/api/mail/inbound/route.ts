@@ -4,6 +4,7 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { HermeticEmailBrainService, InboundEmailDTO, HermeticAuthSession } from '@/lib/services/hermetic-email-brain.service';
 import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge } from '@/utils/timeZoneUtils';
+import { isSchoolTenantAllowed, resolveCanonicalUserSchoolKey } from '@/lib/security/tenantAccess';
 
 export const runtime = 'nodejs';
 
@@ -38,18 +39,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json(
+        { success: false, error: 'Cuerpo JSON inválido.' },
+        { status: 400 }
+      );
+    }
+
+    const defaultTenant = hasStaffAuth && authResult.user
+      ? resolveCanonicalUserSchoolKey(authResult.user as any)
+      : '';
     const {
       sender_name,
       sender_email,
       recipient_email,
       subject,
       body_text,
-      tenantId = 'sch-test-case',
+      tenantId = defaultTenant || 'sch-test-case',
       institutionName = 'Instituto Educativo',
       schoolSlug = 'TEST',
       immediateTriage = false
     } = body;
+
+    if (hasStaffAuth && !hasWebhookSecret && !isSchoolTenantAllowed(authResult.user as any, tenantId)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
+        { status: 403 }
+      );
+    }
 
     if (!subject || !body_text) {
       return NextResponse.json(
@@ -159,7 +177,6 @@ export async function POST(req: NextRequest) {
         } : undefined
       };
       injectEmailIntoCache(tenantId, rawItem);
-      injectEmailIntoCache('global', rawItem);
     } catch (e) {
       console.warn('Could not inject into raw inbox cache:', e);
     }
@@ -198,10 +215,9 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url);
-  const userSchoolId = authResult.user.school_id || authResult.user.tenant_id || '';
+  const userSchoolId = resolveCanonicalUserSchoolKey(authResult.user as any);
   const tenantId = searchParams.get('tenantId') || userSchoolId || 'sch-test-case';
-  const roleLower = (authResult.user.role || '').toLowerCase();
-  if (roleLower !== 'superadmin' && userSchoolId && tenantId !== userSchoolId) {
+  if (!isSchoolTenantAllowed(authResult.user as any, tenantId)) {
     return NextResponse.json(
       { success: false, error: 'Acceso denegado: aislamiento multi-colegio activo.' },
       { status: 403 }

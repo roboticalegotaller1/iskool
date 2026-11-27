@@ -145,8 +145,8 @@ export function resolveLaboratorioTenant(email: string): {
   const cleanEmail = email.trim().toLowerCase();
   const domain = cleanEmail.includes('@') ? cleanEmail.split('@')[1] : '';
 
-  // 1. Institución Oficial: IBIME
-  if (domain === 'ibime.edu.mx' || domain.includes('ibime')) {
+  // 1. Institución Oficial: IBIME (dominio exacto o subdominio oficial *.ibime.edu.mx)
+  if (domain === 'ibime.edu.mx' || domain.endsWith('.ibime.edu.mx')) {
     return {
       tenant_id: 'e1000000-0000-0000-0000-000000000001',
       institution_name: 'Instituto Bilingüe Ibime',
@@ -154,8 +154,13 @@ export function resolveLaboratorioTenant(email: string): {
     };
   }
 
-  // 2. Institución Oficial: iSkool Core
-  if (domain === 'iskool.edu.mx' || domain === 'iskool.mx' || domain.includes('iskool')) {
+  // 2. Institución Oficial: iSkool Core (dominio exacto o subdominio oficial)
+  if (
+    domain === 'iskool.mx' ||
+    domain.endsWith('.iskool.mx') ||
+    domain === 'iskool.edu.mx' ||
+    domain.endsWith('.iskool.edu.mx')
+  ) {
     return {
       tenant_id: 'e2000000-0000-0000-0000-000000000002',
       institution_name: 'iSkool Ecosistema Educativo',
@@ -254,20 +259,28 @@ export async function POST(req: NextRequest) {
     let targetUserId: string = '';
     let resolvedProvider: 'google' | 'credentials' | 'sandbox' = 'credentials';
 
-    // FLUJO 1: Google OAuth o Token de Acceso Supabase
+    // FLUJO 1: Token de acceso criptográfico verificado contra el proveedor de identidad
     if (access_token) {
       try {
         const { data: authData, error: authError } = await supabase.auth.getUser(access_token);
         if (authError || !authData?.user) {
           return NextResponse.json(
-            { success: false, error: 'Token de Google OAuth o proveedor no válido o expirado.' },
+            { success: false, error: 'Token de acceso OAuth no válido o expirado.' },
             { status: 401 }
           );
         }
-        targetEmail = authData.user.email || '';
+        const verifiedEmail = (authData.user.email || '').trim().toLowerCase();
+        const suppliedEmail = (user?.email || email || '').trim().toLowerCase();
+        if (suppliedEmail && verifiedEmail && suppliedEmail !== verifiedEmail) {
+          return NextResponse.json(
+            { success: false, error: 'El correo electrónico proporcionado no coincide con la identidad verificada del token.' },
+            { status: 401 }
+          );
+        }
+        targetEmail = verifiedEmail;
         targetUserId = authData.user.id;
         resolvedProvider = 'google';
-      } catch (err) {
+      } catch {
         return NextResponse.json(
           { success: false, error: 'Fallo al contactar el proveedor de identidad.' },
           { status: 502 }
@@ -319,11 +332,10 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    // FLUJO 3: Autenticación federada OAuth / Sandbox aislado
+    // FLUJO 3: Autenticación federada OAuth (exige verificación criptográfica de access_token; atajo sin token solo en pruebas)
     else if (auth_method === 'google') {
-      const candidateEmail = user?.email || email;
-      const isIsolated = candidateEmail ? resolveLaboratorioTenant(candidateEmail).is_isolated_sandbox : false;
-      if (candidateEmail && (process.env.NODE_ENV === 'test' || isIsolated)) {
+      const candidateEmail = (user?.email || email || '').trim().toLowerCase();
+      if (process.env.NODE_ENV === 'test' && candidateEmail) {
         targetEmail = candidateEmail;
         targetUserId = user?.id || `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
         resolvedProvider = 'google';
