@@ -508,7 +508,7 @@ async function generateFigureWithAiFallback(
       birthDeathDates: '1768 - 1829',
       shortBio: 'Fui protagonista decisiva de la Independencia desde Santiago de Querétaro, alertando a los conspiradores en septiembre de 1810 para salvar nuestra causa libertaria.',
       detailedContext: 'Nací en Valladolid (hoy Morelia) y me eduqué en el Colegio de las Vizcaínas, abrazando las causas criollas y la justicia social en la Nueva España. Desde mi residencia en Santiago de Querétaro organicé reuniones clandestinas bajo el velo de tertulias literarias. Al ser descubierta la conspiración en septiembre de 1810 y quedar encerrada en mi habitación por mi esposo don Miguel Domínguez, logré comunicarme golpeando el piso con mi tacón para alertar al alcaide Ignacio Pérez, quien cabalgó a San Miguel el Grande y Dolores para prevenir a Miguel Hidalgo e Ignacio Allende.',
-      avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
+      avatarImageUrl: '/images/history/josefa_ortiz_avatar.webp',
       bookSpineStyle: spineStyle || 'diario_republicano',
       voiceId: 'es-MX-DaliaNeural',
       voiceCohort: 'adult_female',
@@ -522,7 +522,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: 'Septiembre 1810',
           title: 'La Conspiración de Querétaro',
           description: 'En el Palacio del Corregimiento organicé tertulias literarias secretas donde planificamos la emancipación nacional junto a Hidalgo y Allende.',
-          imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
+          imageUrl: '/images/history/josefa_conspiracion_comic_1.webp',
           locationName: 'Palacio de la Corregidora, Querétaro',
           coordinates: { lat: 20.5930, lng: -100.3920 },
           narrativeCaption: 'Bajo la apariencia de tertulias literarias, gestamos en Querétaro el ideario de la soberanía patria.'
@@ -532,7 +532,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '13-15 Septiembre 1810',
           title: 'El Taconeo y la Alerta Heroica',
           description: 'Encerrada en mi recámara tras el cateo realista, di tres golpes firmes con mi zapato hacia el techo de la habitación inferior de Ignacio Pérez.',
-          imageUrl: '/images/history/josefa_taconeo_comic_2.png',
+          imageUrl: '/images/history/josefa_taconeo_comic_2.webp',
           locationName: 'Casa de la Corregidora, Querétaro',
           coordinates: { lat: 20.5932, lng: -100.3918 },
           narrativeCaption: 'El sonido de mi taconeo rompió el silencio de la noche queretana para salvar la causa libertaria.'
@@ -542,7 +542,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: 'Noche del 15 de Septiembre 1810',
           title: 'La Cabalgata Nocturna de Ignacio Pérez',
           description: 'Confié mi mensaje urgente al alcaide Ignacio Pérez, quien cabalgó sin tregua para advertir a Juan Aldama, Ignacio Allende y Miguel Hidalgo.',
-          imageUrl: '/images/history/josefa_alerta_comic_3.png',
+          imageUrl: '/images/history/josefa_alerta_comic_3.webp',
           locationName: 'Ruta Querétaro - San Miguel de Allende - Dolores',
           coordinates: { lat: 20.9144, lng: -100.7436 },
           narrativeCaption: 'Ignacio Pérez llevó mi aviso urgente: nuestra conjura había sido delatada.'
@@ -552,7 +552,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: 'Madrugada del 16 Septiembre 1810',
           title: 'El Grito Libertario en Dolores',
           description: 'Advertidos a tiempo gracias a nuestro aviso desde Querétaro, el cura Hidalgo hizo sonar la campana parroquial llamando al pueblo a levantarse en armas.',
-          imageUrl: '/images/history/josefa_alerta_dolores_comic_4.png',
+          imageUrl: '/images/history/josefa_alerta_dolores_comic_4.webp',
           locationName: 'Parroquia de Dolores Hidalgo, Guanajuato',
           coordinates: { lat: 21.1561, lng: -100.9325 },
           narrativeCaption: '¡Viva la América libre! La determinación compartida encendió el llamado de Dolores.'
@@ -565,7 +565,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Querétaro, México',
           coordinates: { lat: 20.5930, lng: -100.3920 },
           significance: 'Mi residencia oficial donde celebramos las tertulias conspiratorias de 1810 y desde donde alerté al alcaide Ignacio Pérez.',
-          imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
+          imageUrl: '/images/history/casa_corregidora_queretaro.webp'
         },
         {
           id: 'loc-2',
@@ -573,7 +573,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Guanajuato, México',
           coordinates: { lat: 20.9144, lng: -100.7436 },
           significance: 'Punto de intersección donde mi mensajero Ignacio Pérez localizó a Juan Aldama en la madrugada del 16 de septiembre.',
-          imageUrl: '/images/history/san_miguel_allende.jpg'
+          imageUrl: '/images/history/san_miguel_allende.webp'
         },
         {
           id: 'loc-3',
@@ -581,7 +581,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Guanajuato, México',
           coordinates: { lat: 21.1561, lng: -100.9325 },
           significance: 'Atrio donde don Miguel Hidalgo dio inicio al movimiento de Independencia tras recibir nuestro aviso.',
-          imageUrl: '/images/history/parroquia_dolores.jpg'
+          imageUrl: '/images/history/parroquia_dolores.webp'
         },
         {
           id: 'loc-4',
@@ -589,7 +589,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Querétaro, México',
           coordinates: { lat: 20.5975, lng: -100.3840 },
           significance: 'Monumento y mausoleo republicano donde descansan mis restos junto al pueblo queretano.',
-          imageUrl: '/images/history/panteon_queretanos_ilustres.jpg'
+          imageUrl: '/images/history/panteon_queretanos_ilustres.webp'
         }
       ],
       videoClip: {
@@ -664,7 +664,7 @@ async function generateFigureWithAiFallback(
       birthDeathDates: '1753 - 1811',
       shortBio: 'Soy Miguel Hidalgo y Costilla, sacerdote, humanista y líder insurgente a quien el pueblo llama Padre de la Patria; di el Grito de Dolores y abolí la esclavitud en América.',
       detailedContext: 'Fui rector del Colegio de San Nicolás en Valladolid y párroco de Dolores, donde promoví el desarrollo agrícola y artesanal comunitario. Al recibir la misiva enviada por doña Josefa Ortiz de Domínguez la madrugada del 16 de septiembre de 1810, convoqué al pueblo y proclamé el inicio de nuestra lucha armada.',
-      avatarImageUrl: '/images/history/hidalgo_avatar.png',
+      avatarImageUrl: '/images/history/hidalgo_avatar.webp',
       bookSpineStyle: spineStyle || 'grimorio_dorado',
       voiceId: 'es-MX-JorgeNeural',
       voiceCohort: 'elder_male',
@@ -678,7 +678,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '1803 - 1810',
           title: 'Los Talleres Comunitarios de Dolores',
           description: 'Enseñé alfarería, cultivo de la vid y cría del gusano de seda a indígenas y campesinos para emancipar económicamente a mi pueblo.',
-          imageUrl: '/images/history/hidalgo_talleres.jpg',
+          imageUrl: '/images/history/hidalgo_talleres.webp',
           locationName: 'Dolores Hidalgo, Guanajuato',
           coordinates: { lat: 21.1561, lng: -100.9325 },
           narrativeCaption: 'El saber práctico y el trabajo digno fueron nuestra primera trinchera de emancipación popular.'
@@ -688,7 +688,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '16 Septiembre 1810',
           title: 'El Grito de Independencia',
           description: 'Con el estandarte guadalupano en alto y el repicar de mi campana en el atrio parroquial, convoqué al pueblo a tomar las armas por la libertad.',
-          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          imageUrl: '/images/history/hidalgo_grito_comic_4.webp',
           locationName: 'Atrio Parroquial de Dolores',
           coordinates: { lat: 21.1561, lng: -100.9325 },
           narrativeCaption: '¡Caballeros, somos perdidos; aquí no hay más recurso que ir a coger gachupines!'
@@ -698,7 +698,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '28 Septiembre 1810',
           title: 'Toma de la Alhóndiga de Granaditas',
           description: 'Encabecé el avance insurgente sobre Guanajuato, donde la valentía popular de El Pípila nos abrió las puertas del bastión virreinal.',
-          imageUrl: '/images/history/alhondiga_granaditas.jpg',
+          imageUrl: '/images/history/alhondiga_granaditas.webp',
           locationName: 'Guanajuato Capital',
           coordinates: { lat: 21.0190, lng: -101.2574 },
           narrativeCaption: 'Junto con el pueblo rompí las cadenas de siglos en los muros de Granaditas.'
@@ -708,7 +708,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '6 Diciembre 1810',
           title: 'Decreto de Abolición de la Esclavitud',
           description: 'En Guadalajara firmé el trascendental decreto con el que declaré totalmente libres a todos los esclavos y abolí los tributos de castas.',
-          imageUrl: '/images/history/hidalgo_decreto_abolicion.jpg',
+          imageUrl: '/images/history/hidalgo_decreto_abolicion.webp',
           locationName: 'Palacio de Gobierno de Guadalajara, Jalisco',
           coordinates: { lat: 20.6770, lng: -103.3470 },
           narrativeCaption: 'Ordené que sean libres todos los esclavos en el término de diez días, bajo pena de muerte a quien lo contravenga.'
@@ -811,7 +811,7 @@ async function generateFigureWithAiFallback(
       birthDeathDates: '1878 - 1923',
       shortBio: 'Comandé la legendaria División del Norte, el ejército popular más formidable de la Revolución Mexicana, luchando junto a los campesinos y ferrocarrileros por la justicia social.',
       detailedContext: 'Nací en San Juan del Río, La Coyotada, Durango, bajo el nombre de José Doroteo Arango Arámbula, y me uní en 1910 al llamado maderista para derrocar la dictadura. Tras la traición de Huerta formé la División del Norte logrando victorias en Torreón, Ciudad Juárez y Zacatecas (1914). Como gobernador de Chihuahua abaraté los alimentos y fundé decenas de escuelas; ya retirado en Canutillo impulsé la educación rural hasta ser emboscado en Parral en 1923.',
-      avatarImageUrl: '/images/history/francisco_villa_avatar.png',
+      avatarImageUrl: '/images/history/francisco_villa_avatar.webp',
       bookSpineStyle: spineStyle || 'cuaderno_cronista',
       voiceId: 'es-MX-JorgeNeural',
       voiceCohort: 'adult_male',
@@ -825,7 +825,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '8-10 Mayo 1911',
           title: 'La Toma de Ciudad Juárez',
           description: 'Avanzando casa por casa abriendo boquetes en los muros de adobe, tomamos la aduana fronteriza forzando la renuncia de Porfirio Díaz.',
-          imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
+          imageUrl: '/images/history/villa_toma_juarez_comic_1.webp',
           locationName: 'Ciudad Juárez, Chihuahua',
           coordinates: { lat: 31.7394, lng: -106.4869 },
           narrativeCaption: 'Nuestro asalto frontal demostró al país que la tiranía no era invencible.'
@@ -835,7 +835,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '23 Junio 1914',
           title: 'La Batalla de Zacatecas y el Cerro de la Bufa',
           description: 'Con la División del Norte y la artillería del general Felipe Ángeles tomamos el Cerro de la Bufa, aniquilando al ejército huertista.',
-          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
+          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.webp',
           locationName: 'Cerro de la Bufa, Zacatecas',
           coordinates: { lat: 22.7758, lng: -102.5694 },
           narrativeCaption: '¡Viva la División del Norte! En Zacatecas quebramos el espinazo de la usurpación.'
@@ -845,7 +845,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: 'Diciembre 1914',
           title: 'El Pacto de Xochimilco y la Entrada a la Capital',
           description: 'Don Emiliano Zapata y yo sellamos en Xochimilco la alianza del Norte y del Sur por la tierra y la justicia, entrando juntos a la Ciudad de México.',
-          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
+          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.webp',
           locationName: 'Xochimilco y Palacio Nacional, Ciudad de México',
           coordinates: { lat: 19.2635, lng: -99.1039 },
           narrativeCaption: 'Las fuerzas campesinas del Norte y del Sur caminamos unidas por el pueblo humilde.'
@@ -855,7 +855,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: '9 Marzo 1916',
           title: 'La Incursión en Columbus y la Expedición Punitiva',
           description: 'Con nuestros Dorados incursionamos en Columbus y luego recorrimos nuestras sierras natales de Chihuahua burlando a las columnas invasoras.',
-          imageUrl: '/images/history/villa_columbus_comic_4.png',
+          imageUrl: '/images/history/villa_columbus_comic_4.webp',
           locationName: 'Columbus, Nuevo México y Sierras de Chihuahua',
           coordinates: { lat: 31.8310, lng: -107.6417 },
           narrativeCaption: 'En nuestras montañas chihuahuenses defendimos la soberanía de nuestra tierra.'
@@ -868,7 +868,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Durango, México',
           coordinates: { lat: 26.3768, lng: -105.3789 },
           significance: 'Hacienda de retiro donde fundé la escuela Felipe Ángeles y nuestra colonia agrícola cooperativa.',
-          imageUrl: '/images/history/hacienda_canutillo_villa.jpg'
+          imageUrl: '/images/history/hacienda_canutillo_villa.webp'
         },
         {
           id: 'v-loc2',
@@ -876,7 +876,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Zacatecas, México',
           coordinates: { lat: 22.7758, lng: -102.5694 },
           significance: 'Cresta rocosa donde libramos la batalla decisiva que derrumbó al régimen usurpador.',
-          imageUrl: '/images/history/cerro_bufa_zacatecas.jpg'
+          imageUrl: '/images/history/cerro_bufa_zacatecas.webp'
         },
         {
           id: 'v-loc3',
@@ -884,7 +884,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Nuevo México, EE.UU.',
           coordinates: { lat: 31.8310, lng: -107.6417 },
           significance: 'Poblado fronterizo escenario de la incursión nocturna del 9 de marzo de 1916.',
-          imageUrl: '/images/history/columbus_nuevo_mexico.jpg'
+          imageUrl: '/images/history/columbus_nuevo_mexico.webp'
         },
         {
           id: 'v-loc4',
@@ -892,7 +892,7 @@ async function generateFigureWithAiFallback(
           stateOrCountry: 'Ciudad de México',
           coordinates: { lat: 19.4326, lng: -99.1313 },
           significance: 'Recinto al que entramos triunfantes junto a Emiliano Zapata en diciembre de 1914.',
-          imageUrl: '/images/history/palacio_nacional_villa_zapata.jpg'
+          imageUrl: '/images/history/palacio_nacional_villa_zapata.webp'
         }
       ],
       videoClip: {
@@ -1005,7 +1005,7 @@ async function generateFigureWithAiFallback(
       ? `A través de mis coordenadas cartográficas, mi arquitectura monumental y mis vestigios documentales, atestiguo momentos decisivos donde confluyeron culturas, gestas libertarias y acuerdos fundacionales para la nación.`
       : `En mi tiempo histórico enfrenté desafíos éticos, políticos y sociales de gran magnitud, contribuyendo con valentía, pensamiento reflexivo y vocación de servicio al ideario cívico y al bienestar de mi comunidad.`,
     avatarImageUrl: isSite
-      ? '/images/history/sitio_historico_default.jpg'
+      ? '/images/history/sitio_historico_default.webp'
       : isLeonaAvatar
         ? '/images/history/leona_vicario_avatar.webp'
         : '/images/history/personaje_generico_avatar.png',
@@ -1024,7 +1024,7 @@ async function generateFigureWithAiFallback(
         description: isSite
           ? `Los primeros acontecimientos formativos y el contexto social que dieron origen a mi historia como ${name}.`
           : `Los primeros acontecimientos formativos y el contexto social que forjaron mi vocación y mi trayectoria.`,
-        imageUrl: '/images/history/momento_historico_1.jpg',
+        imageUrl: '/images/history/momento_historico_1.webp',
         locationName: isSite ? name : 'Centro Histórico',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: isSite
@@ -1038,7 +1038,7 @@ async function generateFigureWithAiFallback(
         description: isSite
           ? `El momento de máxima tensión y resolución que aconteció en mi suelo y definió el rumbo histórico.`
           : `El momento de máxima tensión y resolución en que tomé las decisiones que definieron el rumbo histórico.`,
-        imageUrl: '/images/history/momento_historico_2.jpg',
+        imageUrl: '/images/history/momento_historico_2.webp',
         locationName: isSite ? name : 'Plaza Principal',
         coordinates: { lat: 19.4330, lng: -99.1330 },
         narrativeCaption: `Las decisiones que tomamos en aquel instante resonarían en las generaciones venideras.`
@@ -1050,7 +1050,7 @@ async function generateFigureWithAiFallback(
         description: isSite
           ? `La prueba de resistencia que presencié ante la adversidad en defensa de la justicia y los derechos comunitarios.`
           : `La prueba de resistencia que enfrenté ante la adversidad defendiendo la justicia y los derechos de nuestra comunidad.`,
-        imageUrl: '/images/history/momento_historico_3.jpg',
+        imageUrl: '/images/history/momento_historico_3.webp',
         locationName: isSite ? name : 'Recinto Histórico',
         coordinates: { lat: 19.4340, lng: -99.1320 },
         narrativeCaption: `Mi fidelidad a los principios prevaleció sobre cualquier obstáculo material.`
@@ -1062,7 +1062,7 @@ async function generateFigureWithAiFallback(
         description: isSite
           ? `Mi consagración como ${name}, símbolo imborrable en la memoria histórica y el patrimonio de nuestra sociedad.`
           : `Mi permanencia como testimonio vivo en los libros de historia y en el diálogo con cada nueva generación.`,
-        imageUrl: '/images/history/momento_historico_4.jpg',
+        imageUrl: '/images/history/momento_historico_4.webp',
         locationName: isSite ? name : 'Monumento Cívico',
         coordinates: { lat: 19.4350, lng: -99.1310 },
         narrativeCaption: `Hoy mi historia vive en cada estudiante que indaga en el pasado para forjar el porvenir.`

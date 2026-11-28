@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
+import { checkRouteRateLimit, extractClientRateLimitKey } from '@/lib/security/routeRateLimit';
 import { execFile, spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
@@ -237,6 +238,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Autenticación requerida para acceder al servicio de reconocimiento fonético' },
         { status: 401 }
+      );
+    }
+
+    const rateCheck = checkRouteRateLimit('ai:stt', extractClientRateLimitKey(req, auth.user.id), 30, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Demasiadas solicitudes de reconocimiento fonético. Espere unos segundos.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
       );
     }
 

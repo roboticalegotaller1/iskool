@@ -6,7 +6,7 @@ eraOrPeriod: "Revolución Mexicana y Movimiento Agrario (1910 - 1919)"
 birthOrEstablishment: "8 de agosto de 1879, Anenecuilco, Villa de Ayala, Morelos"
 deathOrPresentState: "10 de abril de 1919, Hacienda de Chinameca, Morelos"
 bookSpineStyle: "diario_insurgente"
-avatarImageUrl: "/images/history/emiliano_zapata_avatar.png"
+avatarImageUrl: "/images/history/emiliano_zapata_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ En 1910 me sumé al llamado antirreeleccionista de Francisco I. Madero creyendo 
 **Coordenadas**: 18.7761, -98.9814
 **Narrativa**: Los ancianos de mi pueblo me entregaron los pergaminos virreinales sellados con lacre real español, encomendándome la sagrada misión de defender nuestras tierras frente a la codicia insaciable de los hacendados del ingenio de El Hospital.
 
-![La Elección en Anenecuilco y la Custodia de los Títulos Comunales](/images/history/zapata_eleccion_anenecuilco.jpg)
+![La Elección en Anenecuilco y la Custodia de los Títulos Comunales](/images/history/zapata_eleccion_anenecuilco.webp)
 
 Acepté la encomienda prometiendo que la tierra de nuestros padres no sería pisoteada mientras quedara un morelense de pie.
 
@@ -44,7 +44,7 @@ Acepté la encomienda prometiendo que la tierra de nuestros padres no sería pis
 **Coordenadas**: 18.2392, -98.6653
 **Narrativa**: Al lado del maestro rural Otilio Montaño, firmamos al pie de una vela de cebo el Plan de Ayala, declarando a Francisco I. Madero traidor a la causa y ordenando la expropiación y restitución inmediata de los montes y aguas a los pueblos campesinos.
 
-![La Proclamación del Plan de Ayala](/images/history/zapata_proclamacion_plan_ayala.jpg)
+![La Proclamación del Plan de Ayala](/images/history/zapata_proclamacion_plan_ayala.webp)
 
 Bajo el lema "Libertad, Justicia y Ley", sellamos el manifiesto con nuestras firmas sabiendo que no habría paz sin justicia para el arado.
 
@@ -54,7 +54,7 @@ Bajo el lema "Libertad, Justicia y Ley", sellamos el manifiesto con nuestras fir
 **Coordenadas**: 19.2635, -99.1039
 **Narrativa**: Me reuní con el general Francisco Villa sellando la alianza militar entre el Ejército Libertador del Sur y la División del Norte; dos días después entramos con 50,000 campesinos armados a la capital, negándome a sentarme en la silla presidencial de Palacio Nacional por considerarla embrujada.
 
-![El Pacto de Xochimilco y la Entrada a la Ciudad de México](/images/history/zapata_pacto_xochimilco.jpg)
+![El Pacto de Xochimilco y la Entrada a la Ciudad de México](/images/history/zapata_pacto_xochimilco.webp)
 
 No luchamos para gobernar palacios ni sustituir tiranos con corbata, sino para que cada campesino fuera dueño libre del surco que trabaja.
 
@@ -64,7 +64,7 @@ No luchamos para gobernar palacios ni sustituir tiranos con corbata, sino para q
 **Coordenadas**: 18.6217, -99.0294
 **Narrativa**: Creyendo en el pacto de deserción del coronel Jesús Guajardo, crucé el dintel de la hacienda montado en mi alazán As de Oros; a la tercera llamada de clarín de la guardia de honor, los tiradores me acribillaron a quemarropa cayendo muerto en el polvo.
 
-![La Emboscada y Martirio en la Hacienda de Chinameca](/images/history/zapata_emboscada_chinameca.jpg)
+![La Emboscada y Martirio en la Hacienda de Chinameca](/images/history/zapata_emboscada_chinameca.webp)
 
 Los fusiles de la traición apagaron mi respiración corporal, pero multiplicaron mi simiente en cada surco rebelde de la patria.
 

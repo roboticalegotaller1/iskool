@@ -1692,7 +1692,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[_-]+/g, ' ');
   const is2DPortrait = norm.includes('2d') || norm.includes('.jpg');
 
-  // 1. NAPOLÉON BONAPARTE (3D: /images/languages/3d/napoleon_3d.webp | 2D: /images/languages/historical/napoleon.jpg)
+  // 1. NAPOLÉON BONAPARTE (3D: /images/languages/3d/napoleon_3d.webp | 2D: /images/languages/historical/napoleon.webp)
   if (norm.includes('napoleon') || norm.includes('bonaparte')) {
     if (is2DPortrait) {
       return {
@@ -1713,7 +1713,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 2. WILLIAM SHAKESPEARE (3D: /images/languages/3d/shakespeare_3d.webp | 2D: /images/languages/historical/shakespeare.jpg)
+  // 2. WILLIAM SHAKESPEARE (3D: /images/languages/3d/shakespeare_3d.webp | 2D: /images/languages/historical/shakespeare.webp)
   if (norm.includes('shakespeare')) {
     if (is2DPortrait) {
       return {
@@ -1734,7 +1734,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 3. ABRAHAM LINCOLN (3D: /images/languages/3d/abraham_lincoln_3d.webp | 2D: /images/languages/historical/abraham_lincoln.jpg)
+  // 3. ABRAHAM LINCOLN (3D: /images/languages/3d/abraham_lincoln_3d.webp | 2D: /images/languages/historical/abraham_lincoln.webp)
   if (norm.includes('lincoln') || norm.includes('abraham')) {
     if (is2DPortrait) {
       return {
@@ -1755,7 +1755,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 4. ADA LOVELACE (3D: /images/languages/3d/ada_lovelace_3d.webp | 2D: /images/languages/historical/ada_lovelace.jpg)
+  // 4. ADA LOVELACE (3D: /images/languages/3d/ada_lovelace_3d.webp | 2D: /images/languages/historical/ada_lovelace.webp)
   if (norm.includes('lovelace') || /\bada\b/.test(norm)) {
     if (is2DPortrait) {
       return {
@@ -1775,7 +1775,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 5. MARIE CURIE (3D: /images/languages/3d/marie_curie_3d.webp | 2D: /images/languages/historical/marie_curie.jpg)
+  // 5. MARIE CURIE (3D: /images/languages/3d/marie_curie_3d.webp | 2D: /images/languages/historical/marie_curie.webp)
   if (norm.includes('curie') || /\bmarie\b/.test(norm)) {
     if (is2DPortrait) {
       return {
@@ -1796,7 +1796,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 6. VICTOR HUGO (3D: /images/languages/3d/victor_hugo_3d.webp | 2D: /images/languages/historical/victor_hugo.jpg)
+  // 6. VICTOR HUGO (3D: /images/languages/3d/victor_hugo_3d.webp | 2D: /images/languages/historical/victor_hugo.webp)
   if (norm.includes('victor hugo') || norm.includes('victor_hugo') || /(?:^|[\s_-])hugo(?:$|[\s_-])/.test(norm)) {
     if (is2DPortrait) {
       return {
@@ -1816,7 +1816,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 7. JEANNE D'ARC (3D: /images/languages/3d/jeanne_darc_3d.webp | 2D: /images/languages/historical/jeanne_darc.jpg)
+  // 7. JEANNE D'ARC (3D: /images/languages/3d/jeanne_darc_3d.webp | 2D: /images/languages/historical/jeanne_darc.webp)
   if (norm.includes('jeanne') || norm.includes('darc') || norm.includes("d'arc") || norm.includes('juana de arco')) {
     if (is2DPortrait) {
       return {
@@ -1864,7 +1864,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS (CALIBRACIÓN SUB-PÍXEL X-RAY VERIFICADA)
   // =========================================================================
 
-  // 10. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.png) — PRIORIDAD ALTA ANTES DE APELLIDO DOMÍNGUEZ
+  // 10. JOSEFA ORTIZ DE DOMÍNGUEZ (/images/history/josefa_ortiz_avatar.webp) — PRIORIDAD ALTA ANTES DE APELLIDO DOMÍNGUEZ
   if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
     return {
       x1: 446, y1: 368, cx: 484, cy: 368, x2: 522, y2: 368,
@@ -1875,7 +1875,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 10.B EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.png)
+  // 10.B EMILIANO ZAPATA (/images/history/emiliano_zapata_avatar.webp)
   if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
     return {
       x1: 520, y1: 567, cx: 568, cy: 567, x2: 616, y2: 567,
@@ -1885,7 +1885,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.png)
+  // 11. BENITO JUÁREZ (/images/history/benito_juarez_avatar.webp)
   if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
     return {
       x1: 462, y1: 332, cx: 503, cy: 332, x2: 544, y2: 332,
@@ -1896,7 +1896,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.png)
+  // 12. SOR JUANA INÉS DE LA CRUZ (/images/history/sor_juana_avatar.webp)
   if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
     return {
       x1: 502, y1: 370, cx: 522, cy: 370, x2: 542, y2: 370,
@@ -1907,7 +1907,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.png)
+  // 13. JOSÉ MARÍA MORELOS Y PAVÓN (/images/history/morelos_avatar.webp)
   if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
     return {
       x1: 484, y1: 285, cx: 512, cy: 285, x2: 540, y2: 285,
@@ -1918,7 +1918,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 14. CUAUHTÉMOC (/images/history/cuauhtemoc_avatar.png)
+  // 14. CUAUHTÉMOC (/images/history/cuauhtemoc_avatar.webp)
   if (norm.includes('cuauhtemoc') || norm.includes('cuauhtemotzin') || norm.includes('tlatoani') || norm.includes('joven abuelo')) {
     return {
       x1: 476, y1: 452, cx: 512, cy: 452, x2: 548, y2: 452,
@@ -1928,7 +1928,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 15. IGNACIO ALLENDE (/images/history/ignacio_allende_avatar.png)
+  // 15. IGNACIO ALLENDE (/images/history/ignacio_allende_avatar.webp)
   if (norm.includes('allende') || norm.includes('ignacio allende') || norm.includes('san miguel')) {
     return {
       x1: 468, y1: 327, cx: 496, cy: 327, x2: 524, y2: 327,
@@ -1938,7 +1938,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 16. CARMEN SERDÁN ALATRISTE (/images/history/carmen_serdan_avatar.png)
+  // 16. CARMEN SERDÁN ALATRISTE (/images/history/carmen_serdan_avatar.webp)
   if (norm.includes('carmen serdan') || (norm.includes('serdan') && (norm.includes('carmen') || norm.includes('alatriste')))) {
     return {
       x1: 506, y1: 239, cx: 523, cy: 239, x2: 540, y2: 239,
@@ -1949,7 +1949,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 17. AQUILES SERDÁN (/images/history/aquiles_serdan_avatar.png)
+  // 17. AQUILES SERDÁN (/images/history/aquiles_serdan_avatar.webp)
   if (norm.includes('aquiles serdan') || norm.includes('aquiles')) {
     return {
       x1: 486, y1: 243, cx: 508, cy: 243, x2: 532, y2: 243,
@@ -1960,7 +1960,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 18. FRANCISCO I. MADERO (/images/history/madero_avatar.png)
+  // 18. FRANCISCO I. MADERO (/images/history/madero_avatar.webp)
   if (norm.includes('madero') || norm.includes('francisco i madero') || norm.includes('apostol')) {
     return {
       x1: 510, y1: 338, cx: 538, cy: 338, x2: 566, y2: 338,
@@ -1970,7 +1970,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 19. LÁZARO CÁRDENAS DEL RÍO (/images/history/lazaro_cardenas_avatar.png)
+  // 19. LÁZARO CÁRDENAS DEL RÍO (/images/history/lazaro_cardenas_avatar.webp)
   if (norm.includes('cardenas') || norm.includes('lazaro') || norm.includes('expropiacion')) {
     return {
       x1: 512, y1: 364, cx: 544, cy: 364, x2: 572, y2: 363,
@@ -1980,7 +1980,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 20. PLUTARCO ELÍAS CALLES (/images/history/plutarco_elias_calles_avatar.png)
+  // 20. PLUTARCO ELÍAS CALLES (/images/history/plutarco_elias_calles_avatar.webp)
   if (norm.includes('calles') || norm.includes('plutarco')) {
     return {
       x1: 486, y1: 273, cx: 512, cy: 273, x2: 538, y2: 273,
@@ -1991,7 +1991,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 21. RICARDO FLORES MAGÓN (/images/history/ricardo_flores_magon_avatar.png) — lentes: óvalos contenidos dentro de las micas
+  // 21. RICARDO FLORES MAGÓN (/images/history/ricardo_flores_magon_avatar.webp) — lentes: óvalos contenidos dentro de las micas
   if (norm.includes('magon') || norm.includes('flores magon') || norm.includes('regeneracion')) {
     return {
       x1: 504, y1: 368, cx: 536, cy: 368, x2: 568, y2: 368,
@@ -2001,7 +2001,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.png)
+  // 22. GUADALUPE VICTORIA (/images/history/guadalupe_victoria_avatar.webp)
   if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !/\bvictor\b/.test(norm))) {
     return {
       x1: 490, y1: 271, cx: 513, cy: 271, x2: 536, y2: 271,
@@ -2012,7 +2012,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 23. ANDRÉS QUINTANA ROO (/images/history/andres_quintana_roo_avatar.png)
+  // 23. ANDRÉS QUINTANA ROO (/images/history/andres_quintana_roo_avatar.webp)
   if (norm.includes('quintana roo') || norm.includes('andres quintana')) {
     return {
       x1: 544, y1: 374, cx: 571, cy: 374, x2: 598, y2: 373,
@@ -2023,7 +2023,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.png)
+  // 24. BELISARIO DOMÍNGUEZ (/images/history/belisario_dominguez_avatar.webp)
   if (norm.includes('belisario')) {
     return {
       x1: 482, y1: 294, cx: 510, cy: 294, x2: 538, y2: 294,
@@ -2034,7 +2034,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 25. GENERAL FELIPE ÁNGELES (/images/history/felipe_angeles_avatar.png)
+  // 25. GENERAL FELIPE ÁNGELES (/images/history/felipe_angeles_avatar.webp)
   if (norm.includes('angeles') || norm.includes('felipe angeles')) {
     return {
       x1: 468, y1: 302, cx: 496, cy: 302, x2: 524, y2: 302,
@@ -2045,7 +2045,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 26. GUSTAVO DÍAZ ORDAZ (/images/history/gustavo_diaz_ordaz_avatar.png) — anteojos de pasta: óvalos contenidos en micas
+  // 26. GUSTAVO DÍAZ ORDAZ (/images/history/gustavo_diaz_ordaz_avatar.webp) — anteojos de pasta: óvalos contenidos en micas
   if (norm.includes('diaz ordaz') || norm.includes('ordaz')) {
     return {
       x1: 472, y1: 475, cx: 504, cy: 475, x2: 536, y2: 475,
@@ -2055,7 +2055,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 27. JOSÉ GUADALUPE POSADA (/images/history/jose_guadalupe_posada_avatar.png)
+  // 27. JOSÉ GUADALUPE POSADA (/images/history/jose_guadalupe_posada_avatar.webp)
   if (norm.includes('posada') || norm.includes('guadalupe posada')) {
     return {
       x1: 548, y1: 318, cx: 580, cy: 318, x2: 612, y2: 316,
@@ -2065,7 +2065,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 28. FRANCISCO VILLA (/images/history/francisco_villa_avatar.png)
+  // 28. FRANCISCO VILLA (/images/history/francisco_villa_avatar.webp)
   if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
     return {
       x1: 488, y1: 337, cx: 516, cy: 337, x2: 544, y2: 337,
@@ -2076,7 +2076,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 29. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.png)
+  // 29. DON MIGUEL HIDALGO Y COSTILLA (/images/history/hidalgo_avatar.webp)
   if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
     return {
       x1: 478, y1: 350, cx: 512, cy: 350, x2: 546, y2: 350,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { useStudentStore } from '@/store/useStudentStore';
@@ -916,7 +916,8 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-0 h-0 border-l-[14px] border-l-transparent border-r-[14px] border-r-transparent border-t-[24px] border-t-amber-400 drop-shadow-[0_4px_12px_rgba(245,158,11,0.8)]" />
                   <div className="absolute inset-0 rounded-full border-4 border-amber-400/40 shadow-[0_0_50px_rgba(245,158,11,0.25)] animate-pulse" />
 
-                  <motion.svg
+                  <LazyMotion features={domAnimation}>
+                  <m.svg
                     viewBox="0 0 400 400"
                     className="w-full h-full rounded-full shadow-2xl overflow-hidden"
                     animate={{ rotate: wheelRotation }}
@@ -950,7 +951,8 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         </g>
                       ))}
                     </g>
-                  </motion.svg>
+                  </m.svg>
+                  </LazyMotion>
 
                   <div className="absolute z-10 w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 text-slate-950 flex flex-col items-center justify-center shadow-2xl border-4 border-slate-950 font-black">
                     <Star className="w-6 h-6 fill-slate-950" />
@@ -965,7 +967,8 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                   <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl" />
 
                   {selectedStudent ? (
-                    <motion.div
+                    <LazyMotion features={domAnimation}>
+                    <m.div
                       key={selectedStudent.id}
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
@@ -982,7 +985,8 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                           {selectedStudent.groupName}
                         </p>
                       </div>
-                    </motion.div>
+                    </m.div>
+                    </LazyMotion>
                   ) : (
                     <div className="space-y-3 text-slate-500 text-center">
                       <Users className="w-16 h-16 mx-auto opacity-40 animate-pulse text-amber-400" />
@@ -995,9 +999,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
               )}
 
               {/* TARJETA DEL GANADOR SELECCIONADO */}
+              <LazyMotion features={domAnimation}>
               <AnimatePresence>
                 {selectedStudent && (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 20, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
@@ -1039,9 +1044,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         </div>
                       )}
                     </div>
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
+              </LazyMotion>
 
             </div>
 
@@ -1121,9 +1127,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
             </div>
 
             {/* BARRA DE ALERTA DE ALARMA EN EJECUCIÓN (5 SEGUNDOS) */}
+            <LazyMotion features={domAnimation}>
             <AnimatePresence>
               {isAlarmPlaying && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, scale: 0.9, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
@@ -1149,9 +1156,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                     <StopCircle className="w-4 h-4 text-rose-400" />
                     <span>Silenciar Ahora</span>
                   </button>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
+            </LazyMotion>
 
             {/* ===================================================================== */}
             {/* DISPLAY GIGANTE DEL CRONÓMETRO CON EFECTOS NEÓN */}
@@ -1291,9 +1299,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
             </div>
 
             {/* PANEL DE TIEMPO PERSONALIZADO DESPLEGABLE */}
+            <LazyMotion features={domAnimation}>
             <AnimatePresence>
               {isCustomizingTime && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
@@ -1381,9 +1390,10 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                       <span>Fijar Tiempo: {customInputMins}m {customInputSecs}s</span>
                     </button>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
+            </LazyMotion>
 
             {/* ===================================================================== */}
             {/* LISTAS DESPLEGABLES: TIEMPOS DE MISIÓN Y SONIDOS DE ALARMA */}

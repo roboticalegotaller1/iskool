@@ -6,7 +6,7 @@ eraOrPeriod: "Independencia de México (1810)"
 birthOrEstablishment: "8 de septiembre de 1768, Morelia, Michoacán"
 deathOrPresentState: "2 de marzo de 1829, Ciudad de México"
 bookSpineStyle: "diario_republicano"
-avatarImageUrl: "/images/history/josefa_ortiz_avatar.png"
+avatarImageUrl: "/images/history/josefa_ortiz_avatar.webp"
 voiceId: "es-MX-DaliaNeural"
 voiceCohort: "adult_female"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Nací en Valladolid (hoy Morelia), quedé huérfana a temprana edad y me eduqué
 **Coordenadas**: 20.593, -100.392
 **Narrativa**: Bajo la apariencia de tertulias literarias y académicas en nuestra residencia, gestamos en secreto el plan emancipador de la patria junto a Hidalgo y Allende.
 
-![La Conspiración de Querétaro en las Tertulias Literarias](/images/history/josefa_conspiracion_comic_1.png)
+![La Conspiración de Querétaro en las Tertulias Literarias](/images/history/josefa_conspiracion_comic_1.webp)
 
 En los salones virreinales de Querétaro debatimos sobre los derechos del pueblo y la ilegitimidad del régimen colonial, resguardando con lealtad los planes libertarios.
 
@@ -44,7 +44,7 @@ En los salones virreinales de Querétaro debatimos sobre los derechos del pueblo
 **Coordenadas**: 20.5932, -100.3918
 **Narrativa**: Al enterarse del cateo realista, mi esposo me encerró bajo llave en mi recámara para resguardarme; con determinación golpeé el entarimado con mi tacón para llamar al alcaide Ignacio Pérez al piso inferior.
 
-![El Taconeo Heroico en el Aposento Cerrado](/images/history/josefa_taconeo_comic_2.png)
+![El Taconeo Heroico en el Aposento Cerrado](/images/history/josefa_taconeo_comic_2.webp)
 
 Tres golpes firmes resonaron en la madera colonial. Ignacio Pérez acudió al zaguán y a través de la cerradura recibió la instrucción urgente de avisar a los líderes patriotas antes de que fueran arrestados.
 
@@ -54,7 +54,7 @@ Tres golpes firmes resonaron en la madera colonial. Ignacio Pérez acudió al za
 **Coordenadas**: 20.9144, -100.7436
 **Narrativa**: A galope tendido en medio de la oscuridad colonial, Ignacio Pérez cabalgó sin descanso llevando la misiva de la Corregidora a Juan Aldama e Ignacio Allende.
 
-![La Cabalgata Nocturna de Ignacio Pérez](/images/history/josefa_alerta_comic_3.png)
+![La Cabalgata Nocturna de Ignacio Pérez](/images/history/josefa_alerta_comic_3.webp)
 
 Cada legua recorrida por el emisario acortaba el tiempo hacia la libertad. La oportuna advertencia de Josefa transformó una inminente captura en el levantamiento armado más importante de la historia de México.
 
@@ -64,7 +64,7 @@ Cada legua recorrida por el emisario acortaba el tiempo hacia la libertad. La op
 **Coordenadas**: 21.1561, -100.9325
 **Narrativa**: Al recibir la alerta de Querétaro, don Miguel Hidalgo y Costilla convocó al pueblo con el tañido de la campana parroquial: ¡Caballeros, somos perdidos; no hay más remedio que ir a coger gachupines!
 
-![El Grito de Independencia en Dolores](/images/history/josefa_alerta_dolores_comic_4.png)
+![El Grito de Independencia en Dolores](/images/history/josefa_alerta_dolores_comic_4.webp)
 
 El pueblo de Dolores tomó machetes, lanzas y estandartes para unirse a la causa insurgente. El grito de libertad que cimbró a la Nueva España fue posible gracias al temple y serenidad de Doña Josefa Ortiz.
 
@@ -76,7 +76,7 @@ El pueblo de Dolores tomó machetes, lanzas y estandartes para unirse a la causa
 
 Edificio virreinal del siglo XVIII ubicado frente a la Plaza de Armas de Querétaro. Aquí residió Doña Josefa Ortiz y fue el escenario histórico donde se organizaron las reuniones libertarias y se ejecutó la legendaria alerta del taconeo.
 
-![Palacio de la Corregidora (Actual Palacio de Gobierno de Querétaro)](/images/history/casa_corregidora_queretaro.jpg)
+![Palacio de la Corregidora (Actual Palacio de Gobierno de Querétaro)](/images/history/casa_corregidora_queretaro.webp)
 
 
 ### San Miguel de Allende (San Miguel el Grande)
@@ -85,7 +85,7 @@ Edificio virreinal del siglo XVIII ubicado frente a la Plaza de Armas de Querét
 
 Ciudad histórica colonial donde Ignacio Pérez interceptó a Juan Aldama en la casa de Ignacio Allende, coordinando la cabalgata conjunta hacia el pueblo de Dolores.
 
-![San Miguel de Allende (San Miguel el Grande)](/images/history/san_miguel_allende.jpg)
+![San Miguel de Allende (San Miguel el Grande)](/images/history/san_miguel_allende.webp)
 
 
 ### Parroquia de Nuestra Señora de los Dolores
@@ -94,7 +94,7 @@ Ciudad histórica colonial donde Ignacio Pérez interceptó a Juan Aldama en la 
 
 Templo emblemático donde el Padre de la Patria tañó la campana de la libertad en la madrugada del 16 de septiembre de 1810, marcando el nacimiento de la insurgencia armada.
 
-![Parroquia de Nuestra Señora de los Dolores](/images/history/parroquia_dolores.jpg)
+![Parroquia de Nuestra Señora de los Dolores](/images/history/parroquia_dolores.webp)
 
 
 ### Panteón de los Queretanos Ilustres
@@ -103,7 +103,7 @@ Templo emblemático donde el Padre de la Patria tañó la campana de la libertad
 
 Recinto y mausoleo histórico republicano erigido en la colina del Convento de la Cruz, donde reposan con veneración cívica los restos mortales de Doña Josefa Ortiz de Domínguez.
 
-![Panteón de los Queretanos Ilustres](/images/history/panteon_queretanos_ilustres.jpg)
+![Panteón de los Queretanos Ilustres](/images/history/panteon_queretanos_ilustres.webp)
 
 
 

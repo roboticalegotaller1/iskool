@@ -456,12 +456,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                   className="absolute -translate-x-1/2 -translate-y-1/2 aspect-square rounded-full overflow-hidden z-10 bg-black/80 shadow-[inset_0_6px_16px_rgba(0,0,0,0.9),0_2px_10px_rgba(0,0,0,0.75)] ring-1 ring-amber-400/40"
                 >
                   <img
-                    src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                    src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.webp'}
                     alt={data.characterName}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       if (!target.src.includes('francisco_villa_avatar.png')) {
-                        target.src = '/images/history/francisco_villa_avatar.png';
+                        target.src = '/images/history/francisco_villa_avatar.webp';
                       }
                     }}
                     className="w-full h-full object-cover filter contrast-105 saturate-105 group-hover:scale-105 transition-transform duration-500"
@@ -590,12 +590,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                           <div className="lg:col-span-4 text-center">
                             <div className="w-44 h-44 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl mx-auto overflow-hidden bg-slate-950 relative">
                               <NanoBananaLipSyncCanvas
-                                imageSrc={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                                imageSrc={data.avatarImageUrl || '/images/history/francisco_villa_avatar.webp'}
                                 characterId={data.vaultNodeSlug || data.characterName}
                                 isSpeaking={isIntroSpeaking}
                                 spokenText={introNarrationText}
                                 isGeographicSite={data.isGeographicSite}
-                                fallbackImageSrc="/images/history/francisco_villa_avatar.png"
+                                fallbackImageSrc="/images/history/francisco_villa_avatar.webp"
                                 enableSmartBustCrop={true}
                                 className="w-full h-full object-cover rounded-full"
                               />

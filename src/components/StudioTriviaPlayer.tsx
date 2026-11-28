@@ -171,7 +171,7 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
               <img
                 src={currentQuestion.imageUrl}
                 alt="Referencia pedagógica"
-                onError={(e) => { e.currentTarget.src = '/images/students/default.png'; }}
+                onError={(e) => { e.currentTarget.src = '/images/students/default.webp'; }}
                 className="w-full max-h-48 object-cover rounded-xl border border-slate-200 dark:border-zinc-700 shadow-sm mx-auto"
               />
             )}

@@ -6,7 +6,7 @@ eraOrPeriod: "Heroínas de la Revolución Mexicana (1873 - 1948)"
 birthOrEstablishment: "11 de noviembre de 1873, Puebla de Zaragoza, Puebla"
 deathOrPresentState: "21 de agosto de 1948, Puebla de Zaragoza, Puebla"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/carmen_serdan_avatar.png"
+avatarImageUrl: "/images/history/carmen_serdan_avatar.webp"
 voiceId: "es-MX-DaliaNeural"
 voiceCohort: "adult_female"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ La mañana del 18 de noviembre de 1910, cuando las tropas y la policía allanaro
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: Oculto pistolas y cartuchos bajo las faldas amplias de mis vestidos de gala y canastos de costura, cruzando retenes policiales y firmando con el nombre en clave de "Marcos Serrato" para alimentar la conspiración maderista.
 
-![El Tráfico Clandestino de Armas](/images/history/carmen_trafico_armas.jpg)
+![El Tráfico Clandestino de Armas](/images/history/carmen_trafico_armas.webp)
 
 Bajo la apariencia de una recatada dama de hogar, dirigí una red logística clandestina de pólvora y mensajes que hizo posible la insurrección armada.
 
@@ -44,7 +44,7 @@ Bajo la apariencia de una recatada dama de hogar, dirigí una red logística cla
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: Carabina en mano y desafiando la lluvia de balas del 18.º Batallón, salgo al balcón de la calle Santa Clara gritando con voz indomable a los vecinos para que tomen los fusiles por la libertad.
 
-![El Grito al Pueblo desde el Balcón Bajo Fuego](/images/history/carmen_balcon_arenga.jpg)
+![El Grito al Pueblo desde el Balcón Bajo Fuego](/images/history/carmen_balcon_arenga.webp)
 
 Una bala enemiga atravesó mi costado, mas ni la sangre ni el plomo pudieron sofocar mi grito de rebeldía patriótica.
 
@@ -54,7 +54,7 @@ Una bala enemiga atravesó mi costado, mas ni la sangre ni el plomo pudieron sof
 **Coordenadas**: 19.0458, -98.1942
 **Narrativa**: Convaleciente de mis heridas de bala y en medio del encierro carcelario, soporto con dignidad el dolor por la muerte de mis hermanos Aquiles y Máximo, consolando a mi madre y a mi cuñada encinta.
 
-![La Resistencia en Prisión](/images/history/carmen_prision_merced.jpg)
+![La Resistencia en Prisión](/images/history/carmen_prision_merced.webp)
 
 La tiranía nos encerró entre barrotes, pero supimos que la sangre de los Serdán había encendido la llama irreversible de la liberación de México.
 
@@ -64,7 +64,7 @@ La tiranía nos encerró entre barrotes, pero supimos que la sangre de los Serd�
 **Coordenadas**: 25.4232, -101.0053
 **Narrativa**: Tras el cuartelazo de Victoriano Huerta, me incorporo a las fuerzas de Carranza como enfermera jefa en los trenes y hospitales militares, curando heridas de metralla y consolando a los soldados revolucionarios.
 
-![Enfermera en los Hospitales de Sangre Constitucionalistas](/images/history/carmen_enfermera_revolucion.jpg)
+![Enfermera en los Hospitales de Sangre Constitucionalistas](/images/history/carmen_enfermera_revolucion.webp)
 
 Serví a la patria con el fusil cuando fue necesario combatir y con la venda y el bálsamo cuando hubo que sanar a los hijos del pueblo.
 

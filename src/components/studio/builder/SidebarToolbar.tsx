@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
@@ -816,9 +816,10 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
               </button>
 
               {/* Lista de Bloques dentro de la Agrupación */}
+              <LazyMotion features={domAnimation}>
               <AnimatePresence>
                 {isExpanded && (
-                  <motion.div
+                  <m.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -887,18 +888,20 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                         </div>
                       );
                     })}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
+              </LazyMotion>
             </div>
           );
         })}
       </div>
 
       {/* ================= POPOVER / TOOLTIP ENRIQUECIDO CON EJEMPLOS ================= */}
+      <LazyMotion features={domAnimation}>
       <AnimatePresence>
         {!isNodeConfigDrawerOpen && !isExtendedMenuOpen && (hoveredTool || hoveredCategory) && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -10, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -970,9 +973,10 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                 </div>
               </>
             ) : null}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
+      </LazyMotion>
 
       {/* ================= PREVIEW FLOTANTE MIENTRAS SE ARRASTRA UN BLOQUE ================= */}
       {draggingTool && (

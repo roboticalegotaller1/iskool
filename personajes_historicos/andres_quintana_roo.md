@@ -6,7 +6,7 @@ eraOrPeriod: "Derecho Constitucional Insurgente y Letras Patrias (1787 - 1851)"
 birthOrEstablishment: "30 de noviembre de 1787, Mérida, Yucatán"
 deathOrPresentState: "15 de abril de 1851, Ciudad de México"
 bookSpineStyle: "diario_republicano"
-avatarImageUrl: "/images/history/andres_quintana_roo_avatar.png"
+avatarImageUrl: "/images/history/andres_quintana_roo_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Elegido diputado por Puebla al Congreso de Anáhuac en Chilpancingo, asumí su p
 **Coordenadas**: 17.5514, -99.5008
 **Narrativa**: Presidiendo el Congreso de Anáhuac plasmé con mi pluma el acta solemne que declaró formalmente rota para siempre la dependencia de la corona española y proclamó la soberanía de la América Septentrional.
 
-![La Redacción del Acta de Independencia de 1813](/images/history/quintana_acta_independencia.jpg)
+![La Redacción del Acta de Independencia de 1813](/images/history/quintana_acta_independencia.webp)
 
 Mis palabras dieron forma jurídica al sacrificio de miles de patriotas, proclamando ante las naciones del orbe que México nacía como tierra de hombres libres.
 
@@ -44,7 +44,7 @@ Mis palabras dieron forma jurídica al sacrificio de miles de patriotas, proclam
 **Coordenadas**: 18.8436, -99.9547
 **Narrativa**: En las serranías insurgentes fundimos caracteres tipográficos de madera y plomo para imprimir las hojas de combate periodístico que rebatían los infundios del virrey Venegas.
 
-![La Impresión en Sultepec de El Ilustrador Americano](/images/history/quintana_prensa_sultepec.jpg)
+![La Impresión en Sultepec de El Ilustrador Americano](/images/history/quintana_prensa_sultepec.webp)
 
 La tinta y las ideas fueron armas tan demoledoras como la pólvora: demostramos la justicia moral y legal de la emancipación novohispana.
 
@@ -54,7 +54,7 @@ La tinta y las ideas fueron armas tan demoledoras como la pólvora: demostramos 
 **Coordenadas**: 19.8033, -100.1778
 **Narrativa**: Fugitivos por barrancos y bosques ante el cerco realista, mi amada Leona y yo compartimos privaciones extremas, naciendo nuestra primogénita Genoveva en el interior de una cueva solitaria.
 
-![La Vida Clandestina con Leona Vicario en las Cuevas](/images/history/quintana_clandestinidad_leona.jpg)
+![La Vida Clandestina con Leona Vicario en las Cuevas](/images/history/quintana_clandestinidad_leona.webp)
 
 El amor conyugal y la pasión patriótica nos sostuvieron frente al hambre, el frío y el acoso implacable de las tropas virreinales.
 
@@ -64,7 +64,7 @@ El amor conyugal y la pasión patriótica nos sostuvieron frente al hambre, el f
 **Coordenadas**: 19.4326, -99.1411
 **Narrativa**: Presido la instalación de la academia literaria que reúne a jóvenes talentos como Guillermo Prieto e Ignacio Rodríguez Galván para proclamar el mandato de mexicanizar la literatura patria.
 
-![La Fundación de la Academia de San Juan de Letrán](/images/history/quintana_academia_letran.jpg)
+![La Fundación de la Academia de San Juan de Letrán](/images/history/quintana_academia_letran.webp)
 
 "Mexicanizar la literatura": encendimos el renacimiento de las letras nacionales, buscando una poesía y una prosa inspiradas en nuestro suelo y nuestro pueblo.
 

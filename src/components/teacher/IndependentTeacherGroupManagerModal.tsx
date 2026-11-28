@@ -111,7 +111,7 @@ export const IndependentTeacherGroupManagerModal: React.FC<IndependentTeacherGro
       gender: 'M',
       shift: 'matutino',
       status: 'activo',
-      photo_url: '/images/students/default.png',
+      photo_url: '/images/students/default.webp',
       school_id: 'sch-profesores-independientes',
       teacher_id: currentTeacher.id,
       group_id: selectedGroupId,

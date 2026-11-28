@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { 
   Mic, 
   MicOff, 
@@ -174,7 +174,7 @@ function storeHistoricalAudioBlob(key: string, url: string): string {
 export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   characterName,
   slug,
-  avatarImageUrl = '/images/history/josefa_ortiz_avatar.png',
+  avatarImageUrl = '/images/history/josefa_ortiz_avatar.webp',
   initialGreeting,
   isGeographicSite = false,
   historicalAge,
@@ -1226,14 +1226,15 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           title="Haz clic para escuchar nuevamente al personaje"
           className="relative my-4 w-52 h-52 sm:w-56 sm:h-56 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl shadow-amber-500/20 bg-slate-950 overflow-hidden flex items-center justify-center cursor-pointer"
         >
-          <motion.div 
+          <LazyMotion features={domAnimation}>
+          <m.div 
             className="relative w-full h-full rounded-full overflow-hidden flex items-center justify-center"
             animate={getAvatarTransform()}
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
             {/* Motor Anatómico Institucional 60 FPS: sincronía labial formántica, parpadeo tarsal y micro-movimiento en vivo */}
             <NanoBananaLipSyncCanvas
-              imageSrc={avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}
+              imageSrc={avatarImageUrl || '/images/history/josefa_ortiz_avatar.webp'}
               characterId={slug || characterName}
               isSpeaking={isSpeaking}
               spokenText={currentSpokenText}
@@ -1244,13 +1245,14 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               mouthConfig={mouthCfg}
               externalMouthOpen={mouthOpenRatio}
               externalMouthSpread={mouthWidthRatio - 0.5}
-              fallbackImageSrc="/images/history/josefa_ortiz_avatar.png"
+              fallbackImageSrc="/images/history/josefa_ortiz_avatar.webp"
               enableSmartBustCrop={true}
             />
 
             {/* Sombra de época y velo dramático */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
-          </motion.div>
+          </m.div>
+          </LazyMotion>
         </div>
 
         {/* Ficha del Personaje */}
@@ -1303,11 +1305,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         </div>
 
         {/* Historial de Mensajes con Scroll */}
+        <LazyMotion features={domAnimation}>
         <div ref={chatScrollRef} className="flex-1 overflow-y-auto py-3 space-y-3 pr-1 scroll-smooth">
           {messages.map((msg) => {
             const isChar = msg.sender === 'character';
             return (
-              <motion.div 
+              <m.div 
                 key={msg.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1342,7 +1345,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                     <User className="w-3.5 h-3.5" />
                   </div>
                 )}
-              </motion.div>
+              </m.div>
             );
           })}
 
@@ -1360,6 +1363,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             </div>
           )}
         </div>
+        </LazyMotion>
 
         {/* Sugerencias Rápidas de Preguntas */}
         <div className="py-2 flex gap-1.5 overflow-x-auto no-scrollbar">
@@ -1424,9 +1428,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       </div>
 
       {/* Modal de Configuración de Clave de Tokens */}
+      <LazyMotion features={domAnimation}>
       <AnimatePresence>
         {isKeyModalOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1505,9 +1510,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                 </div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
+      </LazyMotion>
     </div>
   );
 };

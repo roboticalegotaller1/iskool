@@ -6,7 +6,7 @@ eraOrPeriod: "Precursores de la Revolución Mexicana y Movimiento Obrero (1900 -
 birthOrEstablishment: "16 de septiembre de 1873, Eloxochitlán, Distrito de Teotitlán, Oaxaca"
 deathOrPresentState: "21 de noviembre de 1922, Penitenciaría Federal de Leavenworth, Kansas, Estados Unidos"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/ricardo_flores_magon_avatar.png"
+avatarImageUrl: "/images/history/ricardo_flores_magon_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-4%"
@@ -34,7 +34,7 @@ El 7 de agosto de 1900 fundé junto con mi hermano Jesús el periódico independ
 **Coordenadas**: 19.4357, -99.1312
 **Narrativa**: En un modesto taller tipográfico fundamos el periódico que desafió la censura porfirista; el 5 de febrero de 1903 colgamos en nuestro balcón un inmenso crespón negro con la sentencia que sacudió la conciencia nacional.
 
-![La Fundación de Regeneración](/images/history/magon_regeneracion_constitucion.jpg)
+![La Fundación de Regeneración](/images/history/magon_regeneracion_constitucion.webp)
 
 Con la pluma empapada en verdad proclamamos que la tiranía había pisoteado las libertades fundamentales de 1857.
 
@@ -44,7 +44,7 @@ Con la pluma empapada en verdad proclamamos que la tiranía había pisoteado las
 **Coordenadas**: 38.6270, -90.1994
 **Narrativa**: Desde la clandestinidad en el exilio, la Junta Organizadora del Partido Liberal Mexicano dio a luz el manifiesto fundacional que sentó las bases del constitucionalismo social moderno en América.
 
-![La Publicación del Programa del PLM](/images/history/magon_programa_plm_1906.jpg)
+![La Publicación del Programa del PLM](/images/history/magon_programa_plm_1906.webp)
 
 Ocho horas de labor, salario remunerador, restitución de tierras comunales y descanso dominical: trazamos el programa emancipador de la patria.
 
@@ -54,7 +54,7 @@ Ocho horas de labor, salario remunerador, restitución de tierras comunales y de
 **Coordenadas**: 32.5149, -117.0382
 **Narrativa**: Contingentes de trabajadores y voluntarios del PLM tomaron las plazas fronterizas izando la bandera roja con el lema ¡Tierra y Libertad!, ensayando la abolición de la propiedad privada y el trabajo colectivo.
 
-![La Insurrección de Baja California](/images/history/magon_baja_california_1911.jpg)
+![La Insurrección de Baja California](/images/history/magon_baja_california_1911.webp)
 
 Combatimos por la redención universal del ser humano sin amos, sin jueces ni gobernantes que exploten al desposeído.
 
@@ -64,7 +64,7 @@ Combatimos por la redención universal del ser humano sin amos, sin jueces ni go
 **Coordenadas**: 39.3508, -94.9297
 **Narrativa**: Casi ciego, minado por las afecciones pulmonares y en condiciones inhumanas, rechacé arrepentirme o solicitar perdón al gobierno estadounidense: Moriré en mi celda antes de traicionar los principios por los que he luchado.
 
-![La Resistencia en Leavenworth](/images/history/magon_prision_leavenworth.jpg)
+![La Resistencia en Leavenworth](/images/history/magon_prision_leavenworth.webp)
 
 La madrugada del 21 de noviembre de 1922 mi cuerpo inerte fue hallado en el frío piso de cemento, pero mi ideario florecía ya en el alma de los pueblos.
 

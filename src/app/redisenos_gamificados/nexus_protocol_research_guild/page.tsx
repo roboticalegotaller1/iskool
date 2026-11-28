@@ -1128,7 +1128,7 @@ export default function NexusProtocolResearchGuildPage() {
               >
                 <div className="flex items-center gap-3.5">
                   <img 
-                    src="/images/history/benito_juarez_avatar.png"
+                    src="/images/history/benito_juarez_avatar.webp"
                     alt="Benito Juárez"
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-400/60 shadow-md"
                   />

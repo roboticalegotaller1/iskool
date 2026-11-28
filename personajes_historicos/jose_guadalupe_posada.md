@@ -6,7 +6,7 @@ eraOrPeriod: "Crónica Popular y Arte Gráfico Decimonónico (1852 - 1913)"
 birthOrEstablishment: "2 de febrero de 1852, Aguascalientes, Aguascalientes"
 deathOrPresentState: "20 de enero de 1913, Ciudad de México"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/jose_guadalupe_posada_avatar.png"
+avatarImageUrl: "/images/history/jose_guadalupe_posada_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Durante más de dos décadas trabajé en estrecha colaboración con el impresor 
 **Coordenadas**: 19.4344, -99.1319
 **Narrativa**: Con buril y ácido sobre una placa de zinc grabo el esqueleto sonriente tocado únicamente con un lujoso sombrero francés de plumas de avestruz, satirizando a quienes reniegan de su origen indígena para aparentar modas foráneas.
 
-![El Grabado de la Calavera Garbancera](/images/history/posada_calavera_garbancera.jpg)
+![El Grabado de la Calavera Garbancera](/images/history/posada_calavera_garbancera.webp)
 
 "En los huesos pero con sombrero francés". Nació la Calavera Garbancera, inmortalizada después por Diego Rivera con el nombre universal de La Catrina.
 
@@ -44,7 +44,7 @@ Durante más de dos décadas trabajé en estrecha colaboración con el impresor 
 **Coordenadas**: 19.4358, -99.1328
 **Narrativa**: En las prensas de pedal de don Antonio imprimimos miles de hojas de papel de colores con corridos, noticias y calaveras que los voceadores venden a centavo en mercados y plazuelas.
 
-![La Ilustración de Hojas Volantes con Vanegas Arroyo](/images/history/posada_hojas_volantes.jpg)
+![La Ilustración de Hojas Volantes con Vanegas Arroyo](/images/history/posada_hojas_volantes.webp)
 
 Mis grabados hablaban al corazón de los campesinos y obreros que no sabían leer; el pueblo se reconocía en sus penas, sus milagros y su humor de calavera.
 
@@ -54,7 +54,7 @@ Mis grabados hablaban al corazón de los campesinos y obreros que no sabían lee
 **Coordenadas**: 21.8819, -102.2969
 **Narrativa**: Siendo un joven aprendiz en el taller de Trinidad Pedroza, dibujo con lápiz litográfico en piedra mis primeras caricaturas incendiarias contra el cacicazgo político de Jesús Gómez Portugal.
 
-![El Taller Gráfico de Aguascalientes y El Jicote](/images/history/posada_taller_aguascalientes.jpg)
+![El Taller Gráfico de Aguascalientes y El Jicote](/images/history/posada_taller_aguascalientes.webp)
 
 En El Jicote aprendí que la sátira y el lápiz son armas formidables de denuncia cívica que ningún tirano de provincia puede acallar.
 
@@ -64,7 +64,7 @@ En El Jicote aprendí que la sátira y el lápiz son armas formidables de denunc
 **Coordenadas**: 19.4347, -99.1444
 **Narrativa**: Décadas después de mi solitaria partida, Diego Rivera me inmortaliza en el centro de su célebre mural en la Alameda, retratándome de gala junto a La Catrina y el pueblo mexicano.
 
-![El Homenaje en el Mural de Diego Rivera](/images/history/posada_mural_rivera.jpg)
+![El Homenaje en el Mural de Diego Rivera](/images/history/posada_mural_rivera.webp)
 
 El arte del pueblo volvió al pueblo: Rivera y Orozco reconocieron que mi gubia en el plomo había fundado el alma del renacimiento pictórico nacional.
 

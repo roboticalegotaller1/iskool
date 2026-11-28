@@ -6,7 +6,7 @@ eraOrPeriod: "Guerra de Independencia - Segunda Etapa (1810 - 1815)"
 birthOrEstablishment: "30 de septiembre de 1765, Valladolid (hoy Morelia), Michoacán"
 deathOrPresentState: "22 de diciembre de 1815, San Cristóbal Ecatepec, Estado de México"
 bookSpineStyle: "diario_republicano"
-avatarImageUrl: "/images/history/morelos_avatar.png"
+avatarImageUrl: "/images/history/morelos_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ A lo largo de cuatro memorables campañas militares transformé a las partidas g
 **Coordenadas**: 18.8125, -98.9542
 **Narrativa**: Tras resistir setenta y dos días cercados sin víveres ni agua por el brigadier Calleja, ordené romper el cerco en una audaz maniobra nocturna en silencio, burlando las bayonetas realistas y salvando intacto al núcleo del ejército insurgente.
 
-![El Rompimiento Heroico del Sitio de Cuautla](/images/history/morelos_sitio_cuautla.jpg)
+![El Rompimiento Heroico del Sitio de Cuautla](/images/history/morelos_sitio_cuautla.webp)
 
 En Cuautla demostramos al mundo que el ejército del pueblo no se rinde ante el poder virreinal y que la táctica y la fe republicana podían vencer a los regimientos veteranos de Europa.
 
@@ -44,7 +44,7 @@ En Cuautla demostramos al mundo que el ejército del pueblo no se rinde ante el 
 **Coordenadas**: 17.5514, -99.5008
 **Narrativa**: En la apertura del Congreso de Anáhuac di a conocer mi texto fundamental de 23 puntos, declarando la total libertad de América, la supresión de castas y esclavitud, y el mandato supremo de moderar la opulencia y la indigencia.
 
-![La Lectura de Sentimientos de la Nación en Chilpancingo](/images/history/morelos_sentimientos_nacion.jpg)
+![La Lectura de Sentimientos de la Nación en Chilpancingo](/images/history/morelos_sentimientos_nacion.webp)
 
 Rechacé los títulos monárquicos y acepté llamarme únicamente el Siervo de la Nación, subordinando mi espada a la voluntad soberana del pueblo soberano.
 
@@ -54,7 +54,7 @@ Rechacé los títulos monárquicos y acepté llamarme únicamente el Siervo de l
 **Coordenadas**: 19.0883, -102.3556
 **Narrativa**: En medio de la persecución virreinal, el Congreso sancionó el Decreto Constitucional para la Libertad de la América Mexicana, consagrando la división de poderes, los derechos civiles inalienables y la forma republicana de gobierno.
 
-![La Promulgación de la Constitución de Apatzingán](/images/history/morelos_constitucion_apatzingan.jpg)
+![La Promulgación de la Constitución de Apatzingán](/images/history/morelos_constitucion_apatzingan.webp)
 
 Apatzingán fue el primer gran monumento jurídico de la República Mexicana, plasmando el sueño de un país regido por la razón y no por el despotismo.
 
@@ -64,7 +64,7 @@ Apatzingán fue el primer gran monumento jurídico de la República Mexicana, pl
 **Coordenadas**: 19.6011, -99.0589
 **Narrativa**: En Temalaca me interpuse con un puñado de valientes frente a las descargas realistas para asegurar el escape de los diputados del Congreso; capturado y degradado, marché al paredón en Ecatepec con dignidad inquebrantable rezando por la libertad de mi patria.
 
-![El Sacrificio en Temalaca y el Fusilamiento en Ecatepec](/images/history/morelos_ecatepec_martirio.jpg)
+![El Sacrificio en Temalaca y el Fusilamiento en Ecatepec](/images/history/morelos_ecatepec_martirio.webp)
 
 "Morir es nada cuando por la patria se muere". Frente a los fusiles virreinales sellé con mi sangre el destino soberano e independiente de México.
 

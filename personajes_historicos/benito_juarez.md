@@ -6,7 +6,7 @@ eraOrPeriod: "La Reforma y Restauración de la República (1855 - 1872)"
 birthOrEstablishment: "21 de marzo de 1806, San Pablo Guelatao, Oaxaca"
 deathOrPresentState: "18 de julio de 1872, Palacio Nacional, Ciudad de México"
 bookSpineStyle: "tomo_constitucional"
-avatarImageUrl: "/images/history/benito_juarez_avatar.png"
+avatarImageUrl: "/images/history/benito_juarez_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-7%"
@@ -34,7 +34,7 @@ Goberné Oaxaca con pulcritud fiscal y apertura de escuelas. En 1853 fui desterr
 **Coordenadas**: 19.4326, -99.1332
 **Narrativa**: Como ministro de Justicia del presidente Juan Álvarez, firmé la Ley sobre Administración de Justicia, estableciendo por primera vez en la historia que todos los mexicanos somos iguales ante la ley y extinguiendo los tribunales de fuero clerical y castrense.
 
-![La Promulgación de la Ley Juárez](/images/history/juarez_ley_juarez_1855.jpg)
+![La Promulgación de la Ley Juárez](/images/history/juarez_ley_juarez_1855.webp)
 
 La espada y la sotana quedaron sometidas a la majestad suprema de la ley y de los tribunales civiles.
 
@@ -44,7 +44,7 @@ La espada y la sotana quedaron sometidas a la majestad suprema de la ley y de lo
 **Coordenadas**: 19.2002, -96.1386
 **Narrativa**: Sitiados por mar y tierra por las tropas conservadoras de Miramón, redacté con Melchor Ocampo los decretos que secularizaron los cementerios, crearon el Registro Civil y confiscaron los inmensos bienes corporativos de la Iglesia.
 
-![Las Leyes de Reforma en Veracruz](/images/history/juarez_leyes_reforma_veracruz.jpg)
+![Las Leyes de Reforma en Veracruz](/images/history/juarez_leyes_reforma_veracruz.webp)
 
 La soberanía de la nación se liberó de las ataduras teocráticas para instaurar el Estado laico moderno.
 
@@ -54,7 +54,7 @@ La soberanía de la nación se liberó de las ataduras teocráticas para instaur
 **Coordenadas**: 31.7394, -106.4869
 **Narrativa**: Custodiando el archivo general de la nación en mi carruaje de viaje cerrado, mantuve encendida la llama de la República frente a las bayonetas del imperio francés de Napoleón III en la última orilla de la patria.
 
-![El Carruaje Negro en Paso del Norte](/images/history/juarez_carruaje_paso_del_norte.jpg)
+![El Carruaje Negro en Paso del Norte](/images/history/juarez_carruaje_paso_del_norte.webp)
 
 Podrán arrebatarnos la capital, pero mientras exista un palmo de tierra libre con el presidente legal, la patria jamás morirá.
 
@@ -64,7 +64,7 @@ Podrán arrebatarnos la capital, pero mientras exista un palmo de tierra libre c
 **Coordenadas**: 19.4326, -99.1332
 **Narrativa**: Tras la derrota definitiva del emperador títere en el Cerro de las Campanas, ingresé victorioso en mi carruaje a la capital restaurando la soberanía patria y proclamando al mundo el principio universal del respeto al derecho ajeno.
 
-![El Triunfo de la República](/images/history/juarez_entrada_triunfal_1867.jpg)
+![El Triunfo de la República](/images/history/juarez_entrada_triunfal_1867.webp)
 
 El pueblo de México demostró a los imperios de la vieja Europa que ninguna potencia extranjera puede hollar impunemente la dignidad nacional.
 
@@ -89,7 +89,7 @@ Población fronteriza que fue el último baluarte inexpugnable del gobierno repu
 **Coordenadas**: 20.5936, -100.4103
 Sitio histórico donde fue capturado y fusilado el archiduque Maximiliano de Habsburgo junto a los generales traidores Miguel Miramón y Tomás Mejía el 19 de junio de 1867.
 
-![Cerro de las Campanas](/images/history/cerro_campanas_juarez.jpg)
+![Cerro de las Campanas](/images/history/cerro_campanas_juarez.webp)
 
 ## Cápsula Cinematográfica y Video
 **Título**: Benito Juárez: La República Inquebrantable

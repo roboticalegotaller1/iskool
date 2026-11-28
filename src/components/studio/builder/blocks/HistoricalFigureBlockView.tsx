@@ -397,12 +397,12 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
                         className="absolute -translate-x-1/2 -translate-y-1/2 aspect-square rounded-full overflow-hidden bg-black/80 shadow-inner ring-1 ring-amber-300/40"
                       >
                         <img
-                          src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'}
+                          src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.webp'}
                           alt={data.characterName}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             if (!target.src.includes('francisco_villa_avatar.png')) {
-                              target.src = '/images/history/francisco_villa_avatar.png';
+                              target.src = '/images/history/francisco_villa_avatar.webp';
                             }
                           }}
                           className="w-full h-full object-cover"

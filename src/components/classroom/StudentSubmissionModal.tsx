@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { useAuth } from '@/context/AuthContext';
 import { 

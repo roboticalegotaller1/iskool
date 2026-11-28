@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domMax, m, AnimatePresence } from 'framer-motion';
 import { StudioBlock, StudioBlockType } from '@/types/studioBlocks';
 import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
@@ -387,6 +387,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
   }
 
   return (
+    <LazyMotion features={domMax}>
     <div
       ref={setNodeRef}
       style={style}
@@ -394,7 +395,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
         isOver ? 'ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-zinc-950 shadow-xl' : ''
       }`}
     >
-      <motion.div
+      <m.div
         layout
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -550,7 +551,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
         {/* Cuerpo del Bloque */}
         <AnimatePresence initial={false}>
           {!block.isCollapsed && (
-            <motion.div
+            <m.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -558,10 +559,11 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               className="p-4 sm:p-6"
             >
               <BlockDispatcher block={block} />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
     </div>
+    </LazyMotion>
   );
 };

@@ -9,6 +9,7 @@ import {
 import { validateApiAuth } from '@/lib/authValidator';
 import { isDemoSandboxContext } from '@/lib/demo/demoSandboxConfig';
 import { recordEphemeralVaultItem } from '@/lib/demo/demoEphemeralVault';
+import { checkRouteRateLimit, extractClientRateLimitKey } from '@/lib/security/routeRateLimit';
 
 const StudioGenerateSchema = z.object({
   topic: z.string().trim().min(2, 'El parámetro "topic" debe tener al menos 2 caracteres').max(200, 'El tema es demasiado largo'),
@@ -66,6 +67,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Solo docentes o personal directivo pueden generar actividades en el Estudio.' },
         { status: 403 }
+      );
+    }
+
+    const rateCheck = checkRouteRateLimit('studio:generate', extractClientRateLimitKey(req, auth.user.id), 20, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de generaciones por minuto alcanzado. Intenta nuevamente en unos segundos.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
       );
     }
 

@@ -163,15 +163,15 @@ export default function DataDrivenCombatView({
     const resolveAttackerSkinUrl = (skinTextureId?: string) => {
       const clean = (skinTextureId || 'skin_lucas').replace(/^skin_/, '').toLowerCase();
       const safeName = AVAILABLE_ATTACKER_SPRITES.has(clean) ? clean : 'lucas';
-      return `/images/rpg/${safeName}_sprite.png`;
+      return `/images/rpg/${safeName}_sprite.webp`;
     };
     const attackerSkinUrls = Array.from(new Set(payload.attackers.map(a => resolveAttackerSkinUrl(a.skin_texture_id))));
     const coreAssets = [
-      '/images/rpg/combat_bg.png',
-      '/images/rpg/boss_sprite.png',
-      '/images/rpg/ui/Dragonhpbar.png',
-      '/images/rpg/ui/DragonHpBar2.png',
-      '/images/rpg/ui/DragonHpBar3.png',
+      '/images/rpg/combat_bg.webp',
+      '/images/rpg/boss_sprite.webp',
+      '/images/rpg/ui/Dragonhpbar.webp',
+      '/images/rpg/ui/DragonHpBar2.webp',
+      '/images/rpg/ui/DragonHpBar3.webp',
       ...attackerSkinUrls,
     ];
     const optionalDragonUrls = Array.from(new Set([
@@ -195,12 +195,12 @@ export default function DataDrivenCombatView({
         // Cargar dragones opcionales individualmente sin abortar si alguno falla
         await Promise.allSettled(optionalDragonUrls.map((u) => Assets.load(u)));
 
-        bgTex = Assets.get('/images/rpg/combat_bg.png');
-        bossTex = Assets.get('/images/rpg/boss_sprite.png');
+        bgTex = Assets.get('/images/rpg/combat_bg.webp');
+        bossTex = Assets.get('/images/rpg/boss_sprite.webp');
         
-        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.png');
-        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.png');
-        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.png');
+        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.webp');
+        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.webp');
+        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.webp');
 
         const selectedDragonKey = getDragonEnemyKey(payload.enemy_data.name, payload.enemy_data.skin_id);
         activeDragonDef = DRAGON_ENEMIES_MAP[selectedDragonKey] || DRAGON_ENEMIES_MAP.blood_dragon;

@@ -12,13 +12,13 @@ import {
 } from 'lucide-react';
 // Lista de sprites de dragones en /images/rpg/enemies/
 const DRAGON_ENEMIES_SPRITES = [
-  '/images/rpg/enemies/blood_dragon.png',
-  '/images/rpg/enemies/crimson_dragon.png',
-  '/images/rpg/enemies/emberheart_dragon.png',
-  '/images/rpg/enemies/glacialserpent.png',
-  '/images/rpg/enemies/luminous_dragon.png',
-  '/images/rpg/enemies/moonshadow_dragon.png',
-  '/images/rpg/enemies/thunderwing_drake_nosparks.png',
+  '/images/rpg/enemies/blood_dragon.webp',
+  '/images/rpg/enemies/crimson_dragon.webp',
+  '/images/rpg/enemies/emberheart_dragon.webp',
+  '/images/rpg/enemies/glacialserpent.webp',
+  '/images/rpg/enemies/luminous_dragon.webp',
+  '/images/rpg/enemies/moonshadow_dragon.webp',
+  '/images/rpg/enemies/thunderwing_drake_nosparks.webp',
 ];
 
 export const getDragonSpriteForQuest = (questId: string, idx: number = 0): string => {
@@ -880,7 +880,7 @@ export function RpgCombatViewport() {
           {/* Base Background Image Layer */}
           <div className="absolute inset-0 pointer-events-none z-0">
             <img 
-              src="/images/rpg/background/Background.png" 
+              src="/images/rpg/background/Background.webp" 
               alt="Forest Background Base" 
               className="w-full h-full object-cover opacity-75"
             />
@@ -891,22 +891,22 @@ export function RpgCombatViewport() {
           {/* Layered Animated Forest Trees Layer */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-end">
             <img 
-              src="/images/rpg/background/Dark-Tree.png" 
+              src="/images/rpg/background/Dark-Tree.webp" 
               alt="Dark Tree" 
               className="tree-sway-2 absolute bottom-[2%] left-[1%] h-36 opacity-60 object-contain"
             />
             <img 
-              src="/images/rpg/background/Red-Tree.png" 
+              src="/images/rpg/background/Red-Tree.webp" 
               alt="Red Tree" 
               className="tree-sway-1 absolute bottom-[5%] left-[15%] h-32 opacity-65 object-contain"
             />
             <img 
-              src="/images/rpg/background/Green-Tree.png" 
+              src="/images/rpg/background/Green-Tree.webp" 
               alt="Green Tree" 
               className="tree-sway-3 absolute bottom-[6%] left-[32%] h-36 opacity-65 object-contain"
             />
             <img 
-              src="/images/rpg/background/Golden-Tree.png" 
+              src="/images/rpg/background/Golden-Tree.webp" 
               alt="Golden Tree" 
               className="tree-sway-2 absolute bottom-[7%] left-[68%] h-36 opacity-65 object-contain"
             />

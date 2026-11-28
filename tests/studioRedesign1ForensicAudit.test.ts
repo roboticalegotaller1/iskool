@@ -57,7 +57,7 @@ describe('🔬 AUDITORÍA FORENSE Y REDISEÑO 1 (VISTA 1.1) — ISKOOL STUDIO', 
     await store.switchHistoricalFigureOnBlock(blockId, 'Cuauhtémoc', false);
     let updated = useActivityBuilderStore.getState().blocks.find((b) => b.id === blockId) as any;
     expect(updated.data.characterName).toBe('Cuauhtémoc');
-    expect(updated.data.avatarImageUrl).toContain('cuauhtemoc_avatar.png');
+    expect(updated.data.avatarImageUrl).toContain('cuauhtemoc_avatar.webp');
     expect(updated.data.shortBio).toMatch(/Fui el/i);
 
     // Cambiar a un personaje o sitio personalizado creado al vuelo (ej. Nezahualcóyotl)

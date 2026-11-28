@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { getSharedSfxAudioContext } from '@/lib/audio/studioBroadcastMaster';
 import { 
   Sparkles, 
@@ -326,9 +326,10 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
         </div>
 
         {/* Pista visible */}
+        <LazyMotion features={domAnimation}>
         <AnimatePresence>
           {activeHintIndex >= 0 && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -336,9 +337,10 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
             >
               <Lightbulb className="w-4 h-4 text-amber-400 shrink-0" />
               <span>💡 <strong>Pista pedagógica:</strong> {activity.hints[activeHintIndex]}</span>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
+        </LazyMotion>
       </div>
 
       {/* ========================================================================= */}
@@ -410,12 +412,13 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
             </div>
 
             {/* Cinta Horizontal con animación */}
+            <LazyMotion features={domAnimation}>
             <div className="relative overflow-x-auto py-4 px-2">
               <div className="flex items-center justify-center gap-2 min-w-max">
                 {tapeState.map((symbol, idx) => {
                   const isCurrent = idx === tapeIndex;
                   return (
-                    <motion.div
+                    <m.div
                       key={idx}
                       animate={{ scale: isCurrent ? 1.15 : 1 }}
                       className={`w-12 h-14 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
@@ -426,7 +429,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                     >
                       <span className="text-lg">{symbol}</span>
                       <span className="text-[9px] font-bold text-slate-400 mt-1">{idx + 1}</span>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
               </div>
@@ -438,6 +441,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                 </div>
               </div>
             </div>
+            </LazyMotion>
 
             {/* Controles de Ejecución */}
             <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-800">
@@ -675,7 +679,8 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
 
           {/* Banner de recompensa al acertar */}
           {isAnswerSubmitted && isCorrect && (
-            <motion.div
+            <LazyMotion features={domAnimation}>
+            <m.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-emerald-500/20 border border-emerald-500/40 p-2.5 px-4 rounded-2xl"
@@ -684,7 +689,8 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
               <div className="text-xs font-black text-emerald-300">
                 ¡Reto Superado! +{xpEarned} XP • +{coinsEarned} Monedas
               </div>
-            </motion.div>
+            </m.div>
+            </LazyMotion>
           )}
         </div>
       </div>
@@ -705,9 +711,10 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
           {showPedagogy ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </button>
 
+        <LazyMotion features={domAnimation}>
         <AnimatePresence>
           {showPedagogy && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -732,9 +739,10 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                   {activity.classroomActivity}
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
+        </LazyMotion>
       </div>
     </div>
   );

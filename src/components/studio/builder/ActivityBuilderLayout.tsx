@@ -1328,7 +1328,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 bg-white dark:bg-zinc-900 p-1.5 rounded-xl border border-slate-200 dark:border-zinc-700">
                         <img
-                          src={targetHist.data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}
+                          src={targetHist.data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.webp'}
                           alt={targetHist.data.characterName || 'Avatar'}
                           className="w-8 h-8 rounded-lg object-cover border border-amber-300 shrink-0"
                         />
@@ -1494,7 +1494,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                   if (simBlock.type === 'historical_figure_block' || (!activeSelectedBlock && selectedHistoricalBlock)) {
                     const fig = simBlock.type === 'historical_figure_block' ? simBlock : selectedHistoricalBlock!;
                     const charName = fig.data.characterName || 'Josefa Ortiz de Domínguez';
-                    const avatarUrl = fig.data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png';
+                    const avatarUrl = fig.data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.webp';
                     const greeting =
                       fig.data.firstPersonGreeting ||
                       fig.data.shortBio ||

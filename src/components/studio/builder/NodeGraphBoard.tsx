@@ -1260,11 +1260,11 @@ export const NodeGraphBoard: React.FC = () => {
                       {/* Retrato Ilustrado del Personaje / Sitio */}
                       <div className="relative w-full h-28 rounded-2xl overflow-hidden border border-amber-200/80 bg-gradient-to-b from-amber-900/20 to-stone-900/80 shadow-inner">
                         <img
-                          src={block.data.avatarImageUrl || '/images/history/hidalgo_avatar.png'}
+                          src={block.data.avatarImageUrl || '/images/history/hidalgo_avatar.webp'}
                           alt={block.data.characterName || block.data.characterOrSiteName || block.title}
                           className="w-full h-full object-cover object-top"
                           onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                            (e.currentTarget as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.webp';
                           }}
                         />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-2.5 py-1.5 flex items-center justify-between">

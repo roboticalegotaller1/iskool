@@ -93,7 +93,7 @@ export function StudentHUD() {
                   alt={studentName}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = '/images/students/lucas.png';
+                    (e.currentTarget as HTMLImageElement).src = '/images/students/lucas.webp';
                   }}
                 />
               </div>

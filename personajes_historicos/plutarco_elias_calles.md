@@ -6,7 +6,7 @@ eraOrPeriod: "Construcción Institucional y Maximato (1924 - 1934)"
 birthOrEstablishment: "25 de septiembre de 1877, Guaymas, Sonora"
 deathOrPresentState: "19 de octubre de 1945, Ciudad de México"
 bookSpineStyle: "tomo_imperial"
-avatarImageUrl: "/images/history/plutarco_elias_calles_avatar.png"
+avatarImageUrl: "/images/history/plutarco_elias_calles_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Al asumir la presidencia constitucional en 1924 acometí una profunda reforma es
 **Coordenadas**: 19.4344, -99.1411
 **Narrativa**: En un acto de soberanía financiera histórica, inauguré las operaciones del Banco de México junto a mi secretario de Hacienda Alberto J. Pani, terminando con la anarquía de emisión bancaria privada y dotando a la República de su banco central.
 
-![La Fundación del Banco de México](/images/history/calles_banco_mexico.jpg)
+![La Fundación del Banco de México](/images/history/calles_banco_mexico.webp)
 
 El Banco de México se convirtió en el eje de la estabilidad monetaria y en la herramienta suprema para industrializar y comunicar al país.
 
@@ -44,7 +44,7 @@ El Banco de México se convirtió en el eje de la estabilidad monetaria y en la 
 **Coordenadas**: 20.6770, -103.3470
 **Narrativa**: Al reglamentar estrictamente el artículo 130 constitucional y prohibir a sacerdotes extranjeros y cultos públicos, el episcopado suspendió misas y milicias campesinas católicas se alzaron en armas al grito de ¡Viva Cristo Rey!, desatando un conflicto bélico civil de tres años.
 
-![El Estallido de la Guerra Cristera y la Ley Calles](/images/history/calles_guerra_cristera.jpg)
+![El Estallido de la Guerra Cristera y la Ley Calles](/images/history/calles_guerra_cristera.webp)
 
 La intransigencia dogmática y la defensa inquebrantable de la soberanía laica del Estado cobraron un tributo doloroso de miles de vidas mexicanas.
 
@@ -54,7 +54,7 @@ La intransigencia dogmática y la defensa inquebrantable de la soberanía laica 
 **Coordenadas**: 19.4361, -99.1386
 **Narrativa**: Tras el magnicidio de Obregón en La Bombilla, comparecí ante el Congreso para sentenciar que México debía renunciar definitivamente al gobierno de un solo hombre para ingresar plenamente a la vida institucional y pacífica.
 
-![El Histórico Mensaje del Fin del Caudillismo](/images/history/calles_informe_1928.jpg)
+![El Histórico Mensaje del Fin del Caudillismo](/images/history/calles_informe_1928.webp)
 
 "México debe pasar, de una vez por todas, de la categoría histórica de país de un solo hombre, a la de nación de instituciones y leyes".
 
@@ -64,7 +64,7 @@ La intransigencia dogmática y la defensa inquebrantable de la soberanía laica 
 **Coordenadas**: 20.5936, -100.3908
 **Narrativa**: En el histórico Teatro de la República congregué a caudillos militares, caciques y partidos regionales para fundar el PNR, canalizando la lucha por el poder a través de reglas electorales disciplinadas sin recurrir a las armas.
 
-![La Fundación del Partido Nacional Revolucionario (PNR)](/images/history/calles_fundacion_pnr.jpg)
+![La Fundación del Partido Nacional Revolucionario (PNR)](/images/history/calles_fundacion_pnr.webp)
 
 El PNR unificó a la familia revolucionaria y aseguró la estabilidad política del Estado mexicano durante décadas.
 

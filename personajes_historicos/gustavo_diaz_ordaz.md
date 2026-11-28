@@ -6,7 +6,7 @@ eraOrPeriod: "México Contemporáneo y Desarrollo Estabilizador (1964 - 1970)"
 birthOrEstablishment: "12 de marzo de 1911, San Andrés Chalchicomula (hoy Ciudad Serdán), Puebla"
 deathOrPresentState: "15 de julio de 1979, Ciudad de México"
 bookSpineStyle: "tomo_imperial"
-avatarImageUrl: "/images/history/gustavo_diaz_ordaz_avatar.png"
+avatarImageUrl: "/images/history/gustavo_diaz_ordaz_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Durante mi mandato presidencial impulsé el modelo económico del Desarrollo Est
 **Coordenadas**: 31.7583, -106.4528
 **Narrativa**: En un acto diplomático de estricta justicia limítrofe, me reuní en el puente internacional con el presidente estadounidense Lyndon B. Johnson para concretar la restitución física a México de 177 hectáreas disputadas por el cambio de cauce del Río Bravo.
 
-![La Entrega Soberana de El Chamizal](/images/history/diaz_ordaz_chamizal.jpg)
+![La Entrega Soberana de El Chamizal](/images/history/diaz_ordaz_chamizal.webp)
 
 La recuperación pacífica de El Chamizal culminó más de medio siglo de litigio internacional y representó un triunfo indiscutible del derecho internacional y de la diplomacia mexicana sobre la imposición territorial.
 
@@ -44,7 +44,7 @@ La recuperación pacífica de El Chamizal culminó más de medio siglo de litigi
 **Coordenadas**: 19.4517, -99.1378
 **Narrativa**: Mi gobierno impulsó y acogió la firma del histórico tratado que convirtió a América Latina y el Caribe en la primera zona densamente poblada libre de armas nucleares en el planeta.
 
-![La Firma del Tratado de Tlatelolco](/images/history/diaz_ordaz_tlatelolco_tratado.jpg)
+![La Firma del Tratado de Tlatelolco](/images/history/diaz_ordaz_tlatelolco_tratado.webp)
 
 Bajo la brillante conducción de nuestro diplomático Alfonso García Robles, México encabezó un pacto humanista de neutralidad y paz mundial en el momento más álgido de la Guerra Fría.
 
@@ -54,7 +54,7 @@ Bajo la brillante conducción de nuestro diplomático Alfonso García Robles, M�
 **Coordenadas**: 19.4233, -99.1631
 **Narrativa**: Puse en operación el primer tramo de la Línea 1 del Sistema de Transporte Colectivo Metro (de Chapultepec a Zaragoza), modernizando de forma radical el transporte público masivo de la capital del país.
 
-![La Inauguración del Metro de la Ciudad de México](/images/history/diaz_ordaz_metro_1969.jpg)
+![La Inauguración del Metro de la Ciudad de México](/images/history/diaz_ordaz_metro_1969.webp)
 
 A bordo del convoy inaugural corté el listón de una de las obras de ingeniería subterránea más complejas y trascendentales de la historia moderna de México.
 
@@ -64,7 +64,7 @@ A bordo del convoy inaugural corté el listón de una de las obras de ingenierí
 **Coordenadas**: 19.4517, -99.1378
 **Narrativa**: Tras la violenta jornada del 2 de octubre en Tlatelolco que ensombreció los Juegos Olímpicos, comparecí ante el Congreso en septiembre de 1969 para asumir de frente y sin vacilación la total responsabilidad por las órdenes y decisiones gubernamentales.
 
-![Los Hechos de Tlatelolco y el V Informe de Gobierno](/images/history/diaz_ordaz_informe_1969.jpg)
+![Los Hechos de Tlatelolco y el V Informe de Gobierno](/images/history/diaz_ordaz_informe_1969.webp)
 
 Ante la nación pronuncié con voz firme: "Asumo íntegramente la responsabilidad personal, ética, social, jurídica, política e histórica por las decisiones del gobierno en relación con los sucesos del año pasado".
 

@@ -1362,7 +1362,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           temporary_password: tempPassword,
           status: studentData.status || 'activo',
           is_blocked: studentData.is_blocked || false,
-          photo_url: studentData.photo_url || '/images/students/default.png',
+          photo_url: studentData.photo_url || '/images/students/default.webp',
           pending_payments: ['Colegiatura de Septiembre 2026']
         };
 
@@ -1480,7 +1480,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             email: studentEmail,
             phone: st.phone || '55-0000-0000',
             address: st.address || 'Ciudad de México',
-            photo_url: '/images/students/default.png',
+            photo_url: '/images/students/default.webp',
             pending_payments: ['Colegiatura de Septiembre 2026'],
             behavior_reports: [],
             teacher_notes: []

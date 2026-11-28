@@ -11,6 +11,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AutonomousWritingEngineService } from '@/services/writingEngineService';
 import { validateApiAuth } from '@/lib/authValidator';
+import { checkRouteRateLimit, extractClientRateLimitKey } from '@/lib/security/routeRateLimit';
+
+const MAX_WRITING_TEXT_CHARS = 25_000;
+const MAX_CONSIGNA_CHARS = 4_000;
+const MAX_DASHBOARD_EVALUATIONS = 200;
 
 const WRITING_STAFF_ROLES = new Set([
   'teacher',
@@ -29,6 +34,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Autenticación requerida para interactuar con el Motor de Escritura.' }, { status: 401 });
     }
 
+    const rateCheck = checkRouteRateLimit('languages:writing', extractClientRateLimitKey(req, auth.user.id), 30, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de solicitudes por minuto alcanzado en el Motor de Escritura.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
+      );
+    }
+
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Cuerpo JSON inválido o malformado.' }, { status: 400 });
@@ -40,6 +53,21 @@ export async function POST(req: NextRequest) {
         { error: 'Comando requerido: CREAR_CONSIGNA | ANALIZAR_BORRADOR | EVALUACION_FINAL | DASHBOARD_DOCENTE' },
         { status: 400 }
       );
+    }
+
+    if (payload && typeof payload === 'object') {
+      const p = payload as Record<string, unknown>;
+      if (
+        (typeof p.borrador_actual === 'string' && p.borrador_actual.length > MAX_WRITING_TEXT_CHARS) ||
+        (typeof p.texto_final === 'string' && p.texto_final.length > MAX_WRITING_TEXT_CHARS) ||
+        (typeof p.consigna === 'string' && p.consigna.length > MAX_CONSIGNA_CHARS) ||
+        (Array.isArray(p.evaluaciones) && p.evaluaciones.length > MAX_DASHBOARD_EVALUATIONS)
+      ) {
+        return NextResponse.json(
+          { error: 'El volumen de texto o evaluaciones enviado excede el límite máximo permitido.' },
+          { status: 400 }
+        );
+      }
     }
 
     const roleLower = (auth.user.role || '').toLowerCase();

@@ -53,7 +53,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     stateOrCountry: 'Querétaro, México',
     coordinates: { lat: 20.5931, lng: -100.3928 },
     significance: 'Sede de las tertulias secretas de la conspiración de 1810 y sitio del encierro donde Josefa dio aviso a la patria.',
-    imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
+    imageUrl: '/images/history/casa_corregidora_queretaro.webp'
   };
 
   const [activeLoc, setActiveLoc] = useState<HistoricalKeyLocation>(defaultLoc);
@@ -84,10 +84,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Canutillo / Durango (Villa)
     if (n.includes('canutillo') || n.includes('durango')) {
       return {
-        primaryImage: '/images/history/hacienda_canutillo_villa.jpg',
+        primaryImage: '/images/history/hacienda_canutillo_villa.webp',
         gallery: [
-          { url: '/images/history/hacienda_canutillo_villa.jpg', caption: 'Casco histórico de la Hacienda de Canutillo, Durango' },
-          { url: '/images/history/francisco_villa_avatar.png', caption: 'General Francisco Villa en Canutillo' }
+          { url: '/images/history/hacienda_canutillo_villa.webp', caption: 'Casco histórico de la Hacienda de Canutillo, Durango' },
+          { url: '/images/history/francisco_villa_avatar.webp', caption: 'General Francisco Villa en Canutillo' }
         ]
       };
     }
@@ -95,10 +95,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Cerro de la Bufa / Zacatecas (Villa)
     if (n.includes('bufa') || n.includes('zacatecas')) {
       return {
-        primaryImage: '/images/history/cerro_bufa_zacatecas.jpg',
+        primaryImage: '/images/history/cerro_bufa_zacatecas.webp',
         gallery: [
-          { url: '/images/history/cerro_bufa_zacatecas.jpg', caption: 'Cima del Cerro de la Bufa y Plaza de la Revolución, Zacatecas' },
-          { url: '/images/history/villa_batalla_zacatecas_comic_2.png', caption: 'Toma de Zacatecas (23 de junio de 1914)' }
+          { url: '/images/history/cerro_bufa_zacatecas.webp', caption: 'Cima del Cerro de la Bufa y Plaza de la Revolución, Zacatecas' },
+          { url: '/images/history/villa_batalla_zacatecas_comic_2.webp', caption: 'Toma de Zacatecas (23 de junio de 1914)' }
         ]
       };
     }
@@ -106,10 +106,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Columbus / Nuevo México (Villa)
     if (n.includes('columbus') || n.includes('nuevo mexico') || n.includes('punitiva')) {
       return {
-        primaryImage: '/images/history/columbus_nuevo_mexico.jpg',
+        primaryImage: '/images/history/columbus_nuevo_mexico.webp',
         gallery: [
-          { url: '/images/history/columbus_nuevo_mexico.jpg', caption: 'Parque Histórico Pancho Villa en Columbus, Nuevo México' },
-          { url: '/images/history/villa_columbus_comic_4.png', caption: 'Incursión en Columbus (9 de marzo de 1916)' }
+          { url: '/images/history/columbus_nuevo_mexico.webp', caption: 'Parque Histórico Pancho Villa en Columbus, Nuevo México' },
+          { url: '/images/history/villa_columbus_comic_4.webp', caption: 'Incursión en Columbus (9 de marzo de 1916)' }
         ]
       };
     }
@@ -117,9 +117,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Palacio Nacional / CDMX
     if (n.includes('palacio nacional') || (n.includes('palacio') && (n.includes('zapata') || n.includes('presidencial')))) {
       return {
-        primaryImage: '/images/history/palacio_nacional_villa_zapata.jpg',
+        primaryImage: '/images/history/palacio_nacional_villa_zapata.webp',
         gallery: [
-          { url: '/images/history/palacio_nacional_villa_zapata.jpg', caption: 'Villa y Zapata en la Silla Presidencial (diciembre de 1914)' }
+          { url: '/images/history/palacio_nacional_villa_zapata.webp', caption: 'Villa y Zapata en la Silla Presidencial (diciembre de 1914)' }
         ]
       };
     }
@@ -127,11 +127,11 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Casa de la Corregidora / Querétaro (Josefa)
     if (n.includes('corregidora') || (n.includes('palacio') && n.includes('queretaro')) || n.includes('gobierno de queretaro')) {
       return {
-        primaryImage: '/images/history/casa_corregidora_queretaro.jpg',
+        primaryImage: '/images/history/casa_corregidora_queretaro.webp',
         gallery: [
-          { url: '/images/history/casa_corregidora_queretaro.jpg', caption: 'Palacio de Gobierno de Querétaro (Casa de la Corregidora)' },
-          { url: '/images/history/josefa_taconeo_comic_2.png', caption: 'Alcoba histórica del taconeo libertario (15 de septiembre de 1810)' },
-          { url: '/images/history/acueducto_queretaro.jpg', caption: 'Monumental Acueducto de Querétaro' }
+          { url: '/images/history/casa_corregidora_queretaro.webp', caption: 'Palacio de Gobierno de Querétaro (Casa de la Corregidora)' },
+          { url: '/images/history/josefa_taconeo_comic_2.webp', caption: 'Alcoba histórica del taconeo libertario (15 de septiembre de 1810)' },
+          { url: '/images/history/acueducto_queretaro.webp', caption: 'Monumental Acueducto de Querétaro' }
         ]
       };
     }
@@ -139,10 +139,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Parroquia de Dolores / Guanajuato (Hidalgo)
     if (n.includes('dolores') || n.includes('parroquia')) {
       return {
-        primaryImage: '/images/history/parroquia_dolores.jpg',
+        primaryImage: '/images/history/parroquia_dolores.webp',
         gallery: [
-          { url: '/images/history/parroquia_dolores.jpg', caption: 'Parroquia de Nuestra Señora de los Dolores (Cuna de la Independencia)' },
-          { url: '/images/history/hidalgo_grito_comic_4.png', caption: 'Campanario del Grito de Dolores (1810)' }
+          { url: '/images/history/parroquia_dolores.webp', caption: 'Parroquia de Nuestra Señora de los Dolores (Cuna de la Independencia)' },
+          { url: '/images/history/hidalgo_grito_comic_4.webp', caption: 'Campanario del Grito de Dolores (1810)' }
         ]
       };
     }
@@ -150,9 +150,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Alhóndiga de Granaditas (Hidalgo)
     if (n.includes('alhondiga') || n.includes('granaditas')) {
       return {
-        primaryImage: '/images/history/alhondiga_granaditas.jpg',
+        primaryImage: '/images/history/alhondiga_granaditas.webp',
         gallery: [
-          { url: '/images/history/alhondiga_granaditas.jpg', caption: 'Alhóndiga de Granaditas en Guanajuato' }
+          { url: '/images/history/alhondiga_granaditas.webp', caption: 'Alhóndiga de Granaditas en Guanajuato' }
         ]
       };
     }
@@ -160,10 +160,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Palacio de Gobierno de Guadalajara (Hidalgo)
     if (n.includes('guadalajara')) {
       return {
-        primaryImage: '/images/history/palacio_guadalajara.jpg',
+        primaryImage: '/images/history/palacio_guadalajara.webp',
         gallery: [
-          { url: '/images/history/palacio_guadalajara.jpg', caption: 'Palacio de Gobierno de Guadalajara (Sede de la Abolición de la Esclavitud)' },
-          { url: '/images/history/hidalgo_decreto_abolicion.jpg', caption: 'Histórico Decreto de Abolición de la Esclavitud de 1810' }
+          { url: '/images/history/palacio_guadalajara.webp', caption: 'Palacio de Gobierno de Guadalajara (Sede de la Abolición de la Esclavitud)' },
+          { url: '/images/history/hidalgo_decreto_abolicion.webp', caption: 'Histórico Decreto de Abolición de la Esclavitud de 1810' }
         ]
       };
     }
@@ -171,9 +171,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Calabozo de Hidalgo en Chihuahua
     if (n.includes('calabozo') || n.includes('chihuahua')) {
       return {
-        primaryImage: '/images/history/calabozo_hidalgo.jpg',
+        primaryImage: '/images/history/calabozo_hidalgo.webp',
         gallery: [
-          { url: '/images/history/calabozo_hidalgo.jpg', caption: 'Calabozo de Don Miguel Hidalgo en Chihuahua (Prisión Militar de 1811)' }
+          { url: '/images/history/calabozo_hidalgo.webp', caption: 'Calabozo de Don Miguel Hidalgo en Chihuahua (Prisión Militar de 1811)' }
         ]
       };
     }
@@ -181,9 +181,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // San Miguel de Allende
     if (n.includes('san miguel') || n.includes('allende')) {
       return {
-        primaryImage: '/images/history/san_miguel_allende.jpg',
+        primaryImage: '/images/history/san_miguel_allende.webp',
         gallery: [
-          { url: '/images/history/san_miguel_allende.jpg', caption: 'Plaza principal y Parroquia de San Miguel Arcángel' }
+          { url: '/images/history/san_miguel_allende.webp', caption: 'Plaza principal y Parroquia de San Miguel Arcángel' }
         ]
       };
     }
@@ -191,9 +191,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Panteón de los Queretanos Ilustres
     if (n.includes('panteon') || n.includes('ilustres') || n.includes('mausoleo')) {
       return {
-        primaryImage: '/images/history/panteon_queretanos_ilustres.jpg',
+        primaryImage: '/images/history/panteon_queretanos_ilustres.webp',
         gallery: [
-          { url: '/images/history/panteon_queretanos_ilustres.jpg', caption: 'Panteón y Mausoleo de la Corregidora Josefa Ortiz' }
+          { url: '/images/history/panteon_queretanos_ilustres.webp', caption: 'Panteón y Mausoleo de la Corregidora Josefa Ortiz' }
         ]
       };
     }
@@ -201,9 +201,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Acueducto de Querétaro (Los Arcos)
     if (n.includes('acueducto') || n.includes('arcos')) {
       return {
-        primaryImage: '/images/history/acueducto_queretaro.jpg',
+        primaryImage: '/images/history/acueducto_queretaro.webp',
         gallery: [
-          { url: '/images/history/acueducto_queretaro.jpg', caption: 'Monumental Acueducto de Querétaro (74 Arcos de Cantera)' }
+          { url: '/images/history/acueducto_queretaro.webp', caption: 'Monumental Acueducto de Querétaro (74 Arcos de Cantera)' }
         ]
       };
     }
@@ -211,10 +211,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Teatro de la República / Querétaro
     if (n.includes('teatro') || n.includes('republica') || n.includes('constitucion')) {
       return {
-        primaryImage: '/images/history/teatro_republica.jpg',
+        primaryImage: '/images/history/teatro_republica.webp',
         gallery: [
-          { url: '/images/history/teatro_republica.jpg', caption: 'Teatro de la República en Querétaro' },
-          { url: '/images/history/teatro_republica_1917.jpg', caption: 'Congreso Constituyente de 1917' }
+          { url: '/images/history/teatro_republica.webp', caption: 'Teatro de la República en Querétaro' },
+          { url: '/images/history/teatro_republica_1917.webp', caption: 'Congreso Constituyente de 1917' }
         ]
       };
     }
@@ -222,10 +222,10 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Cerro de las Campanas
     if (n.includes('campanas') || n.includes('sitio de queretaro')) {
       return {
-        primaryImage: '/images/history/cerro_campanas.jpg',
+        primaryImage: '/images/history/cerro_campanas.webp',
         gallery: [
-          { url: '/images/history/cerro_campanas.jpg', caption: 'Cerro de las Campanas en Querétaro' },
-          { url: '/images/history/sitio_queretaro_1867.jpg', caption: 'Fin del Segundo Imperio en México (1867)' }
+          { url: '/images/history/cerro_campanas.webp', caption: 'Cerro de las Campanas en Querétaro' },
+          { url: '/images/history/sitio_queretaro_1867.webp', caption: 'Fin del Segundo Imperio en México (1867)' }
         ]
       };
     }
@@ -233,9 +233,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // San Agustín Querétaro
     if (n.includes('agustin')) {
       return {
-        primaryImage: '/images/history/san_agustin_queretaro.jpg',
+        primaryImage: '/images/history/san_agustin_queretaro.webp',
         gallery: [
-          { url: '/images/history/san_agustin_queretaro.jpg', caption: 'Templo y Exconvento de San Agustín (Joya del Barroco Novohispano)' }
+          { url: '/images/history/san_agustin_queretaro.webp', caption: 'Templo y Exconvento de San Agustín (Joya del Barroco Novohispano)' }
         ]
       };
     }
@@ -243,9 +243,9 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Fundación Querétaro / Sangremal
     if (n.includes('fundacion') || n.includes('sangremal')) {
       return {
-        primaryImage: '/images/history/fundacion_queretaro.jpg',
+        primaryImage: '/images/history/fundacion_queretaro.webp',
         gallery: [
-          { url: '/images/history/fundacion_queretaro.jpg', caption: 'Loma del Sangremal y Fundación de Querétaro (1531)' }
+          { url: '/images/history/fundacion_queretaro.webp', caption: 'Loma del Sangremal y Fundación de Querétaro (1531)' }
         ]
       };
     }
@@ -253,15 +253,15 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     // Fallback contextual por personaje
     if (c.includes('villa') || c.includes('doroteo') || c.includes('centauro')) {
       return {
-        primaryImage: '/images/history/hacienda_canutillo_villa.jpg',
+        primaryImage: '/images/history/hacienda_canutillo_villa.webp',
         gallery: [
-          { url: '/images/history/hacienda_canutillo_villa.jpg', caption: 'Hacienda de Canutillo' },
-          { url: '/images/history/cerro_bufa_zacatecas.jpg', caption: 'Cerro de la Bufa' }
+          { url: '/images/history/hacienda_canutillo_villa.webp', caption: 'Hacienda de Canutillo' },
+          { url: '/images/history/cerro_bufa_zacatecas.webp', caption: 'Cerro de la Bufa' }
         ]
       };
     }
 
-    const fallbackImg = loc.imageUrl || loc.currentDayPhoto || '/images/history/casa_corregidora_queretaro.jpg';
+    const fallbackImg = loc.imageUrl || loc.currentDayPhoto || '/images/history/casa_corregidora_queretaro.webp';
     return {
       primaryImage: fallbackImg,
       gallery: [{ url: fallbackImg, caption: loc.name }]
@@ -420,7 +420,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
                 src={activeMedia.gallery[selectedPhotoIndex]?.url || activeMedia.primaryImage}
                 alt={activeLoc.name}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.jpg';
+                  (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.webp';
                 }}
                 className="relative z-10 max-w-full max-h-full object-contain"
               />
@@ -592,7 +592,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
                 src={activeImageUrl} 
                 alt={activeLoc.name} 
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.jpg';
+                  (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.webp';
                 }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -713,7 +713,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
                     src={thumbImg} 
                     alt={loc.name}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.jpg';
+                      (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.webp';
                     }}
                     className="w-full h-full object-cover"
                   />

@@ -197,7 +197,7 @@ export const MemoramaPlayer: React.FC<MemoramaPlayerProps> = ({
                       <img 
                         src={card.imageUrl} 
                         alt="Ref visual" 
-                        onError={(e) => { e.currentTarget.src = '/images/students/default.png'; }}
+                        onError={(e) => { e.currentTarget.src = '/images/students/default.webp'; }}
                         className="w-12 h-10 object-cover rounded-lg mx-auto" 
                       />
                     )}

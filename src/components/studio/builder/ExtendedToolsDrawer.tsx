@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
@@ -326,9 +326,10 @@ export const ExtendedToolsDrawer: React.FC = () => {
   if (typeof document === 'undefined') return null;
 
   return createPortal(
+    <LazyMotion features={domAnimation}>
     <AnimatePresence>
       {isExtendedMenuOpen && (
-        <motion.div
+        <m.div
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
@@ -468,9 +469,10 @@ export const ExtendedToolsDrawer: React.FC = () => {
               )}
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
-    </AnimatePresence>,
+    </AnimatePresence>
+    </LazyMotion>,
     document.body
   );
 };

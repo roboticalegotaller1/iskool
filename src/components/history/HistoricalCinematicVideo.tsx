@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 import { 
   Film, 
   Play, 
@@ -85,7 +85,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
         id: `cap-${idx + 1}`,
         title: m.title || `${characterName}: Hito ${idx + 1}`,
         duration: idx === 0 ? (durationSeconds || 18) : (16 + (idx * 2)),
-        imageUrl: m.imageUrl || avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+        imageUrl: m.imageUrl || avatarImageUrl || '/images/history/francisco_villa_avatar.webp',
         script: idx === 0 && narratorScript 
           ? narratorScript 
           : (m.narrativeCaption || m.description || `Soy ${characterName}; te comparto este acontecimiento histórico vivido en ${m.locationName || 'México'}.`),
@@ -101,7 +101,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-1',
           title: 'Toma de Ciudad Juárez (1911)',
           duration: 18,
-          imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
+          imageUrl: '/images/history/villa_toma_juarez_comic_1.webp',
           script: narratorScript || 'Mayo de 1911. Al frente de mis fuerzas revolucionarias asalté Ciudad Juárez perforando paredes de adobe hasta tomar la aduana y desmoronar la dictadura de Porfirio Díaz.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
@@ -110,7 +110,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-2',
           title: 'Batalla de Zacatecas (1914)',
           duration: 20,
-          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
+          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.webp',
           script: '23 de junio de 1914. Al mando de mi legendaria División del Norte tomé el Cerro de la Bufa en una carga incontenible de artillería e infantería, sellando el destino del usurpador Victoriano Huerta.',
           cameraMovement: 'pan_slow'
         },
@@ -118,7 +118,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-3',
           title: 'El Pacto de Xochimilco y Entrada a CDMX (1914)',
           duration: 16,
-          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
+          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.webp',
           script: 'Diciembre de 1914. Sellé con mi compadre Emiliano Zapata el pacto de hermandad campesina en Xochimilco y desfilé al frente de mis tropas populares por la capital.',
           cameraMovement: 'gallop_sweep'
         },
@@ -126,7 +126,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-4',
           title: 'Incursión en Columbus y la Punitiva (1916)',
           duration: 18,
-          imageUrl: '/images/history/villa_columbus_comic_4.png',
+          imageUrl: '/images/history/villa_columbus_comic_4.webp',
           script: 'Marzo de 1916. En respuesta a las agresiones y embargos crucé la frontera y ataqué Columbus, burlando durante once meses en la sierra a la expedición punitiva de Pershing.',
           cameraMovement: 'dawn_ascend'
         }
@@ -139,7 +139,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-1',
           title: `${characterName}: La Conspiración Clandestina`,
           duration: durationSeconds || 15,
-          imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
+          imageUrl: '/images/history/josefa_conspiracion_comic_1.webp',
           script: narratorScript || 'Santiago de Querétaro, agosto de 1810. Bajo la apariencia de tertulias literarias, en mi Casa del Corregimiento organicé junto a los patriotas la conspiración por la independencia.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
@@ -148,7 +148,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-2',
           title: 'El Taconeo en la Soledad de la Alcoba',
           duration: 18,
-          imageUrl: '/images/history/josefa_taconeo_comic_2.png',
+          imageUrl: '/images/history/josefa_taconeo_comic_2.webp',
           script: '15 de septiembre de 1810. Encerrada bajo llave por mi esposo para protegerme, no dudé un instante: tres golpes secos de mis zapatillas alertaron al alcaide Ignacio Pérez.',
           cameraMovement: 'pan_slow'
         },
@@ -156,7 +156,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-3',
           title: 'La Cabalgata Nocturna por la Libertad',
           duration: 16,
-          imageUrl: '/images/history/josefa_alerta_comic_3.png',
+          imageUrl: '/images/history/josefa_alerta_comic_3.webp',
           script: 'Bajo el manto de aquella noche colonial envié al leal Ignacio Pérez a cabalgar sin tregua hacia San Miguel y Dolores para avisar a nuestros compañeros antes del cateo virreinal.',
           cameraMovement: 'gallop_sweep'
         },
@@ -164,7 +164,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-4',
           title: 'El Grito de Dolores y el Alba de la Patria',
           duration: 20,
-          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          imageUrl: '/images/history/hidalgo_grito_comic_4.webp',
           script: 'Madrugada del 16 de septiembre de 1810. Advertido a tiempo por mi aviso desde Querétaro, el cura Miguel Hidalgo repicó la campana parroquial llamando al pueblo a la libertad.',
           cameraMovement: 'dawn_ascend'
         }
@@ -177,7 +177,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-1',
           title: 'Los Talleres Populares de Dolores',
           duration: 18,
-          imageUrl: '/images/history/hidalgo_talleres.jpg',
+          imageUrl: '/images/history/hidalgo_talleres.webp',
           script: narratorScript || 'En mi curato de Dolores no me limité a los oficios religiosos: enseñé alfarería, cultivo de la vid y telares a indígenas y mestizos para romper la dependencia virreinal.',
           cameraMovement: 'zoom_in',
           youtubeUrl: videoUrl
@@ -186,7 +186,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-2',
           title: 'El Grito de Independencia en el Atrio',
           duration: 20,
-          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          imageUrl: '/images/history/hidalgo_grito_comic_4.webp',
           script: 'Con el repicar de mi campana parroquial y el estandarte guadalupano en mis manos, llamé al pueblo en el atrio de Dolores a sacudirse trescientos años de tiranía virreinal.',
           cameraMovement: 'dawn_ascend'
         },
@@ -194,7 +194,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-3',
           title: 'La Toma de la Alhóndiga de Granaditas',
           duration: 18,
-          imageUrl: '/images/history/alhondiga_granaditas.jpg',
+          imageUrl: '/images/history/alhondiga_granaditas.webp',
           script: 'Cuando las autoridades virreinales se refugiaron en la fortaleza granera de Guanajuato, el valor del minero El Pípila incendió el portón permitiéndonos conquistar la Alhóndiga de Granaditas.',
           cameraMovement: 'pan_slow'
         },
@@ -202,7 +202,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           id: 'cap-4',
           title: 'El Decreto Histórico de Abolición de la Esclavitud',
           duration: 22,
-          imageUrl: '/images/history/hidalgo_decreto_abolicion.jpg',
+          imageUrl: '/images/history/hidalgo_decreto_abolicion.webp',
           script: '6 de diciembre de 1810. En Guadalajara firmé y promulgué el histórico bando con el que declaré totalmente libres a todos los esclavos y suprimí los tributos de castas en América.',
           cameraMovement: 'gallop_sweep'
         }
@@ -214,7 +214,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
         id: 'cap-1',
         title: title || `${characterName}: Acontecimiento Clave`,
         duration: durationSeconds || 18,
-        imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+        imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.webp',
         script: narratorScript || shortBio || `Soy ${characterName}; marqué el rumbo de mi tiempo histórico con liderazgo y firme convicción patriótica.`,
         cameraMovement: 'zoom_in',
         youtubeUrl: videoUrl
@@ -412,7 +412,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
             )}
 
             {/* Imagen Ilustrada con Cámara Dinámica Ken Burns */}
-            <motion.img 
+            <LazyMotion features={domAnimation}>
+            <m.img 
               key={`${activeCapsule.id}-${isPlaying}-${framingMode}`}
               src={activeCapsule.imageUrl} 
               alt={activeCapsule.title}
@@ -425,8 +426,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                 const target = e.target as HTMLImageElement;
                 if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
                   target.src = avatarImageUrl;
-                } else if (!target.src.includes('francisco_villa_avatar.png')) {
-                  target.src = '/images/history/francisco_villa_avatar.png';
+                } else if (!target.src.includes('francisco_villa_avatar.webp')) {
+                  target.src = '/images/history/francisco_villa_avatar.webp';
                 }
               }}
               className={`z-10 filter contrast-105 brightness-95 transition-all select-none ${
@@ -435,6 +436,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                   : 'w-full h-full object-cover'
               }`}
             />
+            </LazyMotion>
 
             {/* Viñeta Cinematográfica (Solo en modo fill para no oscurecer textos en modo fit) */}
             {framingMode === 'fill' && (
@@ -473,7 +475,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
 
             {/* Botón Central Flotante de Play cuando está en Pausa */}
             {!isPlaying && (
-              <motion.button
+              <LazyMotion features={domAnimation}>
+              <m.button
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 type="button"
@@ -482,13 +485,14 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                 title="Reproducir Cápsula"
               >
                 <Play className="w-8 h-8 fill-slate-950 ml-1 text-slate-950" />
-              </motion.button>
+              </m.button>
+              </LazyMotion>
             )}
 
             {/* Barra de Progreso Inferior Cinematográfica */}
             <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-2">
               <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm border border-white/10">
-                <motion.div 
+                <div 
                   className="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300"
                   style={{ width: `${progress}%` }}
                 />
@@ -599,7 +603,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                       if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
                         target.src = avatarImageUrl;
                       } else if (!target.src.includes('francisco_villa_avatar.png')) {
-                        target.src = '/images/history/francisco_villa_avatar.png';
+                        target.src = '/images/history/francisco_villa_avatar.webp';
                       }
                     }}
                     className="w-full h-full object-cover"

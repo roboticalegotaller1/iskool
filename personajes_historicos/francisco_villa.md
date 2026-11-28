@@ -6,7 +6,7 @@ eraOrPeriod: "Revolución Mexicana (1910 - 1923)"
 birthOrEstablishment: "5 de junio de 1878, La Coyotada, San Juan del Río, Durango"
 deathOrPresentState: "20 de julio de 1923, Parral, Chihuahua"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/francisco_villa_avatar.png"
+avatarImageUrl: "/images/history/francisco_villa_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -38,7 +38,7 @@ En 1910, reclutado por Abraham González, abracé la causa antirreeleccionista d
 **Coordenadas**: 31.7394, -106.4869
 **Narrativa**: Desobedecí junto a Pascual Orozco las órdenes de vacilación diplomática y avanzamos perforando a pico las paredes de adobe de las casas para esquivar las ametralladoras federales, tomando la aduana fronteriza y obligando a Díaz a firmar su renuncia.
 
-![La Toma de Ciudad Juárez y la Caída de Porfirio Díaz](/images/history/villa_toma_juarez_comic_1.png)
+![La Toma de Ciudad Juárez y la Caída de Porfirio Díaz](/images/history/villa_toma_juarez_comic_1.webp)
 
 A sangre y pólvora abrimos la frontera para la Revolución, demostrando que el régimen del dictador era de cartón.
 
@@ -48,7 +48,7 @@ A sangre y pólvora abrimos la frontera para la Revolución, demostrando que el 
 **Coordenadas**: 22.7758, -102.5694
 **Narrativa**: Con el apoyo magistral de la artillería del general Felipe Ángeles, desplegué a veinte mil soldados en asalto frontal sobre los cerros fortificados de La Bufa, quebrando la columna vertebral del ejército usurpador de Victoriano Huerta.
 
-![La División del Norte y la Toma de Zacatecas](/images/history/villa_batalla_zacatecas_comic_2.png)
+![La División del Norte y la Toma de Zacatecas](/images/history/villa_batalla_zacatecas_comic_2.webp)
 
 Al grito de ¡Viva Villa y viva la División del Norte!, aniquilamos la tiranía huertista abriendo las puertas de la capital.
 
@@ -58,7 +58,7 @@ Al grito de ¡Viva Villa y viva la División del Norte!, aniquilamos la tiranía
 **Coordenadas**: 19.2635, -99.1039
 **Narrativa**: Me fundí en un abrazo fraterno con Emiliano Zapata sellando la alianza campesina del norte y el sur; en Palacio Nacional me senté en la silla presidencial riendo y bromeando con Zapata sobre su hechizo corruptor para los gobernantes.
 
-![El Pacto de Xochimilco y la Silla Presidencial](/images/history/villa_pacto_xochimilco_comic_3.png)
+![El Pacto de Xochimilco y la Silla Presidencial](/images/history/villa_pacto_xochimilco_comic_3.webp)
 
 Sentí el frío de terciopelo de la silla, pero mi alma pertenecía a mis Dorados y a los vientos libres de la sierra chihuahuense.
 
@@ -68,7 +68,7 @@ Sentí el frío de terciopelo de la silla, pero mi alma pertenecía a mis Dorado
 **Coordenadas**: 31.831, -107.6417
 **Narrativa**: En represalia por el embargo de armas y la traición extranjera, ataqué la base del 13.º de Caballería en Columbus; durante once meses burlé en las cuevas y desfiladeros de la Sierra Tarahumara a 12,000 soldados de la Expedición Punitiva de Pershing.
 
-![El Asalto a Columbus y la Resistencia a la Expedición Punitiva](/images/history/villa_columbus_comic_4.png)
+![El Asalto a Columbus y la Resistencia a la Expedición Punitiva](/images/history/villa_columbus_comic_4.webp)
 
 Ni sus aviones, ni sus tanques, ni sus telégrafos pudieron cazar al Centauro en su propia tierra.
 
@@ -94,7 +94,7 @@ Sede gubernamental donde asumí como gobernador provisional en diciembre de 1913
 
 Fortaleza natural y bastión defensivo huertista que conquisté al asalto de metralla junto a mis generales el 23 de junio de 1914 en la batalla cumbre de la Revolución.
 
-![Cerro de la Bufa](/images/history/cerro_bufa_zacatecas.jpg)
+![Cerro de la Bufa](/images/history/cerro_bufa_zacatecas.webp)
 
 
 ### Hacienda de San Juan de Canutillo
@@ -103,7 +103,7 @@ Fortaleza natural y bastión defensivo huertista que conquisté al asalto de met
 
 Complejo agrícola donde me retiré a la vida civil en 1920 con mis antiguos combatientes, levantando talleres mecánicos y la escuela Felipe Ángeles para los hijos de los trabajadores.
 
-![Hacienda de San Juan de Canutillo](/images/history/hacienda_canutillo_villa.jpg)
+![Hacienda de San Juan de Canutillo](/images/history/hacienda_canutillo_villa.webp)
 
 
 

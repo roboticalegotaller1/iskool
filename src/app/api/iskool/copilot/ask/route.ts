@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { InputSanitizer } from '@/lib/security/inputSanitizer';
 import { validateApiAuth } from '@/lib/authValidator';
+import { checkRouteRateLimit, extractClientRateLimitKey } from '@/lib/security/routeRateLimit';
+
+const MAX_COPILOT_QUERY_CHARS = 6000;
+const MAX_COPILOT_ID_CHARS = 128;
 
 /**
  * @route POST /api/iskool/copilot/ask
@@ -26,6 +30,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const rateCheck = checkRouteRateLimit('iskool:copilot:ask', extractClientRateLimitKey(req, auth.user.id), 20, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de consultas por minuto alcanzado en el Copiloto Institucional.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
+      );
+    }
+
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
@@ -35,10 +47,26 @@ export async function POST(req: NextRequest) {
     }
     const { teacherId = 'teacher_hs1_lead', courseId = 'course_hs1_eng_2026', sessionId, query } = body;
 
-    // 1. Validación de parámetros requeridos
+    // 1. Validación de parámetros requeridos y límites de carga
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
         { error: 'El parámetro "query" es obligatorio y debe contener la solicitud didáctica.' },
+        { status: 400 }
+      );
+    }
+    if (query.length > MAX_COPILOT_QUERY_CHARS) {
+      return NextResponse.json(
+        { error: `La solicitud didáctica excede el máximo de ${MAX_COPILOT_QUERY_CHARS} caracteres.` },
+        { status: 400 }
+      );
+    }
+    if (
+      (typeof sessionId === 'string' && sessionId.length > MAX_COPILOT_ID_CHARS) ||
+      (typeof teacherId === 'string' && teacherId.length > MAX_COPILOT_ID_CHARS) ||
+      (typeof courseId === 'string' && courseId.length > MAX_COPILOT_ID_CHARS)
+    ) {
+      return NextResponse.json(
+        { error: 'Los identificadores de sesión o curso exceden la longitud permitida.' },
         { status: 400 }
       );
     }

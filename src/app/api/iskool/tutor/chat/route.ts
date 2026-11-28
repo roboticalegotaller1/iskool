@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { InputSanitizer } from '@/lib/security/inputSanitizer';
 import { validateApiAuth } from '@/lib/authValidator';
+import { checkRouteRateLimit, extractClientRateLimitKey } from '@/lib/security/routeRateLimit';
+
+const MAX_TUTOR_MESSAGE_CHARS = 4000;
+const MAX_TUTOR_ID_CHARS = 128;
 
 /**
  * @route POST /api/iskool/tutor/chat
@@ -16,6 +20,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Autenticación requerida para acceder al Tutor Pedagógico Institucional' },
         { status: 401 }
+      );
+    }
+
+    const rateCheck = checkRouteRateLimit('iskool:tutor:chat', extractClientRateLimitKey(req, auth.user.id), 30, 60_000);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Límite de turnos por minuto alcanzado en el Tutor Pedagógico.' },
+        { status: 429, headers: { 'Retry-After': String(rateCheck.retryAfterSeconds) } }
       );
     }
 
@@ -35,10 +47,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. Validación de parámetros requeridos
+    // 1. Validación de parámetros requeridos y límites de carga
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         { error: 'El parámetro "message" es obligatorio y debe ser texto válido.' },
+        { status: 400 }
+      );
+    }
+    if (message.length > MAX_TUTOR_MESSAGE_CHARS) {
+      return NextResponse.json(
+        { error: `El mensaje excede el límite máximo de ${MAX_TUTOR_MESSAGE_CHARS} caracteres.` },
+        { status: 400 }
+      );
+    }
+    if (
+      (typeof sessionId === 'string' && sessionId.length > MAX_TUTOR_ID_CHARS) ||
+      (typeof studentId === 'string' && studentId.length > MAX_TUTOR_ID_CHARS) ||
+      (typeof grade === 'string' && grade.length > 64)
+    ) {
+      return NextResponse.json(
+        { error: 'Uno o más identificadores de sesión exceden la longitud permitida.' },
         { status: 400 }
       );
     }

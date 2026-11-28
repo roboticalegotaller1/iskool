@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
   X, 
@@ -112,7 +111,7 @@ export const RosterImporterModal: React.FC<Props> = ({
         grade: matchedGroup?.grade || '4º',
         group_id: targetGroupId,
         status: 'activo',
-        photo_url: '/images/students/default.png',
+        photo_url: '/images/students/default.webp',
         email: row.guardianEmail || 'tutor@familia.com',
         phone: row.guardianPhone || '55-1234-5678',
         tutor_name: 'Tutor Familiar'

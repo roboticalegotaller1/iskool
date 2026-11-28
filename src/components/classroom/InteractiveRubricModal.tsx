@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { 

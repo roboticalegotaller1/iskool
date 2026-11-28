@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useClassroomStore } from '@/store/useClassroomStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
@@ -285,9 +285,10 @@ export const GuildBoardView: React.FC<Props> = ({
       {/* ========================================================================= */}
       {/* 3. MODAL DE CREACIÓN DE EDICTO */}
       {/* ========================================================================= */}
+      <LazyMotion features={domAnimation}>
       <AnimatePresence>
         {isCreatingEdicto && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -400,7 +401,7 @@ export const GuildBoardView: React.FC<Props> = ({
                 </div>
               </div>
             </form>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 
@@ -415,7 +416,7 @@ export const GuildBoardView: React.FC<Props> = ({
 
         <div className="space-y-4">
           {groupEdictos.map((edicto) => (
-            <motion.div
+            <m.div
               key={edicto.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -546,10 +547,11 @@ export const GuildBoardView: React.FC<Props> = ({
                   </button>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
       </div>
+      </LazyMotion>
     </div>
   );
 };

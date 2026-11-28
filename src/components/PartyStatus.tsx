@@ -9,7 +9,7 @@ const getStudentAvatarUrl = (member: PartyMember): string => {
   if (avatar) {
     return avatar;
   }
-  return '/images/students/default.png';
+  return '/images/students/default.webp';
 };
 
 const GENERAL_SKILLS = [

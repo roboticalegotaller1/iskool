@@ -6,7 +6,7 @@ eraOrPeriod: "Precursores y Mártires de la Revolución (1876 - 1910)"
 birthOrEstablishment: "2 de noviembre de 1876, Puebla de Zaragoza, Puebla"
 deathOrPresentState: "19 de noviembre de 1910, Puebla de Zaragoza, Puebla"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/aquiles_serdan_avatar.png"
+avatarImageUrl: "/images/history/aquiles_serdan_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "young_male"
 voiceRate: "-4%"
@@ -34,7 +34,7 @@ En octubre de 1910 viajé a San Antonio, Texas, donde Madero me encomendó la je
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: En el comedor de mi hogar organizamos el club antirreeleccionista y recibimos a Francisco I. Madero ante más de veinticinco mil poblanos que colmaron las plazas desafiando la represión del porfiriato.
 
-![La Fundación del Club "Luz y Progreso"](/images/history/serdan_club_luz_progreso.jpg)
+![La Fundación del Club "Luz y Progreso"](/images/history/serdan_club_luz_progreso.webp)
 
 Puebla demostró que la indignación cívica estaba madura para sacudirse tres décadas de tiranía y fraude electoral.
 
@@ -44,7 +44,7 @@ Puebla demostró que la indignación cívica estaba madura para sacudirse tres d
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: Sitiados por el 18.º Batallón y la policía, abatí al coronel Cabrera al cruzar el zaguán y combatimos durante cuatro horas ventana por ventana contra más de mil soldados federales que acribillaban los muros.
 
-![El Asedio y Combate en la Casa de Santa Clara](/images/history/serdan_combate_santa_clara.jpg)
+![El Asedio y Combate en la Casa de Santa Clara](/images/history/serdan_combate_santa_clara.webp)
 
 Veinte hombres y mujeres convertimos nuestro hogar en un fortín inexpugnable en defensa de las armas sagradas del Plan de San Luis.
 
@@ -54,7 +54,7 @@ Veinte hombres y mujeres convertimos nuestro hogar en un fortín inexpugnable en
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: Al caer abatidos mis camaradas y mi hermano Máximo, desciendo al estrecho hueco excavado bajo las tablas del piso sellado por mi hermana Carmen y mi esposa Filomena, permaneciendo catorce horas a oscuras con una pistola en mano.
 
-![El Encierro en el Escondite Bajo el Piso](/images/history/serdan_escondite_duela.jpg)
+![El Encierro en el Escondite Bajo el Piso](/images/history/serdan_escondite_duela.webp)
 
 En el frío y la humedad de la fosa esperaba la llegada de la noche para escapar y organizar la insurrección en las serranías.
 
@@ -64,7 +64,7 @@ En el frío y la humedad de la fosa esperaba la llegada de la noche para escapar
 **Coordenadas**: 19.0436, -98.1978
 **Narrativa**: Entumecido por el frío y sofocado por la falta de aire, asomo el cuerpo de la oquedad crujiendo la madera; un centinela del 18.º Batallón da la alarma y me dispara a quemarropa en la cabeza, convirtiéndome en el primer mártir de la gesta nacional.
 
-![El Martirio en la Madrugada del 19 de Noviembre](/images/history/serdan_martirio_puebla.jpg)
+![El Martirio en la Madrugada del 19 de Noviembre](/images/history/serdan_martirio_puebla.webp)
 
 Mi cuerpo fue abatido, pero mi sangre derramada dos días antes del 20 de noviembre convocó al pueblo entero de México a tomar las armas.
 

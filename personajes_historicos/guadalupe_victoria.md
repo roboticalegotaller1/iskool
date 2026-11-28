@@ -6,7 +6,7 @@ eraOrPeriod: "Independencia y Primera República Federal (1812 - 1843)"
 birthOrEstablishment: "29 de septiembre de 1786, Tamazula, Durango"
 deathOrPresentState: "21 de marzo de 1843, Fortaleza de San Carlos de Perote, Veracruz"
 bookSpineStyle: "diario_republicano"
-avatarImageUrl: "/images/history/guadalupe_victoria_avatar.png"
+avatarImageUrl: "/images/history/guadalupe_victoria_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-6%"
@@ -34,7 +34,7 @@ Comandé las fuerzas insurgentes en la estratégica región de Veracruz, obstacu
 **Coordenadas**: 17.0606, -96.7256
 **Narrativa**: En la toma de la ciudad de Oaxaca, arrojé mi espada al otro lado del caudaloso río gritando: "¡Va mi espada en prenda, voy por ella!", cruzando a nado bajo fuego cerrado de los realistas para encabezar el asalto victorioso.
 
-![El Salto Heroico del Río Jalatlaco en Oaxaca](/images/history/victoria_rio_jalatlaco.jpg)
+![El Salto Heroico del Río Jalatlaco en Oaxaca](/images/history/victoria_rio_jalatlaco.webp)
 
 La intrepidez del cruce quebró la línea de tiradores virreinales y encumbró mi nombre entre los lugartenientes más bravos de don José María Morelos.
 
@@ -44,7 +44,7 @@ La intrepidez del cruce quebró la línea de tiradores virreinales y encumbró m
 **Coordenadas**: 19.1481, -96.9678
 **Narrativa**: Tras la disolución de los ejércitos insurgentes, me negué a solicitar el indulto y viví casi cuatro años escondido en cuevas y manantiales, subsistiendo de frutos silvestres y raíces sin ser jamás capturado.
 
-![La Resistencia Solitaria en la Selva Veracruzana](/images/history/victoria_selva_resistencia.jpg)
+![La Resistencia Solitaria en la Selva Veracruzana](/images/history/victoria_selva_resistencia.webp)
 
 Mi aislamiento indomable demostró que mientras un solo patriota no doblara la rodilla en el monte, la llama de la emancipación nacional permanecería encendida.
 
@@ -54,7 +54,7 @@ Mi aislamiento indomable demostró que mientras un solo patriota no doblara la r
 **Coordenadas**: 19.2086, -96.1325
 **Narrativa**: Como presidente de la República coordiné el asedio y bloqueo naval comandado por el capitán Pedro Sainz de Baranda, forzando la capitulación del último baluarte del imperio español en suelo mexicano.
 
-![La Rendición de San Juan de Ulúa y Expulsión Española](/images/history/victoria_san_juan_ulua.jpg)
+![La Rendición de San Juan de Ulúa y Expulsión Española](/images/history/victoria_san_juan_ulua.webp)
 
 La arriada del pendón castellano y el izamiento de la bandera tricolor sobre los baluartes de Ulúa consumaron militarmente la independencia de México.
 
@@ -64,7 +64,7 @@ La arriada del pendón castellano y el izamiento de la bandera tricolor sobre lo
 **Coordenadas**: 19.4326, -99.1313
 **Narrativa**: Ante el Soberano Congreso Constituyente presté juramento solemne como el primer presidente de los Estados Unidos Mexicanos, fundando la legalidad republicana y federal del país.
 
-![La Jura de la Constitución Federal de 1824](/images/history/victoria_jura_presidencia_1824.jpg)
+![La Jura de la Constitución Federal de 1824](/images/history/victoria_jura_presidencia_1824.webp)
 
 Con la Constitución Federal de 1824 México enterró definitivamente las ambiciones monárquicas y proclamó ante el mundo su destino como república soberana y libre.
 

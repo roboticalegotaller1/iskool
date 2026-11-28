@@ -18,45 +18,45 @@ export const DRAGON_ENEMIES_MAP: Record<string, DragonEnemyDef> = {
   blood_dragon: {
     key: 'blood_dragon',
     name: 'Dragón Carmesí de Sangre',
-    textureUrl: '/images/rpg/enemies/blood_dragon.png',
+    textureUrl: '/images/rpg/enemies/blood_dragon.webp',
     scaleHeight: 210
   },
   glacialserpent: {
     key: 'glacialserpent',
     name: 'Serpiente Glacial del Abismo',
-    textureUrl: '/images/rpg/enemies/glacialserpent.png',
+    textureUrl: '/images/rpg/enemies/glacialserpent.webp',
     scaleHeight: 185
   },
   thunderwing: {
     key: 'thunderwing',
     name: 'Dragón Rayo Thunderwing',
-    textureUrl: '/images/rpg/enemies/thunderwing_drake_nosparks.png',
-    sparkTextureUrl: '/images/rpg/enemies/thunderwing_drake_sparks.png',
+    textureUrl: '/images/rpg/enemies/thunderwing_drake_nosparks.webp',
+    sparkTextureUrl: '/images/rpg/enemies/thunderwing_drake_sparks.webp',
     scaleHeight: 195,
     isThunderwing: true
   },
   crimson: {
     key: 'crimson',
     name: 'Dragón Voraz Carmesí',
-    textureUrl: '/images/rpg/enemies/crimson_dragon.png',
+    textureUrl: '/images/rpg/enemies/crimson_dragon.webp',
     scaleHeight: 190
   },
   emberheart: {
     key: 'emberheart',
     name: 'Dragón Núcleo de Fuego',
-    textureUrl: '/images/rpg/enemies/emberheart_dragon.png',
+    textureUrl: '/images/rpg/enemies/emberheart_dragon.webp',
     scaleHeight: 195
   },
   luminous: {
     key: 'luminous',
     name: 'Dragón Luminoso Solar',
-    textureUrl: '/images/rpg/enemies/luminous_dragon.png',
+    textureUrl: '/images/rpg/enemies/luminous_dragon.webp',
     scaleHeight: 185
   },
   moonshadow: {
     key: 'moonshadow',
     name: 'Dragón Sombra de Luna',
-    textureUrl: '/images/rpg/enemies/moonshadow_dragon.png',
+    textureUrl: '/images/rpg/enemies/moonshadow_dragon.webp',
     scaleHeight: 190
   }
 };
@@ -111,9 +111,9 @@ const getStudentAvatarUrl = (name: string): string => {
   const firstName = name.split(' ')[0].toLowerCase();
   const validAvatars = ['elena', 'lucas', 'mateo', 'santi'];
   if (validAvatars.includes(firstName)) {
-    return `/images/students/${firstName}.png`;
+    return `/images/students/${firstName}.webp`;
   }
-  return '/images/students/default.png';
+  return '/images/students/default.webp';
 };
 
 export default function PixiCombatView({
@@ -258,19 +258,19 @@ export default function PixiCombatView({
     let cleanupVisibility: (() => void) | null = null;
 
     const assetsToLoad = [
-      '/images/rpg/combat_bg.png',
-      '/images/rpg/boss_sprite.png',
-      '/images/rpg/ui/Dragonhpbar.png',
-      '/images/rpg/ui/DragonHpBar2.png',
-      '/images/rpg/ui/DragonHpBar3.png',
-      '/images/students/default.png',
-      '/images/students/elena.png',
-      '/images/students/lucas.png',
-      '/images/students/mateo.png',
-      '/images/students/santi.png',
-      '/images/rpg/santi_sprite.png',
-      '/images/rpg/lucas_sprite.png',
-      '/images/rpg/elena_sprite.png',
+      '/images/rpg/combat_bg.webp',
+      '/images/rpg/boss_sprite.webp',
+      '/images/rpg/ui/Dragonhpbar.webp',
+      '/images/rpg/ui/DragonHpBar2.webp',
+      '/images/rpg/ui/DragonHpBar3.webp',
+      '/images/students/default.webp',
+      '/images/students/elena.webp',
+      '/images/students/lucas.webp',
+      '/images/students/mateo.webp',
+      '/images/students/santi.webp',
+      '/images/rpg/santi_sprite.webp',
+      '/images/rpg/lucas_sprite.webp',
+      '/images/rpg/elena_sprite.webp',
       '/images/caracteres/bruja/bruxa.png',
       ...Object.values(DRAGON_ENEMIES_MAP).map(def => def.textureUrl),
       ...Object.values(DRAGON_ENEMIES_MAP).filter(def => def.sparkTextureUrl).map(def => def.sparkTextureUrl!)
@@ -290,13 +290,13 @@ export default function PixiCombatView({
       try {
         await Assets.load(assetsToLoad);
 
-        bgTex = Assets.get('/images/rpg/combat_bg.png');
-        bossTex = Assets.get('/images/rpg/boss_sprite.png');
+        bgTex = Assets.get('/images/rpg/combat_bg.webp');
+        bossTex = Assets.get('/images/rpg/boss_sprite.webp');
         
         // High fidelity Dragon HP Bar UI Assets
-        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.png');
-        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.png');
-        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.png');
+        hpFrameTex = Assets.get('/images/rpg/ui/Dragonhpbar.webp');
+        hpFillTex = Assets.get('/images/rpg/ui/DragonHpBar2.webp');
+        hpFillAltTex = Assets.get('/images/rpg/ui/DragonHpBar3.webp');
 
         const selectedDragonKey = getDragonEnemyKey(guildBoss.name, enemyType || guildBoss.enemy_type);
         activeDragonDef = DRAGON_ENEMIES_MAP[selectedDragonKey] || DRAGON_ENEMIES_MAP.blood_dragon;
@@ -305,15 +305,15 @@ export default function PixiCombatView({
         sparksDragonTex = activeDragonDef.sparkTextureUrl ? (Assets.get(activeDragonDef.sparkTextureUrl) || null) : null;
 
         // Dynamic student avatars
-        avatarTextures.set('default', Assets.get('/images/students/default.png'));
-        avatarTextures.set('elena', Assets.get('/images/students/elena.png'));
-        avatarTextures.set('lucas', Assets.get('/images/students/lucas.png'));
-        avatarTextures.set('mateo', Assets.get('/images/students/mateo.png'));
-        avatarTextures.set('santi', Assets.get('/images/students/santi.png'));
+        avatarTextures.set('default', Assets.get('/images/students/default.webp'));
+        avatarTextures.set('elena', Assets.get('/images/students/elena.webp'));
+        avatarTextures.set('lucas', Assets.get('/images/students/lucas.webp'));
+        avatarTextures.set('mateo', Assets.get('/images/students/mateo.webp'));
+        avatarTextures.set('santi', Assets.get('/images/students/santi.webp'));
 
         // RPG sprites y Bruxa Helena
-        avatarTextures.set('santi_sprite', Assets.get('/images/rpg/santi_sprite.png'));
-        avatarTextures.set('lucas_sprite', Assets.get('/images/rpg/lucas_sprite.png'));
+        avatarTextures.set('santi_sprite', Assets.get('/images/rpg/santi_sprite.webp'));
+        avatarTextures.set('lucas_sprite', Assets.get('/images/rpg/lucas_sprite.webp'));
         
         const rawBruxaTex = Assets.get('/images/caracteres/bruja/bruxa.png');
         if (rawBruxaTex) {
@@ -333,7 +333,7 @@ export default function PixiCombatView({
             avatarTextures.set('helena', rawBruxaTex);
           }
         } else {
-          avatarTextures.set('elena_sprite', Assets.get('/images/rpg/elena_sprite.png'));
+          avatarTextures.set('elena_sprite', Assets.get('/images/rpg/elena_sprite.webp'));
         }
       } catch (e) {
         console.error("Error preloading combat assets:", e);

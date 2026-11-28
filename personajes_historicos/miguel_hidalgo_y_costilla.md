@@ -6,7 +6,7 @@ eraOrPeriod: "Guerra de Independencia - Primera Etapa (1810 - 1811)"
 birthOrEstablishment: "8 de mayo de 1753, Pénjamo, Guanajuato"
 deathOrPresentState: "30 de julio de 1811, Chihuahua, Chihuahua"
 bookSpineStyle: "grimorio_dorado"
-avatarImageUrl: "/images/history/hidalgo_avatar.png"
+avatarImageUrl: "/images/history/hidalgo_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "elder_male"
 voiceRate: "-8%"
@@ -34,7 +34,7 @@ En 1810 me incorporé a la conspiración patriótica de Querétaro. Al ser adver
 **Coordenadas**: 21.1561, -100.9325
 **Narrativa**: Al repique de la campana y empuñando el estandarte guadalupano en el atrio de mi parroquia, llamé a los campesinos y artesanos a romper las cadenas de tres siglos de tiranía virreinal.
 
-![El Grito de Dolores y el Inicio de la Insurrección](/images/history/hidalgo_grito_comic_4.png)
+![El Grito de Dolores y el Inicio de la Insurrección](/images/history/hidalgo_grito_comic_4.webp)
 
 ¡Viva la América! ¡Viva nuestra Madre Santísima de Guadalupe! ¡Muera el mal gobierno! Cientos de campesinos acudieron armados con aperos y fe en la patria.
 
@@ -44,7 +44,7 @@ En 1810 me incorporé a la conspiración patriótica de Querétaro. Al ser adver
 **Coordenadas**: 19.3167, -99.3667
 **Narrativa**: En las alturas boscosas a las puertas de la capital novohispana, mis ochenta mil insurgentes y las maniobras de caballería de Allende pulverizamos al regimiento de élite realista de Torcuato Trujillo.
 
-![La Victoria en la Batalla del Monte de las Cruces](/images/history/hidalgo_monte_cruces.jpg)
+![La Victoria en la Batalla del Monte de las Cruces](/images/history/hidalgo_monte_cruces.webp)
 
 La victoria en las Cruces demostró la fuerza incontenible del pueblo en armas, teniendo a merced la sede del virreinato antes de ordenar la retirada prudente.
 
@@ -54,7 +54,7 @@ La victoria en las Cruces demostró la fuerza incontenible del pueblo en armas, 
 **Coordenadas**: 20.677, -103.347
 **Narrativa**: En la capital neogallega firmé el bando universal que declaró libres a todos los esclavos en América bajo pena de muerte a los amos que los retuvieran, suprimiendo los tributos coloniales sobre las castas.
 
-![El Decreto de Abolición de la Esclavitud en Guadalajara](/images/history/hidalgo_decreto_abolicion.jpg)
+![El Decreto de Abolición de la Esclavitud en Guadalajara](/images/history/hidalgo_decreto_abolicion.webp)
 
 Un acto de suprema justicia humana que colocó a la insurgencia mexicana a la vanguardia de las libertades universales del orbe.
 
@@ -64,7 +64,7 @@ Un acto de suprema justicia humana que colocó a la insurgencia mexicana a la va
 **Coordenadas**: 28.6353, -106.0744
 **Narrativa**: Frente al pelotón de fusilamiento, coloqué con serenidad mi mano derecha sobre el pecho para señalar a los soldados dónde debía penetrar el plomo patriótico.
 
-![El Fusilamiento con la Mano en el Corazón en Chihuahua](/images/history/hidalgo_fusilamiento_chihuahua.jpg)
+![El Fusilamiento con la Mano en el Corazón en Chihuahua](/images/history/hidalgo_fusilamiento_chihuahua.webp)
 
 Mi cuerpo cayó acribillado pero mi sangre regó el suelo sagrado de la patria que muy pronto vería consumada su total independencia.
 

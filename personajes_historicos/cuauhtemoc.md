@@ -6,7 +6,7 @@ eraOrPeriod: "Resistencia Mexica y Caída de Tenochtitlan (1496 - 1525)"
 birthOrEstablishment: "c. 1496, México-Tenochtitlan"
 deathOrPresentState: "28 de febrero de 1525, Itzamkanac / Canitzán (Hibueras)"
 bookSpineStyle: "codice_antiguo"
-avatarImageUrl: "/images/history/cuauhtemoc_avatar.png"
+avatarImageUrl: "/images/history/cuauhtemoc_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "young_male"
 voiceRate: "-4%"
@@ -34,7 +34,7 @@ Tras la repentina muerte de Cuitláhuac a causa de la epidemia de viruela, fui e
 **Coordenadas**: 19.4353, -99.1481
 **Narrativa**: En la lluvia nocturna, mis guerreros y yo emboscamos en canoas y puentes a las columnas de Cortés que huían cargadas de oro, destruyendo a la retaguardia invasora en la calzada de Tlacopan.
 
-![La Victoria Mexica en la Noche Triste](/images/history/cuauhtemoc_noche_triste.jpg)
+![La Victoria Mexica en la Noche Triste](/images/history/cuauhtemoc_noche_triste.webp)
 
 Vimos correr despavoridos a los jinetes y rodar los cañones a las aguas de la laguna, demostrando que los invasores no eran dioses inmortales sino hombres vulnerables al valor mexica.
 
@@ -44,7 +44,7 @@ Vimos correr despavoridos a los jinetes y rodar los cañones a las aguas de la l
 **Coordenadas**: 19.4517, -99.1378
 **Narrativa**: Sin agua dulce tras el corte del acueducto de Chapultepec, ordené colocar estacas sumergidas para varar bergantines y combatí palmo a palmo en cada azotea y barricada defendiendo nuestro hogar.
 
-![La Defensa Heroica del Asedio de Tenochtitlan](/images/history/cuauhtemoc_defensa_asedio.jpg)
+![La Defensa Heroica del Asedio de Tenochtitlan](/images/history/cuauhtemoc_defensa_asedio.webp)
 
 Setenta y cinco días resistimos alimentándonos de raíces lacustres y agua salobre, peleando hombres, mujeres y ancianos con macuahuitl y flechas hasta el último aliento.
 
@@ -54,7 +54,7 @@ Setenta y cinco días resistimos alimentándonos de raíces lacustres y agua sal
 **Coordenadas**: 19.4517, -99.1378
 **Narrativa**: Al ser interceptada mi canoa de guerra por el bergantín de García Holguín, fui presentado ante Cortés; toqué el puñal de su cinto y le exigí con honor que me sacrificara, pues había hecho todo cuanto correspondía por salvar a mi pueblo.
 
-![La Captura en la Laguna y el Encuentro con Cortés](/images/history/cuauhtemoc_captura_cortes.jpg)
+![La Captura en la Laguna y el Encuentro con Cortés](/images/history/cuauhtemoc_captura_cortes.webp)
 
 "Capitán, he hecho todo cuanto estaba en mi deber para defender mi ciudad y a mi pueblo; no puedo más. Toma ese puñal y quítame la vida con él".
 
@@ -64,7 +64,7 @@ Setenta y cinco días resistimos alimentándonos de raíces lacustres y agua sal
 **Coordenadas**: 19.3497, -99.1628
 **Narrativa**: Amarrado a un poste con mis pies untados en aceite sobre fuego ardiente por orden del tesorero Alderete, escuché las quejas de dolor del señor de Tlacopan y le respondí con dignidad divina: "¿Acaso estoy yo en algún deleite o baño?".
 
-![El Tormento de los Pies y la Respuesta Estoica](/images/history/cuauhtemoc_tormento_pies.jpg)
+![El Tormento de los Pies y la Respuesta Estoica](/images/history/cuauhtemoc_tormento_pies.webp)
 
 El fuego consumió mi carne pero jamás doblegó mi espíritu ni arrancó la traición de mis labios ante los codiciosos verdugos.
 

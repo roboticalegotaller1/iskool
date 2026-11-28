@@ -99,7 +99,7 @@ export const FlashcardsPlayer: React.FC<FlashcardsPlayerProps> = ({
                   <img 
                     src={currentQ.imageUrl} 
                     alt="Ref visual" 
-                    onError={(e) => { e.currentTarget.src = '/images/students/default.png'; }}
+                    onError={(e) => { e.currentTarget.src = '/images/students/default.webp'; }}
                     className="w-32 h-24 object-cover rounded-2xl mx-auto shadow-md border border-white/20" 
                   />
                 )}

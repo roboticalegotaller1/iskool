@@ -854,7 +854,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-101',
     studentName: 'Mateo Hernández',
     studentAvatar:
-      '/images/students/mateo.png',
+      '/images/students/mateo.webp',
     lessonId: 'lesson-en-coffee',
     lessonTitle: 'Ordering at a Café & Pleasantries',
     language: 'en',
@@ -873,7 +873,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-102',
     studentName: 'Sofía Valenzuela',
     studentAvatar:
-      '/images/students/elena.png',
+      '/images/students/elena.webp',
     lessonId: 'lesson-en-coffee',
     lessonTitle: 'Ordering at a Café & Pleasantries',
     language: 'en',
@@ -905,7 +905,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-103',
     studentName: 'Camila Regina Villaseñor',
     studentAvatar:
-      '/images/students/santi.png',
+      '/images/students/santi.webp',
     lessonId: 'lesson-fr-paris',
     lessonTitle: 'Une Conversation Douce à la Brasserie de Paris',
     language: 'fr',
@@ -942,7 +942,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     studentId: 'stud-104',
     studentName: 'Diego Emiliano Santillán',
     studentAvatar:
-      '/images/students/lucas.png',
+      '/images/students/lucas.webp',
     lessonId: 'lesson-fr-college-a1',
     lessonTitle: 'Mon Emploi du Temps au Collège & le Laboratoire',
     language: 'fr',

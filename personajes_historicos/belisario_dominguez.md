@@ -6,7 +6,7 @@ eraOrPeriod: "Revolución Mexicana y Legalismo Constitucional (1910 - 1913)"
 birthOrEstablishment: "25 de abril de 1863, Comitán, Chiapas"
 deathOrPresentState: "7 de octubre de 1913, Coyoacán, Ciudad de México"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/belisario_dominguez_avatar.png"
+avatarImageUrl: "/images/history/belisario_dominguez_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Tras la repentina muerte del senador propietario don Leopoldo Gout, asumí el es
 **Coordenadas**: 16.2511, -92.1342
 **Narrativa**: Tras titularme en La Sorbona de París, regreso a Chiapas abriendo un consultorio donde atiendo día y noche a indígenas tojolabales y campesinos desposeídos, regalándoles medicinas y fundando el periódico El Vate para denunciar los abusos del régimen.
 
-![El Consultorio Gratuito en Comitán](/images/history/belisario_medico_pobres.jpg)
+![El Consultorio Gratuito en Comitán](/images/history/belisario_medico_pobres.webp)
 
 Mi juramento hipocrático trascendió la medicina para convertirse en un compromiso sagrado con la justicia social y la defensa de los derechos de mi pueblo.
 
@@ -44,7 +44,7 @@ Mi juramento hipocrático trascendió la medicina para convertirse en un comprom
 **Coordenadas**: 19.4326, -99.1419
 **Narrativa**: En mi habitación del centro de la capital redacto a mano el más demoledor alegato patriótico, llamando a Huerta soldado sanguinario y traidor, y exigiendo al Senado salvar a la República destituyendo al tirano.
 
-![La Redacción del Discurso Histórico contra el Usurpador](/images/history/belisario_redaccion_discurso.jpg)
+![La Redacción del Discurso Histórico contra el Usurpador](/images/history/belisario_redaccion_discurso.webp)
 
 Sabiendo que firmaba mi propia sentencia de muerte, puse la pluma al servicio de la patria para romper la parálisis cobarde de los legisladores.
 
@@ -54,7 +54,7 @@ Sabiendo que firmaba mi propia sentencia de muerte, puse la pluma al servicio de
 **Coordenadas**: 19.4358, -99.1389
 **Narrativa**: Ante la censura de la presidencia del Senado, acudo con la valiente tipógrafa María Hernández Zarco, quien imprime en secreto miles de ejemplares que distribuimos de mano en mano a la ciudadanía.
 
-![La Impresión Clandestina con María Hernández Zarco](/images/history/belisario_impresion_clandestina.jpg)
+![La Impresión Clandestina con María Hernández Zarco](/images/history/belisario_impresion_clandestina.webp)
 
 La palabra libre y el coraje cívico de una mujer obrera y un senador republicano vencieron el cerco de la censura militar.
 
@@ -64,7 +64,7 @@ La palabra libre y el coraje cívico de una mujer obrera y un senador republican
 **Coordenadas**: 19.3592, -99.1678
 **Narrativa**: Esbirros policiales de Huerta me sacan con violencia de mi habitación y me trasladan en la oscuridad al cementerio de Xoco, donde soy acribillado y sacrificado por negarme a callar la verdad.
 
-![El Secuestro en el Hotel Jardín y el Martirio en Xoco](/images/history/belisario_martirio_xoco.jpg)
+![El Secuestro en el Hotel Jardín y el Martirio en Xoco](/images/history/belisario_martirio_xoco.webp)
 
 Al arrebatarme la vida y cortarme la lengua, la tiranía creyó acallar mi reclamo, pero encendió en todo México la hoguera que derrocaría para siempre a la usurpación.
 

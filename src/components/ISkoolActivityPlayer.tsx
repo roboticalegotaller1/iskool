@@ -141,7 +141,7 @@ export const ISkoolActivityPlayer: React.FC<ISkoolActivityPlayerProps> = ({
           characterName: activity.title || 'Josefa Ortiz de Domínguez',
           shortBio: activity.description || 'Heroína de la Independencia de México.',
           detailedContext: activity.description || 'Heroína de la Independencia de México.',
-          avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
+          avatarImageUrl: '/images/history/josefa_ortiz_avatar.webp',
           bookSpineStyle: 'diario_republicano',
           moments: [],
           keyLocations: [],

@@ -374,7 +374,7 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
   const bookSpineStyle: BookSpineStyle = ['codice_antiguo', 'tomo_imperial', 'diario_republicano', 'grimorio_dorado', 'cuaderno_cronista'].includes(rawSpine)
     ? rawSpine
     : 'diario_republicano';
-  const avatarImageUrl = getFmValue('avatarImageUrl') || '/images/history/josefa_ortiz_avatar.png';
+  const avatarImageUrl = getFmValue('avatarImageUrl') || '/images/history/josefa_ortiz_avatar.webp';
   const voiceId = getFmValue('voiceId');
   const voiceCohort = getFmValue('voiceCohort') as HistoricalFigureBlockData['voiceCohort'];
   const voiceRate = getFmValue('voiceRate');
@@ -424,7 +424,7 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
           yearOrPeriod: yearMatch ? yearMatch[1].trim() : '1810',
           title: mTitle || `Momento Histórico ${idx + 1}`,
           description: mBody.replace(/\*\*.*?\*\*:[^\n]+/g, '').replace(/!\[.*?\]\(.*?\)/g, '').trim(),
-          imageUrl: imgMatch ? imgMatch[1].trim() : '/images/history/josefa_conspiracion_comic_1.png',
+          imageUrl: imgMatch ? imgMatch[1].trim() : '/images/history/josefa_conspiracion_comic_1.webp',
           locationName: locMatch ? locMatch[1].trim() : 'Santiago de Querétaro',
           coordinates: {
             lat: coordsMatch ? parseFloat(coordsMatch[1]) : 20.5930,
@@ -613,7 +613,7 @@ eraOrPeriod: "${data.historicalEra || 'Historia de México'}"
 birthOrEstablishment: "${data.birthDeathDates?.split('-')[0]?.trim() || ''}"
 deathOrPresentState: "${data.birthDeathDates?.split('-')[1]?.trim() || ''}"
 bookSpineStyle: "${data.bookSpineStyle || 'diario_republicano'}"
-avatarImageUrl: "${data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}"
+avatarImageUrl: "${data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.webp'}"
 voiceId: "${data.voiceId || ''}"
 voiceCohort: "${data.voiceCohort || ''}"
 voiceRate: "${data.voiceRate || '-5%'}"

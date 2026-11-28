@@ -6,7 +6,7 @@ eraOrPeriod: "Guerra de Independencia - Estrategia Militar (1809 - 1811)"
 birthOrEstablishment: "21 de enero de 1769, San Miguel el Grande (hoy Allende), Guanajuato"
 deathOrPresentState: "26 de junio de 1811, Chihuahua, Chihuahua"
 bookSpineStyle: "diario_republicano"
-avatarImageUrl: "/images/history/ignacio_allende_avatar.png"
+avatarImageUrl: "/images/history/ignacio_allende_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Al estallar la lucha el 16 de septiembre de 1810, organicé a las masas campesin
 **Coordenadas**: 20.9144, -100.7453
 **Narrativa**: En secreto en mi cuartel y en la casa de los corregidores coordino a oficiales del Regimiento de Dragones de la Reina para preparar el alzamiento armado de la patria.
 
-![La Conspiración en Querétaro y San Miguel](/images/history/allende_conspiracion_dragones.jpg)
+![La Conspiración en Querétaro y San Miguel](/images/history/allende_conspiracion_dragones.webp)
 
 Formado en la disciplina marcial sabía que la emancipación exigía cuadros disciplinados, pólvora y oficiales leales para doblegar a las guarniciones virreinales.
 
@@ -44,7 +44,7 @@ Formado en la disciplina marcial sabía que la emancipación exigía cuadros dis
 **Coordenadas**: 19.3167, -99.3667
 **Narrativa**: Posiciono la artillería en las alturas y ordeno un movimiento envolvente de caballería que aplasta la resistencia del coronel realista Torcuato Trujillo, dejando libre el paso a la capital.
 
-![La Carga Táctica en el Monte de las Cruces](/images/history/allende_monte_cruces.jpg)
+![La Carga Táctica en el Monte de las Cruces](/images/history/allende_monte_cruces.webp)
 
 La victoria en las Cruces fue el fruto de la táctica y el valor marcial; insistí con vehemencia en ocupar la Ciudad de México para consumar la independencia en una sola campaña.
 
@@ -54,7 +54,7 @@ La victoria en las Cruces fue el fruto de la táctica y el valor marcial; insist
 **Coordenadas**: 20.5739, -102.9469
 **Narrativa**: Fortifico las plazas y dispongo un cerco defensivo escalonado con noventa y cinco piezas de artillería en Calderón, conteniendo durante horas las embestidas del brigadier Calleja.
 
-![La Resistencia en Guanajuato y Puente de Calderón](/images/history/allende_puente_calderon.jpg)
+![La Resistencia en Guanajuato y Puente de Calderón](/images/history/allende_puente_calderon.webp)
 
 Peleamos con denuedo hasta que una explosión fortuita en nuestro polvorín provocó el repliegue, obligándome a reorganizar al ejército hacia el norte.
 
@@ -64,7 +64,7 @@ Peleamos con denuedo hasta que una explosión fortuita en nuestro polvorín prov
 **Coordenadas**: 28.6353, -106.0744
 **Narrativa**: Al percatarme de la celada de Elizondo saco mi pistola gritando ¡Traidores cobardes!, combatiendo hasta ser sometido junto a mi hijo agonizante; en Chihuahua encaro al pelotón con serenidad militar sin renegar de mi causa.
 
-![La Emboscada de Baján y el Fusilamiento en Chihuahua](/images/history/allende_fusilamiento.jpg)
+![La Emboscada de Baján y el Fusilamiento en Chihuahua](/images/history/allende_fusilamiento.webp)
 
 "El indulto es para los criminales, no para los defensores de la patria". Caí de espaldas por las balas virreinales, pero mi lealtad militar quedó grabada en el bronce de la patria.
 

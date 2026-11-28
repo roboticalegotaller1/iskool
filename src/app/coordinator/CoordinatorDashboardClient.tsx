@@ -1109,7 +1109,7 @@ export default function CoordinatorDashboard() {
                                     alt={formatStudentName(student)} 
                                     className="h-full w-full object-cover"
                                     onError={(e) => {
-                                      (e.target as HTMLImageElement).src = '/images/students/default.png';
+                                      (e.target as HTMLImageElement).src = '/images/students/default.webp';
                                     }}
                                   />
                                 </div>
@@ -3073,7 +3073,7 @@ export default function CoordinatorDashboard() {
                   alt={`${selectedStudent.first_name} ${selectedStudent.last_name_1}`}
                   className="h-full w-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/students/default.png';
+                    (e.target as HTMLImageElement).src = '/images/students/default.webp';
                   }}
                 />
               </div>

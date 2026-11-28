@@ -6,7 +6,7 @@ eraOrPeriod: "Revolución Mexicana y Legalismo Constitucional (1912 - 1919)"
 birthOrEstablishment: "13 de junio de 1868, Zacualtipán, Hidalgo"
 deathOrPresentState: "26 de noviembre de 1919, Cuartel del 21.º Regimiento, Chihuahua, Chihuahua"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/felipe_angeles_avatar.png"
+avatarImageUrl: "/images/history/felipe_angeles_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ En 1912 el presidente Francisco I. Madero me nombró director del Colegio Milita
 **Coordenadas**: 19.4204, -99.1819
 **Narrativa**: Nombrado director por el presidente Francisco I. Madero, desterré el maltrato físico y la crueldad disciplinaria decimonónica, formando oficiales cultos, demócratas y subordinados a la voluntad popular civil.
 
-![La Dirección Humanista del Colegio Militar](/images/history/angeles_colegio_militar.jpg)
+![La Dirección Humanista del Colegio Militar](/images/history/angeles_colegio_militar.webp)
 
 El soldado de una patria libre debe ser un ciudadano consciente y protector de sus hermanos, nunca su verdugo.
 
@@ -44,7 +44,7 @@ El soldado de una patria libre debe ser un ciudadano consciente y protector de s
 **Coordenadas**: 18.9242, -99.2216
 **Narrativa**: Frente al campesinado alzado en armas por la tierra, ordené respetar a la población civil y devolver cosechas incautadas, demostrando que la ley se sostiene con la justicia y no con el exterminio de inocentes.
 
-![La Pacificación Ética de Morelos](/images/history/angeles_pacificacion_morelos.jpg)
+![La Pacificación Ética de Morelos](/images/history/angeles_pacificacion_morelos.webp)
 
 Incluso los jefes zapatistas reconocieron que un militar honorable y respetuoso de la dignidad humana mandaba las tropas del presidente Madero.
 
@@ -54,7 +54,7 @@ Incluso los jefes zapatistas reconocieron que un militar honorable y respetuoso 
 **Coordenadas**: 22.7758, -102.5694
 **Narrativa**: Ubiqué con cálculo milimétrico los cañones Schneider y Saint-Chamond de la División del Norte, concentrando el fuego artillero sobre los reductos de La Bufa para despejar las cargas heroicas de la infantería villista.
 
-![El Despliegue Balístico en Zacatecas](/images/history/angeles_batalla_zacatecas.jpg)
+![El Despliegue Balístico en Zacatecas](/images/history/angeles_batalla_zacatecas.webp)
 
 La ciencia artillera puesta al servicio de la libertad quebró en una sola jornada la dictadura militar de Victoriano Huerta.
 
@@ -64,7 +64,7 @@ La ciencia artillera puesta al servicio de la libertad quebró en una sola jorna
 **Coordenadas**: 28.6353, -106.0744
 **Narrativa**: Ante un tribunal militar predeterminado a condenarme por órdenes de Carranza, defendí mi amor a la República y a la fraternidad humana; en el paredón elegí el sitio de fusilamiento y me negué a que vendaran mis ojos.
 
-![El Paredón en Chihuahua](/images/history/angeles_fusilamiento_chihuahua.jpg)
+![El Paredón en Chihuahua](/images/history/angeles_fusilamiento_chihuahua.webp)
 
 Mi muerte no fue una derrota, sino el testimonio supremo de que la rectitud moral y la democracia sobreviven a la venganza de los gobernantes.
 
@@ -84,7 +84,7 @@ Sede del Heroico Colegio Militar donde me formé como oficial y donde ejercí la
 **Coordenadas**: 22.7758, -102.5694
 Crestón estratégico donde planifiqué la disposición del fuego de artillería que aniquiló las defensas federales en la batalla más sangrienta de la Revolución.
 
-![Cerro de la Bufa](/images/history/cerro_bufa_angeles.jpg)
+![Cerro de la Bufa](/images/history/cerro_bufa_angeles.webp)
 
 ### Teatro de los Héroes
 **Estado**: Chihuahua, México

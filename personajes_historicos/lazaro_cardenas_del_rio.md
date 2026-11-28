@@ -6,7 +6,7 @@ eraOrPeriod: "Cardenismo y Soberanía Nacional (1934 - 1940)"
 birthOrEstablishment: "21 de mayo de 1895, Jiquilpan, Michoacán"
 deathOrPresentState: "19 de octubre de 1970, Ciudad de México"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/lazaro_cardenas_avatar.png"
+avatarImageUrl: "/images/history/lazaro_cardenas_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-7%"
@@ -34,7 +34,7 @@ Mi mandato presidencial transformó la estructura social de México: repartí ca
 **Coordenadas**: 19.4326, -99.1313
 **Narrativa**: Frente al micrófono de la radio nacional y ante la rebeldía de las empresas extranjeras de acatar el laudo de la Suprema Corte, leí con voz firme el decreto que reintegró los hidrocarburos y las refinerías a la soberanía del pueblo de México.
 
-![El Decreto Histórico de Expropiación Petrolera](/images/history/cardenas_expropiacion_petrolera.jpg)
+![El Decreto Histórico de Expropiación Petrolera](/images/history/cardenas_expropiacion_petrolera.webp)
 
 La recuperación del petróleo rompió las cadenas del coloniaje económico y demostró que la dignidad de la patria está por encima de los monopolios extranjeros.
 
@@ -44,7 +44,7 @@ La recuperación del petróleo rompió las cadenas del coloniaje económico y de
 **Coordenadas**: 19.4353, -99.1412
 **Narrativa**: Conmovido presencié cómo miles de mujeres indígenas, obreros, ancianos y niños desfilaban llevando gallinas, alhajas de plata, monedas de centavo y alcancías para pagar la indemnización petrolera.
 
-![La Gran Colecta Nacional Popular en Bellas Artes](/images/history/cardenas_colecta_bellas_artes.jpg)
+![La Gran Colecta Nacional Popular en Bellas Artes](/images/history/cardenas_colecta_bellas_artes.webp)
 
 La colecta popular no fue solo dinero; fue la mayor manifestación de solidaridad cívica y fraternidad social en la historia contemporánea de México.
 
@@ -54,7 +54,7 @@ La colecta popular no fue solo dinero; fue la mayor manifestación de solidarida
 **Coordenadas**: 25.5439, -103.4189
 **Narrativa**: Me instalé durante semanas en tiendas de campaña entre los campesinos para expropiar y entregar cientos de miles de hectáreas de tierra fértil a los peones acasillados, creando el mayor ejido colectivo de la nación.
 
-![El Reparto Agrario Masivo en La Laguna](/images/history/cardenas_reparto_laguna.jpg)
+![El Reparto Agrario Masivo en La Laguna](/images/history/cardenas_reparto_laguna.webp)
 
 Convertimos al peón endeudado de la hacienda en un agricultor libre y dueño de su destino mediante el crédito agrícola y la maquinaria comunitaria.
 
@@ -64,7 +64,7 @@ Convertimos al peón endeudado de la hacienda en un agricultor libre y dueño de
 **Coordenadas**: 19.2000, -96.1333
 **Narrativa**: Abrí los brazos de México a miles de intelectuales, maestros, obreros y a 456 niños perseguidos por el fascismo español, fundando La Casa de España (hoy El Colegio de México) para acoger el saber republicano.
 
-![El Asilo a los Exiliados Españoles y Niños de Morelia](/images/history/cardenas_asilo_espanoles.jpg)
+![El Asilo a los Exiliados Españoles y Niños de Morelia](/images/history/cardenas_asilo_espanoles.webp)
 
 México demostró al mundo que la verdadera fraternidad universal no tiene fronteras cuando se trata de defender la libertad humana y el derecho de asilo.
 

@@ -22,7 +22,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1753 - 1811',
     shortBio: 'En la madrugada del 16 de septiembre de 1810 hice repicar las campanas de mi parroquia en Dolores para convocar al pueblo a luchar por su libertad y decreté en Guadalajara la abolición de la esclavitud.',
     detailedContext: 'Fui rector del Colegio de San Nicolás en Valladolid y párroco de Dolores, donde impulsé talleres de alfarería, sericicultura y herrería antes de encabezar el Ejército Insurgente.',
-    avatarImageUrl: '/images/history/hidalgo_avatar.png',
+    avatarImageUrl: '/images/history/hidalgo_avatar.webp',
     bookSpineStyle: 'diario_republicano',
     isFromVault: true,
     moments: [
@@ -31,7 +31,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'El Llamado en la Parroquia de Dolores',
         yearOrDate: '16 de Septiembre de 1810',
         description: 'Al recibir el aviso urgente desde Querétaro por conducto de Ignacio Pérez y Juan Aldama, convoqué al pueblo en el atrio de mi parroquia en Dolores.',
-        imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+        imageUrl: '/images/history/hidalgo_grito_comic_4.webp',
         locationName: 'Parroquia de Nuestra Señora de los Dolores, Guanajuato',
         coordinates: { lat: 21.1561, lng: -100.9328 },
         narrativeCaption: '¡Hijos míos, ha llegado la hora de poner fin a tres siglos de opresión!'
@@ -41,7 +41,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Toma de la Alhóndiga de Granaditas',
         yearOrDate: '28 de Septiembre de 1810',
         description: 'Junto a Ignacio Allende y el pueblo minero de Guanajuato, tomamos el bastión realista de la Alhóndiga de Granaditas.',
-        imageUrl: '/images/history/alhondiga_granaditas.jpg',
+        imageUrl: '/images/history/alhondiga_granaditas.webp',
         locationName: 'Alhóndiga de Granaditas, Guanajuato',
         coordinates: { lat: 21.0190, lng: -101.2574 },
         narrativeCaption: 'El valor del pueblo minero abrió las puertas de la primera gran victoria insurgente.'
@@ -51,7 +51,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Victoria en el Monte de las Cruces',
         yearOrDate: '30 de Octubre de 1810',
         description: 'Con más de ochenta mil insurgentes derrotamos a las fuerzas realistas de Torcuato Trujillo a las puertas del Valle de México.',
-        imageUrl: '/images/history/hidalgo_monte_cruces.jpg',
+        imageUrl: '/images/history/hidalgo_monte_cruces.webp',
         locationName: 'Monte de las Cruces, Ocoyoacac',
         coordinates: { lat: 19.2995, lng: -99.3812 },
         narrativeCaption: 'En los bosques de las Cruces demostramos la fuerza imparable de una nación en marcha.'
@@ -61,7 +61,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Decreto de Abolición de la Esclavitud',
         yearOrDate: '6 de Diciembre de 1810',
         description: 'Desde el Palacio de Gobierno de Guadalajara firmé el bando solemne que abolió la esclavitud y los tributos de castas en nuestra América.',
-        imageUrl: '/images/history/hidalgo_decreto_abolicion.jpg',
+        imageUrl: '/images/history/hidalgo_decreto_abolicion.webp',
         locationName: 'Palacio de Gobierno de Guadalajara, Jalisco',
         coordinates: { lat: 20.6767, lng: -103.3462 },
         narrativeCaption: 'Que todo ser humano sea libre por derecho natural en el suelo de nuestra patria.'
@@ -74,7 +74,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Guanajuato, México',
         coordinates: { lat: 21.1561, lng: -100.9328 },
         significance: 'Atrio histórico donde proclamé el inicio de la lucha por la Independencia la madrugada del 16 de septiembre de 1810.',
-        imageUrl: '/images/history/parroquia_dolores.jpg'
+        imageUrl: '/images/history/parroquia_dolores.webp'
       },
       {
         id: 'hid-loc2',
@@ -82,7 +82,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Jalisco, México',
         coordinates: { lat: 20.6767, lng: -103.3462 },
         significance: 'Sede del gobierno insurgente donde promulgué el Decreto de Abolición de la Esclavitud el 6 de diciembre de 1810.',
-        imageUrl: '/images/history/palacio_guadalajara.jpg'
+        imageUrl: '/images/history/palacio_guadalajara.webp'
       }
     ],
     videoClip: {
@@ -133,7 +133,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1768 - 1829',
     shortBio: 'Di el aviso urgente desde mi alcoba en el Corregimiento de Querétaro la noche del 15 de septiembre de 1810, enviando a Ignacio Pérez a galope para alertar a Ignacio Allende y Miguel Hidalgo.',
     detailedContext: 'Nací en Valladolid (hoy Morelia) y me formé en el Colegio de las Vizcaínas. En mi casa de Querétaro organizamos las tertulias literarias donde trazamos el plan de emancipación nacional.',
-    avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
+    avatarImageUrl: '/images/history/josefa_ortiz_avatar.webp',
     bookSpineStyle: 'diario_republicano',
     isFromVault: true,
     moments: [
@@ -142,7 +142,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Las Tertulias de Querétaro',
         yearOrDate: 'Septiembre de 1810',
         description: 'En mi casa del Corregimiento de Querétaro reuní a capitanes criollos y letrados para organizar el levantamiento por la soberanía nacional.',
-        imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
+        imageUrl: '/images/history/josefa_conspiracion_comic_1.webp',
         locationName: 'Casa de la Corregidora, Santiago de Querétaro',
         coordinates: { lat: 20.5931, lng: -100.3928 },
         narrativeCaption: 'Bajo el velo de tertulias literarias forjamos la libertad de nuestra patria.'
@@ -152,7 +152,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'La Señal desde mi Alcoba',
         yearOrDate: '13 - 15 de Septiembre de 1810',
         description: 'Al ser descubierta nuestra conspiración y quedar encerrada bajo llave, golpeé el piso con mi tacón para llamar al alcaide Ignacio Pérez y confiarle el mensaje de alerta.',
-        imageUrl: '/images/history/josefa_taconeo_comic_2.png',
+        imageUrl: '/images/history/josefa_taconeo_comic_2.webp',
         locationName: 'Casa del Corregimiento, Querétaro',
         coordinates: { lat: 20.5931, lng: -100.3928 },
         narrativeCaption: 'Ni los cerrojos realistas pudieron silenciar mi aviso por la libertad.'
@@ -162,7 +162,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'La Cabalgata Nocturna de Ignacio Pérez',
         yearOrDate: '15 de Septiembre de 1810',
         description: 'Por orden mía, el alcaide Ignacio Pérez cabalgó sin descanso en la oscuridad desde Querétaro hasta San Miguel el Grande y Dolores.',
-        imageUrl: '/images/history/josefa_alerta_comic_3.png',
+        imageUrl: '/images/history/josefa_alerta_comic_3.webp',
         locationName: 'Ruta Querétaro - San Miguel el Grande - Dolores',
         coordinates: { lat: 20.9144, lng: -100.7452 },
         narrativeCaption: 'Cada legua recorrida salvó la causa insurgente de ser sofocada antes de nacer.'
@@ -172,7 +172,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Defensa de la República frente al Imperio',
         yearOrDate: '1822 - 1829',
         description: 'Tras consumarse la Independencia, rechacé el cargo de dama de honor de la corte imperial de Agustín de Iturbide porque mi convicción siempre fue republicana.',
-        imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+        imageUrl: '/images/history/hidalgo_grito_comic_4.webp',
         locationName: 'Ciudad de México / Querétaro',
         coordinates: { lat: 20.5975, lng: -100.3840 },
         narrativeCaption: 'Luché por una República de ciudadanos libres, jamás por una nueva corona.'
@@ -185,7 +185,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Querétaro, México',
         coordinates: { lat: 20.5931, lng: -100.3928 },
         significance: 'Recinto histórico donde organicé las juntas secretas de 1810 y desde donde envié el aviso decisivo.',
-        imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
+        imageUrl: '/images/history/casa_corregidora_queretaro.webp'
       },
       {
         id: 'jos-loc2',
@@ -193,7 +193,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Querétaro, México',
         coordinates: { lat: 20.5975, lng: -100.3840 },
         significance: 'Mausoleo cívico donde reposan mis restos junto a los forjadores de la soberanía queretana.',
-        imageUrl: '/images/history/panteon_queretanos_ilustres.jpg'
+        imageUrl: '/images/history/panteon_queretanos_ilustres.webp'
       }
     ],
     videoClip: {
@@ -232,7 +232,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1765 - 1815',
     shortBio: 'Asumí el mando del sur por encargo de mi maestro Miguel Hidalgo, rompí el Sitio de Cuautla y proclamé en Chilpancingo los Sentimientos de la Nación el 14 de septiembre de 1813.',
     detailedContext: 'Nací en Valladolid (hoy Morelia). Rechacé el título de Alteza Serenísima para llamarme Siervo de la Nación e impulsé la Constitución de Apatzingán de 1814.',
-    avatarImageUrl: '/images/history/morelos_avatar.png',
+    avatarImageUrl: '/images/history/morelos_avatar.webp',
     bookSpineStyle: 'tomo_imperial',
     isFromVault: true,
     moments: [
@@ -241,7 +241,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'El Rompimiento del Sitio de Cuautla',
         yearOrDate: '2 de Mayo de 1812',
         description: 'Durante 72 días resistimos el asedio de Félix María Calleja en Cuautla hasta romper el cerco con estrategia militar.',
-        imageUrl: '/images/history/morelos_sitio_cuautla.jpg',
+        imageUrl: '/images/history/morelos_sitio_cuautla.webp',
         locationName: 'Cuautla, Morelos',
         coordinates: { lat: 18.8122, lng: -98.9553 },
         narrativeCaption: 'En Cuautla demostramos que la disciplina insurgente podía vencer al ejército virreinal.'
@@ -251,7 +251,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Proclamación de los Sentimientos de la Nación',
         yearOrDate: '14 de Septiembre de 1813',
         description: 'Al inaugurar el Congreso de Anáhuac en Chilpancingo presenté los 23 puntos de los Sentimientos de la Nación: soberanía popular, división de poderes y moderación de la opulencia y la indigencia.',
-        imageUrl: '/images/history/morelos_sentimientos_nacion.jpg',
+        imageUrl: '/images/history/morelos_sentimientos_nacion.webp',
         locationName: 'Catedral de la Asunción, Chilpancingo, Guerrero',
         coordinates: { lat: 17.5515, lng: -99.5006 },
         narrativeCaption: 'Que la esclavitud se proscriba para siempre y la ley sea igual para todos.'
@@ -261,7 +261,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Constitución de Apatzingán',
         yearOrDate: '22 de Octubre de 1814',
         description: 'Promulgamos el Decreto Constitucional para la Libertad de la América Mexicana en Apatzingán, estableciendo los tres poderes republicanos.',
-        imageUrl: '/images/history/morelos_constitucion_apatzingan.jpg',
+        imageUrl: '/images/history/morelos_constitucion_apatzingan.webp',
         locationName: 'Apatzingán de la Constitución, Michoacán',
         coordinates: { lat: 19.0886, lng: -102.3508 },
         narrativeCaption: 'La primera carta magna de nuestra América libre nació en plena campaña.'
@@ -271,7 +271,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Sacrificio en San Cristóbal Ecatepec',
         yearOrDate: '22 de Diciembre de 1815',
         description: 'Por proteger la retirada del Congreso Nacional fui capturado en Temalaca y fusilado en San Cristóbal Ecatepec con la certeza de haber sembrado la patria.',
-        imageUrl: '/images/history/morelos_ecatepec_martirio.jpg',
+        imageUrl: '/images/history/morelos_ecatepec_martirio.webp',
         locationName: 'Casa de Morelos, San Cristóbal Ecatepec',
         coordinates: { lat: 19.5997, lng: -99.0494 },
         narrativeCaption: 'Morir es nada cuando por la patria se muere.'
@@ -284,7 +284,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Guerrero, México',
         coordinates: { lat: 17.5515, lng: -99.5006 },
         significance: 'Sede del Primer Congreso de Anáhuac donde di lectura a los Sentimientos de la Nación en 1813.',
-        imageUrl: '/images/history/morelos_sentimientos_nacion.jpg'
+        imageUrl: '/images/history/morelos_sentimientos_nacion.webp'
       }
     ],
     videoClip: {
@@ -311,7 +311,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1806 - 1872',
     shortBio: 'Nací en San Pablo Guelatao, Oaxaca. Promulgué las Leyes de Reforma, defendí la soberanía nacional frente a la Intervención Francesa y restauré la República en 1867.',
     detailedContext: 'Como presidente de la Suprema Corte y luego Presidente de la República sostuve la legalidad constitucional en medio de la guerra civil y la invasión extranjera.',
-    avatarImageUrl: '/images/history/benito_juarez_avatar.png',
+    avatarImageUrl: '/images/history/benito_juarez_avatar.webp',
     bookSpineStyle: 'diario_republicano',
     isFromVault: true,
     moments: [
@@ -320,7 +320,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Promulgación de la Ley Juárez',
         yearOrDate: '23 de Noviembre de 1855',
         description: 'Suprimí los fueros especiales militares y eclesiásticos en materia civil para instaurar la igualdad de todos los ciudadanos ante la ley.',
-        imageUrl: '/images/history/juarez_ley_juarez_1855.jpg',
+        imageUrl: '/images/history/juarez_ley_juarez_1855.webp',
         locationName: 'Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'Ningún privilegio puede estar por encima de la igualdad republicana.'
@@ -330,7 +330,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Las Leyes de Reforma desde Veracruz',
         yearOrDate: 'Julio de 1859',
         description: 'Desde el puerto de Veracruz expedí las Leyes de Reforma estableciendo el Estado laico, el Registro Civil y la libertad de cultos.',
-        imageUrl: '/images/history/juarez_leyes_reforma_veracruz.jpg',
+        imageUrl: '/images/history/juarez_leyes_reforma_veracruz.webp',
         locationName: 'Heroica Veracruz, Veracruz',
         coordinates: { lat: 19.1997, lng: -96.1342 },
         narrativeCaption: 'Separamos los negocios del Estado de los asuntos eclesiásticos para consolidar la libertad civil.'
@@ -340,7 +340,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'La República Itinerante en Paso del Norte',
         yearOrDate: '1865 - 1866',
         description: 'Llevé los poderes de la República en mi carruaje hasta Paso del Norte (hoy Ciudad Juárez) sin ceder un palmo de soberanía ante el imperio invasor.',
-        imageUrl: '/images/history/juarez_carruaje_paso_del_norte.jpg',
+        imageUrl: '/images/history/juarez_carruaje_paso_del_norte.webp',
         locationName: 'Paso del Norte (Ciudad Juárez), Chihuahua',
         coordinates: { lat: 31.7386, lng: -106.4850 },
         narrativeCaption: 'Donde estuvo el gobierno constitucional, ahí permaneció viva la República.'
@@ -350,7 +350,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Triunfo y Restauración de la República',
         yearOrDate: '15 de Julio de 1867',
         description: 'Al ingresar triunfalmente a la Ciudad de México proclamé el principio inmortal: Entre los individuos, como entre las naciones, el respeto al derecho ajeno es la paz.',
-        imageUrl: '/images/history/juarez_entrada_triunfal_1867.jpg',
+        imageUrl: '/images/history/juarez_entrada_triunfal_1867.webp',
         locationName: 'Palacio Nacional, Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'El pueblo y el gobierno respeten los derechos de todos.'
@@ -363,7 +363,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Querétaro, México',
         coordinates: { lat: 20.5939, lng: -100.4100 },
         significance: 'Sitio donde triunfaron las armas republicanas en mayo de 1867 poniendo fin al Segundo Imperio.',
-        imageUrl: '/images/history/cerro_campanas_juarez.jpg'
+        imageUrl: '/images/history/cerro_campanas_juarez.webp'
       }
     ],
     verificationQuestions: [
@@ -389,7 +389,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1648 - 1695',
     shortBio: 'Nací en San Miguel Nepantla. Desde mi biblioteca en el Convento de San Jerónimo escribí Primero Sueño y la Respuesta a Sor Filotea de la Cruz defendiendo el derecho de las mujeres a la ciencia y las letras.',
     detailedContext: 'Aprendí a leer a los tres años en la biblioteca de mi abuelo en Panoayan y superé el examen de cuarenta sabios universitarios en la corte virreinal.',
-    avatarImageUrl: '/images/history/sor_juana_avatar.png',
+    avatarImageUrl: '/images/history/sor_juana_avatar.webp',
     bookSpineStyle: 'grimorio_dorado',
     isFromVault: true,
     moments: [
@@ -398,7 +398,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'El Examen ante los Cuarenta Sabios',
         yearOrDate: '1665',
         description: 'En el palacio virreinal respondí a cuarenta doctores y teólogos de la Real Universidad sobre filosofía, matemáticas, historia y poética.',
-        imageUrl: '/images/history/sor_juana_examen_sabios.jpg',
+        imageUrl: '/images/history/sor_juana_examen_sabios.webp',
         locationName: 'Palacio Virreinal, Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'Se defendió mi entendimiento como un galeón real ante cuarenta chalupas.'
@@ -408,7 +408,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Composición de Primero Sueño',
         yearOrDate: '1685 - 1692',
         description: 'Escribí en silvas mi poema filosófico Primero Sueño, el único que compuse por propio gusto siguiendo el vuelo libre del alma hacia el conocimiento.',
-        imageUrl: '/images/history/sor_juana_primero_sueno.jpg',
+        imageUrl: '/images/history/sor_juana_primero_sueno.webp',
         locationName: 'Convento de San Jerónimo, Ciudad de México',
         coordinates: { lat: 19.4267, lng: -99.1375 },
         narrativeCaption: 'Piramidal, funesta, de la tierra nacida sombra...'
@@ -418,7 +418,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Respuesta a Sor Filotea de la Cruz',
         yearOrDate: '1 de Marzo de 1691',
         description: 'Redacté mi defensa intelectual reivindicando el derecho universal de las mujeres al estudio, la filosofía y la investigación científica.',
-        imageUrl: '/images/history/sor_juana_respuesta_filotea.jpg',
+        imageUrl: '/images/history/sor_juana_respuesta_filotea.webp',
         locationName: 'Celda del Convento de San Jerónimo, Ciudad de México',
         coordinates: { lat: 19.4267, lng: -99.1375 },
         narrativeCaption: 'Yo no estudio para escribir, ni menos para enseñar, sino sólo por ver si con estudiar ignoro menos.'
@@ -428,7 +428,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Solidaridad en la Epidemia de 1695',
         yearOrDate: '17 de Abril de 1695',
         description: 'Cuidando a mis hermanas enfermas durante la epidemia de cocoliztli en San Jerónimo entregué mi vida fiel a mi vocación.',
-        imageUrl: '/images/history/sor_juana_epidemia_1695.jpg',
+        imageUrl: '/images/history/sor_juana_epidemia_1695.webp',
         locationName: 'Ex Convento de San Jerónimo, Ciudad de México',
         coordinates: { lat: 19.4267, lng: -99.1375 },
         narrativeCaption: 'Mi obra quedó impresa en ambos mundos como testimonio de libertad intelectual.'
@@ -441,7 +441,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4267, lng: -99.1375 },
         significance: 'Claustro donde reuní más de cuatro mil volúmenes e instrumentos matemáticos y musicales.',
-        imageUrl: '/images/history/sor_juana_primero_sueno.jpg'
+        imageUrl: '/images/history/sor_juana_primero_sueno.webp'
       }
     ],
     verificationQuestions: [
@@ -462,7 +462,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1878 - 1923',
     shortBio: 'Nací en La Coyotada, Durango, con el nombre de Doroteo Arango. Comandé la División del Norte en la Toma de Zacatecas, fundé escuelas en Canutillo y fui emboscado en Parral el 20 de julio de 1923.',
     detailedContext: 'Organizamos trenes hospitales, caballería relámpago con mis Dorados y en la Hacienda de Canutillo levanté la escuela Felipe Ángeles para los hijos de los campesinos.',
-    avatarImageUrl: '/images/history/francisco_villa_avatar.png',
+    avatarImageUrl: '/images/history/francisco_villa_avatar.webp',
     bookSpineStyle: 'cuaderno_cronista',
     isFromVault: true,
     moments: [
@@ -471,7 +471,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Toma de Ciudad Juárez',
         yearOrDate: 'Mayo de 1911',
         description: 'Junto a Pascual Orozco y las fuerzas maderistas tomamos Ciudad Juárez, provocando la caída de la dictadura de Porfirio Díaz.',
-        imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
+        imageUrl: '/images/history/villa_toma_juarez_comic_1.webp',
         locationName: 'Ciudad Juárez, Chihuahua',
         coordinates: { lat: 31.7386, lng: -106.4850 },
         narrativeCaption: 'En la frontera norte abrimos el triunfo de la Revolución Maderista.'
@@ -481,7 +481,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'La Toma de Zacatecas',
         yearOrDate: '23 de Junio de 1914',
         description: 'Con la División del Norte y la artillería del general Felipe Ángeles tomamos los cerros de La Bufa y El Grillo, quebrando la espina dorsal del ejército huertista.',
-        imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
+        imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.webp',
         locationName: 'Cerro de la Bufa, Zacatecas',
         coordinates: { lat: 22.7783, lng: -102.5675 },
         narrativeCaption: 'En La Bufa sellamos la derrota definitiva de la usurpación.'
@@ -491,7 +491,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'El Pacto de Xochimilco con Emiliano Zapata',
         yearOrDate: '4 de Diciembre de 1914',
         description: 'Me reuní con mi hermano del sur, el general Emiliano Zapata, en Xochimilco y entramos juntos al Palacio Nacional en nombre de los campesinos de México.',
-        imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
+        imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.webp',
         locationName: 'Xochimilco y Palacio Nacional, Ciudad de México',
         coordinates: { lat: 19.2630, lng: -99.1040 },
         narrativeCaption: 'El Norte y el Sur estrecharon sus manos por la justicia agraria y la escuela rural.'
@@ -501,7 +501,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Escuela de Canutillo y Emboscada en Parral',
         yearOrDate: '20 de Julio de 1923',
         description: 'Tras fundar la escuela rural de Canutillo, fui asesinado en una cobarde emboscada en Hidalgo del Parral, Chihuahua, mientras conducía mi automóvil Dodge Brothers.',
-        imageUrl: '/images/history/hacienda_canutillo_villa.jpg',
+        imageUrl: '/images/history/hacienda_canutillo_villa.webp',
         locationName: 'Hidalgo del Parral, Chihuahua',
         coordinates: { lat: 26.9317, lng: -105.6664 },
         narrativeCaption: 'Prefiero ver un maestro con un libro que un soldado con un fusil.'
@@ -514,7 +514,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Zacatecas, México',
         coordinates: { lat: 22.7783, lng: -102.5675 },
         significance: 'Escenario de nuestra máxima victoria estratégica con la División del Norte el 23 de junio de 1914.',
-        imageUrl: '/images/history/cerro_bufa_zacatecas.jpg'
+        imageUrl: '/images/history/cerro_bufa_zacatecas.webp'
       }
     ],
     verificationQuestions: [
@@ -535,7 +535,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1879 - 1919',
     shortBio: 'Nací en Anenecuilco, Morelos. Encabecé el Ejército Libertador del Sur y proclamé el Plan de Ayala el 28 de noviembre de 1911 para restituir las tierras, montes y aguas a las comunidades campesinas.',
     detailedContext: 'Elegido calpuleque de mi pueblo en 1909 para defender los títulos primordiales de tierra, sostuve la bandera de Reforma, Libertad, Justicia y Ley hasta mi emboscada en Chinameca el 10 de abril de 1919.',
-    avatarImageUrl: '/images/history/emiliano_zapata_avatar.png',
+    avatarImageUrl: '/images/history/emiliano_zapata_avatar.webp',
     bookSpineStyle: 'cuaderno_cronista',
     isFromVault: true,
     moments: [
@@ -544,7 +544,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Elección como Defensor de Anenecuilco',
         yearOrDate: '12 de Septiembre de 1909',
         description: 'El consejo de ancianos de San Miguel Anenecuilco me entregó los documentos coloniales para defender las tierras comunales frente al despojo de las haciendas.',
-        imageUrl: '/images/history/zapata_eleccion_anenecuilco.jpg',
+        imageUrl: '/images/history/zapata_eleccion_anenecuilco.webp',
         locationName: 'Anenecuilco, Morelos',
         coordinates: { lat: 18.7786, lng: -98.9869 },
         narrativeCaption: 'Recibí el mandato de mi pueblo para jamás traicionar la causa de la tierra.'
@@ -554,7 +554,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Proclamación del Plan de Ayala',
         yearOrDate: '28 de Noviembre de 1911',
         description: 'En Ayoxuxtla, Puebla, firmé junto a Otilio Montaño el Plan de Ayala ordenando la restitución inmediata de tierras, montes y aguas a los pueblos.',
-        imageUrl: '/images/history/zapata_proclamacion_plan_ayala.jpg',
+        imageUrl: '/images/history/zapata_proclamacion_plan_ayala.webp',
         locationName: 'Ayoxuxtla, Puebla',
         coordinates: { lat: 18.2931, lng: -98.7653 },
         narrativeCaption: 'La tierra es de quien la trabaja con sus manos.'
@@ -564,7 +564,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Alianza en Xochimilco con Francisco Villa',
         yearOrDate: '4 de Diciembre de 1914',
         description: 'Sellé con el general Francisco Villa el Pacto de Xochimilco para que el constitucionalismo incorporara las demandas agrarias del pueblo.',
-        imageUrl: '/images/history/zapata_pacto_xochimilco.jpg',
+        imageUrl: '/images/history/zapata_pacto_xochimilco.webp',
         locationName: 'Xochimilco, Ciudad de México',
         coordinates: { lat: 19.2630, lng: -99.1040 },
         narrativeCaption: 'Unimos los ejércitos campesinos del Sur y del Norte.'
@@ -574,7 +574,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Emboscada en la Hacienda de Chinameca',
         yearOrDate: '10 de Abril de 1919',
         description: 'Fui traicionado y emboscado por las tropas de Jesús Guajardo al cruzar el portón de la Hacienda de Chinameca montado en mi caballo El As de Oros.',
-        imageUrl: '/images/history/zapata_emboscada_chinameca.jpg',
+        imageUrl: '/images/history/zapata_emboscada_chinameca.webp',
         locationName: 'Ex Hacienda de Chinameca, Morelos',
         coordinates: { lat: 18.6231, lng: -98.9958 },
         narrativeCaption: 'Cayeron las balas en Chinameca, pero el ideal agrario quedó consagrado en el Artículo 27.'
@@ -587,7 +587,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Morelos, México',
         coordinates: { lat: 18.7786, lng: -98.9869 },
         significance: 'Cuna de la lucha agraria del Ejército Libertador del Sur.',
-        imageUrl: '/images/history/zapata_proclamacion_plan_ayala.jpg'
+        imageUrl: '/images/history/zapata_proclamacion_plan_ayala.webp'
       }
     ],
     verificationQuestions: [
@@ -608,7 +608,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1496 - 1525',
     shortBio: 'Fui el último Huey Tlatoani de México-Tenochtitlan y encabecé la heroica defensa de nuestra ciudad lacustre durante 93 días de asedio en 1521.',
     detailedContext: 'Mi nombre en náhuatl significa Águila que desciende. Resistí el sitio y el tormento sin quebrantar la dignidad de mi pueblo.',
-    avatarImageUrl: '/images/history/cuauhtemoc_avatar.png',
+    avatarImageUrl: '/images/history/cuauhtemoc_avatar.webp',
     bookSpineStyle: 'codice_antiguo',
     isFromVault: true,
     moments: [
@@ -617,7 +617,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Defensa Heroica de México-Tenochtitlan',
         yearOrDate: 'Mayo - Agosto de 1521',
         description: 'Durante 93 días defendimos cada calzada, canal y templo de México-Tenochtitlan y Tlatelolco.',
-        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.jpg',
+        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.webp',
         locationName: 'Tlatelolco, México-Tenochtitlan',
         coordinates: { lat: 19.4511, lng: -99.1372 },
         narrativeCaption: 'Nuestro sol se ocultó en Tlatelolco, pero nuestra raíz permanece viva.'
@@ -627,7 +627,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'El Encuentro con Hernán Cortés tras la Caída',
         yearOrDate: '13 de Agosto de 1521',
         description: 'Al ser capturada nuestra canoa en Tlatelolco, encaré con dignidad a Hernán Cortés exigiendo la muerte honrosa de un gobernante vencido.',
-        imageUrl: '/images/history/cuauhtemoc_captura_cortes.jpg',
+        imageUrl: '/images/history/cuauhtemoc_captura_cortes.webp',
         locationName: 'Plaza de las Tres Culturas, Tlatelolco',
         coordinates: { lat: 19.4510, lng: -99.1372 },
         narrativeCaption: 'He cumplido con mi pueblo y con mi deber.'
@@ -640,7 +640,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4511, lng: -99.1372 },
         significance: 'Último bastión de la resistencia mexica el 13 de agosto de 1521.',
-        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.jpg'
+        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.webp'
       },
       {
         id: 'cua-loc2',
@@ -648,7 +648,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4351, lng: -99.1312 },
         significance: 'Corazón sagrado de nuestro imperio donde juré defender nuestra soberanía.',
-        imageUrl: '/images/history/cuauhtemoc_noche_triste.jpg'
+        imageUrl: '/images/history/cuauhtemoc_noche_triste.webp'
       }
     ],
     verificationQuestions: [
@@ -676,7 +676,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1895 - 1970',
     shortBio: 'Fui Presidente de la República y decreté la Expropiación Petrolera el 18 de marzo de 1938, fundé el Instituto Politécnico Nacional (IPN) y otorgué asilo diplomático al exilio republicano.',
     detailedContext: 'Nací en Jiquilpan, Michoacán. Impulsé el reparto agrario en La Laguna y Yucatán y creé el Museo Nacional de Historia en el Castillo de Chapultepec.',
-    avatarImageUrl: '/images/history/lazaro_cardenas_avatar.png',
+    avatarImageUrl: '/images/history/lazaro_cardenas_avatar.webp',
     bookSpineStyle: 'diario_republicano',
     isFromVault: true,
     moments: [
@@ -685,7 +685,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Decreto de la Expropiación Petrolera',
         yearOrDate: '18 de Marzo de 1938',
         description: 'A las diez de la noche dirigí mi mensaje por radio a toda la nación anunciando la expropiación de la industria petrolera en defensa de la soberanía y la ley mexicana.',
-        imageUrl: '/images/history/cardenas_expropiacion_petrolera.jpg',
+        imageUrl: '/images/history/cardenas_expropiacion_petrolera.webp',
         locationName: 'Palacio Nacional, Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'El subsuelo y la riqueza energética pertenecen a la nación mexicana.'
@@ -695,7 +695,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Reparto Agrario en la Comarca Lagunera',
         yearOrDate: 'Octubre de 1936',
         description: 'Encabecé el reparto directo de tierras fértiles de la Comarca Lagunera y de más de 18 millones de hectáreas en todo el país.',
-        imageUrl: '/images/history/cardenas_reparto_laguna.jpg',
+        imageUrl: '/images/history/cardenas_reparto_laguna.webp',
         locationName: 'Torreón, Coahuila y Durango',
         coordinates: { lat: 25.5428, lng: -103.4068 },
         narrativeCaption: 'La tierra es fuente de dignidad y justicia social para quienes la trabajan.'
@@ -708,7 +708,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4352, lng: -99.1412 },
         significance: 'Recinto donde el pueblo entero acudió en 1938 a solidarizarse para cubrir la indemnización petrolera.',
-        imageUrl: '/images/history/cardenas_colecta_bellas_artes.jpg'
+        imageUrl: '/images/history/cardenas_colecta_bellas_artes.webp'
       },
       {
         id: 'car-loc2',
@@ -716,7 +716,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Michoacán, México',
         coordinates: { lat: 19.9922, lng: -102.7192 },
         significance: 'Tierra natal donde forjé mis convicciones sociales y republicanas.',
-        imageUrl: '/images/history/cardenas_asilo_espanoles.jpg'
+        imageUrl: '/images/history/cardenas_asilo_espanoles.webp'
       }
     ],
     verificationQuestions: [
@@ -744,7 +744,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
     birthDeathDates: '1531 - Presente',
     shortBio: 'Soy la histórica ciudad de Santiago de Querétaro. En mis casonas de cantera rosa se gestó la Conspiración de 1810, en mi Cerro de las Campanas triunfó la República en 1867 y en mi Teatro de la República se promulgó la Constitución de 1917.',
     detailedContext: 'Patrimonio Cultural de la Humanidad con mi monumental Acueducto de 74 arcos, la Casa de la Corregidora y el Teatro de la República.',
-    avatarImageUrl: '/images/history/santiago_de_queretaro_avatar.jpg',
+    avatarImageUrl: '/images/history/santiago_de_queretaro_avatar.webp',
     bookSpineStyle: 'tomo_imperial',
     isFromVault: true,
     moments: [
@@ -753,7 +753,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Conspiración de Querétaro de 1810',
         yearOrDate: 'Septiembre de 1810',
         description: 'En mi Casa del Corregimiento se reunieron Doña Josefa Ortiz, Ignacio Allende y Miguel Hidalgo para trazar la emancipación de México.',
-        imageUrl: '/images/history/casa_corregidora_queretaro.jpg',
+        imageUrl: '/images/history/casa_corregidora_queretaro.webp',
         locationName: 'Casa de la Corregidora, Centro Histórico de Querétaro',
         coordinates: { lat: 20.5931, lng: -100.3928 },
         narrativeCaption: 'De mis calles coloniales partió el galope nocturno hacia Dolores.'
@@ -763,7 +763,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         title: 'Promulgación de la Constitución de 1917',
         yearOrDate: '5 de Febrero de 1917',
         description: 'En mi Teatro de la República el Congreso Constituyente promulgó la primera Constitución social del siglo XX con los artículos 3°, 27 y 123.',
-        imageUrl: '/images/history/teatro_republica_1917.jpg',
+        imageUrl: '/images/history/teatro_republica_1917.webp',
         locationName: 'Teatro de la República, Querétaro',
         coordinates: { lat: 20.5944, lng: -100.3925 },
         narrativeCaption: 'En mi escenario nació el pacto constitucional que rige a México.'
@@ -776,7 +776,7 @@ export const HISTORICAL_FIGURES_PRESET_CATALOG: HistoricalFigureBlockData[] = [
         stateOrCountry: 'Querétaro, México',
         coordinates: { lat: 20.5944, lng: -100.3925 },
         significance: 'Enclave de las tres grandes transformaciones históricas de México.',
-        imageUrl: '/images/history/acueducto_queretaro.jpg'
+        imageUrl: '/images/history/acueducto_queretaro.webp'
       }
     ],
     verificationQuestions: [
@@ -811,7 +811,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /cuauht[eé]moc/i,
     characterName: 'Cuauhtémoc',
-    avatarImageUrl: '/images/history/cuauhtemoc_avatar.png',
+    avatarImageUrl: '/images/history/cuauhtemoc_avatar.webp',
     birthDeathDates: '1496 - 1525',
     historicalEra: 'Resistencia Mexica y Defensa de Tenochtitlan',
     shortBio: 'Fui el último huey tlatoani de México-Tenochtitlan; defendí con honor inquebrantable la soberanía del Anáhuac durante setenta y cinco días de sitio.',
@@ -821,7 +821,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Defensa del Sitio de México-Tenochtitlan',
         yearOrDate: 'Mayo - Agosto de 1521',
         description: 'Asumí el mando supremo de nuestros guerreros mexicas y tlatelolcas para defender calzada por calzada la gran capital del Anáhuac durante setenta y cinco días continuos de asedio.',
-        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.jpg',
+        imageUrl: '/images/history/cuauhtemoc_defensa_asedio.webp',
         locationName: 'México-Tenochtitlan y Tlatelolco',
         coordinates: { lat: 19.4508, lng: -99.1375 },
         narrativeCaption: 'Mientras quede un aliento en nuestro pecho, México-Tenochtitlan no se rendirá al invasor.'
@@ -831,7 +831,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'El Encuentro con Hernán Cortés tras la Caída',
         yearOrDate: '13 de Agosto de 1521',
         description: 'Al ser capturada nuestra canoa en Tlatelolco, encaré con dignidad a Hernán Cortés señalando el puñal en su cinto y exigiéndole la muerte honrosa de un gobernante vencido.',
-        imageUrl: '/images/history/cuauhtemoc_captura_cortes.jpg',
+        imageUrl: '/images/history/cuauhtemoc_captura_cortes.webp',
         locationName: 'Plaza de las Tres Culturas, Tlatelolco',
         coordinates: { lat: 19.4510, lng: -99.1372 },
         narrativeCaption: 'He cumplido con mi pueblo y con mi deber; haz de mi vida lo que tu justicia dicte.'
@@ -844,7 +844,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4510, lng: -99.1372 },
         significance: 'Baluarte final donde sostuve la resistencia hasta el 13 de agosto de 1521.',
-        imageUrl: '/images/history/cuauhtemoc_tormento_pies.jpg'
+        imageUrl: '/images/history/cuauhtemoc_tormento_pies.webp'
       },
       {
         id: 'cuau-loc2',
@@ -852,7 +852,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4351, lng: -99.1312 },
         significance: 'Corazón sagrado de nuestro imperio donde juré defender nuestra soberanía.',
-        imageUrl: '/images/history/cuauhtemoc_noche_triste.jpg'
+        imageUrl: '/images/history/cuauhtemoc_noche_triste.webp'
       }
     ],
     verificationQuestions: [
@@ -875,7 +875,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /c[aá]rdenas/i,
     characterName: 'Lázaro Cárdenas del Río',
-    avatarImageUrl: '/images/history/lazaro_cardenas_avatar.png',
+    avatarImageUrl: '/images/history/lazaro_cardenas_avatar.webp',
     birthDeathDates: '1895 - 1970',
     historicalEra: 'Cardenismo y Expropiación Petrolera (1934 - 1940)',
     shortBio: 'Promulgué la Expropiación Petrolera el 18 de marzo de 1938, fundé el Instituto Politécnico Nacional y repartí 18 millones de hectáreas al campesinado.',
@@ -885,7 +885,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Decreto de Expropiación Petrolera',
         yearOrDate: '18 de Marzo de 1938',
         description: 'Ante la rebeldía de las compañías petroleras extranjeras contra los fallos de nuestra Suprema Corte, emití por cadena nacional el decreto que devolvió el subsuelo y la industria del petróleo al patrimonio de México.',
-        imageUrl: '/images/history/cardenas_expropiacion_petrolera.jpg',
+        imageUrl: '/images/history/cardenas_expropiacion_petrolera.webp',
         locationName: 'Palacio Nacional, Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1313 },
         narrativeCaption: 'Nuestro subsuelo pertenece por mandato constitucional e histórico a la nación mexicana.'
@@ -895,7 +895,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Reparto Agrario en la Comarca Lagunera',
         yearOrDate: 'Octubre de 1936',
         description: 'Encabecé el reparto directo de tierras fértiles de la Comarca Lagunera y de más de 18 millones de hectáreas en todo el país, entregando ejidos y crédito agrícola a los campesinos.',
-        imageUrl: '/images/history/cardenas_reparto_laguna.jpg',
+        imageUrl: '/images/history/cardenas_reparto_laguna.webp',
         locationName: 'Torreón, Coahuila y Durango',
         coordinates: { lat: 25.5428, lng: -103.4068 },
         narrativeCaption: 'La tierra es fuente de dignidad y justicia social para quienes la trabajan con sus manos.'
@@ -908,7 +908,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4352, lng: -99.1412 },
         significance: 'Escenario donde miles de familias mexicanas aportaron con patriotismo para respaldar la indemnización petrolera.',
-        imageUrl: '/images/history/cardenas_colecta_bellas_artes.jpg'
+        imageUrl: '/images/history/cardenas_colecta_bellas_artes.webp'
       },
       {
         id: 'car-loc2',
@@ -916,7 +916,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Michoacán, México',
         coordinates: { lat: 19.9922, lng: -102.7192 },
         significance: 'Tierra natal donde forjé mis convicciones sociales y republicanas.',
-        imageUrl: '/images/history/cardenas_asilo_espanoles.jpg'
+        imageUrl: '/images/history/cardenas_asilo_espanoles.webp'
       }
     ],
     verificationQuestions: [
@@ -939,7 +939,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /allende/i,
     characterName: 'Ignacio Allende',
-    avatarImageUrl: '/images/history/ignacio_allende_avatar.png',
+    avatarImageUrl: '/images/history/ignacio_allende_avatar.webp',
     birthDeathDates: '1769 - 1811',
     historicalEra: 'Guerra de Independencia - Estrategia Militar',
     shortBio: 'Fui capitán del Regimiento de Dragones de la Reina y teniente general insurgente; tracé la estrategia militar victoriosa en el Monte de las Cruces.',
@@ -949,7 +949,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Conspiración de los Dragones de la Reina',
         yearOrDate: '1809 - Septiembre de 1810',
         description: 'Coordiné en San Miguel el Grande y Santiago de Querétaro a oficiales criollos comprometidos con la emancipación patria.',
-        imageUrl: '/images/history/allende_conspiracion_dragones.jpg',
+        imageUrl: '/images/history/allende_conspiracion_dragones.webp',
         locationName: 'San Miguel el Grande, Guanajuato',
         coordinates: { lat: 20.9144, lng: -100.7453 },
         narrativeCaption: 'Un ejército disciplinado y leal a la libertad es indispensable para vencer al virreinato.'
@@ -959,7 +959,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Maniobra Táctica en el Monte de las Cruces',
         yearOrDate: '30 de Octubre de 1810',
         description: 'Desplegué nuestra artillería y caballería en envolvente sobre las filas realistas, abriendo el camino hacia el Valle de México.',
-        imageUrl: '/images/history/allende_monte_cruces.jpg',
+        imageUrl: '/images/history/allende_monte_cruces.webp',
         locationName: 'Monte de las Cruces, Ocoyoacac',
         coordinates: { lat: 19.3167, lng: -99.3667 },
         narrativeCaption: 'La táctica militar y el empuje popular derrotaron al ejército virreinal.'
@@ -972,7 +972,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Guanajuato, México',
         coordinates: { lat: 20.9144, lng: -100.7453 },
         significance: 'Mi ciudad natal y centro de organización de los cuadros militares insurgentes.',
-        imageUrl: '/images/history/san_miguel_allende.jpg'
+        imageUrl: '/images/history/san_miguel_allende.webp'
       },
       {
         id: 'all-loc2',
@@ -980,7 +980,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Jalisco y Chihuahua, México',
         coordinates: { lat: 28.6353, lng: -106.0745 },
         significance: 'Escenarios donde combatí hasta el sacrificio final el 26 de junio de 1811.',
-        imageUrl: '/images/history/allende_fusilamiento.jpg'
+        imageUrl: '/images/history/allende_fusilamiento.webp'
       }
     ],
     verificationQuestions: [
@@ -1003,7 +1003,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /madero/i,
     characterName: 'Francisco I. Madero',
-    avatarImageUrl: '/images/history/madero_avatar.png',
+    avatarImageUrl: '/images/history/madero_avatar.webp',
     birthDeathDates: '1873 - 1913',
     historicalEra: 'Revolución Maderista y Democracia',
     shortBio: 'Proclamé el Plan de San Luis bajo el lema "Sufragio Efectivo, No Reelección" y convoqué al pueblo mexicano a conquistar la democracia el 20 de noviembre de 1910.',
@@ -1013,7 +1013,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Publicación de "La Sucesión Presidencial en 1910" y Plan de San Luis',
         yearOrDate: '1908 - Octubre de 1910',
         description: 'Redacté la obra que despertó la conciencia democrática del país y convoqué al alzamiento nacional para el 20 de noviembre de 1910 bajo el principio de Sufragio Efectivo, No Reelección.',
-        imageUrl: '/images/history/madero_plan_san_luis.jpg',
+        imageUrl: '/images/history/madero_plan_san_luis.webp',
         locationName: 'San Luis Potosí y Coahuila',
         coordinates: { lat: 22.1565, lng: -100.9855 },
         narrativeCaption: 'El pueblo tiene derecho a elegir libremente a sus gobernantes sin dictaduras eternas.'
@@ -1023,7 +1023,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Entrada Triunfal a la Ciudad de México',
         yearOrDate: '7 de Junio de 1911',
         description: 'Tras los Tratados de Ciudad Juárez y la caída de la dictadura, ingresé a la capital entre multitudes que celebraban la apertura democrática.',
-        imageUrl: '/images/history/madero_entrada_triunfal_1911.jpg',
+        imageUrl: '/images/history/madero_entrada_triunfal_1911.webp',
         locationName: 'Paseo de la Reforma y Zócalo, Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'La libertad conquistada se sostiene con legalidad, prensa libre y voto limpio.'
@@ -1036,7 +1036,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Coahuila, México',
         coordinates: { lat: 25.4414, lng: -102.1786 },
         significance: 'Hacienda del Rosario donde nací y experimenté técnicas agrícolas y apoyo educativo comunitario.',
-        imageUrl: '/images/history/madero_libro_sucesion.jpg'
+        imageUrl: '/images/history/madero_libro_sucesion.webp'
       },
       {
         id: 'mad-loc2',
@@ -1044,7 +1044,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1313 },
         significance: 'Sede de mi gobierno constitucional hasta la traición de la Decena Trágica en febrero de 1913.',
-        imageUrl: '/images/history/madero_martirio_lecumberri.jpg'
+        imageUrl: '/images/history/madero_martirio_lecumberri.webp'
       }
     ],
     verificationQuestions: [
@@ -1067,7 +1067,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /felipe\s+[aá]ngeles/i,
     characterName: 'Felipe Ángeles',
-    avatarImageUrl: '/images/history/felipe_angeles_avatar.png',
+    avatarImageUrl: '/images/history/felipe_angeles_avatar.webp',
     birthDeathDates: '1868 - 1919',
     historicalEra: 'Revolución Mexicana y Artillería Científica',
     shortBio: 'Fui director del Heroico Colegio Militar y estratega artillero de la División del Norte en la Toma de Zacatecas, guiado siempre por el honor y el humanismo.',
@@ -1077,7 +1077,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Dirección Humanista del Heroico Colegio Militar',
         yearOrDate: '1912 - 1913',
         description: 'Nombrado por el presidente Madero, erradiqué los castigos corporales y formé jóvenes oficiales demócratas y respetuosos del orden civil.',
-        imageUrl: '/images/history/angeles_colegio_militar.jpg',
+        imageUrl: '/images/history/angeles_colegio_militar.webp',
         locationName: 'Castillo de Chapultepec, Ciudad de México',
         coordinates: { lat: 19.4204, lng: -99.1819 },
         narrativeCaption: 'Un soldado republicano debe proteger al ciudadano, nunca oprimirlo.'
@@ -1087,7 +1087,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Planificación Balística en la Toma de Zacatecas',
         yearOrDate: '23 de Junio de 1914',
         description: 'Calculé con rigor científico la posición de nuestra artillería para batir los cerros de La Bufa y El Grillo, asegurando la victoria decisiva de la División del Norte.',
-        imageUrl: '/images/history/angeles_batalla_zacatecas.jpg',
+        imageUrl: '/images/history/angeles_batalla_zacatecas.webp',
         locationName: 'Cerro de la Bufa, Zacatecas',
         coordinates: { lat: 22.7758, lng: -102.5694 },
         narrativeCaption: 'La ciencia matemática y el valor conjunto quebraron la usurpación militar.'
@@ -1100,7 +1100,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Hidalgo y Ciudad de México',
         coordinates: { lat: 20.6508, lng: -98.6528 },
         significance: 'Mi tierra natal serrana y la escuela militar donde forjé la vocación de servicio.',
-        imageUrl: '/images/history/angeles_pacificacion_morelos.jpg'
+        imageUrl: '/images/history/angeles_pacificacion_morelos.webp'
       },
       {
         id: 'ang-loc2',
@@ -1108,7 +1108,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Chihuahua, México',
         coordinates: { lat: 28.6353, lng: -106.0744 },
         significance: 'Recinto donde defendí la concordia nacional ante mi consejo de guerra en noviembre de 1919.',
-        imageUrl: '/images/history/angeles_fusilamiento_chihuahua.jpg'
+        imageUrl: '/images/history/angeles_fusilamiento_chihuahua.webp'
       }
     ],
     verificationQuestions: [
@@ -1131,7 +1131,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /carmen\s+serd[aá]n/i,
     characterName: 'Carmen Serdán Alatriste',
-    avatarImageUrl: '/images/history/carmen_serdan_avatar.png',
+    avatarImageUrl: '/images/history/carmen_serdan_avatar.webp',
     birthDeathDates: '1873 - 1948',
     historicalEra: 'Heroínas Fundacionales de la Revolución Mexicana',
     shortBio: 'El 18 de noviembre de 1910 en Puebla empuñé las armas desde el balcón de nuestra casa en Santa Clara convocando al pueblo a defender la libertad.',
@@ -1141,7 +1141,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Traslado Clandestino de Parque y Propaganda',
         yearOrDate: 'Septiembre - Noviembre de 1910',
         description: 'Organicé redes discretas bajo el seudónimo de "Marcos Serratos", transportando armas y proclamas antirreeleccionistas para la insurrección en Puebla.',
-        imageUrl: '/images/history/carmen_trafico_armas.jpg',
+        imageUrl: '/images/history/carmen_trafico_armas.webp',
         locationName: 'Puebla y Tlaxcala',
         coordinates: { lat: 19.0414, lng: -98.2063 },
         narrativeCaption: 'La libertad exige convicción, sigilo y entrega absoluta antes del alba revolucionaria.'
@@ -1151,7 +1151,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'La Arenga Armada en el Balcón de Santa Clara',
         yearOrDate: '18 de Noviembre de 1910',
         description: 'Durante el asedio policial en nuestra casa de Santa Clara, salí al balcón con carabina en mano convocando a los poblanos a levantarse por la libertad.',
-        imageUrl: '/images/history/carmen_balcon_arenga.jpg',
+        imageUrl: '/images/history/carmen_balcon_arenga.webp',
         locationName: 'Casa de los Hermanos Serdán, Puebla',
         coordinates: { lat: 19.0446, lng: -98.1955 },
         narrativeCaption: '¡Poblanos, ha llegado el momento de conquistar el voto y la libertad con valor!'
@@ -1164,7 +1164,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Puebla, México',
         coordinates: { lat: 19.0446, lng: -98.1955 },
         significance: 'Hogar familiar donde resistimos el primer combate de la Revolución Mexicana el 18 de noviembre de 1910.',
-        imageUrl: '/images/history/carmen_enfermera_revolucion.jpg'
+        imageUrl: '/images/history/carmen_enfermera_revolucion.webp'
       },
       {
         id: 'cser-loc2',
@@ -1172,7 +1172,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Puebla, México',
         coordinates: { lat: 19.0462, lng: -98.1941 },
         significance: 'Prisión donde permanecí herida y recluida tras el combate de Santa Clara.',
-        imageUrl: '/images/history/carmen_prision_merced.jpg'
+        imageUrl: '/images/history/carmen_prision_merced.webp'
       }
     ],
     verificationQuestions: [
@@ -1195,7 +1195,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /aquiles\s+serd[aá]n/i,
     characterName: 'Aquiles Serdán',
-    avatarImageUrl: '/images/history/aquiles_serdan_avatar.png',
+    avatarImageUrl: '/images/history/aquiles_serdan_avatar.webp',
     birthDeathDates: '1876 - 1910',
     historicalEra: 'Precursores y Mártires de la Revolución',
     shortBio: 'Encabecé el levantamiento antirreeleccionista en Puebla el 18 de noviembre de 1910, convirtiendo nuestro hogar en la chispa moral de la Revolución Mexicana.',
@@ -1205,7 +1205,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Fundación del Club Político "Luz y Progreso"',
         yearOrDate: '1909',
         description: 'Congregué a obreros textiles y ciudadanos de Puebla en el club Luz y Progreso para organizar comités democráticos y adquirir armamento para defender la legalidad.',
-        imageUrl: '/images/history/serdan_club_luz_progreso.jpg',
+        imageUrl: '/images/history/serdan_club_luz_progreso.webp',
         locationName: 'Ciudad de Puebla, Puebla',
         coordinates: { lat: 19.0414, lng: -98.2063 },
         narrativeCaption: 'Unidos en la organización obrera y cívica preparamos la caída de la tiranía.'
@@ -1215,7 +1215,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'El Primer Combate de la Revolución en Santa Clara',
         yearOrDate: '18 de Noviembre de 1910',
         description: 'Anticipándose el cateo policial dos días antes de la fecha fijada, resistimos durante horas frente a cientos de soldados en defensa del ideario maderista.',
-        imageUrl: '/images/history/serdan_combate_santa_clara.jpg',
+        imageUrl: '/images/history/serdan_combate_santa_clara.webp',
         locationName: 'Santa Clara, Puebla',
         coordinates: { lat: 19.0446, lng: -98.1955 },
         narrativeCaption: 'Nuestra resistencia en Puebla encendió la conciencia de toda la República.'
@@ -1228,7 +1228,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Puebla, México',
         coordinates: { lat: 19.0446, lng: -98.1955 },
         significance: 'Escondite de madera bajo la duela donde permanecí oculto tras agotarse el parque.',
-        imageUrl: '/images/history/serdan_escondite_duela.jpg'
+        imageUrl: '/images/history/serdan_escondite_duela.webp'
       },
       {
         id: 'aser-loc2',
@@ -1236,7 +1236,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Puebla, México',
         coordinates: { lat: 19.0436, lng: -98.1981 },
         significance: 'Memorial cívico donde nuestra entrega inspiró al alzamiento de 1910.',
-        imageUrl: '/images/history/serdan_martirio_puebla.jpg'
+        imageUrl: '/images/history/serdan_martirio_puebla.webp'
       }
     ],
     verificationQuestions: [
@@ -1259,7 +1259,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /belisario\s+dom[ií]nguez/i,
     characterName: 'Belisario Domínguez',
-    avatarImageUrl: '/images/history/belisario_dominguez_avatar.png',
+    avatarImageUrl: '/images/history/belisario_dominguez_avatar.webp',
     birthDeathDates: '1863 - 1913',
     historicalEra: 'Dignidad Republicana frente a la Dictadura',
     shortBio: 'Ejercí la medicina al servicio de los más humildes y, como senador por Chiapas en 1913, alcé la voz en el Congreso contra la usurpación de Victoriano Huerta.',
@@ -1269,7 +1269,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Servicio Médico Solidario en Comitán',
         yearOrDate: '1890 - 1912',
         description: 'Formado en París como médico cirujano, atendí sin cobrar honorarios a los enfermos humildes de Comitán y fundé el periódico El Vate para defender la ética pública.',
-        imageUrl: '/images/history/belisario_medico_pobres.jpg',
+        imageUrl: '/images/history/belisario_medico_pobres.webp',
         locationName: 'Comitán de Domínguez, Chiapas',
         coordinates: { lat: 16.2519, lng: -92.1342 },
         narrativeCaption: 'Curar al pueblo y hablar con la verdad son deberes inseparables de conciencia.'
@@ -1279,7 +1279,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Los Discursos Históricos contra la Usurpación',
         yearOrDate: '23 y 29 de Septiembre de 1913',
         description: 'Redacte e imprimí personalmente mis discursos denunciando los crímenes del dictador Victoriano Huerta y exigiendo al Senado exigir su renuncia.',
-        imageUrl: '/images/history/belisario_impresion_clandestina.jpg',
+        imageUrl: '/images/history/belisario_impresion_clandestina.webp',
         locationName: 'Cámara de Senadores, Ciudad de México',
         coordinates: { lat: 19.4357, lng: -99.1397 },
         narrativeCaption: 'Si cada senador cumple con su deber, la patria salvará su dignidad constitucional.'
@@ -1292,7 +1292,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Chiapas, México',
         coordinates: { lat: 16.2519, lng: -92.1342 },
         significance: 'Mi ciudad natal donde ejercí la medicina solidaria y presidí el ayuntamiento.',
-        imageUrl: '/images/history/belisario_redaccion_discurso.jpg'
+        imageUrl: '/images/history/belisario_redaccion_discurso.webp'
       },
       {
         id: 'bdo-loc2',
@@ -1300,7 +1300,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.3621, lng: -99.1674 },
         significance: 'Sitio de mi sacrificio el 7 de octubre de 1913 tras negarme a callar la verdad.',
-        imageUrl: '/images/history/belisario_martirio_xoco.jpg'
+        imageUrl: '/images/history/belisario_martirio_xoco.webp'
       }
     ],
     verificationQuestions: [
@@ -1323,7 +1323,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /flores\s+mag[oó]n/i,
     characterName: 'Ricardo Flores Magón',
-    avatarImageUrl: '/images/history/ricardo_flores_magon_avatar.png',
+    avatarImageUrl: '/images/history/ricardo_flores_magon_avatar.webp',
     birthDeathDates: '1873 - 1922',
     historicalEra: 'Precursor Intelectual de la Revolución Mexicana',
     shortBio: 'Desde las páginas del periódico Regeneración y el Partido Liberal Mexicano sembré los derechos obreros de jornada de 8 horas, salario digno y educación laica.',
@@ -1333,7 +1333,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'El Periódico Regeneración y "La Constitución ha Muerto"',
         yearOrDate: '1900 - 1903',
         description: 'Fundé el semanario Regeneración para denunciar las arbitrariedades de la dictadura y exhibimos el histórico crespón negro en El Hijo del Ahuizote el 5 de febrero de 1903.',
-        imageUrl: '/images/history/magon_regeneracion_constitucion.jpg',
+        imageUrl: '/images/history/magon_regeneracion_constitucion.webp',
         locationName: 'Centro Histórico, Ciudad de México',
         coordinates: { lat: 19.4357, lng: -99.1312 },
         narrativeCaption: 'La prensa libre es el faro que despierta la conciencia de los oprimidos.'
@@ -1343,7 +1343,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Programa del Partido Liberal Mexicano',
         yearOrDate: '1 de Julio de 1906',
         description: 'Publicamos en el exilio el manifiesto obrero y agrario que inspiró directamente los artículos 3.º, 27 y 123 de nuestra Constitución social.',
-        imageUrl: '/images/history/magon_programa_plm_1906.jpg',
+        imageUrl: '/images/history/magon_programa_plm_1906.webp',
         locationName: 'Saint Louis, Misuri / Norteamérica',
         coordinates: { lat: 38.6270, lng: -90.1994 },
         narrativeCaption: 'Sin jornada justa, salario digno y escuela laica, ninguna revolución está completa.'
@@ -1356,7 +1356,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Oaxaca, México',
         coordinates: { lat: 18.1753, lng: -96.8736 },
         significance: 'Comunidad de la Sierra Mazateca donde nací y aprendí el respeto a la vida comunitaria.',
-        imageUrl: '/images/history/magon_baja_california_1911.jpg'
+        imageUrl: '/images/history/magon_baja_california_1911.webp'
       },
       {
         id: 'rfm-loc2',
@@ -1364,7 +1364,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Kansas, Estados Unidos',
         coordinates: { lat: 39.3292, lng: -94.9333 },
         significance: 'Prisión donde mantuve intactos mis principios hasta mi último día el 21 de noviembre de 1922.',
-        imageUrl: '/images/history/magon_prision_leavenworth.jpg'
+        imageUrl: '/images/history/magon_prision_leavenworth.webp'
       }
     ],
     verificationQuestions: [
@@ -1387,7 +1387,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /guadalupe\s+victoria/i,
     characterName: 'Guadalupe Victoria',
-    avatarImageUrl: '/images/history/guadalupe_victoria_avatar.png',
+    avatarImageUrl: '/images/history/guadalupe_victoria_avatar.webp',
     birthDeathDates: '1786 - 1843',
     historicalEra: 'Consumación y Primera República Federal',
     shortBio: 'Fui el primer Presidente Constitucional de los Estados Unidos Mexicanos (1824-1829) tras combatir sin rendirme en las selvas de Veracruz por nuestra República.',
@@ -1397,7 +1397,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'El Salto del Río Jalatlaco en Oaxaca',
         yearOrDate: '25 de Noviembre de 1812',
         description: 'Arrojé mi espada al otro lado del caudaloso río bajo el fuego enemigo exclamando "¡Va mi espada en prenda, voy por ella!" y crucé a nado para abrir el paso a los insurgentes.',
-        imageUrl: '/images/history/victoria_rio_jalatlaco.jpg',
+        imageUrl: '/images/history/victoria_rio_jalatlaco.webp',
         locationName: 'Ciudad de Oaxaca, Oaxaca',
         coordinates: { lat: 17.0606, lng: -96.7256 },
         narrativeCaption: 'Un jefe insurgente abre el camino frente al fuego con valor inquebrantable.'
@@ -1407,7 +1407,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Juramento de la Primera Presidencia Constitucional y Capitulación de Ulúa',
         yearOrDate: '1824 - 1825',
         description: 'Asumí la primera presidencia republicana bajo la Constitución Federal de 1824, consolidé la rendición del último reducto español en San Juan de Ulúa y fundé el Museo Nacional.',
-        imageUrl: '/images/history/victoria_jura_presidencia_1824.jpg',
+        imageUrl: '/images/history/victoria_jura_presidencia_1824.webp',
         locationName: 'Ciudad de México y Veracruz',
         coordinates: { lat: 19.2094, lng: -96.1314 },
         narrativeCaption: 'La República Federal mexicana se sostiene con legalidad, soberanía y honor.'
@@ -1420,7 +1420,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Veracruz, México',
         coordinates: { lat: 19.2094, lng: -96.1314 },
         significance: 'Teatro de la capitulación española de 1825 y mi última morada en la Fortaleza de San Carlos.',
-        imageUrl: '/images/history/victoria_san_juan_ulua.jpg'
+        imageUrl: '/images/history/victoria_san_juan_ulua.webp'
       },
       {
         id: 'gvic-loc2',
@@ -1428,7 +1428,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Veracruz, México',
         coordinates: { lat: 19.1481, lng: -96.9678 },
         significance: 'Serranías donde resistí en soledad sin aceptar el indulto realista.',
-        imageUrl: '/images/history/victoria_selva_resistencia.jpg'
+        imageUrl: '/images/history/victoria_selva_resistencia.webp'
       }
     ],
     verificationQuestions: [
@@ -1451,7 +1451,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /quintana\s+roo/i,
     characterName: 'Andrés Quintana Roo',
-    avatarImageUrl: '/images/history/andres_quintana_roo_avatar.png',
+    avatarImageUrl: '/images/history/andres_quintana_roo_avatar.webp',
     birthDeathDates: '1787 - 1851',
     historicalEra: 'Congreso de Anáhuac y Letras Patrias',
     shortBio: 'Presidí el Congreso de Anáhuac en Chilpancingo y redacté el Acta Solemne de la Declaración de Independencia de la América Septentrional en 1813.',
@@ -1461,7 +1461,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Redacción del Acta de Independencia en Chilpancingo',
         yearOrDate: '6 de Noviembre de 1813',
         description: 'Presidiendo el Congreso de Anáhuac di forma jurídica al Acta Solemne que declaró rota para siempre la dependencia del trono español.',
-        imageUrl: '/images/history/quintana_acta_independencia.jpg',
+        imageUrl: '/images/history/quintana_acta_independencia.webp',
         locationName: 'Chilpancingo, Guerrero',
         coordinates: { lat: 17.5514, lng: -99.5008 },
         narrativeCaption: 'La pluma y la ley consagran el derecho sagrado de nuestra patria a gobernarse por sí misma.'
@@ -1471,7 +1471,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Imprenta Insurgente de Sultepec',
         yearOrDate: '1812',
         description: 'Fundimos tipos de madera y plomo en las serranías de Sultepec para publicar El Ilustrador Americano y defender nuestras razones libertarias.',
-        imageUrl: '/images/history/quintana_prensa_sultepec.jpg',
+        imageUrl: '/images/history/quintana_prensa_sultepec.webp',
         locationName: 'Sultepec, Estado de México',
         coordinates: { lat: 18.8436, lng: -99.9547 },
         narrativeCaption: 'Cada pliego impreso en la sierra llevó luz jurídica a toda la América Septentrional.'
@@ -1484,7 +1484,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Guerrero, México',
         coordinates: { lat: 17.5514, lng: -99.5008 },
         significance: 'Sede del Congreso de Anáhuac donde redacté el Acta de 1813.',
-        imageUrl: '/images/history/quintana_clandestinidad_leona.jpg'
+        imageUrl: '/images/history/quintana_clandestinidad_leona.webp'
       },
       {
         id: 'aqr-loc2',
@@ -1492,7 +1492,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4335, lng: -99.1408 },
         significance: 'Tertulia literaria que fundé en 1836 para impulsar las letras nacionales mexicanas.',
-        imageUrl: '/images/history/quintana_academia_letran.jpg'
+        imageUrl: '/images/history/quintana_academia_letran.webp'
       }
     ],
     verificationQuestions: [
@@ -1515,7 +1515,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /posada/i,
     characterName: 'José Guadalupe Posada',
-    avatarImageUrl: '/images/history/jose_guadalupe_posada_avatar.png',
+    avatarImageUrl: '/images/history/jose_guadalupe_posada_avatar.webp',
     birthDeathDates: '1852 - 1913',
     historicalEra: 'Arte Gráfico y Crónica Popular Mexicana',
     shortBio: 'Grabé en placas de zinc la vida del pueblo mexicano y di vida a la Calavera Garbancera, recordando que ante la muerte todos somos iguales.',
@@ -1525,7 +1525,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'El Taller Tipográfico frente a Santa Inés',
         yearOrDate: '1890 - 1912',
         description: 'En la imprenta de Antonio Vanegas Arroyo ilustré más de quince mil hojas volantes, corridos y gacetas populares que relataban las inquietudes y sátiras de nuestro pueblo.',
-        imageUrl: '/images/history/posada_hojas_volantes.jpg',
+        imageUrl: '/images/history/posada_hojas_volantes.webp',
         locationName: 'Calle de Moneda / Santa Inés, Ciudad de México',
         coordinates: { lat: 19.4331, lng: -99.1301 },
         narrativeCaption: 'El buril y la tinta ponen al alcance del pueblo la crítica mordaz y la memoria cotidiana.'
@@ -1535,7 +1535,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Creación de La Calavera Garbancera',
         yearOrDate: '1910 - 1912',
         description: 'Grabé mi calavera ataviada con sombrero francés elegante pero desnuda de ropas para satirizar a quienes renegaban de sus raíces indígenas.',
-        imageUrl: '/images/history/posada_calavera_garbancera.jpg',
+        imageUrl: '/images/history/posada_calavera_garbancera.webp',
         locationName: 'Ciudad de México',
         coordinates: { lat: 19.4326, lng: -99.1332 },
         narrativeCaption: 'La muerte es democrática: ricos y pobres terminamos siendo iguales bajo la tierra.'
@@ -1548,7 +1548,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Aguascalientes, México',
         coordinates: { lat: 21.8794, lng: -102.2994 },
         significance: 'Mi ciudad natal donde aprendí el oficio de litógrafo y grabador.',
-        imageUrl: '/images/history/posada_taller_aguascalientes.jpg'
+        imageUrl: '/images/history/posada_taller_aguascalientes.webp'
       },
       {
         id: 'jgp-loc2',
@@ -1556,7 +1556,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4331, lng: -99.1301 },
         significance: 'Corazón de mi taller gráfico frente a la Iglesia de Santa Inés.',
-        imageUrl: '/images/history/posada_mural_rivera.jpg'
+        imageUrl: '/images/history/posada_mural_rivera.webp'
       }
     ],
     verificationQuestions: [
@@ -1579,7 +1579,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /calles/i,
     characterName: 'Plutarco Elías Calles',
-    avatarImageUrl: '/images/history/plutarco_elias_calles_avatar.png',
+    avatarImageUrl: '/images/history/plutarco_elias_calles_avatar.webp',
     birthDeathDates: '1877 - 1945',
     historicalEra: 'Construcción Institucional Posrevolucionaria',
     shortBio: 'Desde la Presidencia de la República fundé el Banco de México y declaré en 1928 el paso histórico de la era de los caudillos a la era de las instituciones.',
@@ -1589,7 +1589,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Fundación del Banco de México y Banca Pública',
         yearOrDate: '1 de Septiembre de 1925',
         description: 'Creé nuestro banco central único emisor de moneda junto con el Banco Nacional de Crédito Agrícola y la red nacional de carreteras para modernizar el país.',
-        imageUrl: '/images/history/calles_banco_mexico.jpg',
+        imageUrl: '/images/history/calles_banco_mexico.webp',
         locationName: 'Centro Histórico, Ciudad de México',
         coordinates: { lat: 19.4357, lng: -99.1394 },
         narrativeCaption: 'La soberanía económica nacional exige instituciones financieras sólidas y transparentes.'
@@ -1599,7 +1599,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Mensaje Histórico sobre el Fin de los Caudillos',
         yearOrDate: '1 de Septiembre de 1928',
         description: 'Ante el Congreso de la Unión afirmé que México debía pasar definitivamente del gobierno personalista de caudillos a una nación guiada por instituciones y partidos.',
-        imageUrl: '/images/history/calles_informe_1928.jpg',
+        imageUrl: '/images/history/calles_informe_1928.webp',
         locationName: 'Cámara de Diputados, Ciudad de México',
         coordinates: { lat: 19.4368, lng: -99.1375 },
         narrativeCaption: 'Ha llegado la hora de consolidar una patria gobernada por leyes e instituciones duraderas.'
@@ -1612,7 +1612,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4357, lng: -99.1394 },
         significance: 'Institución financiera fundada en 1925 para estabilizar la moneda nacional.',
-        imageUrl: '/images/history/calles_fundacion_pnr.jpg'
+        imageUrl: '/images/history/calles_fundacion_pnr.webp'
       },
       {
         id: 'pec-loc2',
@@ -1620,7 +1620,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Sonora, México',
         coordinates: { lat: 27.9211, lng: -110.8975 },
         significance: 'Puerto sonorense donde ejercí como maestro escolar antes de unirme al constitucionalismo.',
-        imageUrl: '/images/history/calles_guerra_cristera.jpg'
+        imageUrl: '/images/history/calles_guerra_cristera.webp'
       }
     ],
     verificationQuestions: [
@@ -1643,7 +1643,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
   {
     match: /d[ií]az\s+ordaz/i,
     characterName: 'Gustavo Díaz Ordaz',
-    avatarImageUrl: '/images/history/gustavo_diaz_ordaz_avatar.png',
+    avatarImageUrl: '/images/history/gustavo_diaz_ordaz_avatar.webp',
     birthDeathDates: '1911 - 1979',
     historicalEra: 'México Contemporáneo y Desarrollo Estabilizador',
     shortBio: 'Ejercí la presidencia de México de 1964 a 1970 durante la firma del Tratado de Tlatelolco, la restitución de El Chamizal y la construcción del Metro.',
@@ -1653,7 +1653,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Firma del Tratado de Tlatelolco y Devolución de El Chamizal',
         yearOrDate: '1967',
         description: 'En mi mandato se firmó en Tlatelolco el tratado pionero de no proliferación nuclear en América Latina y recibimos físicamente el territorio recuperado de El Chamizal en Ciudad Juárez.',
-        imageUrl: '/images/history/diaz_ordaz_chamizal.jpg',
+        imageUrl: '/images/history/diaz_ordaz_chamizal.webp',
         locationName: 'Tlatelolco, CDMX y Ciudad Juárez, Chihuahua',
         coordinates: { lat: 31.7667, lng: -106.4500 },
         narrativeCaption: 'La diplomacia mexicana promovió el desarme nuclear continental y la recuperación territorial.'
@@ -1663,7 +1663,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         title: 'Inauguración del Sistema de Transporte Colectivo Metro',
         yearOrDate: '4 de Septiembre de 1969',
         description: 'Inauguramos la primera línea del Metro de la Ciudad de México (Zaragoza-Chapultepec) para modernizar la movilidad urbana de la capital.',
-        imageUrl: '/images/history/diaz_ordaz_metro_1969.jpg',
+        imageUrl: '/images/history/diaz_ordaz_metro_1969.webp',
         locationName: 'Ciudad de México',
         coordinates: { lat: 19.4209, lng: -99.1332 },
         narrativeCaption: 'La infraestructura urbana y el tratado de paz nuclear marcaron obras decisivas de aquel sexenio.'
@@ -1676,7 +1676,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad de México',
         coordinates: { lat: 19.4510, lng: -99.1372 },
         significance: 'Escenario tanto del Tratado de Tlatelolco como de los graves acontecimientos del 2 de octubre de 1968.',
-        imageUrl: '/images/history/diaz_ordaz_tlatelolco_tratado.jpg'
+        imageUrl: '/images/history/diaz_ordaz_tlatelolco_tratado.webp'
       },
       {
         id: 'gdo-loc2',
@@ -1684,7 +1684,7 @@ const VAULT_22_QUICK_LOOKUP: Array<{
         stateOrCountry: 'Ciudad Juárez, Chihuahua',
         coordinates: { lat: 31.7667, lng: -106.4500 },
         significance: 'Territorio fronterizo reintegrado formalmente a la soberanía mexicana en 1967.',
-        imageUrl: '/images/history/diaz_ordaz_informe_1969.jpg'
+        imageUrl: '/images/history/diaz_ordaz_informe_1969.webp'
       }
     ],
     verificationQuestions: [
@@ -1764,7 +1764,7 @@ export function buildDynamicHistoricalFigureData(
         ? `Explora mis coordenadas geográficas, mi arquitectura y las crónicas documentadas en la Bóveda Curricular.`
         : `Dialoga conmigo en primera persona sobre mis aportaciones, contexto histórico y momentos decisivos.`,
       avatarImageUrl: isGeographicSite
-        ? '/images/history/santiago_de_queretaro_avatar.jpg'
+        ? '/images/history/santiago_de_queretaro_avatar.webp'
         : /leona|vicario/i.test(titleName)
           ? '/images/history/leona_vicario_avatar.webp'
           : '/images/history/personaje_generico_avatar.png',
@@ -1778,7 +1778,7 @@ export function buildDynamicHistoricalFigureData(
           description: isGeographicSite
             ? `En mis primeros asentamientos se trazaron las rutas y edificaciones que definieron mi importancia estratégica.`
             : `Desde mis años de formación forjé los principios y conocimientos que guiaron mi trayectoria histórica.`,
-          imageUrl: '/images/history/momento_historico_1.jpg',
+          imageUrl: '/images/history/momento_historico_1.webp',
           locationName: titleName,
           coordinates: { lat: 19.4326, lng: -99.1332 },
           narrativeCaption: `El inicio de mi legado en la memoria histórica.`
@@ -1790,7 +1790,7 @@ export function buildDynamicHistoricalFigureData(
           description: isGeographicSite
             ? `Fui escenario de acontecimientos cruciales que marcaron el rumbo social y cultural de la región.`
             : `Encabecé acciones y aportaciones decisivas frente a los desafíos de mi tiempo.`,
-          imageUrl: '/images/history/momento_historico_2.jpg',
+          imageUrl: '/images/history/momento_historico_2.webp',
           locationName: titleName,
           coordinates: { lat: 20.5931, lng: -100.3928 },
           narrativeCaption: `Cada decisión dejó testimonio documental verificado.`
@@ -1803,7 +1803,7 @@ export function buildDynamicHistoricalFigureData(
           stateOrCountry: 'Ubicación Histórica',
           coordinates: { lat: 19.4326, lng: -99.1332 },
           significance: `Punto clave vinculado a la historia de ${titleName}.`,
-          imageUrl: '/images/history/sitio_historico_default.jpg'
+          imageUrl: '/images/history/sitio_historico_default.webp'
         }
       ],
       verificationQuestions: [

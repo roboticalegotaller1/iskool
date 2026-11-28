@@ -6,7 +6,7 @@ eraOrPeriod: "Siglo de Oro Novohispano y Letras Virreinales (1648 - 1695)"
 birthOrEstablishment: "12 de noviembre de 1648, San Miguel Nepantla, Estado de México"
 deathOrPresentState: "17 de abril de 1695, Convento de San Jerónimo, Ciudad de México"
 bookSpineStyle: "grimorio_dorado"
-avatarImageUrl: "/images/history/sor_juana_avatar.png"
+avatarImageUrl: "/images/history/sor_juana_avatar.webp"
 voiceId: "es-MX-DaliaNeural"
 voiceCohort: "adult_female"
 voiceRate: "-4%"
@@ -34,7 +34,7 @@ En mi celda conventual reuní más de cuatro mil volúmenes e instrumentos cient
 **Coordenadas**: 19.4326, -99.1313
 **Narrativa**: Con tan solo diecisiete años y ante el asombro del virrey Marqués de Mancera, respondo y debato victoriosamente frente a cuarenta teólogos, astrónomos, juristas y poetas de la Real Universidad.
 
-![El Examen ante los Cuarenta Sabios en la Corte](/images/history/sor_juana_examen_sabios.jpg)
+![El Examen ante los Cuarenta Sabios en la Corte](/images/history/sor_juana_examen_sabios.webp)
 
 Como un galeón real defendiéndose de barquichuelos, demostré que el entendimiento femenino no tiene límites ante ninguna ciencia de los hombres.
 
@@ -44,7 +44,7 @@ Como un galeón real defendiéndose de barquichuelos, demostré que el entendimi
 **Coordenadas**: 19.4297, -99.1367
 **Narrativa**: En el silencio nocturno de mi celda y a la luz de las velas compongo las 975 líneas de mi silva filosófica, narrando el viaje del alma humana que en el sueño intenta contemplar la totalidad del universo.
 
-![La Escritura de "Primero sueño" en el Claustro](/images/history/sor_juana_primero_sueno.jpg)
+![La Escritura de "Primero sueño" en el Claustro](/images/history/sor_juana_primero_sueno.webp)
 
 "Piramidal, funesta, de la tierra nacida sombra, al cielo encaminaba de vanos obeliscos punta altiva..." La cumbre de mi poesía y de mi inquietud metafísica.
 
@@ -54,7 +54,7 @@ Como un galeón real defendiéndose de barquichuelos, demostré que el entendimi
 **Coordenadas**: 19.4297, -99.1367
 **Narrativa**: Ante los reproches del obispo de Puebla defiendo con valentía inmortal el derecho de la mujer al saber, a la ciencia y a la filosofía: "Si Aristóteles hubiera guisado, mucho más hubiera escrito".
 
-![La "Respuesta a Sor Filotea de la Cruz"](/images/history/sor_juana_respuesta_filotea.jpg)
+![La "Respuesta a Sor Filotea de la Cruz"](/images/history/sor_juana_respuesta_filotea.webp)
 
 Reclamé para todas las mujeres del porvenir el derecho inalienable a pensar, escribir, enseñar y gobernarse por su propia inteligencia.
 
@@ -64,7 +64,7 @@ Reclamé para todas las mujeres del porvenir el derecho inalienable a pensar, es
 **Coordenadas**: 19.4297, -99.1367
 **Narrativa**: Al azotar la peste del matlazáhuatl al convento, me consagro día y noche al cuidado, consuelo y curación de mis hermanas religiosas agonizantes hasta contraer yo misma la fiebre fatal.
 
-![La Entrega Heroica durante la Epidemia de 1695](/images/history/sor_juana_epidemia_1695.jpg)
+![La Entrega Heroica durante la Epidemia de 1695](/images/history/sor_juana_epidemia_1695.webp)
 
 Cerré mis ojos en la paz del Señor, dejando en el corazón de mi patria la luz inextinguible de mi poesía y de mi pensamiento libertario.
 

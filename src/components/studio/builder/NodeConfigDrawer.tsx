@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { useShallow } from 'zustand/react/shallow';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { BlockDispatcher } from './blocks/BlockDispatcher';
@@ -131,10 +131,11 @@ export const NodeConfigDrawer: React.FC = () => {
   const availableTargetNodes = blocks.filter(b => b.id !== selectedBlock.id);
 
   return createPortal(
+    <LazyMotion features={domAnimation}>
     <AnimatePresence>
       <div className="fixed inset-0 z-[9995] overflow-hidden flex justify-end">
         {/* Telón de Fondo Difuminado */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -143,7 +144,7 @@ export const NodeConfigDrawer: React.FC = () => {
         />
 
         {/* Panel Lateral Deslizante */}
-        <motion.div
+        <m.div
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
@@ -327,9 +328,10 @@ export const NodeConfigDrawer: React.FC = () => {
               <span>Guardar & Cerrar</span>
             </button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
-    </AnimatePresence>,
+    </AnimatePresence>
+    </LazyMotion>,
     document.body
   );
 };

@@ -82,7 +82,7 @@ async function drawGrid(imageFile, outFile) {
 }
 
 (async () => {
-  const inPath = process.argv[2] || 'public/images/languages/historical/napoleon.jpg';
+  const inPath = process.argv[2] || 'public/images/languages/historical/napoleon.webp';
   const outPath = process.argv[3] || 'public/debug_grid_output.jpg';
   await drawGrid(inPath, outPath);
 })();

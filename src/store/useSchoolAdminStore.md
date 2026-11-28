@@ -179,7 +179,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>((set, get) => (
     const newStudent: DetailedStudent = {
       ...studentData,
       id: newId,
-      photo_url: studentData.photo_url || '/images/students/default.png'
+      photo_url: studentData.photo_url || '/images/students/default.webp'
     };
 
     set((state) => ({

@@ -6,7 +6,7 @@ eraOrPeriod: "Revolución Maderista y Democracia (1909 - 1913)"
 birthOrEstablishment: "30 de octubre de 1873, Hacienda de El Rosario, Parras, Coahuila"
 deathOrPresentState: "22 de febrero de 1913, Ciudad de México"
 bookSpineStyle: "cuaderno_cronista"
-avatarImageUrl: "/images/history/madero_avatar.png"
+avatarImageUrl: "/images/history/madero_avatar.webp"
 voiceId: "es-MX-JorgeNeural"
 voiceCohort: "adult_male"
 voiceRate: "-5%"
@@ -34,7 +34,7 @@ Tras recorrer el país en la primera gran campaña electoral moderna y ser encar
 **Coordenadas**: 25.7611, -102.9861
 **Narrativa**: En mi despacho agrícola concluyo las pruebas de imprenta de mi libro manifiesto, llamando a los mexicanos a crear partidos libres y terminar pacíficamente con la tiranía de Porfirio Díaz.
 
-![La Publicación de "La sucesión presidencial en 1910"](/images/history/madero_libro_sucesion.jpg)
+![La Publicación de "La sucesión presidencial en 1910"](/images/history/madero_libro_sucesion.webp)
 
 El libro sacudió la conciencia dormida de la República y prendió la chispa cívica que derrotaría a la dictadura más longeva de nuestra historia.
 
@@ -44,7 +44,7 @@ El libro sacudió la conciencia dormida de la República y prendió la chispa c�
 **Coordenadas**: 29.4241, -98.4936
 **Narrativa**: Tras huir disfrazado de mecánico ferrocarrilero, redacto el documento fundacional que declara nulas las elecciones fraudulentas y convoca a todos los mexicanos a tomar las armas el domingo 20 de noviembre a las seis de la tarde.
 
-![La Proclamación del Plan de San Luis](/images/history/madero_plan_san_luis.jpg)
+![La Proclamación del Plan de San Luis](/images/history/madero_plan_san_luis.webp)
 
 "Conciudadanos: Si la fuerza de las armas me ha llevado a la presidencia, el sufragio popular me confirmará en ella o la entregará al que la nación designe".
 
@@ -54,7 +54,7 @@ El libro sacudió la conciencia dormida de la República y prendió la chispa c�
 **Coordenadas**: 19.4326, -99.1313
 **Narrativa**: Aclamado por más de cien mil almas tras el terremoto de la madrugada, ingreso en ferrocarril a la capital como el líder pacificador, ganando meses después las elecciones libres con un mandato popular histórico.
 
-![La Entrada Triunfal a la Ciudad de México](/images/history/madero_entrada_triunfal_1911.jpg)
+![La Entrada Triunfal a la Ciudad de México](/images/history/madero_entrada_triunfal_1911.webp)
 
 El pueblo de México demostró en las urnas que anhelaba la libertad, el respeto a la ley y la dignidad ciudadana por encima de la fuerza militar.
 
@@ -64,7 +64,7 @@ El pueblo de México demostró en las urnas que anhelaba la libertad, el respeto
 **Coordenadas**: 19.4408, -99.1178
 **Narrativa**: Encarcelado junto a Pino Suárez tras la vil traición de Huerta en Palacio, rechazo claudicar en mi legitimidad moral antes de ser conducido en la noche a espaldas de Lecumberri para ser acribillado por la espalda.
 
-![La Decena Trágica y el Martirio en Lecumberri](/images/history/madero_martirio_lecumberri.jpg)
+![La Decena Trágica y el Martirio en Lecumberri](/images/history/madero_martirio_lecumberri.webp)
 
 Mi cuerpo cayó bajo las balas traidoras, pero mi sacrificio cívico encendió la hoguera de la Revolución Constitucionalista que barrió para siempre al cuartelazo de nuestra patria.
 

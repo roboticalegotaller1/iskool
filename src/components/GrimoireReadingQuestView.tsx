@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Quest, ReadingQuestContent, SubmitReadingQuestResult } from '@/types';
 import { useStudentStore, useCurrentStudentStats } from '@/store/useStudentStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
@@ -381,7 +380,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
 
                 {/* Barra de maná con brillo de partículas */}
                 <div className="relative w-full h-3 bg-zinc-900/90 rounded-full border border-cyan-500/30 overflow-hidden shadow-inner p-0.5">
-                  <motion.div
+                  <div
                     className={`h-full rounded-full relative transition-all duration-1000 ease-linear ${
                       isLow 
                         ? 'bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 shadow-[0_0_15px_rgba(244,63,94,0.7)]' 
@@ -392,7 +391,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                     style={{ width: `${energyPercent}%` }}
                   >
                     <div className="absolute right-0 top-0 bottom-0 w-3 bg-white rounded-full blur-[2px] animate-pulse" />
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             );

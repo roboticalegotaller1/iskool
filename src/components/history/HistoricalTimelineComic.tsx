@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
   MapPin, 
@@ -87,25 +87,25 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
     const norm = (characterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('centauro')) {
       const villaMoments = [
-        '/images/history/villa_toma_juarez_comic_1.png',
-        '/images/history/villa_batalla_zacatecas_comic_2.png',
-        '/images/history/villa_pacto_xochimilco_comic_3.png',
-        '/images/history/villa_columbus_comic_4.png'
+        '/images/history/villa_toma_juarez_comic_1.webp',
+        '/images/history/villa_batalla_zacatecas_comic_2.webp',
+        '/images/history/villa_pacto_xochimilco_comic_3.webp',
+        '/images/history/villa_columbus_comic_4.webp'
       ];
       return villaMoments[idx % villaMoments.length];
     }
 
     if (norm.includes('josefa') || norm.includes('corregidora')) {
       const josefaMoments = [
-        '/images/history/josefa_conspiracion_comic_1.png',
-        '/images/history/josefa_taconeo_comic_2.png',
-        '/images/history/josefa_alerta_comic_3.png',
-        '/images/history/josefa_alerta_dolores_comic_4.png'
+        '/images/history/josefa_conspiracion_comic_1.webp',
+        '/images/history/josefa_taconeo_comic_2.webp',
+        '/images/history/josefa_alerta_comic_3.webp',
+        '/images/history/josefa_alerta_dolores_comic_4.webp'
       ];
       return josefaMoments[idx % josefaMoments.length];
     }
 
-    return avatarImageUrl || '/images/history/francisco_villa_avatar.png';
+    return avatarImageUrl || '/images/history/francisco_villa_avatar.webp';
   };
 
   const activeMoment = moments[activeMomentIndex] || moments[0] || {
@@ -113,7 +113,7 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
     yearOrPeriod: 'Historia',
     title: `${characterName}: Hito Fundamental`,
     description: `${characterName} en la historia patria.`,
-    imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+    imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.webp',
     locationName: 'México',
     narrativeCaption: `${characterName} en la historia patria.`
   };
@@ -242,7 +242,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
 
         {/* Imagen del Panel Ilustrado (100% visible con object-contain sin recortes de texto ni globos de diálogo) */}
         <div className="relative w-full min-h-[300px] sm:min-h-[440px] max-h-[580px] bg-stone-950 overflow-hidden flex items-center justify-center p-2 sm:p-4">
-          <motion.img 
+          <LazyMotion features={domAnimation}>
+          <m.img 
             key={`${activeMoment.id}-${activeMomentIndex}`}
             src={activeMomentImage} 
             alt={activeMoment.title}
@@ -250,8 +251,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
               const target = e.target as HTMLImageElement;
               if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
                 target.src = avatarImageUrl;
-              } else if (!target.src.includes('francisco_villa_avatar.png')) {
-                target.src = '/images/history/francisco_villa_avatar.png';
+              } else if (!target.src.includes('francisco_villa_avatar.webp')) {
+                target.src = '/images/history/francisco_villa_avatar.webp';
               }
             }}
             initial={{ opacity: 0, scale: 0.98 }}
@@ -260,6 +261,7 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             className="w-auto h-auto max-w-full max-h-[540px] object-contain filter contrast-105 brightness-95 rounded-xl border border-amber-500/20 shadow-2xl cursor-zoom-in"
             onClick={() => setIsLightboxOpen(true)}
           />
+          </LazyMotion>
         </div>
 
         {/* Panel Narrativo Pedagógico de la Novela Gráfica (Ubicado DEBAJO de la imagen para jamás encimarse con el arte o globos) */}
@@ -340,8 +342,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
                     const target = e.target as HTMLImageElement;
                     if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
                       target.src = avatarImageUrl;
-                    } else if (!target.src.includes('francisco_villa_avatar.png')) {
-                      target.src = '/images/history/francisco_villa_avatar.png';
+                    } else if (!target.src.includes('francisco_villa_avatar.webp')) {
+                      target.src = '/images/history/francisco_villa_avatar.webp';
                     }
                   }}
                   className="w-full h-full object-cover"
@@ -362,9 +364,10 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
       </div>
 
       {/* Modal Lightbox de Pantalla Completa para Lectura Cómoda y Sin Cortes de Texto */}
+      <LazyMotion features={domAnimation}>
       <AnimatePresence>
         {isLightboxOpen && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -415,9 +418,10 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
                 </p>
               </div>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
+      </LazyMotion>
     </div>
   );
 };
