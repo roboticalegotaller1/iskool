@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         studentName: studentName || 'Alumno',
         parentName: parentName || 'Tutor Responsable',
         amount: Number(amount) || 3450.00,
-        dueDate: dueDate || '10 de Septiembre de 2026'
+        dueDate: dueDate || '14 de Diciembre de 2026'
       }
     });
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       invoiceNumber: invoiceNumber || 'COL-2026-00000',
       amount: Number(amount) || 3450.00,
       currency: 'MXN',
-      dueDate: dueDate || '10 de Septiembre de 2026',
+      dueDate: dueDate || '14 de Diciembre de 2026',
       magicPaymentUrl: linkResult.paymentUrl,
       schoolName: schoolName || 'Colegio ISkool México',
       schoolEmail: 'cobranza@iskool.edu.mx'

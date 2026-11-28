@@ -20,7 +20,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-blue-600 to-indigo-800',
     archivoNombre: 'Matematicas_2_Secundaria_JJR.pdf',
     archivoTamanoMb: 14.8,
-    fechaCarga: '2026-02-15T10:30:00Z',
+    fechaCarga: '2026-12-03T10:30:00Z',
     estadoMapeo: 'completo',
     palabrasClaveIndice: ['álgebra', 'ecuaciones lineales', 'sistemas de ecuaciones', 'geometría', 'teorema de pitágoras', 'probabilidad', 'porcentajes'],
     capitulos: [
@@ -131,7 +131,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-emerald-600 to-teal-800',
     archivoNombre: 'Biologia_Celular_Ecosistemas_1Sec_JJR.pdf',
     archivoTamanoMb: 18.2,
-    fechaCarga: '2026-02-18T14:10:00Z',
+    fechaCarga: '2026-12-01T14:10:00Z',
     estadoMapeo: 'completo',
     palabrasClaveIndice: ['célula animal', 'célula vegetal', 'fotosíntesis', 'biodiversidad', 'cadenas tróficas', 'microscopio', 'genética básica'],
     capitulos: [
@@ -212,7 +212,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-purple-600 to-pink-700',
     archivoNombre: 'English_Explorer_B1_Grammar_Mastery.pdf',
     archivoTamanoMb: 12.5,
-    fechaCarga: '2026-02-20T09:00:00Z',
+    fechaCarga: '2026-12-08T09:00:00Z',
     estadoMapeo: 'completo',
     palabrasClaveIndice: ['verbs', 'present simple', 'past simple', 'irregular verbs', 'daily routines', 'communicative competence', 'listening', 'pronunciation'],
     capitulos: [
@@ -300,7 +300,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-amber-500 to-orange-700',
     archivoNombre: 'Cambridge_Young_Explorers_A2_Anglo.pdf',
     archivoTamanoMb: 11.2,
-    fechaCarga: '2026-02-12T11:20:00Z',
+    fechaCarga: '2026-12-04T11:20:00Z',
     estadoMapeo: 'completo',
     palabrasClaveIndice: ['cambridge a2', 'phonics', 'verbs', 'community life', 'storytelling', 'vocabulary', 'present continuous'],
     capitulos: [
@@ -349,7 +349,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-rose-600 to-red-800',
     archivoNombre: 'Lengua_Materna_Creacion_Literaria_1Sec_Anglo.pdf',
     archivoTamanoMb: 15.6,
-    fechaCarga: '2026-02-14T16:00:00Z',
+    fechaCarga: '2026-12-02T16:00:00Z',
     estadoMapeo: 'completo',
     palabrasClaveIndice: ['comprensión lectora', 'géneros narrativos', 'figuras retóricas', 'ensayo breve', 'ortografía', 'argumentación'],
     capitulos: [
@@ -402,7 +402,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-purple-600 via-indigo-700 to-purple-900',
     archivoNombre: 'Fisica_Experimental_3Sec_Prof_Gabriel.pdf',
     archivoTamanoMb: 12.4,
-    fechaCarga: '2026-03-02T11:00:00Z',
+    fechaCarga: '2026-12-09T11:00:00Z',
     estadoMapeo: 'completo',
     subidoPor: 'usr-indep-1',
     syncedToVault: true,
@@ -453,7 +453,7 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
     portadaColor: 'from-amber-600 via-rose-700 to-indigo-950',
     archivoNombre: 'Historia_Universal_Critica_1Sec_Profa_Sofia.pdf',
     archivoTamanoMb: 16.2,
-    fechaCarga: '2026-03-03T14:15:00Z',
+    fechaCarga: '2026-12-07T14:15:00Z',
     estadoMapeo: 'completo',
     subidoPor: 'usr-indep-2',
     syncedToVault: true,

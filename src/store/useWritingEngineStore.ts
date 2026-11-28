@@ -311,7 +311,28 @@ export const useWritingEngineStore = create<WritingEngineState>()(
     }),
     {
       name: 'iskool_writing_engine_store',
+      version: 2,
       storage: createJSONStorage(() => createSafeLocalStorage()),
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          const freshSeeds = AutonomousWritingEngineService.obtenerEvaluacionesSemillaDemo();
+          const seedIds = new Set(freshSeeds.map((e) => e.id));
+          const mergedAll = [
+            ...freshSeeds,
+            ...((persistedState?.allEvaluations || []).filter((e: any) => !seedIds.has(e?.id))),
+          ];
+          const mergedHistory = [
+            ...freshSeeds.filter((e) => e.studentId === 'std-santi'),
+            ...((persistedState?.studentHistory || []).filter((e: any) => !seedIds.has(e?.id))),
+          ];
+          return {
+            ...persistedState,
+            allEvaluations: mergedAll,
+            studentHistory: mergedHistory,
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         selectedLanguage: state.selectedLanguage,
         selectedLevel: state.selectedLevel,

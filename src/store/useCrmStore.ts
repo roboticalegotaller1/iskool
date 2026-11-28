@@ -686,7 +686,27 @@ export const useCrmStore = create<CrmStoreState>()(
     }),
     {
       name: 'iskool_crm_store_v1',
+      version: 2,
       storage: createJSONStorage(() => createSafeLocalStorage()),
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          const replaceSeeds = <T extends { id: string }>(seed: T[], saved?: T[]): T[] => {
+            if (!Array.isArray(saved) || saved.length === 0) return seed;
+            const seedIds = new Set(seed.map((item) => item.id));
+            return [...seed, ...saved.filter((item) => !seedIds.has(item.id))];
+          };
+          return {
+            ...persistedState,
+            leads: replaceSeeds(CRM_LEADS_SEED, persistedState?.leads),
+            candidates: replaceSeeds(CRM_CANDIDATES_SEED, persistedState?.candidates),
+            activities: replaceSeeds(CRM_ACTIVITIES_SEED, persistedState?.activities),
+            documents: replaceSeeds(CRM_DOCUMENTS_SEED, persistedState?.documents),
+            events: replaceSeeds(CRM_EVENTS_SEED, persistedState?.events),
+            eventAttendees: replaceSeeds(CRM_EVENT_ATTENDEES_SEED, persistedState?.eventAttendees),
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         leads: state.leads,
         candidates: state.candidates,

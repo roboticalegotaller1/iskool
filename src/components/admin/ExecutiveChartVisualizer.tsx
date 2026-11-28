@@ -1222,7 +1222,7 @@ export default function ExecutiveChartVisualizer({
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
                   <div>
                     <span className="text-[10px] text-slate-500 block truncate max-w-[140px]">
-                      {debtor.concept || 'Colegiatura de Septiembre'}
+                      {debtor.concept || 'Colegiatura de Diciembre'}
                     </span>
                     <span className="font-mono font-bold text-rose-600 text-sm">
                       {formatMXN(debtor.amount)}

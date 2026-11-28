@@ -886,7 +886,21 @@ export const usePortfolioStore = create<PortfolioStoreState>()(
     }),
     {
       name: 'iskool_portfolio_store_v1',
+      version: 2,
       storage: createJSONStorage(() => createSafeLocalStorage()),
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          const seedIds = new Set(PORTFOLIO_SEED.map((p) => p.id));
+          return {
+            ...persistedState,
+            portfolioItems: [
+              ...PORTFOLIO_SEED,
+              ...((persistedState?.portfolioItems || []).filter((p: any) => !seedIds.has(p?.id))),
+            ],
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         portfolioItems: state.portfolioItems
       })

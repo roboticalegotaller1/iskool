@@ -309,7 +309,7 @@ export const SEED_TEST_SCENARIOS: WorkOsTestScenario[] = [
     senderEmail: 'rodrigo.mendoza@mendozaconsultores.com',
     urgency: 'ALTA',
     slaHours: 24,
-    sampleEvidenceFileName: 'CFDI_4.0_Complemento_IEDU_Octubre_2026.pdf',
+    sampleEvidenceFileName: 'CFDI_4.0_Complemento_IEDU_Diciembre_2026.pdf',
     sampleEvidenceType: 'pdf',
     suggestedSteps: [
       'Validar constancia de situación fiscal del tutor en base de datos SAT',
@@ -336,7 +336,7 @@ export const SEED_TEST_SCENARIOS: WorkOsTestScenario[] = [
       'Agendar firma digital o presencial del pagaré institucional',
       'Registrar las 3 fechas programadas en el ledger financiero escolar'
     ],
-    sampleResolution: 'Convenio formalizado a 3 parcialidades sin intereses. Se programó fecha de primer abono para el 30 de octubre.'
+    sampleResolution: 'Convenio formalizado a 3 parcialidades sin intereses. Se programó fecha de primer abono para el 18 de diciembre de 2026.'
   },
   {
     id: 'scen-cob-03',
@@ -355,7 +355,7 @@ export const SEED_TEST_SCENARIOS: WorkOsTestScenario[] = [
       'Vincular pago manualmente al folio del estudiante en el sistema',
       'Generar y enviar recibo oficial de caja digital al tutor'
     ],
-    sampleResolution: 'SPEI localizado y conciliado con clave CEP 20261015-0892. Estado de cuenta actualizado con saldo en ceros.'
+    sampleResolution: 'SPEI localizado y conciliado con clave CEP 20261211-0892. Estado de cuenta actualizado con saldo en ceros.'
   },
   {
     id: 'scen-cob-04',
@@ -797,7 +797,7 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
     trigger: 'TASK_UNOPENED_6H',
     action: 'MARK_NO_ATENDIDO',
     executionsCount: 4,
-    lastExecutedAt: '2026-10-15T18:30:00.000Z'
+    lastExecutedAt: '2026-12-04T18:30:00.000Z'
   },
   {
     id: 'auto-02-sla-80',
@@ -807,7 +807,7 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
     trigger: 'SLA_THRESHOLD_80',
     action: 'MARK_URGENT',
     executionsCount: 7,
-    lastExecutedAt: '2026-10-15T19:15:00.000Z'
+    lastExecutedAt: '2026-12-08T19:15:00.000Z'
   },
   {
     id: 'auto-03-escalar-ceo',
@@ -817,7 +817,7 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
     trigger: 'PROGRESS_BELOW_25_AFTER_12H',
     action: 'AUTO_ESCALATE_CEO',
     executionsCount: 1,
-    lastExecutedAt: '2026-10-14T16:00:00.000Z'
+    lastExecutedAt: '2026-12-10T16:00:00.000Z'
   },
   {
     id: 'auto-04-resuelto-notif',
@@ -827,7 +827,7 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
     trigger: 'TASK_RESOLVED',
     action: 'NOTIFY_CEO',
     executionsCount: 19,
-    lastExecutedAt: '2026-10-15T20:00:00.000Z'
+    lastExecutedAt: '2026-12-14T20:00:00.000Z'
   },
   {
     id: 'auto-05-ai-triage',
@@ -837,6 +837,6 @@ export const DEFAULT_WORK_OS_AUTOMATIONS: WorkOsAutomationRule[] = [
     trigger: 'TASK_CREATED',
     action: 'GENERATE_AI_SUMMARY',
     executionsCount: 26,
-    lastExecutedAt: '2026-10-15T21:10:00.000Z'
+    lastExecutedAt: '2026-12-16T21:10:00.000Z'
   }
 ];

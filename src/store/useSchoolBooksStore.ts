@@ -178,14 +178,22 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
     }),
     {
       name: 'iskool_school_digital_books_v1',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => createSafeLocalStorage()),
-      migrate: (persistedState: any) => {
+      migrate: (persistedState: any, version: number) => {
         if (persistedState && Array.isArray(persistedState.books)) {
-          const existingIds = new Set(persistedState.books.map((b: any) => b.id));
-          const missingBooks = INITIAL_SCHOOL_BOOKS_SEED.filter(b => !existingIds.has(b.id));
-          if (missingBooks.length > 0) {
-            persistedState.books = [...persistedState.books, ...missingBooks];
+          const seedBookIds = new Set(INITIAL_SCHOOL_BOOKS_SEED.map((b) => b.id));
+          if (version < 3) {
+            persistedState.books = [
+              ...INITIAL_SCHOOL_BOOKS_SEED,
+              ...persistedState.books.filter((b: any) => !seedBookIds.has(b?.id)),
+            ];
+          } else {
+            const existingIds = new Set(persistedState.books.map((b: any) => b.id));
+            const missingBooks = INITIAL_SCHOOL_BOOKS_SEED.filter(b => !existingIds.has(b.id));
+            if (missingBooks.length > 0) {
+              persistedState.books = [...persistedState.books, ...missingBooks];
+            }
           }
         }
         return persistedState;

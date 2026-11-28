@@ -364,7 +364,7 @@ export function generateDefaultMattersForSchool(
       id: `mat-${slug}-02`,
       matter_code: `MAT-${prefix}-2026-002`,
       title: `Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en ${secondaryCampus}`,
-      summary: `Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.`,
+      summary: `Padre de familia solicita actualización de factura electrónica correspondiente a diciembre 2026 y corrección del descuento de hermanos en segundo hijo.`,
       category: 'Financiero & Cobranza CFDI',
       urgency: 'ALTA',
       destination: 'DELEGADO_CON_SLA',
@@ -461,7 +461,7 @@ export function generateDefaultCalendarEventsForSchool(
       id: 'cal-01',
       title: `Audiencia Directiva de Convivencia Escolar (${schoolName})`,
       category: 'AUDIENCIA_PADRES',
-      date: '2026-10-08',
+      date: '2026-12-03',
       time: '08:30 - 09:30 hrs',
       campus: primaryCampus,
       attendees: `Comité de Convivencia, ${directorTitle}`,
@@ -473,7 +473,7 @@ export function generateDefaultCalendarEventsForSchool(
       id: 'cal-02',
       title: 'Sesión Ordinaria de Consejo Técnico Escolar (CTE) - Fases Curriculares Activas',
       category: 'CONSEJO_TECNICO',
-      date: '2026-10-09',
+      date: '2026-12-08',
       time: '12:00 - 14:30 hrs',
       campus: 'Todas las Sedes / Enlace Ejecutivo',
       attendees: 'Cuerpo Docente y Directores Técnicos',
@@ -485,31 +485,31 @@ export function generateDefaultCalendarEventsForSchool(
       id: 'cal-03',
       title: `Junta de Cierre de Timbrado SAT CFDI 4.0 & Finanzas (${schoolName})`,
       category: 'JUNTA_DIRECTORES',
-      date: '2026-10-10',
+      date: '2026-12-11',
       time: '16:00 - 17:00 hrs',
       campus: secondaryCampus,
       attendees: 'Dirección de Administración y Finanzas, Tesorería',
       location: 'Área Administrativa',
-      notes: 'Revisión de facturación electrónica con complemento IEDU y conciliación de colegiaturas.',
+      notes: 'Revisión de facturación electrónica con complemento IEDU y conciliación de colegiaturas de diciembre.',
       status: 'CONFIRMADO'
     },
     {
       id: 'cal-04',
       title: 'Entrega Trimestral de Boletas y Evaluaciones Oficiales SEP',
       category: 'TRAMITE_SEP',
-      date: '2026-10-15',
+      date: '2026-12-15',
       time: '09:00 - 13:00 hrs',
       campus: 'Todos los Planteles',
       attendees: 'Control Escolar, Docentes Titulares y Familias',
       location: 'Ventanilla de Control Escolar',
-      notes: 'Entrega formal de reportes de evaluación correspondientes al primer periodo.',
+      notes: 'Entrega formal de reportes de evaluación correspondientes al cierre de diciembre 2026.',
       status: 'PENDIENTE'
     },
     {
       id: 'cal-05',
       title: 'Supervisión de Zona Escolar SEP No. 14',
       category: 'TRAMITE_SEP',
-      date: '2026-10-20',
+      date: '2026-12-18',
       time: '10:00 - 12:30 hrs',
       campus: primaryCampus,
       attendees: `Supervisión de Zona SEP, ${directorTitle}`,
@@ -2006,7 +2006,7 @@ export function CEOEmailCommunicationsModal({
   const [showNewEventModal, setShowNewEventModal] = useState<boolean>(false);
   const [newEventTitle, setNewEventTitle] = useState<string>('');
   const [newEventCategory, setNewEventCategory] = useState<'AUDIENCIA_PADRES' | 'CONSEJO_TECNICO' | 'JUNTA_DIRECTORES' | 'TRAMITE_SEP' | 'EVENTO_INSTITUCIONAL'>('AUDIENCIA_PADRES');
-  const [newEventDate, setNewEventDate] = useState<string>('2026-10-09');
+  const [newEventDate, setNewEventDate] = useState<string>('2026-12-11');
   const [newEventTime, setNewEventTime] = useState<string>('09:00 - 10:00 hrs');
   const [newEventCampus, setNewEventCampus] = useState<string>(campuses[0]?.name || 'Plantel Central');
   const [newEventAttendees, setNewEventAttendees] = useState<string>('');
@@ -2019,7 +2019,7 @@ export function CEOEmailCommunicationsModal({
   const [selectedAgendaEventId, setSelectedAgendaEventId] = useState<string | null>(null);
   const [dossierNotesDraft, setDossierNotesDraft] = useState<string>('');
   const [calendarViewYear, setCalendarViewYear] = useState<number>(2026);
-  const [calendarViewMonth, setCalendarViewMonth] = useState<number>(9); // 0-indexed: 9 = Octubre
+  const [calendarViewMonth, setCalendarViewMonth] = useState<number>(11); // 0-indexed: 11 = Diciembre
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
   const [dragOverDate, setDragOverDate] = useState<string | null>(null);
   const [editingCalendarEvent, setEditingCalendarEvent] = useState<CalendarEventItem | null>(null);
@@ -5509,7 +5509,7 @@ ${schoolName}`
 
   const handleGoToday = () => {
     setCalendarViewYear(2026);
-    setCalendarViewMonth(9); // Octubre 2026
+    setCalendarViewMonth(11); // Diciembre 2026
   };
 
   // Generador de la cuadrícula mensual para el Calendario Interactivo (Lunes a Domingo)
@@ -5538,7 +5538,7 @@ ${schoolName}`
     }
 
     // Días del mes actual
-    const todayStr = '2026-10-08';
+    const todayStr = '2026-12-08';
     for (let d = 1; d <= daysInMonth; d++) {
       const monthStr = String(calendarViewMonth + 1).padStart(2, '0');
       const dayStr = String(d).padStart(2, '0');
@@ -5603,7 +5603,7 @@ ${schoolName}`
 
   // Vincular y agendar audiencia directamente desde un asunto de correo crítico
   const handleScheduleMatterMeeting = (matter: MatterItem) => {
-    const meetingDate = '2026-10-09';
+    const meetingDate = '2026-12-11';
     const newEvt: CalendarEventItem = {
       id: `cal-matter-${matter.id}-${Date.now()}`,
       title: `Audiencia Presencial: ${matter.sender_name} (${matter.matter_code})`,
@@ -5636,7 +5636,7 @@ ${schoolName}`
 
     // Abrir de forma directa el Calendario Escolar Interactivo (Imagen 3)
     setCalendarViewYear(2026);
-    setCalendarViewMonth(9); // Octubre 2026
+    setCalendarViewMonth(11); // Diciembre 2026
     setShowInteractiveCalendarModal(true);
     setSelectedMatter(null);
     onTriggerToast(`📅 Audiencia con ${matter.sender_name} agendada en el Calendario Interactivo y sincronizada.`);
@@ -6190,7 +6190,7 @@ ${schoolName}`
       setLabSenderEmail('ricardo.morales@despacho.com');
       setLabRecipient(isIbime ? 'cobranza@ibime.edu.mx' : `cobranza@${schoolDomain}`);
       setLabReincidence(1);
-      setLabBody(`Estimado departamento de cobranza ${schoolName}:\n\nRequiero amablemente la refacturación del recibo de colegiatura de octubre para incluir el RFC de mi empresa con complemento educativo IEDU para deducción fiscal de mis dos hijas inscritas en ${secondaryCampus}.`);
+      setLabBody(`Estimado departamento de cobranza ${schoolName}:\n\nRequiero amablemente la refacturación del recibo de colegiatura de diciembre para incluir el RFC de mi empresa con complemento educativo IEDU para deducción fiscal de mis dos hijas inscritas en ${secondaryCampus}.`);
       onTriggerToast(`Preset cargado: Facturación SAT CFDI 4.0 (${schoolName})`);
     } else if (preset === 'transporte') {
       setLabSubject(`Retraso persistente en Ruta 4 de Transporte Escolar hacia ${primaryCampus}`);

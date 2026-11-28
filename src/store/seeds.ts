@@ -1400,83 +1400,83 @@ export const MISSIONS_SEED: Mission[] = [
 
 // Lista de Estudiantes de los 4 Niveles Educativos
 export const STUDENTS_LIST_SEED: UserProfile[] = [
-  { id: 'std-pb', first_name: 'Santi', last_name: 'Gómez Pérez', role: 'student', email: 'santi.gómez@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.929Z', updated_at: '2026-07-08T11:50:26.930Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02', first_name: 'Sofía', last_name: 'Castro Ruiz', role: 'student', email: 'sofía.castro1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03', first_name: 'Mateo', last_name: 'Ortiz Medina', role: 'student', email: 'mateo.ortiz2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04', first_name: 'Valentina', last_name: 'Hernández Silva', role: 'student', email: 'valentina.hernández3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05', first_name: 'Sebastián', last_name: 'Flores Torres', role: 'student', email: 'sebastián.flores4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06', first_name: 'Camila', last_name: 'Jiménez Lara', role: 'student', email: 'camila.jiménez5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07', first_name: 'Diego', last_name: 'Vargas Ríos', role: 'student', email: 'diego.vargas6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08', first_name: 'Natalia', last_name: 'Montes Delgado', role: 'student', email: 'natalia.montes7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09', first_name: 'Nicolás', last_name: 'Soto Luna', role: 'student', email: 'nicolás.soto8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10', first_name: 'Regina', last_name: 'Cruz Peña', role: 'student', email: 'regina.cruz9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'std-pa', first_name: 'Lucas', last_name: 'Skywalker Organa', role: 'student', email: 'lucas.skywalker@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', first_name: 'Juan', last_name: 'Pérez López', role: 'student', email: 'juan.pérez1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', first_name: 'Ana', last_name: 'Gómez Castro', role: 'student', email: 'ana.gómez2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', first_name: 'Carlos', last_name: 'Ruiz Medina', role: 'student', email: 'carlos.ruiz3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', first_name: 'María', last_name: 'Fernández Soto', role: 'student', email: 'maría.fernández4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', first_name: 'Luis', last_name: 'Ortiz Vargas', role: 'student', email: 'luis.ortiz5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', first_name: 'Andrea', last_name: 'Flores Jiménez', role: 'student', email: 'andrea.flores6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', first_name: 'Daniel', last_name: 'Vargas Montes', role: 'student', email: 'daniel.vargas7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', first_name: 'Isabella', last_name: 'Cruz Torres', role: 'student', email: 'isabella.cruz8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.931Z', updated_at: '2026-07-08T11:50:26.931Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', first_name: 'Mateo', last_name: 'Díaz Luna', role: 'student', email: 'mateo.díaz9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'std-sec', first_name: 'Elena', last_name: 'Rostova Bolonskaya', role: 'student', email: 'elena.rostova@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', first_name: 'Alejandro', last_name: 'Castro Ruiz', role: 'student', email: 'alejandro.castro1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', first_name: 'Sofía', last_name: 'Ortiz Lara', role: 'student', email: 'sofía.ortiz2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', first_name: 'Miguel', last_name: 'Hernández Silva', role: 'student', email: 'miguel.hernández3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', first_name: 'Valentina', last_name: 'Flores Torres', role: 'student', email: 'valentina.flores4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', first_name: 'Diego', last_name: 'Jiménez Ríos', role: 'student', email: 'diego.jiménez5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', first_name: 'Camila', last_name: 'Vargas Montes', role: 'student', email: 'camila.vargas6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', first_name: 'Nicolás', last_name: 'Torres Cruz', role: 'student', email: 'nicolás.torres9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'std-prep', first_name: 'Mateo', last_name: 'Díaz Hernández', role: 'student', email: 'mateo.díaz@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', first_name: 'Alejandro', last_name: 'Castro Ruiz', role: 'student', email: 'alejandro.castro1@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', first_name: 'Sofía', last_name: 'Ortiz Lara', role: 'student', email: 'sofía.ortiz2@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', first_name: 'Miguel', last_name: 'Hernández Silva', role: 'student', email: 'miguel.hernández3@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', first_name: 'Valentina', last_name: 'Flores Torres', role: 'student', email: 'valentina.flores4@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', first_name: 'Diego', last_name: 'Jiménez Ríos', role: 'student', email: 'diego.jiménez5@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', first_name: 'Camila', last_name: 'Vargas Montes', role: 'student', email: 'camila.vargas6@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto7@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz8@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', first_name: 'Nicolás', last_name: 'Torres Cruz', role: 'student', email: 'nicolás.torres9@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'std-prep', first_name: 'Mateo', last_name: 'Díaz Hernández', role: 'student', email: 'mateo.díaz@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto1@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz2@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04', first_name: 'Sofía', last_name: 'Castro Ruiz', role: 'student', email: 'sofía.castro3@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05', first_name: 'Miguel', last_name: 'Ortiz Medina', role: 'student', email: 'miguel.ortiz4@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06', first_name: 'Valentina', last_name: 'Hernández Silva', role: 'student', email: 'valentina.hernández5@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07', first_name: 'Alejandro', last_name: 'Flores Torres', role: 'student', email: 'alejandro.flores6@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08', first_name: 'Camila', last_name: 'Jiménez Lara', role: 'student', email: 'camila.jiménez7@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', first_name: 'Diego', last_name: 'Vargas Ríos', role: 'student', email: 'diego.vargas8@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
-  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', first_name: 'Isabella', last_name: 'Montes Delgado', role: 'student', email: 'isabella.montes9@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
+  { id: 'std-pb', first_name: 'Santi', last_name: 'Gómez Pérez', role: 'student', email: 'santi.gómez@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-04T11:50:26.929Z', updated_at: '2026-12-09T11:50:26.930Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02', first_name: 'Sofía', last_name: 'Castro Ruiz', role: 'student', email: 'sofía.castro1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-09T11:50:26.931Z', updated_at: '2026-12-14T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03', first_name: 'Mateo', last_name: 'Ortiz Medina', role: 'student', email: 'mateo.ortiz2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-03T11:50:26.931Z', updated_at: '2026-12-08T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04', first_name: 'Valentina', last_name: 'Hernández Silva', role: 'student', email: 'valentina.hernández3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-08T11:50:26.931Z', updated_at: '2026-12-11T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05', first_name: 'Sebastián', last_name: 'Flores Torres', role: 'student', email: 'sebastián.flores4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-02T11:50:26.931Z', updated_at: '2026-12-16T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06', first_name: 'Camila', last_name: 'Jiménez Lara', role: 'student', email: 'camila.jiménez5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-07T11:50:26.931Z', updated_at: '2026-12-10T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07', first_name: 'Diego', last_name: 'Vargas Ríos', role: 'student', email: 'diego.vargas6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-01T11:50:26.931Z', updated_at: '2026-12-15T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08', first_name: 'Natalia', last_name: 'Montes Delgado', role: 'student', email: 'natalia.montes7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-04T11:50:26.931Z', updated_at: '2026-12-09T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09', first_name: 'Nicolás', last_name: 'Soto Luna', role: 'student', email: 'nicolás.soto8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-09T11:50:26.931Z', updated_at: '2026-12-14T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10', first_name: 'Regina', last_name: 'Cruz Peña', role: 'student', email: 'regina.cruz9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-03T11:50:26.931Z', updated_at: '2026-12-08T11:50:26.931Z' },
+  { id: 'std-pa', first_name: 'Lucas', last_name: 'Skywalker Organa', role: 'student', email: 'lucas.skywalker@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-08T11:50:26.931Z', updated_at: '2026-12-11T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', first_name: 'Juan', last_name: 'Pérez López', role: 'student', email: 'juan.pérez1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-02T11:50:26.931Z', updated_at: '2026-12-16T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', first_name: 'Ana', last_name: 'Gómez Castro', role: 'student', email: 'ana.gómez2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-07T11:50:26.931Z', updated_at: '2026-12-10T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', first_name: 'Carlos', last_name: 'Ruiz Medina', role: 'student', email: 'carlos.ruiz3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-01T11:50:26.931Z', updated_at: '2026-12-15T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', first_name: 'María', last_name: 'Fernández Soto', role: 'student', email: 'maría.fernández4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-04T11:50:26.931Z', updated_at: '2026-12-09T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', first_name: 'Luis', last_name: 'Ortiz Vargas', role: 'student', email: 'luis.ortiz5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-09T11:50:26.931Z', updated_at: '2026-12-14T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', first_name: 'Andrea', last_name: 'Flores Jiménez', role: 'student', email: 'andrea.flores6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-03T11:50:26.931Z', updated_at: '2026-12-08T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', first_name: 'Daniel', last_name: 'Vargas Montes', role: 'student', email: 'daniel.vargas7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-08T11:50:26.931Z', updated_at: '2026-12-11T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', first_name: 'Isabella', last_name: 'Cruz Torres', role: 'student', email: 'isabella.cruz8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-02T11:50:26.931Z', updated_at: '2026-12-16T11:50:26.931Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', first_name: 'Mateo', last_name: 'Díaz Luna', role: 'student', email: 'mateo.díaz9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-07T11:50:26.932Z', updated_at: '2026-12-10T11:50:26.932Z' },
+  { id: 'std-sec', first_name: 'Elena', last_name: 'Rostova Bolonskaya', role: 'student', email: 'elena.rostova@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-01T11:50:26.932Z', updated_at: '2026-12-15T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', first_name: 'Alejandro', last_name: 'Castro Ruiz', role: 'student', email: 'alejandro.castro1@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-04T11:50:26.932Z', updated_at: '2026-12-09T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', first_name: 'Sofía', last_name: 'Ortiz Lara', role: 'student', email: 'sofía.ortiz2@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-09T11:50:26.932Z', updated_at: '2026-12-14T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', first_name: 'Miguel', last_name: 'Hernández Silva', role: 'student', email: 'miguel.hernández3@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-03T11:50:26.932Z', updated_at: '2026-12-08T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', first_name: 'Valentina', last_name: 'Flores Torres', role: 'student', email: 'valentina.flores4@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-08T11:50:26.932Z', updated_at: '2026-12-11T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', first_name: 'Diego', last_name: 'Jiménez Ríos', role: 'student', email: 'diego.jiménez5@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-02T11:50:26.932Z', updated_at: '2026-12-16T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', first_name: 'Camila', last_name: 'Vargas Montes', role: 'student', email: 'camila.vargas6@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-07T11:50:26.932Z', updated_at: '2026-12-10T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto7@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-01T11:50:26.932Z', updated_at: '2026-12-15T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz8@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-04T11:50:26.932Z', updated_at: '2026-12-09T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', first_name: 'Nicolás', last_name: 'Torres Cruz', role: 'student', email: 'nicolás.torres9@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-09T11:50:26.932Z', updated_at: '2026-12-14T11:50:26.932Z' },
+  { id: 'std-prep', first_name: 'Mateo', last_name: 'Díaz Hernández', role: 'student', email: 'mateo.díaz@iskool.edu.mx', school_id: 'sch-test-case', created_at: '2026-12-03T11:50:26.932Z', updated_at: '2026-12-08T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', first_name: 'Alejandro', last_name: 'Castro Ruiz', role: 'student', email: 'alejandro.castro1@iskool.edu.mx', created_at: '2026-12-08T11:50:26.932Z', updated_at: '2026-12-11T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', first_name: 'Sofía', last_name: 'Ortiz Lara', role: 'student', email: 'sofía.ortiz2@iskool.edu.mx', created_at: '2026-12-02T11:50:26.932Z', updated_at: '2026-12-16T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', first_name: 'Miguel', last_name: 'Hernández Silva', role: 'student', email: 'miguel.hernández3@iskool.edu.mx', created_at: '2026-12-07T11:50:26.932Z', updated_at: '2026-12-10T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', first_name: 'Valentina', last_name: 'Flores Torres', role: 'student', email: 'valentina.flores4@iskool.edu.mx', created_at: '2026-12-01T11:50:26.932Z', updated_at: '2026-12-15T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', first_name: 'Diego', last_name: 'Jiménez Ríos', role: 'student', email: 'diego.jiménez5@iskool.edu.mx', created_at: '2026-12-04T11:50:26.932Z', updated_at: '2026-12-09T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', first_name: 'Camila', last_name: 'Vargas Montes', role: 'student', email: 'camila.vargas6@iskool.edu.mx', created_at: '2026-12-09T11:50:26.932Z', updated_at: '2026-12-14T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto7@iskool.edu.mx', created_at: '2026-12-03T11:50:26.932Z', updated_at: '2026-12-08T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz8@iskool.edu.mx', created_at: '2026-12-08T11:50:26.932Z', updated_at: '2026-12-11T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', first_name: 'Nicolás', last_name: 'Torres Cruz', role: 'student', email: 'nicolás.torres9@iskool.edu.mx', created_at: '2026-12-02T11:50:26.932Z', updated_at: '2026-12-16T11:50:26.932Z' },
+  { id: 'std-prep', first_name: 'Mateo', last_name: 'Díaz Hernández', role: 'student', email: 'mateo.díaz@iskool.edu.mx', created_at: '2026-12-07T11:50:26.932Z', updated_at: '2026-12-10T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02', first_name: 'Leonardo', last_name: 'Soto Luna', role: 'student', email: 'leonardo.soto1@iskool.edu.mx', created_at: '2026-12-01T11:50:26.932Z', updated_at: '2026-12-15T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03', first_name: 'Natalia', last_name: 'Cruz Peña', role: 'student', email: 'natalia.cruz2@iskool.edu.mx', created_at: '2026-12-04T11:50:26.932Z', updated_at: '2026-12-09T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04', first_name: 'Sofía', last_name: 'Castro Ruiz', role: 'student', email: 'sofía.castro3@iskool.edu.mx', created_at: '2026-12-09T11:50:26.932Z', updated_at: '2026-12-14T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05', first_name: 'Miguel', last_name: 'Ortiz Medina', role: 'student', email: 'miguel.ortiz4@iskool.edu.mx', created_at: '2026-12-03T11:50:26.932Z', updated_at: '2026-12-08T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06', first_name: 'Valentina', last_name: 'Hernández Silva', role: 'student', email: 'valentina.hernández5@iskool.edu.mx', created_at: '2026-12-08T11:50:26.932Z', updated_at: '2026-12-11T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07', first_name: 'Alejandro', last_name: 'Flores Torres', role: 'student', email: 'alejandro.flores6@iskool.edu.mx', created_at: '2026-12-02T11:50:26.932Z', updated_at: '2026-12-16T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08', first_name: 'Camila', last_name: 'Jiménez Lara', role: 'student', email: 'camila.jiménez7@iskool.edu.mx', created_at: '2026-12-07T11:50:26.932Z', updated_at: '2026-12-10T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', first_name: 'Diego', last_name: 'Vargas Ríos', role: 'student', email: 'diego.vargas8@iskool.edu.mx', created_at: '2026-12-01T11:50:26.932Z', updated_at: '2026-12-15T11:50:26.932Z' },
+  { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', first_name: 'Isabella', last_name: 'Montes Delgado', role: 'student', email: 'isabella.montes9@iskool.edu.mx', created_at: '2026-12-04T11:50:26.932Z', updated_at: '2026-12-09T11:50:26.932Z' },
   // Estudiantes Oficiales del Instituto Bilingüe IBIME
-  { id: 'std-ibime-montes-01', first_name: 'Iker Santiago', last_name: 'Morales Peña', role: 'student', email: 'iker.morales@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
-  { id: 'std-ibime-lagos-01', first_name: 'Ximena Valentina', last_name: 'Castillo Ruiz', role: 'student', email: 'ximena.castillo@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
-  { id: 'std-ibime-san-01', first_name: 'Mateo Emiliano', last_name: 'Navas Mendoza', role: 'student', email: 'mateo.navas@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
-  { id: 'std-ibime-coac-01', first_name: 'Regina Sofía', last_name: 'Albarrán Cruz', role: 'student', email: 'regina.albarran@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
-  { id: 'std-ibime-coac-02', first_name: 'Leonardo Daniel', last_name: 'Varela Fuentes', role: 'student', email: 'leonardo.varela@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
-  { id: 'std-ibime-montes-02', first_name: 'Camila Sophia', last_name: 'Herrera Cruz', role: 'student', email: 'camila.herrera@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-montes-01', first_name: 'Iker Santiago', last_name: 'Morales Peña', role: 'student', email: 'iker.morales@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-09T08:00:00.000Z', updated_at: '2026-12-14T08:00:00.000Z' },
+  { id: 'std-ibime-lagos-01', first_name: 'Ximena Valentina', last_name: 'Castillo Ruiz', role: 'student', email: 'ximena.castillo@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-03T08:00:00.000Z', updated_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'std-ibime-san-01', first_name: 'Mateo Emiliano', last_name: 'Navas Mendoza', role: 'student', email: 'mateo.navas@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-08T08:00:00.000Z', updated_at: '2026-12-11T08:00:00.000Z' },
+  { id: 'std-ibime-coac-01', first_name: 'Regina Sofía', last_name: 'Albarrán Cruz', role: 'student', email: 'regina.albarran@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-02T08:00:00.000Z', updated_at: '2026-12-16T08:00:00.000Z' },
+  { id: 'std-ibime-coac-02', first_name: 'Leonardo Daniel', last_name: 'Varela Fuentes', role: 'student', email: 'leonardo.varela@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-07T08:00:00.000Z', updated_at: '2026-12-10T08:00:00.000Z' },
+  { id: 'std-ibime-montes-02', first_name: 'Camila Sophia', last_name: 'Herrera Cruz', role: 'student', email: 'camila.herrera@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-12-01T08:00:00.000Z', updated_at: '2026-12-15T08:00:00.000Z' },
 
   // ==========================================
   // COLABORADORES CORPORATIVOS B2B (BMW, RETAIL, TECH)
   // ==========================================
   // BMW Group México
-  { id: 'std-bmw-01', first_name: 'Carlos', last_name: 'Mendoza Reyes', role: 'student', email: 'carlos.mendoza@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-02-01T08:00:00.000Z', updated_at: '2026-02-01T08:00:00.000Z' },
-  { id: 'std-bmw-02', first_name: 'Sofía', last_name: 'Valenzuela Ortiz', role: 'student', email: 'sofia.valenzuela@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-02-01T08:00:00.000Z', updated_at: '2026-02-01T08:00:00.000Z' },
-  { id: 'std-bmw-03', first_name: 'Roberto', last_name: 'Peña Garza', role: 'student', email: 'roberto.pena@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-02-01T08:00:00.000Z', updated_at: '2026-02-01T08:00:00.000Z' },
-  { id: 'std-bmw-04', first_name: 'Marcela', last_name: 'Trejo Ruiz', role: 'student', email: 'marcela.trejo@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-02-01T08:00:00.000Z', updated_at: '2026-02-01T08:00:00.000Z' },
-  { id: 'std-bmw-05', first_name: 'Fernando', last_name: 'Alcocer Morales', role: 'student', email: 'fernando.alcocer@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-02-01T08:00:00.000Z', updated_at: '2026-02-01T08:00:00.000Z' },
+  { id: 'std-bmw-01', first_name: 'Carlos', last_name: 'Mendoza Reyes', role: 'student', email: 'carlos.mendoza@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-12-04T08:00:00.000Z', updated_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'std-bmw-02', first_name: 'Sofía', last_name: 'Valenzuela Ortiz', role: 'student', email: 'sofia.valenzuela@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-12-09T08:00:00.000Z', updated_at: '2026-12-14T08:00:00.000Z' },
+  { id: 'std-bmw-03', first_name: 'Roberto', last_name: 'Peña Garza', role: 'student', email: 'roberto.pena@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-12-03T08:00:00.000Z', updated_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'std-bmw-04', first_name: 'Marcela', last_name: 'Trejo Ruiz', role: 'student', email: 'marcela.trejo@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-12-08T08:00:00.000Z', updated_at: '2026-12-11T08:00:00.000Z' },
+  { id: 'std-bmw-05', first_name: 'Fernando', last_name: 'Alcocer Morales', role: 'student', email: 'fernando.alcocer@bmw-corp.mx', school_id: 'emp-bmw', created_at: '2026-12-02T08:00:00.000Z', updated_at: '2026-12-16T08:00:00.000Z' },
 
   // Grupo Comercial Vanguardia Retail
-  { id: 'std-ventas-01', first_name: 'Fernando', last_name: 'Treviño Garza', role: 'student', email: 'fernando.trevino@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-02-15T08:00:00.000Z', updated_at: '2026-02-15T08:00:00.000Z' },
-  { id: 'std-ventas-02', first_name: 'Claudia', last_name: 'Morales Ramos', role: 'student', email: 'claudia.morales@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-02-15T08:00:00.000Z', updated_at: '2026-02-15T08:00:00.000Z' },
-  { id: 'std-ventas-03', first_name: 'Héctor', last_name: 'Saldívar M.', role: 'student', email: 'hector.saldivar@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-02-15T08:00:00.000Z', updated_at: '2026-02-15T08:00:00.000Z' },
+  { id: 'std-ventas-01', first_name: 'Fernando', last_name: 'Treviño Garza', role: 'student', email: 'fernando.trevino@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-12-07T08:00:00.000Z', updated_at: '2026-12-10T08:00:00.000Z' },
+  { id: 'std-ventas-02', first_name: 'Claudia', last_name: 'Morales Ramos', role: 'student', email: 'claudia.morales@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-12-01T08:00:00.000Z', updated_at: '2026-12-15T08:00:00.000Z' },
+  { id: 'std-ventas-03', first_name: 'Héctor', last_name: 'Saldívar M.', role: 'student', email: 'hector.saldivar@vanguardia-retail.mx', school_id: 'emp-ventas', created_at: '2026-12-04T08:00:00.000Z', updated_at: '2026-12-09T08:00:00.000Z' },
 
   // Innovasoft Dynamics Cloud & AI
-  { id: 'std-tech-01', first_name: 'David', last_name: 'Navarro Cruz', role: 'student', email: 'david.navarro@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
-  { id: 'std-tech-02', first_name: 'Andrea', last_name: 'Velasco Soto', role: 'student', email: 'andrea.velasco@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
-  { id: 'std-tech-03', first_name: 'Jorge', last_name: 'Ramos Beltrán', role: 'student', email: 'jorge.ramos@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-03-01T08:00:00.000Z', updated_at: '2026-03-01T08:00:00.000Z' },
+  { id: 'std-tech-01', first_name: 'David', last_name: 'Navarro Cruz', role: 'student', email: 'david.navarro@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-12-09T08:00:00.000Z', updated_at: '2026-12-14T08:00:00.000Z' },
+  { id: 'std-tech-02', first_name: 'Andrea', last_name: 'Velasco Soto', role: 'student', email: 'andrea.velasco@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-12-03T08:00:00.000Z', updated_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'std-tech-03', first_name: 'Jorge', last_name: 'Ramos Beltrán', role: 'student', email: 'jorge.ramos@innovasoft-tech.com', school_id: 'emp-tech', created_at: '2026-12-08T08:00:00.000Z', updated_at: '2026-12-11T08:00:00.000Z' },
 
   // Cuentas demo (sch-demo-0001 — 650 Alumnos distribuidos en Primaria, Secundaria y Preparatoria)
   ...DEMO_ACTIVE_STUDENTS
@@ -1600,7 +1600,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     school_id: 'sch-test-case',
     temporary_password: 'San7K4',
     is_blocked: false,
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     average_grade: 9.8,
     academic_standing: 'excelente',
     subject_grades: [
@@ -1613,11 +1613,11 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     teacher_notes: [
       {
         id: 'tn-santi-1',
-        date: '2026-06-01',
+        date: '2026-12-02',
         teacher_name: 'Israel López',
         note: 'Felicitaciones por el destacado desempeño en el Torneo de Robótica y Cálculo Mental.',
         parent_reply: 'Muchas gracias profesor Israel, estamos muy orgullosos y apoyando a Santi en casa con sus proyectos de ciencias.',
-        replied_at: '2026-06-02T10:15:00.000Z'
+        replied_at: '2026-12-16T10:15:00.000Z'
       }
     ]
   },
@@ -1670,7 +1670,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     teacher_notes: [
       {
         id: 'tn-lucas-1',
-        date: '2026-06-05',
+        date: '2026-12-16',
         teacher_name: 'Israel López',
         note: 'Aviso sobre tarea pendiente: Fraccionando en Casa de Matemáticas. Requiere apoyo en casa.'
         // parent_reply ausente: tutor NO ha respondido
@@ -1919,7 +1919,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'primaria',
     grade: '1º',
     group_id: 'grp-pb-a',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -1967,11 +1967,11 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     teacher_notes: [
       {
         id: 'tn-diego-1',
-        date: '2026-05-15',
+        date: '2026-12-01',
         teacher_name: 'Roberto Díaz',
         note: 'Favor de revisar el cuaderno de Ciencias Naturales para regularizar la práctica 3 de laboratorio escolar.',
         parent_reply: 'Enterado profesor, hoy mismo Diego concluye la práctica 3 y se la entrega mañana a primera hora sin falta.',
-        replied_at: '2026-05-15T18:45:00.000Z'
+        replied_at: '2026-12-08T18:45:00.000Z'
       }
     ]
   },
@@ -2099,7 +2099,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'primaria',
     grade: '4º',
     group_id: 'grp-pa-a',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -2259,7 +2259,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'primaria',
     grade: '4º',
     group_id: 'grp-pa-a',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -2425,7 +2425,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     campus_id: 'cmp-test-sec',
     campus_name: 'Secundaria Laboratorio Demo',
     school_id: 'sch-test-case',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -2459,12 +2459,12 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     group_id: 'grp-sec-a',
     pending_payments: [],
     behavior_reports: [
-      { date: '2026-05-14', description: 'Participación destacada en la Feria de Ciencias Escolar con reconocimiento del jurado.', reporter: 'Coordinación Académica' },
-      { date: '2026-04-10', description: 'Llegada con 10 minutos de retardo a la primera clase. Se notificó a tutor.', reporter: 'Prof. Roberto Díaz' }
+      { date: '2026-12-15', description: 'Participación destacada en la Feria de Ciencias Escolar con reconocimiento del jurado.', reporter: 'Coordinación Académica' },
+      { date: '2026-12-22', description: 'Llegada con 10 minutos de retardo a la primera clase. Se notificó a tutor.', reporter: 'Prof. Roberto Díaz' }
     ],
     teacher_notes: [
-      { date: '2026-06-02', note: 'Alejandro demuestra un dominio brillante de álgebra y liderazgo en trabajos en equipo.', teacher_name: 'Israel López' },
-      { date: '2026-05-20', note: 'Entrega puntual de todas las actividades del laboratorio de Ciencias.', teacher_name: 'María Fernández' }
+      { date: '2026-12-07', note: 'Alejandro demuestra un dominio brillante de álgebra y liderazgo en trabajos en equipo.', teacher_name: 'Israel López' },
+      { date: '2026-12-14', note: 'Entrega puntual de todas las actividades del laboratorio de Ciencias.', teacher_name: 'María Fernández' }
     ]
   },
   {
@@ -2591,7 +2591,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'secundaria',
     grade: '2º',
     group_id: 'grp-sec-a',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -2754,7 +2754,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     campus_id: 'cmp-test-prep',
     campus_name: 'Preparatoria Laboratorio Demo',
     school_id: 'sch-test-case',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -2914,7 +2914,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'preparatoria',
     grade: '4º Semestre',
     group_id: 'grp-prep-a',
-    pending_payments: ["Colegiatura Junio 2026"],
+    pending_payments: ["Colegiatura Diciembre 2026"],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -3091,19 +3091,19 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     teacher_notes: [
       {
         id: 'tn-ibime-1',
-        date: '2026-06-02',
+        date: '2026-12-21',
         teacher_name: 'Prof. Alejandro Mendoza',
         note: 'Iker ha demostrado un dominio sobresaliente en el diseño del brazo hidráulico y la formulación del principio de Pascal. Felicitaciones por su liderazgo en el equipo de robótica STEAM de Campus Montes.',
         parent_reply: 'Muchas gracias Profesor Alejandro, en casa estamos reforzando los modelos tridimensionales con Iker y está muy motivado.',
-        replied_at: '2026-06-03T09:30:00.000Z'
+        replied_at: '2026-12-10T09:30:00.000Z'
       },
       {
         id: 'tn-ibime-2',
-        date: '2026-05-28',
+        date: '2026-12-11',
         teacher_name: 'Profa. Elizabeth Hernández Ramos',
         note: 'Outstanding performance in the Cambridge Bicultural Seminar! Iker answered all questions fluently in English with great confidence and clear pronunciation.',
         parent_reply: 'Thank you teacher Elizabeth! We read together in English every evening.',
-        replied_at: '2026-05-29T18:45:00.000Z'
+        replied_at: '2026-12-15T18:45:00.000Z'
       }
     ]
   },
@@ -3253,7 +3253,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     group_id: 'grp-ibime-c-1a',
     scholarship_percentage: 0,
     scholarship_type: 'ninguna',
-    pending_payments: ['Colegiatura de Agosto 2026 (Extemporánea) - $4,680.00 MXN (Vencida)'],
+    pending_payments: ['Colegiatura de Diciembre 2026 (Extemporánea) - $4,680.00 MXN (Vencida)'],
     behavior_reports: [],
     teacher_notes: []
   },
@@ -4367,168 +4367,168 @@ export const PARENT_IBIME_SEED: UserProfile = {
 // Estadísticas de los 4 Estudiantes
 export const STATS_MAP_SEED: Record<string, StudentStats> = {
   'std-pb': {
-    student_id: 'std-pb', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'std-pb', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-12-11T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-12-09T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-12-16T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-12-14T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-12-10T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-12-08T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-12-15T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-12-11T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-12-09T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-12-16T11:50:26.931Z',
   },
   'std-pa': {
-    student_id: 'std-pa', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'std-pa', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-12-14T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-12-10T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-12-08T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-12-15T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-12-11T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-12-09T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-12-16T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-12-14T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-07-08T11:50:26.931Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-12-10T11:50:26.931Z',
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-12-08T11:50:26.932Z',
   },
   'std-sec': {
-    student_id: 'std-sec', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-sec', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-12-15T11:50:26.932Z',
     rpg_class: 'mago', attribute_strength: 10, attribute_intelligence: 10, attribute_defense: 10, skill_points: 0
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-12-11T11:50:26.932Z',
     rpg_class: 'guerrero', attribute_strength: 11, attribute_intelligence: 11, attribute_defense: 11, skill_points: 1
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-12-09T11:50:26.932Z',
     rpg_class: 'curandero', attribute_strength: 12, attribute_intelligence: 12, attribute_defense: 12, skill_points: 2
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-12-16T11:50:26.932Z',
     rpg_class: 'explorador', attribute_strength: 13, attribute_intelligence: 13, attribute_defense: 13, skill_points: 0
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-12-14T11:50:26.932Z',
     rpg_class: 'mago', attribute_strength: 14, attribute_intelligence: 14, attribute_defense: 10, skill_points: 1
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-12-10T11:50:26.932Z',
     rpg_class: 'guerrero', attribute_strength: 10, attribute_intelligence: 15, attribute_defense: 11, skill_points: 2
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-12-08T11:50:26.932Z',
     rpg_class: 'curandero', attribute_strength: 11, attribute_intelligence: 10, attribute_defense: 12, skill_points: 0
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-12-15T11:50:26.932Z',
     rpg_class: 'explorador', attribute_strength: 12, attribute_intelligence: 11, attribute_defense: 13, skill_points: 1
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-12-11T11:50:26.932Z',
     rpg_class: 'mago', attribute_strength: 13, attribute_intelligence: 12, attribute_defense: 10, skill_points: 2
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-12-09T11:50:26.932Z',
     rpg_class: 'guerrero', attribute_strength: 14, attribute_intelligence: 13, attribute_defense: 11, skill_points: 0
   },
   'std-prep': {
-    student_id: 'std-prep', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-prep', xp: 100, level: 1, coins: 30, current_streak: 2, max_streak: 5, updated_at: '2026-12-16T11:50:26.932Z',
     funding_credits: 1000
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02', xp: 140, level: 1, coins: 45, current_streak: 3, max_streak: 6, updated_at: '2026-12-14T11:50:26.932Z',
     funding_credits: 1100
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03', xp: 180, level: 1, coins: 60, current_streak: 4, max_streak: 7, updated_at: '2026-12-10T11:50:26.932Z',
     funding_credits: 1200
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04', xp: 220, level: 2, coins: 75, current_streak: 5, max_streak: 8, updated_at: '2026-12-08T11:50:26.932Z',
     funding_credits: 1300
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05', xp: 260, level: 2, coins: 90, current_streak: 6, max_streak: 9, updated_at: '2026-12-15T11:50:26.932Z',
     funding_credits: 1400
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06', xp: 300, level: 2, coins: 105, current_streak: 2, max_streak: 10, updated_at: '2026-12-11T11:50:26.932Z',
     funding_credits: 1500
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07', xp: 340, level: 2, coins: 120, current_streak: 3, max_streak: 11, updated_at: '2026-12-09T11:50:26.932Z',
     funding_credits: 1600
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08', xp: 380, level: 2, coins: 135, current_streak: 4, max_streak: 12, updated_at: '2026-12-16T11:50:26.932Z',
     funding_credits: 1700
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', xp: 420, level: 3, coins: 150, current_streak: 5, max_streak: 5, updated_at: '2026-12-14T11:50:26.932Z',
     funding_credits: 1800
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10': {
-    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-12-10T11:50:26.932Z',
     funding_credits: 1900
   },
   // Estadísticas y Radar 360 de Alumnos Oficiales IBIME
   'std-ibime-montes-01': {
-    student_id: 'std-ibime-montes-01', xp: 1450, level: 5, coins: 380, current_streak: 8, max_streak: 15, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-ibime-montes-01', xp: 1450, level: 5, coins: 380, current_streak: 8, max_streak: 15, updated_at: '2026-12-08T11:50:26.932Z',
     rpg_class: 'guerrero', attribute_strength: 18, attribute_intelligence: 20, attribute_defense: 16, skill_points: 3,
     pet_stage: 'teen', pet_energy: 100, pet_happiness: 95, friendship_exp: 450, tasks_completed_count: 14
   },
   'std-ibime-lagos-01': {
-    student_id: 'std-ibime-lagos-01', xp: 920, level: 3, coins: 210, current_streak: 5, max_streak: 10, updated_at: '2026-07-08T11:50:26.932Z'
+    student_id: 'std-ibime-lagos-01', xp: 920, level: 3, coins: 210, current_streak: 5, max_streak: 10, updated_at: '2026-12-15T11:50:26.932Z'
   },
   'std-ibime-san-01': {
-    student_id: 'std-ibime-san-01', xp: 2180, level: 7, coins: 580, current_streak: 12, max_streak: 22, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-ibime-san-01', xp: 2180, level: 7, coins: 580, current_streak: 12, max_streak: 22, updated_at: '2026-12-11T11:50:26.932Z',
     rpg_class: 'explorador', attribute_strength: 22, attribute_intelligence: 24, attribute_defense: 20, skill_points: 4
   },
   'std-ibime-coac-01': {
-    student_id: 'std-ibime-coac-01', xp: 3100, level: 9, coins: 840, current_streak: 14, max_streak: 30, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-ibime-coac-01', xp: 3100, level: 9, coins: 840, current_streak: 14, max_streak: 30, updated_at: '2026-12-09T11:50:26.932Z',
     funding_credits: 2500
   },
   'std-ibime-coac-02': {
-    student_id: 'std-ibime-coac-02', xp: 880, level: 3, coins: 190, current_streak: 4, max_streak: 8, updated_at: '2026-07-08T11:50:26.932Z',
+    student_id: 'std-ibime-coac-02', xp: 880, level: 3, coins: 190, current_streak: 4, max_streak: 8, updated_at: '2026-12-16T11:50:26.932Z',
     rpg_class: 'mago', attribute_strength: 14, attribute_intelligence: 16, attribute_defense: 12, skill_points: 1
   },
   'std-ibime-montes-02': {
-    student_id: 'std-ibime-montes-02', xp: 450, level: 2, coins: 95, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z'
+    student_id: 'std-ibime-montes-02', xp: 450, level: 2, coins: 95, current_streak: 3, max_streak: 6, updated_at: '2026-12-14T11:50:26.932Z'
   },
   // Cuentas demo (sch-demo-0001 — 650 alumnos)
   ...DEMO_STATS_MAP
@@ -4538,168 +4538,168 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
   'std-pb': {
     student_id: 'std-pb', avatar_name: 'SantiAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'dragon', pet_name: 'PetSanti', pet_hunger: 40, pet_happiness: 60, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-10T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b02', avatar_name: 'SofíaAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'lobo', pet_name: 'PetSofía', pet_hunger: 50, pet_happiness: 68, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-08T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b03', avatar_name: 'MateoAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'venado', pet_name: 'PetMateo', pet_hunger: 60, pet_happiness: 76, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-15T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b04', avatar_name: 'ValentinaAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'gusano', pet_name: 'PetValentina', pet_hunger: 70, pet_happiness: 84, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-11T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b05', avatar_name: 'SebastiánAvatar', hair_style: 'classic', hair_color: '#FBBF24', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'gatito', pet_name: 'PetSebastián', pet_hunger: 40, pet_happiness: 92, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-09T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b06', avatar_name: 'CamilaAvatar', hair_style: 'spiky', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'dragon', pet_name: 'PetCamila', pet_hunger: 50, pet_happiness: 60, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-16T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07', avatar_name: 'DiegoAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'lobo', pet_name: 'PetDiego', pet_hunger: 60, pet_happiness: 68, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-14T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08', avatar_name: 'NataliaAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'venado', pet_name: 'PetNatalia', pet_hunger: 70, pet_happiness: 76, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-10T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b09', avatar_name: 'NicolásAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'gusano', pet_name: 'PetNicolás', pet_hunger: 40, pet_happiness: 84, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-08T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b10', avatar_name: 'ReginaAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     pet_type: 'gatito', pet_name: 'PetRegina', pet_hunger: 50, pet_happiness: 92, pet_outfit: 'none',
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-15T11:50:26.931Z'
   },
   'std-pa': {
     student_id: 'std-pa', avatar_name: 'LucasAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-11T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', avatar_name: 'JuanAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-09T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', avatar_name: 'AnaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-16T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', avatar_name: 'CarlosAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-14T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', avatar_name: 'MaríaAvatar', hair_style: 'classic', hair_color: '#FBBF24', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-10T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', avatar_name: 'LuisAvatar', hair_style: 'spiky', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-08T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', avatar_name: 'AndreaAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-15T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', avatar_name: 'DanielAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-11T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', avatar_name: 'IsabellaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.931Z'
+    updated_at: '2026-12-09T11:50:26.931Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', avatar_name: 'MateoAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-16T11:50:26.932Z'
   },
   'std-sec': {
     student_id: 'std-sec', avatar_name: 'ElenaAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-14T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c02', avatar_name: 'AlejandroAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-10T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c03', avatar_name: 'SofíaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-08T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c04', avatar_name: 'MiguelAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-15T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c05', avatar_name: 'ValentinaAvatar', hair_style: 'classic', hair_color: '#FBBF24', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-11T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c06', avatar_name: 'DiegoAvatar', hair_style: 'spiky', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-09T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c07', avatar_name: 'CamilaAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-16T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c08', avatar_name: 'LeonardoAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-14T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c09', avatar_name: 'NataliaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-10T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380c10', avatar_name: 'NicolásAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-08T11:50:26.932Z'
   },
   'std-prep': {
     student_id: 'std-prep', avatar_name: 'MateoAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'space_suit', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-15T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d02', avatar_name: 'LeonardoAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-11T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d03', avatar_name: 'NataliaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'space_suit', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-09T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d04', avatar_name: 'SofíaAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-16T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d05', avatar_name: 'MiguelAvatar', hair_style: 'classic', hair_color: '#FBBF24', eyes_style: 'happy', outfit_style: 'space_suit', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-14T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d06', avatar_name: 'ValentinaAvatar', hair_style: 'spiky', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-10T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d07', avatar_name: 'AlejandroAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'space_suit', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-08T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', avatar_name: 'DiegoAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'happy', outfit_style: 'space_suit', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-15T11:50:26.932Z'
   },
   'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10': {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', avatar_name: 'IsabellaAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
-    updated_at: '2026-07-08T11:50:26.932Z'
+    updated_at: '2026-12-11T11:50:26.932Z'
   },
   // Avatares Personalizados y Mascotas de Alumnos IBIME (Uniforme Oficial Equipado por Defecto)
   'std-ibime-montes-01': {
@@ -4732,7 +4732,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
     pet_hunger: 80,
     pet_happiness: 95,
     pet_outfit: 'none',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-09T08:00:00.000Z'
   },
   'std-ibime-lagos-01': {
     student_id: 'std-ibime-lagos-01',
@@ -4764,7 +4764,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
     pet_hunger: 75,
     pet_happiness: 90,
     pet_outfit: 'none',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-16T08:00:00.000Z'
   },
   'std-ibime-san-01': {
     student_id: 'std-ibime-san-01',
@@ -4796,7 +4796,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
     pet_hunger: 85,
     pet_happiness: 92,
     pet_outfit: 'none',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-14T08:00:00.000Z'
   },
   'std-ibime-coac-01': {
     student_id: 'std-ibime-coac-01',
@@ -4823,7 +4823,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
       'hat_none',
       'acc_none'
     ],
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-10T08:00:00.000Z'
   },
   'std-ibime-coac-02': {
     student_id: 'std-ibime-coac-02',
@@ -4850,7 +4850,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
       'hat_none',
       'acc_none'
     ],
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-08T08:00:00.000Z'
   },
   'std-ibime-montes-02': {
     student_id: 'std-ibime-montes-02',
@@ -4877,7 +4877,7 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
       'hat_none',
       'acc_none'
     ],
-    updated_at: '2026-01-10T08:00:00.000Z'
+    updated_at: '2026-12-15T08:00:00.000Z'
   },
   // Cuentas demo (sch-demo-0001 — Avatares 360)
   ...DEMO_AVATAR_MAP
@@ -4977,8 +4977,8 @@ export const PORTFOLIO_SEED: PortfolioItem[] = [
       role: 'student' as any,
       email: 'iker.morales@ibime.edu.mx',
       school_id: 'sch-ibime',
-      created_at: '2026-01-10T08:00:00.000Z',
-      updated_at: '2026-01-10T08:00:00.000Z'
+      created_at: '2026-12-04T08:00:00.000Z',
+      updated_at: '2026-12-09T08:00:00.000Z'
     },
     subject: SUBJECTS_SEED[1],
     feedbacks: [
@@ -5014,8 +5014,8 @@ export const PORTFOLIO_SEED: PortfolioItem[] = [
       role: 'student' as any,
       email: 'regina.albarran@ibime.edu.mx',
       school_id: 'sch-ibime',
-      created_at: '2026-01-10T08:00:00.000Z',
-      updated_at: '2026-01-10T08:00:00.000Z'
+      created_at: '2026-12-09T08:00:00.000Z',
+      updated_at: '2026-12-14T08:00:00.000Z'
     },
     subject: SUBJECTS_SEED[1],
     feedbacks: []
@@ -5040,118 +5040,118 @@ export const ATTENDANCE_SEED: Attendance[] = [
   // -------------------------------------------------------------
   // DÍA 1: 2026-08-04 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-01-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: 'Excelente participación en inicio de bloque', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'retardo', comments: 'Llegó 12 min tarde por cierre vial', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
-  { id: 'att-pa-01-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-04', status: 'retardo', comments: 'Llegó 15 min tarde', registered_by: 'usr-teacher-1', created_at: '2026-08-04T08:00:00.000Z' },
+  { id: 'att-pa-01-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: 'Excelente participación en inicio de bloque', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-01-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-01-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-01-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-01-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-01-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-01-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-01-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'retardo', comments: 'Llegó 12 min tarde por cierre vial', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-01-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-01-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'retardo', comments: 'Llegó 15 min tarde', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 2: 2026-08-07 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-02-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'falta', comments: 'Inasistencia sin notificación previa', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'justificado', comments: 'Cita médica dental familiar justificada', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
-  { id: 'att-pa-02-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-07', status: 'retardo', comments: 'Llegó 10 min tarde (segundo retardo acumulado)', registered_by: 'usr-teacher-1', created_at: '2026-08-07T08:00:00.000Z' },
+  { id: 'att-pa-02-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-02-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'falta', comments: 'Inasistencia sin notificación previa', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-02-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-02-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-02-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'justificado', comments: 'Cita médica dental familiar justificada', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-02-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-02-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-02-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-02-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-02-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'retardo', comments: 'Llegó 10 min tarde (segundo retardo acumulado)', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 3: 2026-08-11 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-03-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
-  { id: 'att-pa-03-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-11', status: 'retardo', comments: 'Llegó 15 min tarde (Tercer retardo: computa 1 falta acumulada)', registered_by: 'usr-teacher-1', created_at: '2026-08-11T08:00:00.000Z' },
+  { id: 'att-pa-03-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-03-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-03-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-03-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-03-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-03-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-03-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-03-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-03-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-03-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'retardo', comments: 'Llegó 15 min tarde (Tercer retardo: computa 1 falta acumulada)', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 4: 2026-08-14 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-04-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: 'Lideró la resolución grupal de fracciones', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'retardo', comments: 'Retardo de 8 minutos por lluvia', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
-  { id: 'att-pa-04-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-14', status: 'presente', comments: 'Llegó a tiempo hoy', registered_by: 'usr-teacher-1', created_at: '2026-08-14T08:00:00.000Z' },
+  { id: 'att-pa-04-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: 'Lideró la resolución grupal de fracciones', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-04-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-04-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-04-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'retardo', comments: 'Retardo de 8 minutos por lluvia', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-04-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-04-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-04-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-04-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-04-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-04-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: 'Llegó a tiempo hoy', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 5: 2026-08-18 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-05-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'falta', comments: 'Inasistencia reportada por tutor', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
-  { id: 'att-pa-05-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-18', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-18T08:00:00.000Z' },
+  { id: 'att-pa-05-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-05-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-05-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-05-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'falta', comments: 'Inasistencia reportada por tutor', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-05-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-05-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-05-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-05-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-05-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-05-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 6: 2026-08-21 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-06-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'justificado', comments: 'Participación en olimpiada regional de conocimiento', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'retardo', comments: 'Retardo de 10 min', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: 'Asistencia y puntualidad ejemplar', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
-  { id: 'att-pa-06-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-21', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-21T08:00:00.000Z' },
+  { id: 'att-pa-06-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-06-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-06-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'justificado', comments: 'Participación en olimpiada regional de conocimiento', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-06-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-06-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-06-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'retardo', comments: 'Retardo de 10 min', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-06-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-06-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-06-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: 'Asistencia y puntualidad ejemplar', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-06-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 7: 2026-08-25 (Matemáticas - Primaria Alta A)
   // -------------------------------------------------------------
-  { id: 'att-pa-07-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
-  { id: 'att-pa-07-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-25', status: 'retardo', comments: 'Llegó 10 min tarde', registered_by: 'usr-teacher-1', created_at: '2026-08-25T08:00:00.000Z' },
+  { id: 'att-pa-07-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-07-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-07-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-07-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-07-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-07-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-07-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-07-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-07-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-07-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'retardo', comments: 'Llegó 10 min tarde', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
 
   // -------------------------------------------------------------
   // DÍA 8: 2026-08-26 (Matemáticas - Primaria Alta A) - HOY
   // -------------------------------------------------------------
-  { id: 'att-pa-08-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: 'Participó activamente', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
-  { id: 'att-pa-08-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-08-26', status: 'presente', comments: 'Llegó puntual', registered_by: 'usr-teacher-1', created_at: '2026-08-26T08:00:00.000Z' },
+  { id: 'att-pa-08-1', student_id: 'std-pa', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: 'Participó activamente', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-08-2', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a02', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-08-3', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
+  { id: 'att-pa-08-4', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a04', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-07', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-03T08:00:00.000Z' },
+  { id: 'att-pa-08-5', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a05', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-01', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-08T08:00:00.000Z' },
+  { id: 'att-pa-08-6', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a06', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-04', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-02T08:00:00.000Z' },
+  { id: 'att-pa-08-7', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a07', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-09', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-07T08:00:00.000Z' },
+  { id: 'att-pa-08-8', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a08', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-03', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-01T08:00:00.000Z' },
+  { id: 'att-pa-08-9', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a09', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-08', status: 'presente', comments: '', registered_by: 'usr-teacher-1', created_at: '2026-12-04T08:00:00.000Z' },
+  { id: 'att-pa-08-10', student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a10', group_id: 'grp-pa-a', subject_id: 'sub-math', date: '2026-12-02', status: 'presente', comments: 'Llegó puntual', registered_by: 'usr-teacher-1', created_at: '2026-12-09T08:00:00.000Z' },
 
   // Secundaria
-  { id: 'att-sec-1', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-08-25', status: 'retardo', comments: 'Llegó 10 minutos tarde', registered_by: 'usr-teacher-1', created_at: '2026-08-25T09:00:00.000Z' },
-  { id: 'att-sec-2', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-08-26', status: 'presente', comments: 'Excelente desempeño en laboratorio', registered_by: 'usr-teacher-1', created_at: '2026-08-26T09:00:00.000Z' },
+  { id: 'att-sec-1', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-12-07', status: 'retardo', comments: 'Llegó 10 minutos tarde', registered_by: 'usr-teacher-1', created_at: '2026-12-03T09:00:00.000Z' },
+  { id: 'att-sec-2', student_id: 'std-sec', group_id: 'grp-sec-a', subject_id: 'sub-sci', date: '2026-12-01', status: 'presente', comments: 'Excelente desempeño en laboratorio', registered_by: 'usr-teacher-1', created_at: '2026-12-08T09:00:00.000Z' },
   ...DEMO_ATTENDANCE
 ];
 
@@ -5169,7 +5169,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     quest_id: 'q-fractions-2',
     quest_title: 'Fraccionando en Casa',
     message: 'Estimado tutor de Lucas, le informamos que el alumno no ha entregado la tarea "Fraccionando en Casa" de la materia Matemáticas. Agradecemos su apoyo en casa para regularizar esta situación.',
-    sent_at: '2026-06-05T10:00:00.000Z',
+    sent_at: '2026-12-04T10:00:00.000Z',
     is_read: true
     // parent_reply no presente: PENDIENTE DE RESPUESTA
   },
@@ -5184,10 +5184,10 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-math',
     subject_name: 'Robótica y Matemáticas',
     message: 'Estimado tutor de Santi, extendemos una felicitación por su desempeño sobresaliente en el Torneo de Robótica y Cálculo Mental.',
-    sent_at: '2026-06-01T14:30:00.000Z',
+    sent_at: '2026-12-02T14:30:00.000Z',
     is_read: true,
     parent_reply: 'Muchas gracias profesor Israel, estamos muy orgullosos y apoyando a Santi en casa con sus proyectos de ciencias.',
-    replied_at: '2026-06-02T10:15:00.000Z'
+    replied_at: '2026-12-16T10:15:00.000Z'
   },
   {
     id: 'msg-3',
@@ -5200,10 +5200,10 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-sci',
     subject_name: 'Ciencias Naturales',
     message: 'Estimado tutor de Diego, favor de revisar el cuaderno de Ciencias Naturales para regularizar la práctica 3 de laboratorio escolar.',
-    sent_at: '2026-05-15T12:00:00.000Z',
+    sent_at: '2026-12-07T12:00:00.000Z',
     is_read: true,
     parent_reply: 'Enterado profesor, hoy mismo Diego concluye la práctica 3 y se la entrega mañana a primera hora sin falta.',
-    replied_at: '2026-05-15T18:45:00.000Z'
+    replied_at: '2026-12-10T18:45:00.000Z'
   },
   {
     id: 'msg-4',
@@ -5216,7 +5216,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-esp',
     subject_name: 'Lenguajes y Español',
     message: 'Estimado tutor de Alejandro, extendemos la invitación para representar a la escuela en el concurso regional de Declamación y Oratoria.',
-    sent_at: '2026-06-03T09:00:00.000Z',
+    sent_at: '2026-12-01T09:00:00.000Z',
     is_read: true
     // parent_reply no presente: PENDIENTE DE RESPUESTA
   },
@@ -5232,10 +5232,10 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-dir-ibime',
     subject_name: 'Dirección General de Plantel',
     message: 'Estimada Familia Morales Peña: Nos complace informarles que Iker ha sido seleccionado como candidato para la Certificación Cambridge Starters y el Torneo Regional de Robótica STEAM IBIME 2026. Agradecemos su constante acompañamiento.',
-    sent_at: '2026-06-10T09:00:00.000Z',
+    sent_at: '2026-12-08T09:00:00.000Z',
     is_read: true,
     parent_reply: 'Muchas gracias Directora Patricia. En casa estamos muy comprometidos con la formación de Iker y listos para apoyarlo en el torneo.',
-    replied_at: '2026-06-10T14:20:00.000Z'
+    replied_at: '2026-12-11T14:20:00.000Z'
   },
   {
     id: 'msg-ibime-02',
@@ -5248,7 +5248,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-sci',
     subject_name: 'Robótica STEAM & Ciencias',
     message: 'Aviso a tutores de 5ºA: La próxima semana iniciamos las prácticas de neumática y circuitos lógicos. Los alumnos pueden consultar las guías en el Lienzo Digital.',
-    sent_at: '2026-06-12T11:30:00.000Z',
+    sent_at: '2026-12-02T11:30:00.000Z',
     is_read: true
   },
   {
@@ -5262,10 +5262,10 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-eng',
     subject_name: 'Cambridge English & Liderazgo',
     message: 'Circular Campus Lagos: Felicitamos a Ximena por su destacado progreso en fluidez verbal y vocabulario durante el taller bicultural.',
-    sent_at: '2026-06-08T10:15:00.000Z',
+    sent_at: '2026-12-09T10:15:00.000Z',
     is_read: true,
     parent_reply: 'Gracias profesora Elizabeth, vemos una gran motivación en Ximena practicando sus diálogos en casa.',
-    replied_at: '2026-06-08T18:00:00.000Z'
+    replied_at: '2026-12-14T18:00:00.000Z'
   },
   {
     id: 'msg-ibime-04',
@@ -5278,7 +5278,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-fin-ibime',
     subject_name: 'Tesorería & Facturación',
     message: 'Estado de Cuenta Escolar: Su factura CFDI 4.0 correspondiente al ciclo escolar se encuentra disponible en su portal tutor con sello digital verificado.',
-    sent_at: '2026-06-01T08:00:00.000Z',
+    sent_at: '2026-12-03T08:00:00.000Z',
     is_read: true
   },
   {
@@ -5292,7 +5292,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-demo-mat-pri',
     subject_name: 'Saberes y Pensamiento Científico',
     message: 'Bienvenida Familia Mendoza Gómez al entorno Cuentas demo: Valentina lidera el grupo 5ºA en matemáticas y comprensión lectora.',
-    sent_at: '2026-03-10T09:00:00.000Z',
+    sent_at: '2026-12-01T09:00:00.000Z',
     is_read: false
   },
   {
@@ -5306,7 +5306,7 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     subject_id: 'sub-demo-eng-pri',
     subject_name: 'Lengua Extranjera (Inglés 3D)',
     message: 'Sesión bilingüe completada con fonética sobresaliente junto al Tutor 3D en el estudio inmersivo.',
-    sent_at: '2026-03-10T10:30:00.000Z',
+    sent_at: '2026-12-08T10:30:00.000Z',
     is_read: true
   }
 ];
@@ -5459,11 +5459,11 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Secundaria',
     grade: '3º',
     group: 'A',
-    concept: 'Colegiatura de Septiembre 2026',
+    concept: 'Colegiatura de Diciembre 2026',
     baseAmount: 3800.00,
     scholarshipPercentage: 0,
     amount: 3800.00,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '21 Diciembre 2026',
     status: 'pending',
     autoInvoice: true
   },
@@ -5479,11 +5479,11 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Primaria',
     grade: '1º',
     group: 'A',
-    concept: 'Colegiatura de Septiembre 2026',
+    concept: 'Colegiatura de Diciembre 2026',
     baseAmount: 3200.00,
     scholarshipPercentage: 0,
     amount: 3200.00,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '15 Diciembre 2026',
     status: 'pending',
     autoInvoice: false
   },
@@ -5499,13 +5499,13 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Secundaria',
     grade: '2º',
     group: 'A',
-    concept: 'Colegiatura de Agosto 2026 (Extemporánea)',
+    concept: 'Colegiatura de Diciembre 2026 (Extemporánea)',
     baseAmount: 3800.00,
     scholarshipPercentage: 50,
     scholarshipType: 'deportiva',
     discountAmount: 1900.00,
     amount: 1900.00,
-    dueDate: '15 Agosto 2026',
+    dueDate: '22 Diciembre 2026',
     status: 'overdue',
     autoInvoice: true
   },
@@ -5521,16 +5521,16 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Primaria',
     grade: '4º',
     group: 'A',
-    concept: 'Colegiatura de Septiembre 2026',
+    concept: 'Colegiatura de Diciembre 2026',
     baseAmount: 3450.00,
     scholarshipPercentage: 25,
     scholarshipType: 'academica',
     discountAmount: 862.50,
     amount: 2587.50,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '16 Diciembre 2026',
     status: 'paid',
     autoInvoice: true,
-    paidAt: '24 Agosto 2026'
+    paidAt: '03 Diciembre 2026'
   },
 
   // ==========================================
@@ -5548,16 +5548,16 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Primaria',
     grade: '5º Primaria',
     group: '5ºA Primaria Bilingüe Montes',
-    concept: 'Colegiatura de Septiembre 2026 · Bilingüe Cambridge',
+    concept: 'Colegiatura de Diciembre 2026 · Bilingüe Cambridge',
     baseAmount: 4250.00,
     scholarshipPercentage: 15,
     scholarshipType: 'academica',
     discountAmount: 637.50,
     amount: 3612.50,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '17 Diciembre 2026',
     status: 'paid',
     autoInvoice: true,
-    paidAt: '03 Septiembre 2026'
+    paidAt: '08 Diciembre 2026'
   },
   {
     id: 'inv-ibime-002',
@@ -5571,14 +5571,14 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Primaria',
     grade: '3º Primaria',
     group: '3ºA Primaria Lagos',
-    concept: 'Colegiatura de Septiembre 2026 · Campus Lagos',
+    concept: 'Colegiatura de Diciembre 2026 · Campus Lagos',
     baseAmount: 4250.00,
     scholarshipPercentage: 0,
     amount: 4250.00,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '18 Diciembre 2026',
     status: 'paid',
     autoInvoice: true,
-    paidAt: '05 Septiembre 2026'
+    paidAt: '02 Diciembre 2026'
   },
   {
     id: 'inv-ibime-003',
@@ -5592,13 +5592,13 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Secundaria',
     grade: '2º Secundaria',
     group: '2ºA Secundaria San Cristóbal',
-    concept: 'Colegiatura de Septiembre 2026 · Secundaria Trilingüe',
+    concept: 'Colegiatura de Diciembre 2026 · Secundaria Trilingüe',
     baseAmount: 4680.00,
     scholarshipPercentage: 20,
     scholarshipType: 'academica',
     discountAmount: 936.00,
     amount: 3744.00,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '21 Diciembre 2026',
     status: 'pending',
     autoInvoice: true
   },
@@ -5614,16 +5614,16 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Preparatoria',
     grade: '4º Semestre CCH',
     group: '4º Semestre CCH UNAM Coacalco',
-    concept: 'Colegiatura de Septiembre 2026 · Bachillerato CCH UNAM',
+    concept: 'Colegiatura de Diciembre 2026 · Bachillerato CCH UNAM',
     baseAmount: 5150.00,
     scholarshipPercentage: 25,
     scholarshipType: 'academica',
     discountAmount: 1287.50,
     amount: 3862.50,
-    dueDate: '10 Septiembre 2026',
+    dueDate: '15 Diciembre 2026',
     status: 'paid',
     autoInvoice: true,
-    paidAt: '01 Septiembre 2026'
+    paidAt: '03 Diciembre 2026'
   },
   {
     id: 'inv-ibime-005',
@@ -5637,11 +5637,11 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     level: 'Secundaria',
     grade: '1º Secundaria',
     group: '1ºA Secundaria Coacalco',
-    concept: 'Colegiatura de Agosto 2026 (Extemporánea) · Coacalco',
+    concept: 'Colegiatura de Diciembre 2026 (Extemporánea) · Coacalco',
     baseAmount: 4680.00,
     scholarshipPercentage: 0,
     amount: 4680.00,
-    dueDate: '15 Agosto 2026',
+    dueDate: '16 Diciembre 2026',
     status: 'overdue',
     autoInvoice: true
   },
@@ -5658,7 +5658,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     logoUrl: '',
     isTestCase: false,
     status: 'active',
-    createdAt: '2026-01-15T08:00:00.000Z',
+    createdAt: '2026-12-03T08:00:00.000Z',
     address: 'Calzada de los Filósofos 1712, Col. Del Valle, Ciudad de México',
     phone: '55-4160-8800',
     website: 'https://jjrosseau.edu.mx',
@@ -5693,7 +5693,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     logoUrl: '',
     isTestCase: true,
     status: 'active',
-    createdAt: '2026-02-01T10:00:00.000Z',
+    createdAt: '2026-12-01T10:00:00.000Z',
     address: 'Campus Digital de Innovación, CDMX',
     phone: '55-8000-TEST',
     website: 'https://iskool.mx',
@@ -5739,7 +5739,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     logoUrl: '',
     isTestCase: false,
     status: 'active',
-    createdAt: '2026-02-15T09:00:00.000Z',
+    createdAt: '2026-12-08T09:00:00.000Z',
     address: 'Av. Universidad 1200, Col. Del Valle, CDMX',
     phone: '55-0000-0000',
     website: 'https://montessoridelvalle.edu.mx',
@@ -5774,7 +5774,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     logoUrl: '/brand/ibime_logo.webp',
     isTestCase: false,
     status: 'active',
-    createdAt: '2026-01-10T08:00:00.000Z',
+    createdAt: '2026-12-04T08:00:00.000Z',
     address: 'Av. Jardines de Morelos s/n, Sección Montes, C.P. 55070, Ecatepec de Morelos, Edomex',
     phone: '55-4440-1009',
     website: 'https://ibime.edu.mx',
@@ -5829,7 +5829,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     isTestCase: false,
     isIndependentTeachersNetwork: true,
     status: 'active',
-    createdAt: '2026-03-01T08:00:00.000Z',
+    createdAt: '2026-12-02T08:00:00.000Z',
     address: 'Comunidad Nacional de Docentes Autónomos, México',
     phone: '55-8000-DOCENTE',
     website: 'https://iskool.mx',
@@ -5876,7 +5876,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     courses_count: 6,
     departments_count: 4,
     status: 'active',
-    createdAt: '2026-01-15T08:00:00.000Z',
+    createdAt: '2026-12-09T08:00:00.000Z',
     address: 'Parque Industrial Desarrollo Logistik II, Villa de Reyes, San Luis Potosí, S.L.P.',
     phone: '444-800-BMW1',
     website: 'https://bmw-group.com.mx',
@@ -5934,7 +5934,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     courses_count: 5,
     departments_count: 3,
     status: 'active',
-    createdAt: '2026-02-01T08:00:00.000Z',
+    createdAt: '2026-12-07T08:00:00.000Z',
     address: 'Av. Insurgentes Sur 1602, Crédito Constructor, Benito Juárez, CDMX',
     phone: '55-5200-VENTAS',
     website: 'https://vanguardia-retail.mx',
@@ -5992,7 +5992,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     courses_count: 5,
     departments_count: 3,
     status: 'active',
-    createdAt: '2026-02-15T08:00:00.000Z',
+    createdAt: '2026-12-03T08:00:00.000Z',
     address: 'Av. Puerta de Hierro 5150, Zapopan (Tech Valley), Jalisco',
     phone: '33-3800-CLOUD',
     website: 'https://innovasoft-tech.com',
@@ -6041,7 +6041,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     logoUrl: '/brand/cuentas_demo_logo.webp',
     isTestCase: false,
     status: 'active',
-    createdAt: '2026-03-10T08:00:00.000Z',
+    createdAt: '2026-12-01T08:00:00.000Z',
     address: 'Ciudad de México',
     phone: '55-0001-0001',
     website: 'https://iskool.mx',
@@ -6112,7 +6112,7 @@ export const DEFAULT_GOVERNANCE_SETTINGS: import('../types').SchoolGovernanceSet
       subjectName: 'Matemáticas y Finanzas',
       grade: 'Secundaria (2º)',
       reason: 'Requiere revisión directiva previa y enfoque regulatorio para nivel básico.',
-      restrictedAt: '2026-08-15T10:00:00Z',
+      restrictedAt: '2026-12-15T10:00:00Z',
       status: 'requiere_revision'
     }
   ]
@@ -6128,8 +6128,8 @@ export const SUPER_USERS_ISKOOL_SEED: import('../types').UserProfile[] = [
     phone: '55-1000-0001',
     campus_name: 'Sede Central Matriz ISkool',
     temporary_password: '008805',
-    created_at: '2026-01-01T08:00:00.000Z',
-    updated_at: '2026-01-01T08:00:00.000Z'
+    created_at: '2026-12-08T08:00:00.000Z',
+    updated_at: '2026-12-11T08:00:00.000Z'
   },
   {
     id: 'usr-superadmin-2',
@@ -6140,8 +6140,8 @@ export const SUPER_USERS_ISKOOL_SEED: import('../types').UserProfile[] = [
     phone: '55-1000-0002',
     campus_name: 'Sede Central Matriz ISkool',
     temporary_password: '008805',
-    created_at: '2026-01-01T08:00:00.000Z',
-    updated_at: '2026-01-01T08:00:00.000Z'
+    created_at: '2026-12-02T08:00:00.000Z',
+    updated_at: '2026-12-16T08:00:00.000Z'
   },
   {
     id: 'usr-superadmin-3',
@@ -6152,8 +6152,8 @@ export const SUPER_USERS_ISKOOL_SEED: import('../types').UserProfile[] = [
     phone: '55-1000-0003',
     campus_name: 'Sede Central Matriz ISkool',
     temporary_password: '008805',
-    created_at: '2026-01-01T08:00:00.000Z',
-    updated_at: '2026-01-01T08:00:00.000Z'
+    created_at: '2026-12-07T08:00:00.000Z',
+    updated_at: '2026-12-10T08:00:00.000Z'
   }
 ];
 
@@ -6168,8 +6168,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-1234-5678',
     campus_name: 'Dirección Corporativa & Presidencia',
     temporary_password: 'DUE2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-01T08:00:00.000Z',
+    updated_at: '2026-12-15T08:00:00.000Z'
   },
   {
     id: 'usr-dir-1',
@@ -6181,8 +6181,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4160-8801',
     campus_name: 'Dirección General de Plantel',
     temporary_password: 'DIR2026',
-    created_at: '2026-01-20T08:00:00.000Z',
-    updated_at: '2026-01-20T08:00:00.000Z'
+    created_at: '2026-12-04T08:00:00.000Z',
+    updated_at: '2026-12-09T08:00:00.000Z'
   },
   {
     id: 'usr-dir-test',
@@ -6194,8 +6194,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-8000-8801',
     campus_name: 'Dirección General Sandbox',
     temporary_password: 'DIR880',
-    created_at: '2026-02-01T08:00:00.000Z',
-    updated_at: '2026-02-01T08:00:00.000Z'
+    created_at: '2026-12-09T08:00:00.000Z',
+    updated_at: '2026-12-14T08:00:00.000Z'
   },
   {
     id: 'usr-coord-1',
@@ -6207,8 +6207,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-8000-8802',
     campus_name: 'Coordinación Académica',
     temporary_password: 'CRD2026',
-    created_at: '2026-02-01T08:00:00.000Z',
-    updated_at: '2026-02-01T08:00:00.000Z'
+    created_at: '2026-12-03T08:00:00.000Z',
+    updated_at: '2026-12-08T08:00:00.000Z'
   },
   {
     id: 'usr-coord-jjr',
@@ -6220,8 +6220,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4160-8802',
     campus_name: 'Coordinación UP',
     temporary_password: 'CRD123',
-    created_at: '2026-01-20T08:00:00.000Z',
-    updated_at: '2026-01-20T08:00:00.000Z'
+    created_at: '2026-12-08T08:00:00.000Z',
+    updated_at: '2026-12-11T08:00:00.000Z'
   },
   {
     id: 'usr-billing-1',
@@ -6233,8 +6233,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-8000-8803',
     campus_name: 'Departamento de Cobranza y Finanzas',
     temporary_password: 'COB2026',
-    created_at: '2026-02-01T08:00:00.000Z',
-    updated_at: '2026-02-01T08:00:00.000Z'
+    created_at: '2026-12-02T08:00:00.000Z',
+    updated_at: '2026-12-16T08:00:00.000Z'
   },
   {
     id: 'usr-billing-jjr',
@@ -6246,8 +6246,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4160-8803',
     campus_name: 'Finanzas y Tesorería UP',
     temporary_password: 'COB880',
-    created_at: '2026-01-20T08:00:00.000Z',
-    updated_at: '2026-01-20T08:00:00.000Z'
+    created_at: '2026-12-07T08:00:00.000Z',
+    updated_at: '2026-12-10T08:00:00.000Z'
   },
 
   // ==========================================
@@ -6263,8 +6263,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4440-1009',
     campus_name: 'Dirección Corporativa IBIME',
     temporary_password: 'DUE2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-01T08:00:00.000Z',
+    updated_at: '2026-12-15T08:00:00.000Z'
   },
   {
     id: 'usr-dir-ibime-montes',
@@ -6276,8 +6276,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4440-1001',
     campus_name: 'Campus Montes (Sede Matriz & CCH)',
     temporary_password: 'DIR2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-04T08:00:00.000Z',
+    updated_at: '2026-12-09T08:00:00.000Z'
   },
   {
     id: 'usr-dir-ibime-lagos',
@@ -6289,8 +6289,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4440-1002',
     campus_name: 'Campus Lagos (Fundador 2004)',
     temporary_password: 'DIR2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-09T08:00:00.000Z',
+    updated_at: '2026-12-14T08:00:00.000Z'
   },
   {
     id: 'usr-coord-ibime',
@@ -6302,8 +6302,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4440-1003',
     campus_name: 'Coordinación Académica & Enlace CCH',
     temporary_password: 'CRD2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-03T08:00:00.000Z',
+    updated_at: '2026-12-08T08:00:00.000Z'
   },
   {
     id: 'usr-billing-ibime',
@@ -6315,8 +6315,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-4440-1004',
     campus_name: 'Tesorería & Facturación CFDI 4.0',
     temporary_password: 'COB2026',
-    created_at: '2026-01-10T08:00:00.000Z',
-    updated_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-08T08:00:00.000Z',
+    updated_at: '2026-12-11T08:00:00.000Z'
   },
   // ==========================================
   // DIRECTIVOS EJECUTIVOS CORPORATIVOS (CEOs B2B)
@@ -6331,8 +6331,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '444-800-NEX1',
     campus_name: 'Presidencia & Dirección General Nexus Motors',
     temporary_password: 'NEX2026',
-    created_at: '2026-01-15T08:00:00.000Z',
-    updated_at: '2026-01-15T08:00:00.000Z'
+    created_at: '2026-12-02T08:00:00.000Z',
+    updated_at: '2026-12-16T08:00:00.000Z'
   },
   {
     id: 'usr-ceo-ventas',
@@ -6344,8 +6344,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '55-5200-VENTAS',
     campus_name: 'Presidencia & Dirección Ejecutiva Vanguardia',
     temporary_password: 'RET2026',
-    created_at: '2026-02-01T08:00:00.000Z',
-    updated_at: '2026-02-01T08:00:00.000Z'
+    created_at: '2026-12-07T08:00:00.000Z',
+    updated_at: '2026-12-10T08:00:00.000Z'
   },
   {
     id: 'usr-ceo-tech',
@@ -6357,8 +6357,8 @@ export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
     phone: '33-3800-CLOUD',
     campus_name: 'Presidencia & Executive Tech Board',
     temporary_password: 'CLD2026',
-    created_at: '2026-02-15T08:00:00.000Z',
-    updated_at: '2026-02-15T08:00:00.000Z'
+    created_at: '2026-12-01T08:00:00.000Z',
+    updated_at: '2026-12-15T08:00:00.000Z'
   },
   // Cuentas demo (sch-demo-0001 — Visión CEO, Dirección, Coordinaciones & Control Escolar)
   ...DEMO_STAFF_USERS
@@ -6379,9 +6379,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 4000.00,
     deductions: 5800.00,
     net_salary: 36700.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:30:00.000Z',
+    payment_date: '2026-12-11T10:30:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA México',
@@ -6404,9 +6404,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2500.00,
     deductions: 3600.00,
     net_salary: 24900.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:35:00.000Z',
+    payment_date: '2026-12-09T10:35:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Santander',
@@ -6429,9 +6429,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2000.00,
     deductions: 2800.00,
     net_salary: 20700.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:40:00.000Z',
+    payment_date: '2026-12-16T10:40:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Banamex',
@@ -6454,7 +6454,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2000.00,
     deductions: 2800.00,
     net_salary: 20700.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6477,7 +6477,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 1500.00,
     deductions: 2300.00,
     net_salary: 17700.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6500,7 +6500,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 1500.00,
     deductions: 2600.00,
     net_salary: 18900.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'en_dispersion',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6523,7 +6523,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 1500.00,
     deductions: 2600.00,
     net_salary: 18900.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'en_dispersion',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6548,9 +6548,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 3500.00,
     deductions: 5200.00,
     net_salary: 34300.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T11:00:00.000Z',
+    payment_date: '2026-12-14T11:00:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA México',
@@ -6573,9 +6573,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2000.00,
     deductions: 3400.00,
     net_salary: 23600.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T11:05:00.000Z',
+    payment_date: '2026-12-10T11:05:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Santander',
@@ -6598,7 +6598,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 1500.00,
     deductions: 2200.00,
     net_salary: 17300.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6621,9 +6621,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 1800.00,
     deductions: 2500.00,
     net_salary: 18800.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T11:15:00.000Z',
+    payment_date: '2026-12-08T11:15:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Banamex',
@@ -6648,9 +6648,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 5000.00,
     deductions: 7000.00,
     net_salary: 42000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:00:00.000Z',
+    payment_date: '2026-12-15T10:00:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA México',
@@ -6673,9 +6673,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 3500.00,
     deductions: 4000.00,
     net_salary: 28500.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:15:00.000Z',
+    payment_date: '2026-12-11T10:15:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Banorte',
@@ -6698,9 +6698,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2500.00,
     deductions: 3000.00,
     net_salary: 24000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:20:00.000Z',
+    payment_date: '2026-12-09T10:20:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Santander',
@@ -6723,9 +6723,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2500.00,
     deductions: 3100.00,
     net_salary: 22400.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T10:30:00.000Z',
+    payment_date: '2026-12-16T10:30:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA México',
@@ -6748,7 +6748,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 2000.00,
     deductions: 2700.00,
     net_salary: 19800.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6772,9 +6772,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 25000.00,
     deductions: 35000.00,
     net_salary: 135000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:00:00.000Z',
+    payment_date: '2026-12-14T09:00:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Banco Multilateral Corp',
@@ -6797,9 +6797,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 6000.00,
     deductions: 8000.00,
     net_salary: 46000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:15:00.000Z',
+    payment_date: '2026-12-10T09:15:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA Bancomer Corporativo',
@@ -6822,9 +6822,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 5000.00,
     deductions: 6500.00,
     net_salary: 40500.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:20:00.000Z',
+    payment_date: '2026-12-08T09:20:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Citibanamex',
@@ -6848,9 +6848,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 30000.00,
     deductions: 32000.00,
     net_salary: 118000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:30:00.000Z',
+    payment_date: '2026-12-15T09:30:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Banorte Corporativo',
@@ -6873,9 +6873,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 8000.00,
     deductions: 7000.00,
     net_salary: 41000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:35:00.000Z',
+    payment_date: '2026-12-11T09:35:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Santander',
@@ -6898,7 +6898,7 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 4000.00,
     deductions: 6000.00,
     net_salary: 36000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -6923,9 +6923,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 20000.00,
     deductions: 30000.00,
     net_salary: 125000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:40:00.000Z',
+    payment_date: '2026-12-09T09:40:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'HSBC Premier México',
@@ -6948,9 +6948,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 10000.00,
     deductions: 12000.00,
     net_salary: 53000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:45:00.000Z',
+    payment_date: '2026-12-16T09:45:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'BBVA México',
@@ -6973,9 +6973,9 @@ export const STAFF_PAYROLL_SEED: StaffPayrollRecord[] = [
     bonuses: 12000.00,
     deductions: 13000.00,
     net_salary: 57000.00,
-    payment_period: '1ª Quincena Septiembre 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-09-01T09:50:00.000Z',
+    payment_date: '2026-12-14T09:50:00.000Z',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     bank_name: 'Santander Select',

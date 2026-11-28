@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   const rfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
   const taxName = req.nextUrl.searchParams.get('tax_name') || 'PÚBLICO EN GENERAL';
   const amount = Number(req.nextUrl.searchParams.get('amount')) || 3450.00;
-  const concept = req.nextUrl.searchParams.get('concept') || 'Colegiatura Mensual Septiembre 2026';
+  const concept = req.nextUrl.searchParams.get('concept') || 'Colegiatura Mensual Diciembre 2026';
   const studentName = req.nextUrl.searchParams.get('student') || 'Mateo González Mendoza';
   const curp = req.nextUrl.searchParams.get('curp') || 'AAAA000101HDFZNS01';
   const level = req.nextUrl.searchParams.get('level') || 'Secundaria';

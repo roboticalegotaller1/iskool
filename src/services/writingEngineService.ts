@@ -1458,7 +1458,7 @@ export class AutonomousWritingEngineService {
           ejercicioSugerido: 'Escribir 5 oraciones con depend on, rely on e insist on.'
         },
         xpGanados: 250,
-        evaluatedAt: '2026-10-02T11:30:00Z'
+        evaluatedAt: '2026-12-03T11:30:00Z'
       },
       {
         id: 'eval-seed-2',
@@ -1505,7 +1505,7 @@ export class AutonomousWritingEngineService {
           ejercicioSugerido: 'Corregir 10 oraciones con errores de concordancia de número.'
         },
         xpGanados: 160,
-        evaluatedAt: '2026-10-02T12:00:00Z'
+        evaluatedAt: '2026-12-08T14:20:00Z'
       },
       {
         id: 'eval-seed-3',
@@ -1552,7 +1552,7 @@ export class AutonomousWritingEngineService {
           ejercicioSugerido: 'Rédiger 5 phrases complexes avec bien que, quoique et encore que.'
         },
         xpGanados: 230,
-        evaluatedAt: '2026-10-02T12:45:00Z'
+        evaluatedAt: '2026-12-11T16:45:00Z'
       },
       {
         id: 'eval-seed-4',
@@ -1599,7 +1599,7 @@ export class AutonomousWritingEngineService {
           ejercicioSugerido: 'Compléter 8 phrases avec visiter ou rendre visite à.'
         },
         xpGanados: 120,
-        evaluatedAt: '2026-10-02T13:15:00Z'
+        evaluatedAt: '2026-12-16T10:15:00Z'
       }
     ];
   }

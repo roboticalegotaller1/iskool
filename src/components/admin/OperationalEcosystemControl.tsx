@@ -194,7 +194,7 @@ export const ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
       'Registro Inmutable de Asistencia Justificada'
     ],
     sampleRecentActions: [
-      'Colegiatura Septiembre pagada vía SPEI desde app móvil',
+      'Colegiatura Diciembre pagada vía SPEI desde app móvil',
       'Justificante médico adjuntado para alumno con asma leve',
       'Actualización de contacto de urgencia en Expediente 360'
     ]

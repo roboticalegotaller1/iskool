@@ -147,8 +147,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'for jir plis zank yu ve-ri mach for yor wan-der-ful kaind-nes',
       },
     ],
-    createdAt: '2026-03-01T10:00:00Z',
-    updatedAt: '2026-03-01T10:00:00Z',
+    createdAt: '2026-12-04T10:00:00Z',
+    updatedAt: '2026-12-11T10:00:00Z',
   },
   {
     id: 'lesson-en-schedule',
@@ -200,8 +200,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'iks-kiuz mi ti-cher mei ai bo-rou a dik-sho-ne-ri and an eks-tra nout-buk',
       },
     ],
-    createdAt: '2026-03-01T10:15:00Z',
-    updatedAt: '2026-03-01T10:15:00Z',
+    createdAt: '2026-12-02T10:15:00Z',
+    updatedAt: '2026-12-09T10:15:00Z',
   },
   {
     id: 'lesson-en-travel-a2',
@@ -253,8 +253,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'di iks-pres trein di-parts from plat-form se-ven in fif-tin mi-nits wok streit a-jed',
       },
     ],
-    createdAt: '2026-03-01T11:00:00Z',
-    updatedAt: '2026-03-01T11:00:00Z',
+    createdAt: '2026-12-09T11:00:00Z',
+    updatedAt: '2026-12-16T11:00:00Z',
   },
   {
     id: 'lesson-en-science',
@@ -306,8 +306,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'zru so-lar pa-nels and wind ter-bains wi pro-tekt aur pla-net for fiu-cher ye-ne-rei-shons',
       },
     ],
-    createdAt: '2026-03-02T10:00:00Z',
-    updatedAt: '2026-03-02T10:00:00Z',
+    createdAt: '2026-12-07T10:00:00Z',
+    updatedAt: '2026-12-14T10:00:00Z',
   },
   {
     id: 'lesson-en-lovelace-b1',
@@ -353,8 +353,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'ai am ei-da lav-leis and in ei-tin for-ti zri ai rout de ferst kom-piu-ter al-go-ri-dem',
       },
     ],
-    createdAt: '2026-03-03T09:00:00Z',
-    updatedAt: '2026-03-03T09:00:00Z',
+    createdAt: '2026-12-03T09:00:00Z',
+    updatedAt: '2026-12-10T09:00:00Z',
   },
   {
     id: 'lesson-en-shakespeare',
@@ -400,8 +400,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'ai am wi-liam sheiks-pir and a-pon de steich of de gloub zi-a-ter ai kraf-ted jam-let',
       },
     ],
-    createdAt: '2026-03-04T10:00:00Z',
-    updatedAt: '2026-03-04T10:00:00Z',
+    createdAt: '2026-12-01T10:00:00Z',
+    updatedAt: '2026-12-08T10:00:00Z',
   },
 
   // ===========================================================================
@@ -471,8 +471,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'wi se ma-ñi-fik mer-si bo-ku pur vo-tr a-kuei sha-le-reu a pa-ri',
       },
     ],
-    createdAt: '2026-03-03T10:00:00Z',
-    updatedAt: '2026-03-03T10:00:00Z',
+    createdAt: '2026-12-08T10:00:00Z',
+    updatedAt: '2026-12-15T10:00:00Z',
   },
   {
     id: 'lesson-fr-college-a1',
@@ -524,8 +524,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'dan mon sak a do zhe un ka-ye de sians trua sti-lo e un re-gl',
       },
     ],
-    createdAt: '2026-03-03T11:00:00Z',
-    updatedAt: '2026-03-03T11:00:00Z',
+    createdAt: '2026-12-04T11:00:00Z',
+    updatedAt: '2026-12-11T11:00:00Z',
   },
   {
     id: 'lesson-fr-voyage-a2',
@@ -577,8 +577,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'le tran a grand vi-tes par de la vua nu-me-ro ka-tr dan kanz mi-nut',
       },
     ],
-    createdAt: '2026-03-03T12:00:00Z',
-    updatedAt: '2026-03-03T12:00:00Z',
+    createdAt: '2026-12-02T12:00:00Z',
+    updatedAt: '2026-12-09T12:00:00Z',
   },
   {
     id: 'lesson-fr-ecologie-b1',
@@ -630,8 +630,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'gras a la re-shersh sian-ti-fik nu ba-ti-son an-sanbl un a-ve-nir du-ra-bl',
       },
     ],
-    createdAt: '2026-03-03T13:00:00Z',
-    updatedAt: '2026-03-03T13:00:00Z',
+    createdAt: '2026-12-09T13:00:00Z',
+    updatedAt: '2026-12-16T13:00:00Z',
   },
   {
     id: 'lesson-fr-curie-b1',
@@ -684,8 +684,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'dan la vi rian ne ta krandr tu te ta kom-prandr par la sians',
       },
     ],
-    createdAt: '2026-03-03T14:00:00Z',
-    updatedAt: '2026-03-03T14:00:00Z',
+    createdAt: '2026-12-07T14:00:00Z',
+    updatedAt: '2026-12-14T14:00:00Z',
   },
   {
     id: 'lesson-fr-napoleon',
@@ -731,8 +731,8 @@ export const INITIAL_LESSONS: LanguageLesson[] = [
         phoneticGuide: 'zhe sui na-po-le-on bo-na-part e zhe pro-mul-ge le kod si-vil de fran-se',
       },
     ],
-    createdAt: '2026-03-04T12:00:00Z',
-    updatedAt: '2026-03-04T12:00:00Z',
+    createdAt: '2026-12-03T12:00:00Z',
+    updatedAt: '2026-12-10T12:00:00Z',
   },
 ];
 
@@ -865,7 +865,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     correctWords: ['I', 'would', 'like', 'a', 'warm', 'and', 'muffin', 'please'],
     mispronouncedWords: ['cappuccino', 'fresh', 'blueberry'],
     speedPpm: 124,
-    timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
+    timestamp: '2026-12-04T15:18:00.000Z',
     reviewedByTeacher: false,
   },
   {
@@ -897,7 +897,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     ],
     mispronouncedWords: [],
     speedPpm: 138,
-    timestamp: new Date(Date.now() - 1000 * 60 * 4).toISOString(),
+    timestamp: '2026-12-08T16:40:00.000Z',
     reviewedByTeacher: true,
   },
   {
@@ -934,7 +934,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     ],
     mispronouncedWords: [],
     speedPpm: 132,
-    timestamp: new Date(Date.now() - 1000 * 60 * 9).toISOString(),
+    timestamp: '2026-12-11T14:05:00.000Z',
     reviewedByTeacher: false,
   },
   {
@@ -966,7 +966,7 @@ const INITIAL_REPORTS: StudentPronunciationReport[] = [
     ],
     mispronouncedWords: ['exactement', 'huit', 'heures'],
     speedPpm: 118,
-    timestamp: new Date(Date.now() - 1000 * 60 * 14).toISOString(),
+    timestamp: '2026-12-15T11:30:00.000Z',
     reviewedByTeacher: false,
   },
 ];
@@ -1075,7 +1075,26 @@ export const useLanguagesStore = create<LanguagesState>()(
     }),
     {
       name: 'iskool-languages-storage',
+      version: 2,
       storage: createJSONStorage(() => createSafeLocalStorage()),
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          const seedLessonIds = new Set(INITIAL_LESSONS.map((l) => l.id));
+          const seedReportIds = new Set(INITIAL_REPORTS.map((r) => r.id));
+          return {
+            ...persistedState,
+            lessons: [
+              ...INITIAL_LESSONS,
+              ...((persistedState?.lessons || []).filter((l: any) => !seedLessonIds.has(l?.id))),
+            ],
+            studentReports: [
+              ...INITIAL_REPORTS,
+              ...((persistedState?.studentReports || []).filter((r: any) => !seedReportIds.has(r?.id))),
+            ],
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         lessons: state.lessons,
         studentReports: state.studentReports,

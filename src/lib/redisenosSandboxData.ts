@@ -531,11 +531,14 @@ export const SEP_ANNUAL_PLAN_2026 = [
   { week: 6, dates: '28 Sep - 2 Oct 2026', title: 'Estructura Atómica y Modelos Moleculares', status: 'completed' },
   { week: 7, dates: '5-9 Oct 2026', title: 'Operaciones Básicas y Fracciones en la Vida Diaria', status: 'completed' },
   { week: 8, dates: '12-16 Oct 2026', title: 'Encuentro de Dos Mundos y Diversidad Lingüística', status: 'completed' },
-  { week: 9, dates: '19-23 Oct 2026', title: 'Semana Actual: Evaluación Formativa y Retos Gamificados', status: 'in_progress' },
-  { week: 10, dates: '26-30 Oct 2026', title: 'Tradiciones Vivas: Día de Muertos y Memoria', status: 'upcoming' },
-  { week: 11, dates: '2-6 Nov 2026', title: 'Geometría del Espacio y Cálculo de Áreas', status: 'upcoming' },
-  { week: 12, dates: '9-13 Nov 2026', title: 'Ecosistemas de México y Conservación de Flora', status: 'upcoming' },
-  { week: 13, dates: '16-20 Nov 2026', title: 'Revolución Mexicana y Derechos Sociales', status: 'upcoming' }
+  { week: 9, dates: '19-23 Oct 2026', title: 'Evaluación Formativa y Retos Gamificados', status: 'completed' },
+  { week: 10, dates: '26-30 Oct 2026', title: 'Tradiciones Vivas: Día de Muertos y Memoria', status: 'completed' },
+  { week: 11, dates: '2-6 Nov 2026', title: 'Geometría del Espacio y Cálculo de Áreas', status: 'completed' },
+  { week: 12, dates: '9-13 Nov 2026', title: 'Ecosistemas de México y Conservación de Flora', status: 'completed' },
+  { week: 13, dates: '16-20 Nov 2026', title: 'Revolución Mexicana y Derechos Sociales', status: 'completed' },
+  { week: 14, dates: '30 Nov - 4 Dic 2026', title: 'Proyectos Integradores STEAM y Robótica', status: 'completed' },
+  { week: 15, dates: '7-11 Dic 2026', title: 'Semana Actual: Muestra de Evidencias y Evaluación Diciembre 2026', status: 'in_progress' },
+  { week: 16, dates: '14-18 Dic 2026', title: 'Cierre de Trimestre, Boletas y Convivencia Invernal', status: 'upcoming' }
 ];
 
 // 8. Definición de los 10 Rediseños

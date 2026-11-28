@@ -68,11 +68,11 @@ export default function CheckoutPage(props: CheckoutPageProps) {
 
   // Parámetros dinámicos inyectados desde el Magic Link o sesión
   const amount = Number(resolvedSearchParams.amount) || matchedRecord?.amount || 3450.00;
-  const concept = resolvedSearchParams.concept ? decodeURIComponent(resolvedSearchParams.concept) : (matchedRecord?.concept || 'Colegiatura de Septiembre 2026');
+  const concept = resolvedSearchParams.concept ? decodeURIComponent(resolvedSearchParams.concept) : (matchedRecord?.concept || 'Colegiatura de Diciembre 2026');
   const studentName = resolvedSearchParams.student ? decodeURIComponent(resolvedSearchParams.student) : (matchedRecord?.studentName || 'Mateo López Mendoza');
   const parentName = resolvedSearchParams.parent ? decodeURIComponent(resolvedSearchParams.parent) : (matchedRecord?.parentName || 'Israel López Ángeles');
   const invoiceNumber = resolvedSearchParams.invoiceNumber ? decodeURIComponent(resolvedSearchParams.invoiceNumber) : (matchedRecord?.invoiceNumber || (resolvedParams.sessionId?.startsWith('COL-') ? resolvedParams.sessionId : 'COL-2026-00452'));
-  const dueDate = resolvedSearchParams.dueDate ? decodeURIComponent(resolvedSearchParams.dueDate) : (matchedRecord?.dueDate || '10 de Septiembre de 2026');
+  const dueDate = resolvedSearchParams.dueDate ? decodeURIComponent(resolvedSearchParams.dueDate) : (matchedRecord?.dueDate || '14 de Diciembre de 2026');
 
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');

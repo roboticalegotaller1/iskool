@@ -95,8 +95,8 @@ export class CurriculumFederationService {
           author_email: 'pedagogia@iskool.edu.mx',
           institution_cct: '09DPR0000Z',
           tenant_id: 'iskool',
-          created_at: '2026-09-01T08:00:00Z',
-          updated_at: '2026-09-01T08:00:00Z',
+          created_at: '2026-12-02T08:30:00Z',
+          updated_at: '2026-12-10T14:00:00Z',
           signature_sha256: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b'
         },
         vault_node_ref: 'planeaciones/Primaria_Fase_4/4to_Grado/Ciencias_Naturales/Planeacion_F4-CIE-4TO-V00035_Ciclo_del_agua_cambios_de_estado_y_.md',
@@ -146,8 +146,8 @@ export class CurriculumFederationService {
           author_email: 'pedagogia@iskool.edu.mx',
           institution_cct: '09DPR0000Z',
           tenant_id: 'iskool',
-          created_at: '2026-09-01T08:00:00Z',
-          updated_at: '2026-09-01T08:00:00Z',
+          created_at: '2026-12-04T09:15:00Z',
+          updated_at: '2026-12-14T16:20:00Z',
           signature_sha256: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'
         },
         vault_node_ref: 'planeaciones/Primaria_Fase_5/5to_Grado/Matematicas/Fracciones_Equivalentes.md',

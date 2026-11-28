@@ -297,7 +297,7 @@ export class LeadershipDashboardService {
         target_knowledge_title: 'Asking for Clarification Politely (B1)',
         scope_name: 'High School 1 — Grupo B',
         strategy: 'Micro-rutina de 10 min de roleplay en parejas ysentence starters para clarificación dialógica.',
-        started_date: '2026-09-01',
+        started_date: '2026-12-02',
         baseline_mastery_percent: 38,
         current_mastery_percent: 68,
         delta_percent: 30,
@@ -305,7 +305,7 @@ export class LeadershipDashboardService {
         evidence_confidence: 'high',
         status: 'completed',
         interpretation: 'Mejora observada de 30 puntos en producción guiada. Se recomienda monitorear transferencia espontánea.',
-        follow_up_review_date: '2026-10-15'
+        follow_up_review_date: '2026-12-17'
       }
     ];
 

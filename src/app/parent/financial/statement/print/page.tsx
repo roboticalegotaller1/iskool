@@ -81,9 +81,9 @@ export default function AccountStatementPrintPage() {
     return [
       {
         folio: 'COL-2026-00452',
-        concept: 'Colegiatura de Septiembre 2026',
+        concept: 'Colegiatura de Diciembre 2026',
         student: `${activeStudentDisplayName} (3º de Secundaria — Grupo A)`,
-        dueDate: '10 de Septiembre de 2026',
+        dueDate: '14 de Diciembre de 2026',
         subtotal: 3600.00,
         discount: 150.00,
         total: 3450.00,
@@ -91,9 +91,9 @@ export default function AccountStatementPrintPage() {
       },
       {
         folio: 'COL-2026-00489',
-        concept: 'Taller Extraescolar de Robótica y Programación (Mensual)',
+        concept: 'Taller Extraescolar de Robótica y Programación (Diciembre)',
         student: `${activeStudentDisplayName} (3º de Secundaria — Grupo A)`,
-        dueDate: '15 de Septiembre de 2026',
+        dueDate: '18 de Diciembre de 2026',
         subtotal: 800.00,
         discount: 0.00,
         total: 800.00,
@@ -119,7 +119,7 @@ export default function AccountStatementPrintPage() {
       {
         receipt: 'REC-2026-08102',
         concept: 'Inscripción Anual Ciclo 2026-2027',
-        paidAt: '12 de Agosto de 2026, 11:24 hrs',
+        paidAt: '02 de Diciembre de 2026, 11:24 hrs',
         method: 'Tarjeta de Crédito (Visa ***4012)',
         amount: 4500.00,
         uuid: '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D'
@@ -127,15 +127,15 @@ export default function AccountStatementPrintPage() {
       {
         receipt: 'REC-2026-08103',
         concept: 'Paquete de Libros y Materiales Digitales',
-        paidAt: '12 de Agosto de 2026, 11:30 hrs',
+        paidAt: '05 de Diciembre de 2026, 14:30 hrs',
         method: 'Transferencia SPEI',
         amount: 2250.00,
         uuid: '9F8E7D6C-5B4A-3F2E-1D0C-B9A8F7E6D5C4'
       },
       {
         receipt: 'REC-2026-07011',
-        concept: 'Colegiatura de Agosto 2026 (Curso Propedéutico)',
-        paidAt: '05 de Agosto de 2026, 09:15 hrs',
+        concept: 'Colegiatura de Diciembre 2026 (Pronto Pago)',
+        paidAt: '08 de Diciembre de 2026, 09:15 hrs',
         method: 'Tarjeta de Débito (Mastercard ***8831)',
         amount: 3600.00,
         uuid: '1A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D'

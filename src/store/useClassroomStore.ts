@@ -15,7 +15,7 @@ import {
   EdictoComment
 } from '@/types/classroom';
 
-// Edictos Semilla Iniciales
+// Edictos Semilla Iniciales (Diciembre 2026 con fechas variadas y deterministas)
 const SEED_EDICTOS: ClassroomEdicto[] = [
   {
     id: 'edicto-1',
@@ -24,14 +24,14 @@ const SEED_EDICTOS: ClassroomEdicto[] = [
     groupId: 'grp-4a',
     groupName: '4º A - Primaria',
     title: '⚡ ¡Gran Torneo de Lógica Matemática y Pensamiento Computacional!',
-    content: 'Estimados héroes del aula: Esta semana todas las misiones de Lógica y Circuitos Booleanos otorgan un bono especial del +50% de XP y Galeones. ¡Resuelvan los desafíos del tablero y consigan el cofre del Saber!',
+    content: 'Estimados héroes del aula: Esta semana de diciembre todas las misiones de Lógica y Circuitos Booleanos otorgan un bono especial del +50% de XP y Galeones. ¡Resuelvan los desafíos del tablero antes del 17 de diciembre y consigan el cofre del Saber!',
     type: 'xp_event',
     priority: 'pinned',
     xpBonusPercent: 50,
     coinsBonus: 35,
     linkedActivityId: 'comm-logic-11',
     linkedActivityTitle: 'Las Comidas de la Semana y sus Restricciones (Fase 4)',
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    createdAt: '2026-12-08T14:15:00.000Z',
     likesCount: 14,
     likedByStudentIds: ['std-1', 'std-2', 'std-3', 'std-4'],
     comments: [
@@ -41,7 +41,7 @@ const SEED_EDICTOS: ClassroomEdicto[] = [
         authorName: 'Mateo Morales',
         authorRole: 'student',
         text: '¡Profe, ya resolví el reto del robot jardinero! La pista de la cinta me ayudó mucho ⭐',
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
+        createdAt: '2026-12-09T15:20:00.000Z',
         isHelperAwarded: true
       },
       {
@@ -50,7 +50,7 @@ const SEED_EDICTOS: ClassroomEdicto[] = [
         authorName: 'Prof. Roberto González',
         authorRole: 'teacher',
         text: '¡Excelente Mateo! Has ganado la insignia de Compañero Solidario por apoyar en el foro.',
-        createdAt: new Date(Date.now() - 1800000).toISOString()
+        createdAt: '2026-12-09T16:05:00.000Z'
       }
     ]
   },
@@ -61,26 +61,26 @@ const SEED_EDICTOS: ClassroomEdicto[] = [
     groupId: 'grp-4a',
     groupName: '4º A - Primaria',
     title: '🌿 Entrega de Maqueta: Ecosistemas y Desarrollo Sustentable',
-    content: 'Recuerden que la fecha límite para subir la foto de su artefacto o la nota de voz explicando el ciclo del agua es el próximo viernes. ¡No olviden completar su autoevaluación reflexiva para reclamar el cofre de puntualidad!',
+    content: 'Recuerden que la fecha límite para subir la foto de su artefacto o la nota de voz explicando el ciclo del agua es el viernes 18 de diciembre de 2026. ¡No olviden completar su autoevaluación reflexiva para reclamar el cofre de puntualidad!',
     type: 'challenge_quest',
     priority: 'urgent',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    createdAt: '2026-12-03T13:30:00.000Z',
     likesCount: 9,
     likedByStudentIds: ['std-2', 'std-5'],
     comments: []
   }
 ];
 
-// Registros de Termómetro Socioemocional Semilla
+// Registros de Termómetro Socioemocional Semilla (fechas variadas en Diciembre 2026)
 const SEED_CHECKINS: SocioemotionalCheckin[] = [
-  { id: 'chk-1', studentId: 'std-1', studentName: 'Mateo Morales', groupId: 'grp-4a', date: new Date().toISOString().split('T')[0], mood: 'energized', note: '¡Listo para ganar XP!', createdAt: new Date().toISOString() },
-  { id: 'chk-2', studentId: 'std-2', studentName: 'Sofía Reyes', groupId: 'grp-4a', date: new Date().toISOString().split('T')[0], mood: 'motivated', createdAt: new Date().toISOString() },
-  { id: 'chk-3', studentId: 'std-3', studentName: 'Lucas Hernández', groupId: 'grp-4a', date: new Date().toISOString().split('T')[0], mood: 'peaceful', createdAt: new Date().toISOString() },
-  { id: 'chk-4', studentId: 'std-4', studentName: 'Valentina Castro', groupId: 'grp-4a', date: new Date().toISOString().split('T')[0], mood: 'tired', note: 'Dormí tarde haciendo la tarea de dibujo', createdAt: new Date().toISOString() },
-  { id: 'chk-5', studentId: 'std-5', studentName: 'Diego Navarro', groupId: 'grp-4a', date: new Date().toISOString().split('T')[0], mood: 'motivated', createdAt: new Date().toISOString() }
+  { id: 'chk-1', studentId: 'std-1', studentName: 'Mateo Morales', groupId: 'grp-4a', date: '2026-12-07', mood: 'energized', note: '¡Listo para ganar XP!', createdAt: '2026-12-07T14:05:00.000Z' },
+  { id: 'chk-2', studentId: 'std-2', studentName: 'Sofía Reyes', groupId: 'grp-4a', date: '2026-12-08', mood: 'motivated', createdAt: '2026-12-08T14:12:00.000Z' },
+  { id: 'chk-3', studentId: 'std-3', studentName: 'Lucas Hernández', groupId: 'grp-4a', date: '2026-12-09', mood: 'peaceful', createdAt: '2026-12-09T14:18:00.000Z' },
+  { id: 'chk-4', studentId: 'std-4', studentName: 'Valentina Castro', groupId: 'grp-4a', date: '2026-12-10', mood: 'tired', note: 'Dormí tarde haciendo la tarea de dibujo', createdAt: '2026-12-10T14:22:00.000Z' },
+  { id: 'chk-5', studentId: 'std-5', studentName: 'Diego Navarro', groupId: 'grp-4a', date: '2026-12-11', mood: 'motivated', createdAt: '2026-12-11T14:10:00.000Z' }
 ];
 
-// Entregas de Estudiantes Semilla
+// Entregas de Estudiantes Semilla (fechas distintas y escalonadas en Diciembre 2026)
 const SEED_SUBMISSIONS: StudentSubmission[] = [
   {
     id: 'sub-001',
@@ -89,8 +89,8 @@ const SEED_SUBMISSIONS: StudentSubmission[] = [
     studentId: 'std-1',
     studentName: 'Mateo Morales',
     groupId: 'grp-4a',
-    submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-    dueDate: new Date(Date.now() + 3600000 * 48).toISOString(),
+    submittedAt: '2026-12-04T16:40:00.000Z',
+    dueDate: '2026-12-16T23:59:00.000Z',
     isSubmittedOnTime: true,
     evidenceType: 'image',
     evidenceUrl: '/images/books/cover_codice_antiguo.webp',
@@ -112,8 +112,8 @@ const SEED_SUBMISSIONS: StudentSubmission[] = [
     studentId: 'std-2',
     studentName: 'Sofía Reyes',
     groupId: 'grp-4a',
-    submittedAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-    dueDate: new Date(Date.now() + 3600000 * 48).toISOString(),
+    submittedAt: '2026-12-09T18:15:00.000Z',
+    dueDate: '2026-12-18T23:59:00.000Z',
     isSubmittedOnTime: true,
     evidenceType: 'text_document',
     evidenceText: 'Documento de investigación sobre la captación de agua de lluvia y su filtrado con arena y carbón activo.',
@@ -401,7 +401,31 @@ export const useClassroomStore = create<ClassroomStore>()(
     }),
     {
       name: 'iskool-classroom-store',
-      storage: createJSONStorage(() => createSafeLocalStorage())
+      version: 2,
+      storage: createJSONStorage(() => createSafeLocalStorage()),
+      migrate: (persistedState: any, version: number) => {
+        if (!persistedState || version < 2) {
+          const seedEdictoIds = new Set(SEED_EDICTOS.map((e) => e.id));
+          const seedCheckinIds = new Set(SEED_CHECKINS.map((c) => c.id));
+          const seedSubmissionIds = new Set(SEED_SUBMISSIONS.map((s) => s.id));
+          return {
+            ...persistedState,
+            edictosList: [
+              ...SEED_EDICTOS,
+              ...((persistedState?.edictosList || []).filter((e: any) => !seedEdictoIds.has(e?.id))),
+            ],
+            socioemotionalList: [
+              ...SEED_CHECKINS,
+              ...((persistedState?.socioemotionalList || []).filter((c: any) => !seedCheckinIds.has(c?.id))),
+            ],
+            submissionsList: [
+              ...SEED_SUBMISSIONS,
+              ...((persistedState?.submissionsList || []).filter((s: any) => !seedSubmissionIds.has(s?.id))),
+            ],
+          };
+        }
+        return persistedState;
+      },
     }
   )
 );

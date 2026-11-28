@@ -126,6 +126,21 @@ function getAdultPhoto(isFemale: boolean, index: number): string {
   return `/images/students/archive/corporativo_${isFemale ? 'woman' : 'man'}_${pad2(slot)}.webp`;
 }
 
+// Fechas escolares deterministas y variadas de Diciembre 2026 (días hábiles lunes a viernes)
+const DEMO_DEC_2026_SCHOOL_DAYS = [
+  '2026-12-01', '2026-12-02', '2026-12-03', '2026-12-04',
+  '2026-12-07', '2026-12-08', '2026-12-09', '2026-12-10', '2026-12-11',
+  '2026-12-14', '2026-12-15', '2026-12-16', '2026-12-17', '2026-12-18',
+  '2026-12-21', '2026-12-22',
+];
+
+function demoDecIso(seedIndex: number, hourOffset = 0): string {
+  const day = DEMO_DEC_2026_SCHOOL_DAYS[(seedIndex * 5 + 3) % DEMO_DEC_2026_SCHOOL_DAYS.length];
+  const hr = String(8 + ((seedIndex * 3 + hourOffset) % 9)).padStart(2, '0');
+  const min = String(((seedIndex * 11 + 5) % 55)).padStart(2, '0');
+  return `${day}T${hr}:${min}:00.000Z`;
+}
+
 // -----------------------------------------------------------------------------
 // 1. 3 PLANTELES OFICIALES DE CUENTAS DEMO
 // -----------------------------------------------------------------------------
@@ -138,7 +153,7 @@ export const DEMO_CAMPUSES: Campus[] = [
     grades: ['1º', '2º', '3º', '4º', '5º', '6º'],
     address: 'Av. Reforma Pedagógica 140, Col. Juárez, Ciudad de México',
     phone: '55-0001-1010',
-    created_at: '2026-03-10T08:00:00.000Z',
+    created_at: '2026-12-01T08:15:00.000Z',
   },
   {
     id: 'cmp-demo-sec',
@@ -148,7 +163,7 @@ export const DEMO_CAMPUSES: Campus[] = [
     grades: ['1º', '2º', '3º'],
     address: 'Calz. Norte Académica 480, Lindavista, Ciudad de México',
     phone: '55-0001-2020',
-    created_at: '2026-03-10T08:00:00.000Z',
+    created_at: '2026-12-02T09:20:00.000Z',
   },
   {
     id: 'cmp-demo-prep',
@@ -158,7 +173,7 @@ export const DEMO_CAMPUSES: Campus[] = [
     grades: ['1º Semestre', '2º Semestre', '3º Semestre', '4º Semestre', '5º Semestre', '6º Semestre'],
     address: 'Periférico Sur Innovación 910, Coyoacán, Ciudad de México',
     phone: '55-0001-3030',
-    created_at: '2026-03-10T08:00:00.000Z',
+    created_at: '2026-12-03T10:05:00.000Z',
   },
 ];
 
@@ -167,28 +182,28 @@ export const DEMO_CAMPUSES: Campus[] = [
 // -----------------------------------------------------------------------------
 export const DEMO_SUBJECTS: Subject[] = [
   // Primaria
-  { id: 'sub-demo-esp-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Lenguajes (Español)', sep_code: 'DEMO-LEN-PRI', category: 'curricular', is_elective: false, description: 'Comprensión lectora, producción de textos y expresión oral NEM.', instructor_name: 'Prof. Alejandro Ruiz', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-mat-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Saberes y Pensamiento Científico (Matemáticas)', sep_code: 'DEMO-MAT-PRI', category: 'curricular', is_elective: false, description: 'Resolución de problemas geométricos, fracciones y pensamiento lógico.', instructor_name: 'Prof. Alejandro Ruiz', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-eng-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Lengua Extranjera (Inglés)', sep_code: 'DEMO-ING-PRI', category: 'curricular', is_elective: false, description: 'Inmersión conversacional 3D multilingüe con tutores virtuales.', instructor_name: 'Profa. Claire Dubois (Idiomas 3D)', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-cie-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Ciencias Naturales y Experimentación', sep_code: 'DEMO-CIE-PRI', category: 'curricular', is_elective: false, description: 'Indagación científica, ecosistemas y método experimental escolar.', instructor_name: 'Profa. Elena Ríos Morales', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-eti-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Ética, Naturaleza y Sociedades', sep_code: 'DEMO-ETI-PRI', category: 'curricular', is_elective: false, description: 'Convivencia cívica, historia comunitaria y cultura de paz.', instructor_name: 'Prof. Roberto Navarro Fuentes', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-rob-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Robótica y Pensamiento Computacional', sep_code: 'DEMO-ROB-PRI', category: 'optativa', is_elective: true, description: 'Secuencias lógicas, programación visual por bloques y retos STEM.', instructor_name: 'Prof. Héctor Pineda Campos', created_at: '2026-03-10T08:00:00.000Z' },
+  { id: 'sub-demo-esp-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Lenguajes (Español)', sep_code: 'DEMO-LEN-PRI', category: 'curricular', is_elective: false, description: 'Comprensión lectora, producción de textos y expresión oral NEM.', instructor_name: 'Prof. Alejandro Ruiz', created_at: '2026-12-01T08:30:00.000Z' },
+  { id: 'sub-demo-mat-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Saberes y Pensamiento Científico (Matemáticas)', sep_code: 'DEMO-MAT-PRI', category: 'curricular', is_elective: false, description: 'Resolución de problemas geométricos, fracciones y pensamiento lógico.', instructor_name: 'Prof. Alejandro Ruiz', created_at: '2026-12-02T09:05:00.000Z' },
+  { id: 'sub-demo-eng-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Lengua Extranjera (Inglés)', sep_code: 'DEMO-ING-PRI', category: 'curricular', is_elective: false, description: 'Inmersión conversacional 3D multilingüe con tutores virtuales.', instructor_name: 'Profa. Claire Dubois (Idiomas 3D)', created_at: '2026-12-03T09:40:00.000Z' },
+  { id: 'sub-demo-cie-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Ciencias Naturales y Experimentación', sep_code: 'DEMO-CIE-PRI', category: 'curricular', is_elective: false, description: 'Indagación científica, ecosistemas y método experimental escolar.', instructor_name: 'Profa. Elena Ríos Morales', created_at: '2026-12-04T10:15:00.000Z' },
+  { id: 'sub-demo-eti-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Ética, Naturaleza y Sociedades', sep_code: 'DEMO-ETI-PRI', category: 'curricular', is_elective: false, description: 'Convivencia cívica, historia comunitaria y cultura de paz.', instructor_name: 'Prof. Roberto Navarro Fuentes', created_at: '2026-12-07T08:50:00.000Z' },
+  { id: 'sub-demo-rob-pri', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-pri', campus_name: 'Campus Central Primaria', level_grade_id: 'primaria', name: 'Robótica y Pensamiento Computacional', sep_code: 'DEMO-ROB-PRI', category: 'optativa', is_elective: true, description: 'Secuencias lógicas, programación visual por bloques y retos STEM.', instructor_name: 'Prof. Héctor Pineda Campos', created_at: '2026-12-08T11:20:00.000Z' },
 
   // Secundaria
-  { id: 'sub-demo-his-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Historia de México y Ciudadanía', sep_code: 'DEMO-HIS-SEC', category: 'curricular', is_elective: false, description: 'Dialogando con personajes históricos en primera persona y análisis documental.', instructor_name: 'Prof. Carlos Eduardo Méndez Vega', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-mat-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Matemáticas y Razonamiento Lógico', sep_code: 'DEMO-MAT-SEC', category: 'curricular', is_elective: false, description: 'Álgebra inicial, proporcionalidad y modelado de datos.', instructor_name: 'Profa. Ximena Paola Vargas Silva', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-esp-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Español y Literatura Crítica', sep_code: 'DEMO-ESP-SEC', category: 'curricular', is_elective: false, description: 'Argumentación académica, ensayo y análisis literario.', instructor_name: 'Profa. Beatriz Santillán Cruz', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-eng-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Inglés Conversacional Avanzado 3D', sep_code: 'DEMO-ENG-SEC', category: 'curricular', is_elective: false, description: 'Debate bilingüe y pronunciación neural asistida por avatares 3D.', instructor_name: 'Profa. Claire Dubois (Idiomas 3D)', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-cie-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Biología, Física y Química Aplicada', sep_code: 'DEMO-CIE-SEC', category: 'curricular', is_elective: false, description: 'Prácticas de laboratorio, energía y genética básica.', instructor_name: 'Prof. Mauricio Salinas Ortiz', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-tec-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Tecnología e Innovación Digital', sep_code: 'DEMO-TEC-SEC', category: 'optativa', is_elective: true, description: 'Diseño de prototipos, hojas de cálculo y ciudadanía digital.', instructor_name: 'Profa. Claudia Reyes Aguilar', created_at: '2026-03-10T08:00:00.000Z' },
+  { id: 'sub-demo-his-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Historia de México y Ciudadanía', sep_code: 'DEMO-HIS-SEC', category: 'curricular', is_elective: false, description: 'Dialogando con personajes históricos en primera persona y análisis documental.', instructor_name: 'Prof. Carlos Eduardo Méndez Vega', created_at: '2026-12-02T10:10:00.000Z' },
+  { id: 'sub-demo-mat-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Matemáticas y Razonamiento Lógico', sep_code: 'DEMO-MAT-SEC', category: 'curricular', is_elective: false, description: 'Álgebra inicial, proporcionalidad y modelado de datos.', instructor_name: 'Profa. Ximena Paola Vargas Silva', created_at: '2026-12-03T11:35:00.000Z' },
+  { id: 'sub-demo-esp-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Español y Literatura Crítica', sep_code: 'DEMO-ESP-SEC', category: 'curricular', is_elective: false, description: 'Argumentación académica, ensayo y análisis literario.', instructor_name: 'Profa. Beatriz Santillán Cruz', created_at: '2026-12-04T08:45:00.000Z' },
+  { id: 'sub-demo-eng-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Inglés Conversacional Avanzado 3D', sep_code: 'DEMO-ENG-SEC', category: 'curricular', is_elective: false, description: 'Debate bilingüe y pronunciación neural asistida por avatares 3D.', instructor_name: 'Profa. Claire Dubois (Idiomas 3D)', created_at: '2026-12-07T09:25:00.000Z' },
+  { id: 'sub-demo-cie-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Biología, Física y Química Aplicada', sep_code: 'DEMO-CIE-SEC', category: 'curricular', is_elective: false, description: 'Prácticas de laboratorio, energía y genética básica.', instructor_name: 'Prof. Mauricio Salinas Ortiz', created_at: '2026-12-09T10:50:00.000Z' },
+  { id: 'sub-demo-tec-sec', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-sec', campus_name: 'Campus Norte Secundaria', level_grade_id: 'secundaria', name: 'Tecnología e Innovación Digital', sep_code: 'DEMO-TEC-SEC', category: 'optativa', is_elective: true, description: 'Diseño de prototipos, hojas de cálculo y ciudadanía digital.', instructor_name: 'Profa. Claudia Reyes Aguilar', created_at: '2026-12-10T12:15:00.000Z' },
 
   // Preparatoria
-  { id: 'sub-demo-mat-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Cálculo Diferencial y Estadística', sep_code: 'DEMO-CAL-PREP', category: 'curricular', is_elective: false, description: 'Funciones, derivadas, modelado matemático e inferencia estadística.', instructor_name: 'Prof. Rodrigo Cervantes León', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-fis-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Física Moderna y Electromagnetismo', sep_code: 'DEMO-FIS-PREP', category: 'curricular', is_elective: false, description: 'Mecánica clásica, termodinámica y circuitos aplicados.', instructor_name: 'Prof. Sergio Quintero Téllez', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-qui-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Química Orgánica y Biotecnología', sep_code: 'DEMO-QUI-PREP', category: 'curricular', is_elective: false, description: 'Estequiometría, compuestos orgánicos y proyectos experimentales.', instructor_name: 'Profa. Gabriela Paredes Sandoval', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-lit-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Metodología de la Investigación y Humanidades', sep_code: 'DEMO-HUM-PREP', category: 'curricular', is_elective: false, description: 'Pensamiento crítico, ética contemporánea y redacción académica.', instructor_name: 'Profa. Verónica Acosta Zamora', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-eng-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Inglés Académico y Certificación C1', sep_code: 'DEMO-ENG-PREP', category: 'curricular', is_elective: false, description: 'Preparación académica bilingüe, debate y comprensión técnica.', instructor_name: 'Profa. Mariana Delgado Uribe', created_at: '2026-03-10T08:00:00.000Z' },
-  { id: 'sub-demo-ia-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Ciencia de Datos y Emprendimiento', sep_code: 'DEMO-DAT-PREP', category: 'optativa', is_elective: true, description: 'Proyectos productivos, analítica de datos y modelado financiero.', instructor_name: 'Prof. Arturo Pacheco Núñez', created_at: '2026-03-10T08:00:00.000Z' },
+  { id: 'sub-demo-mat-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Cálculo Diferencial y Estadística', sep_code: 'DEMO-CAL-PREP', category: 'curricular', is_elective: false, description: 'Funciones, derivadas, modelado matemático e inferencia estadística.', instructor_name: 'Prof. Rodrigo Cervantes León', created_at: '2026-12-01T11:00:00.000Z' },
+  { id: 'sub-demo-fis-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Física Moderna y Electromagnetismo', sep_code: 'DEMO-FIS-PREP', category: 'curricular', is_elective: false, description: 'Mecánica clásica, termodinámica y circuitos aplicados.', instructor_name: 'Prof. Sergio Quintero Téllez', created_at: '2026-12-04T12:40:00.000Z' },
+  { id: 'sub-demo-qui-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Química Orgánica y Biotecnología', sep_code: 'DEMO-QUI-PREP', category: 'curricular', is_elective: false, description: 'Estequiometría, compuestos orgánicos y proyectos experimentales.', instructor_name: 'Profa. Gabriela Paredes Sandoval', created_at: '2026-12-08T09:10:00.000Z' },
+  { id: 'sub-demo-lit-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Metodología de la Investigación y Humanidades', sep_code: 'DEMO-HUM-PREP', category: 'curricular', is_elective: false, description: 'Pensamiento crítico, ética contemporánea y redacción académica.', instructor_name: 'Profa. Verónica Acosta Zamora', created_at: '2026-12-10T10:30:00.000Z' },
+  { id: 'sub-demo-eng-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Inglés Académico y Certificación C1', sep_code: 'DEMO-ENG-PREP', category: 'curricular', is_elective: false, description: 'Preparación académica bilingüe, debate y comprensión técnica.', instructor_name: 'Profa. Mariana Delgado Uribe', created_at: '2026-12-11T13:15:00.000Z' },
+  { id: 'sub-demo-ia-prep', school_id: DEMO_SCHOOL_ID, campus_id: 'cmp-demo-prep', campus_name: 'Campus Sur Preparatoria', level_grade_id: 'preparatoria', name: 'Ciencia de Datos y Emprendimiento', sep_code: 'DEMO-DAT-PREP', category: 'optativa', is_elective: true, description: 'Proyectos productivos, analítica de datos y modelado financiero.', instructor_name: 'Prof. Arturo Pacheco Núñez', created_at: '2026-12-14T11:45:00.000Z' },
 ];
 
 // -----------------------------------------------------------------------------
@@ -292,8 +307,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['5ºA', '5ºB'],
       assigned_subjects: ['Lenguajes (Español)', 'Saberes y Pensamiento Científico (Matemáticas)'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-01T08:10:00.000Z',
+      updated_at: '2026-12-10T14:20:00.000Z',
     },
     {
       id: 'usr-demo-teacher-2',
@@ -314,8 +329,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['5ºA', '1ºA'],
       assigned_subjects: ['Lengua Extranjera (Inglés)', 'Francés Multilingüe'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-02T09:15:00.000Z',
+      updated_at: '2026-12-11T11:30:00.000Z',
     },
     {
       id: 'usr-demo-teacher-02',
@@ -336,8 +351,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['1ºA', '2ºA'],
       assigned_subjects: ['Historia de México y Ciudadanía', 'Física y Métodos de Laboratorio'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-03T08:40:00.000Z',
+      updated_at: '2026-12-14T15:05:00.000Z',
     },
     {
       id: 'usr-demo-teacher-03',
@@ -358,8 +373,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: ['1ºA', '3ºA'],
       assigned_subjects: ['Matemáticas y Razonamiento Lógico', 'Lengua Materna (Español)'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-04T10:05:00.000Z',
+      updated_at: '2026-12-15T16:10:00.000Z',
     },
   ];
 
@@ -399,8 +414,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
       assigned_subjects: [priSubjects[i % priSubjects.length], priSubjects[(i + 1) % priSubjects.length]],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: demoDecIso(i, 1),
+      updated_at: demoDecIso(i + 4, 2),
     });
   }
 
@@ -432,8 +447,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
       assigned_subjects: [secSubjects[i % secSubjects.length], secSubjects[(i + 2) % secSubjects.length]],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: demoDecIso(i + 19, 1),
+      updated_at: demoDecIso(i + 23, 3),
     });
   }
 
@@ -465,8 +480,8 @@ const buildTeachers = (): UserProfile[] => {
       temporary_password: 'DemoISkool2026!',
       assigned_groups: groupA === groupB ? [groupA] : [groupA, groupB],
       assigned_subjects: [prepSubjects[i % prepSubjects.length], prepSubjects[(i + 1) % prepSubjects.length]],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: demoDecIso(i + 35, 2),
+      updated_at: demoDecIso(i + 39, 4),
     });
   }
 
@@ -642,9 +657,9 @@ function buildCompleteRoster(): BuiltSchoolRoster {
       const hasPendingDebt = studentId === 'std-demo-01' || (!preserved && numericIndex % 17 === 0);
       const pendingPayments: string[] =
         studentId === 'std-demo-01'
-          ? ['Colegiatura Marzo 2026 (Demo)']
+          ? ['Colegiatura Diciembre 2026 (Demo)']
           : hasPendingDebt
-            ? [`Colegiatura Vencida ${plan.campus_name}`]
+            ? [`Colegiatura Vencida Diciembre 2026 · ${plan.campus_name}`]
             : [];
 
       const curpPrefix = `${l1.slice(0, 2).toUpperCase()}${l2.slice(0, 1).toUpperCase()}${fn.slice(0, 1).toUpperCase()}`;
@@ -710,7 +725,7 @@ function buildCompleteRoster(): BuiltSchoolRoster {
           ? [
               {
                 id: `rep-demo-${pad3(numericIndex)}`,
-                date: '2026-03-08',
+                date: DEMO_DEC_2026_SCHOOL_DAYS[(numericIndex * 3 + 1) % DEMO_DEC_2026_SCHOOL_DAYS.length],
                 description: 'Seguimiento preventivo por inasistencias intermitentes y tareas incompletas en la semana.',
                 reporter: plan.campus_id === 'cmp-demo-pri' ? 'Prof. Alejandro Ruiz' : 'Coordinación Académica',
               },
@@ -721,7 +736,7 @@ function buildCompleteRoster(): BuiltSchoolRoster {
             ? [
                 {
                   id: 'tn-demo-val-1',
-                  date: '2026-03-10',
+                  date: '2026-12-11',
                   teacher_name: 'Prof. Alejandro Ruiz',
                   note: 'Excelente participación en el reto de lectura comprensiva y pensamiento matemático. Lista para demostración en tiempo real.',
                 },
@@ -730,7 +745,7 @@ function buildCompleteRoster(): BuiltSchoolRoster {
               ? [
                   {
                     id: `tn-demo-risk-${pad3(numericIndex)}`,
-                    date: '2026-03-09',
+                    date: DEMO_DEC_2026_SCHOOL_DAYS[(numericIndex * 5 + 2) % DEMO_DEC_2026_SCHOOL_DAYS.length],
                     teacher_name: plan.campus_id === 'cmp-demo-pri' ? 'Prof. Alejandro Ruiz' : 'Mtra. Lucero Aréchiga Montes',
                     note: 'Canalizado a tutoría preventiva y aviso cordial a padres de familia.',
                   },
@@ -741,6 +756,7 @@ function buildCompleteRoster(): BuiltSchoolRoster {
         subject_grades: subjectGrades,
       });
 
+      const activeDay = DEMO_DEC_2026_SCHOOL_DAYS[(numericIndex * 7 + groupIdx) % DEMO_DEC_2026_SCHOOL_DAYS.length];
       activeStudents.push({
         id: studentId,
         first_name: fn,
@@ -750,8 +766,8 @@ function buildCompleteRoster(): BuiltSchoolRoster {
         school_id: DEMO_SCHOOL_ID,
         campus_id: plan.campus_id,
         campus_name: plan.campus_name,
-        created_at: '2026-03-10T08:00:00.000Z',
-        updated_at: '2026-03-10T08:00:00.000Z',
+        created_at: demoDecIso(numericIndex, 0),
+        updated_at: demoDecIso(numericIndex + 3, 2),
       });
 
       const xp = preserved && studentId === 'std-demo-01' ? 1850 : 600 + ((numericIndex * 137) % 2400);
@@ -766,8 +782,8 @@ function buildCompleteRoster(): BuiltSchoolRoster {
         coins: 120 + ((numericIndex * 43) % 680),
         current_streak: isAtRisk ? 1 : 3 + (numericIndex % 14),
         max_streak: 8 + (numericIndex % 20),
-        last_active_date: '2026-03-10',
-        updated_at: '2026-03-10T08:00:00.000Z',
+        last_active_date: activeDay,
+        updated_at: `${activeDay}T14:25:00.000Z`,
         ...(plan.level === 'secundaria'
           ? {
               rpg_class: RPG_CLASSES[numericIndex % RPG_CLASSES.length],
@@ -804,13 +820,13 @@ function buildCompleteRoster(): BuiltSchoolRoster {
         outfit_color: plan.campus_id === 'cmp-demo-pri' ? '#4f46e5' : plan.campus_id === 'cmp-demo-sec' ? '#0f766e' : '#7c3aed',
         background_style: 'starlight_sanctuary',
         unlocked_items: ['crown_scholar', 'cape_nem'],
-        updated_at: '2026-03-10T08:00:00.000Z',
+        updated_at: demoDecIso(numericIndex + 2, 1),
         pet_type: race,
         pet_name: PET_NAMES[numericIndex % PET_NAMES.length],
         pet_hunger: 85,
         pet_happiness: 92,
         pet_bonded: true,
-        pet_birth_date: '2026-03-10',
+        pet_birth_date: DEMO_DEC_2026_SCHOOL_DAYS[(numericIndex * 3) % 8],
         sanctuary_house_type: SANCTUARIES[numericIndex % SANCTUARIES.length],
         sanctuary_placed_items: { 1: 'desk_scholar', 2: 'trophy_math' },
         sanctuary_inventory: ['desk_scholar', 'trophy_math', 'telescope_mini'],
@@ -840,10 +856,10 @@ function buildCompleteRoster(): BuiltSchoolRoster {
       level_grade_id: plan.level,
       level: plan.level,
       grade: plan.grade,
-      academic_year_id: 'ay-25-26',
+      academic_year_id: 'ay-26-27',
       name: plan.name,
       student_ids: groupStudentIds,
-      created_at: '2026-03-10T08:00:00.000Z',
+      created_at: demoDecIso(groupIdx + 1, 0),
     });
   });
 
@@ -907,13 +923,17 @@ export const DEMO_SCHEDULES: ClassSchedule[] = buildSchedules();
 // -----------------------------------------------------------------------------
 const buildAttendance = (): Attendance[] => {
   const records: Attendance[] = [
-    { id: 'att-demo-1', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-01', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-esp-pri', date: '2026-03-10', status: 'presente', comments: 'Asistencia puntual y cuaderno sellado', registered_by: 'usr-demo-teacher-1', created_at: '2026-03-10T08:00:00.000Z' },
-    { id: 'att-demo-2', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-02', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-esp-pri', date: '2026-03-10', status: 'presente', comments: 'Participación destacada', registered_by: 'usr-demo-teacher-1', created_at: '2026-03-10T08:00:00.000Z' },
-    { id: 'att-demo-3', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-03', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-mat-pri', date: '2026-03-10', status: 'presente', comments: 'Ejercicios completos', registered_by: 'usr-demo-teacher-1', created_at: '2026-03-10T08:00:00.000Z' },
-    { id: 'att-demo-4', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-04', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-mat-pri', date: '2026-03-10', status: 'presente', comments: 'Presente en aula', registered_by: 'usr-demo-teacher-1', created_at: '2026-03-10T08:00:00.000Z' },
+    { id: 'att-demo-1', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-01', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-esp-pri', date: '2026-12-07', status: 'presente', comments: 'Asistencia puntual y cuaderno sellado', registered_by: 'usr-demo-teacher-1', created_at: '2026-12-07T08:05:00.000Z' },
+    { id: 'att-demo-2', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-02', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-esp-pri', date: '2026-12-08', status: 'presente', comments: 'Participación destacada', registered_by: 'usr-demo-teacher-1', created_at: '2026-12-08T08:12:00.000Z' },
+    { id: 'att-demo-3', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-03', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-mat-pri', date: '2026-12-09', status: 'presente', comments: 'Ejercicios completos', registered_by: 'usr-demo-teacher-1', created_at: '2026-12-09T08:18:00.000Z' },
+    { id: 'att-demo-4', school_id: DEMO_SCHOOL_ID, student_id: 'std-demo-04', group_id: 'grp-demo-pri-5a', subject_id: 'sub-demo-mat-pri', date: '2026-12-10', status: 'presente', comments: 'Presente en aula', registered_by: 'usr-demo-teacher-1', created_at: '2026-12-10T08:22:00.000Z' },
   ];
 
-  const dates = ['2026-03-06', '2026-03-07', '2026-03-08', '2026-03-09', '2026-03-10'];
+  const dates = [
+    '2026-12-01', '2026-12-02', '2026-12-03', '2026-12-04',
+    '2026-12-07', '2026-12-08', '2026-12-09', '2026-12-10', '2026-12-11',
+    '2026-12-14', '2026-12-15', '2026-12-16', '2026-12-17', '2026-12-18',
+  ];
   const atRiskSet = new Set(DEMO_AT_RISK_STUDENT_IDS);
   let seq = 5;
 
@@ -937,19 +957,20 @@ const buildAttendance = (): Attendance[] => {
         ? 'justificado'
         : 'presente';
 
+    const attDate = dates[(idx * 5 + 3) % dates.length];
     records.push({
       id: `att-demo-${seq++}`,
       school_id: DEMO_SCHOOL_ID,
       student_id: student.id,
       group_id: student.group_id || 'grp-demo-pri-5a',
       subject_id: subjectId,
-      date: dates[idx % dates.length],
+      date: attDate,
       status,
       comments: inRisk
         ? 'Seguimiento de asistencia por tutoría preventiva'
         : 'Asistencia registrada en pase digital',
       registered_by: 'usr-demo-teacher-1',
-      created_at: `${dates[idx % dates.length]}T08:30:00.000Z`,
+      created_at: `${attDate}T08:${String(15 + (idx % 40)).padStart(2, '0')}:00.000Z`,
     });
   });
 
@@ -960,6 +981,7 @@ export const DEMO_ATTENDANCE: Attendance[] = buildAttendance();
 
 // -----------------------------------------------------------------------------
 // 8. COBRANZA Y FACTURACIÓN (36 FOLIOS: 18 PAID, 9 PENDING, 9 OVERDUE)
+//    FECHAS VARIADAS Y ESCALONADAS EN DICIEMBRE 2026
 // -----------------------------------------------------------------------------
 const buildBillingRecords = (): FamilyBillingRecord[] => {
   const records: FamilyBillingRecord[] = [
@@ -976,13 +998,13 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       level: 'Primaria',
       grade: '5º',
       group: '5ºA',
-      concept: 'Colegiatura Marzo 2026 · Primaria Bilingüe Demo',
+      concept: 'Colegiatura Diciembre 2026 · Primaria Bilingüe Demo',
       baseAmount: 4800.0,
       scholarshipPercentage: 25,
       scholarshipType: 'academica',
       discountAmount: 1200.0,
       amount: 3600.0,
-      dueDate: '10 Marzo 2026',
+      dueDate: '14 Diciembre 2026',
       status: 'pending',
       autoInvoice: true,
     },
@@ -998,16 +1020,16 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       level: 'Primaria',
       grade: '5º',
       group: '5ºA',
-      concept: 'Colegiatura Marzo 2026 · Primaria Bilingüe Demo',
+      concept: 'Colegiatura Diciembre 2026 · Primaria Bilingüe Demo',
       baseAmount: 4800.0,
       scholarshipPercentage: 0,
       scholarshipType: 'ninguna',
       discountAmount: 0,
       amount: 4800.0,
-      dueDate: '10 Marzo 2026',
+      dueDate: '11 Diciembre 2026',
       status: 'paid',
       autoInvoice: true,
-      paidAt: '05 Marzo 2026',
+      paidAt: '03 Diciembre 2026',
     },
     {
       id: 'inv-demo-003',
@@ -1021,16 +1043,16 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       level: 'Secundaria',
       grade: '1º',
       group: '1ºA',
-      concept: 'Colegiatura Marzo 2026 · Secundaria Bilingüe Demo',
+      concept: 'Colegiatura Diciembre 2026 · Secundaria Bilingüe Demo',
       baseAmount: 5400.0,
       scholarshipPercentage: 15,
       scholarshipType: 'academica',
       discountAmount: 810.0,
       amount: 4590.0,
-      dueDate: '10 Marzo 2026',
+      dueDate: '16 Diciembre 2026',
       status: 'paid',
       autoInvoice: true,
-      paidAt: '03 Marzo 2026',
+      paidAt: '04 Diciembre 2026',
     },
     {
       id: 'inv-demo-004',
@@ -1044,13 +1066,13 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       level: 'Secundaria',
       grade: '1º',
       group: '1ºA',
-      concept: 'Inscripción & Laboratorio 3D Ciclo 2025-2026',
+      concept: 'Inscripción & Laboratorio 3D Ciclo 2026-2027',
       baseAmount: 5400.0,
       scholarshipPercentage: 0,
       scholarshipType: 'ninguna',
       discountAmount: 0,
       amount: 5400.0,
-      dueDate: '15 Marzo 2026',
+      dueDate: '05 Diciembre 2026',
       status: 'overdue',
       autoInvoice: true,
     },
@@ -1058,6 +1080,27 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
 
   // 32 registros adicionales distribuidos en los 3 planteles -> Total: 36 (18 paid, 9 pending, 9 overdue)
   // inv-demo-001..004 aportan 2 paid, 1 pending, 1 overdue. Aquí agregamos 16 paid, 8 pending, 8 overdue.
+  const PAID_DUE_DATES_DEC = [
+    '09 Diciembre 2026', '12 Diciembre 2026', '07 Diciembre 2026', '15 Diciembre 2026',
+    '10 Diciembre 2026', '18 Diciembre 2026', '08 Diciembre 2026', '14 Diciembre 2026',
+    '11 Diciembre 2026', '16 Diciembre 2026', '13 Diciembre 2026', '19 Diciembre 2026',
+    '17 Diciembre 2026', '21 Diciembre 2026', '22 Diciembre 2026', '23 Diciembre 2026',
+  ];
+  const PAID_AT_DATES_DEC = [
+    '02 Diciembre 2026', '05 Diciembre 2026', '01 Diciembre 2026', '07 Diciembre 2026',
+    '04 Diciembre 2026', '09 Diciembre 2026', '03 Diciembre 2026', '06 Diciembre 2026',
+    '08 Diciembre 2026', '10 Diciembre 2026', '04 Diciembre 2026', '11 Diciembre 2026',
+    '09 Diciembre 2026', '12 Diciembre 2026', '14 Diciembre 2026', '15 Diciembre 2026',
+  ];
+  const PENDING_DUE_DATES_DEC = [
+    '15 Diciembre 2026', '18 Diciembre 2026', '12 Diciembre 2026', '21 Diciembre 2026',
+    '16 Diciembre 2026', '22 Diciembre 2026', '17 Diciembre 2026', '19 Diciembre 2026',
+  ];
+  const OVERDUE_DUE_DATES_DEC = [
+    '02 Diciembre 2026', '04 Diciembre 2026', '01 Diciembre 2026', '06 Diciembre 2026',
+    '03 Diciembre 2026', '07 Diciembre 2026', '05 Diciembre 2026', '08 Diciembre 2026',
+  ];
+
   const sampleIndices = Array.from({ length: 32 }, (_, idx) => ((idx * 19) % 630) + 17);
   sampleIndices.forEach((studentIdx, pos) => {
     const st = DEMO_DETAILED_STUDENTS[studentIdx % DEMO_DETAILED_STUDENTS.length];
@@ -1073,13 +1116,11 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
     const amount = baseAmount - discountAmount;
 
     const dueDate =
-      status === 'overdue'
-        ? pos % 2 === 0
-          ? '2026-01-15'
-          : '2026-02-10'
+      status === 'paid'
+        ? PAID_DUE_DATES_DEC[pos % PAID_DUE_DATES_DEC.length]
         : status === 'pending'
-          ? '2026-03-28'
-          : '2026-03-05';
+          ? PENDING_DUE_DATES_DEC[(pos - 16) % PENDING_DUE_DATES_DEC.length]
+          : OVERDUE_DUE_DATES_DEC[(pos - 24) % OVERDUE_DUE_DATES_DEC.length];
 
     records.push({
       id: `inv-demo-${pad3(folioNum)}`,
@@ -1095,10 +1136,10 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       group: DEMO_GROUPS.find((g) => g.id === st.group_id)?.name || '5ºA',
       concept:
         status === 'overdue'
-          ? `Colegiatura Vencida ${st.campus_name || ''}`
+          ? `Colegiatura Vencida Diciembre 2026 · ${st.campus_name || ''}`
           : status === 'pending'
-            ? `Colegiatura Marzo 2026 · ${st.campus_name || ''}`
-            : `Colegiatura Pagada Febrero 2026 · ${st.campus_name || ''}`,
+            ? `Colegiatura Diciembre 2026 · ${st.campus_name || ''}`
+            : `Colegiatura Pagada Diciembre 2026 · ${st.campus_name || ''}`,
       baseAmount,
       discountAmount,
       scholarshipPercentage: discPct,
@@ -1107,7 +1148,7 @@ const buildBillingRecords = (): FamilyBillingRecord[] => {
       dueDate,
       status,
       autoInvoice: pos % 2 === 0,
-      ...(status === 'paid' ? { paidAt: '2026-03-03T14:15:00.000Z' } : {}),
+      ...(status === 'paid' ? { paidAt: PAID_AT_DATES_DEC[pos % PAID_AT_DATES_DEC.length] } : {}),
     });
   });
 
@@ -1135,8 +1176,8 @@ export const DEMO_STAFF_USERS: UserProfile[] = [
       ai_tokens_consumed: 28400,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-01T08:05:00.000Z',
+      updated_at: '2026-12-14T16:15:00.000Z',
     },
     {
       id: 'usr-demo-director',
@@ -1153,8 +1194,8 @@ export const DEMO_STAFF_USERS: UserProfile[] = [
       ai_tokens_consumed: 19200,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-02T08:30:00.000Z',
+      updated_at: '2026-12-15T12:40:00.000Z',
     },
     {
       id: 'usr-demo-coord-sec',
@@ -1171,8 +1212,8 @@ export const DEMO_STAFF_USERS: UserProfile[] = [
       ai_tokens_consumed: 9600,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-03T09:10:00.000Z',
+      updated_at: '2026-12-11T15:20:00.000Z',
     },
     {
       id: 'usr-demo-coord-prep',
@@ -1189,8 +1230,8 @@ export const DEMO_STAFF_USERS: UserProfile[] = [
       ai_tokens_consumed: 11200,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-04T09:45:00.000Z',
+      updated_at: '2026-12-16T11:05:00.000Z',
     },
     {
       id: 'usr-demo-staff-1',
@@ -1207,8 +1248,8 @@ export const DEMO_STAFF_USERS: UserProfile[] = [
       ai_tokens_consumed: 6400,
       is_blocked: false,
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-07T08:50:00.000Z',
+      updated_at: '2026-12-17T13:30:00.000Z',
     },
 ];
 
@@ -1229,9 +1270,9 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1800,
     deductions: 2150,
     net_salary: 14150,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-03-15',
+    payment_date: '2026-12-11',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: '012180001234567891',
@@ -1253,9 +1294,9 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 2200,
     deductions: 2450,
     net_salary: 15950,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-03-15',
+    payment_date: '2026-12-14',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: '014180009876543210',
@@ -1276,7 +1317,7 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1200,
     deductions: 1980,
     net_salary: 13020,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -1298,8 +1339,9 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1500,
     deductions: 2300,
     net_salary: 14700,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
+    payment_date: '2026-12-15',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: '072180004443332221',
@@ -1321,9 +1363,9 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 4500,
     deductions: 6900,
     net_salary: 35600,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-03-15',
+    payment_date: '2026-12-10',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: '012180009998887771',
@@ -1343,9 +1385,9 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 3000,
     deductions: 4250,
     net_salary: 25250,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '1ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: '2026-03-15',
+    payment_date: '2026-12-12',
     status: 'pagado',
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: '014180007776665552',
@@ -1365,7 +1407,7 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1500,
     deductions: 2900,
     net_salary: 17100,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'en_dispersion',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -1386,7 +1428,7 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1800,
     deductions: 3100,
     net_salary: 17900,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -1407,7 +1449,7 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1100,
     deductions: 1950,
     net_salary: 13050,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -1428,7 +1470,7 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
     bonuses: 1600,
     deductions: 2350,
     net_salary: 15050,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
     status: 'pendiente',
     payment_method: 'SPEI / Transferencia Bancaria',
@@ -1441,6 +1483,10 @@ export const DEMO_STAFF_PAYROLL: StaffPayrollRecord[] = [
 const DEMO_PAYROLL_BASE: StaffPayrollRecord[] = [...DEMO_STAFF_PAYROLL];
 const PAYROLL_BANKS = ['BBVA Bancomer', 'Santander', 'Citibanamex', 'Banorte', 'HSBC México'];
 const PAYROLL_STATUSES: StaffPayrollRecord['status'][] = ['pagado', 'pagado', 'pagado', 'en_dispersion', 'pendiente'];
+const PAYROLL_DEC_DATES = [
+  '2026-12-04', '2026-12-07', '2026-12-09', '2026-12-10',
+  '2026-12-11', '2026-12-14', '2026-12-15', '2026-12-16',
+];
 
 const existingPayrollEmployeeIds = new Set(DEMO_PAYROLL_BASE.map((r) => r.employee_id));
 DEMO_TEACHERS.forEach((t, idx) => {
@@ -1465,9 +1511,9 @@ DEMO_TEACHERS.forEach((t, idx) => {
     bonuses,
     deductions,
     net_salary: netSalary,
-    payment_period: '1ª Quincena Marzo 2026',
+    payment_period: status === 'pagado' ? '1ª Quincena Diciembre 2026' : '2ª Quincena Diciembre 2026',
     period_type: 'quincenal',
-    payment_date: status === 'pagado' ? '2026-03-15' : undefined,
+    payment_date: status === 'pagado' ? PAYROLL_DEC_DATES[(idx * 3 + 1) % PAYROLL_DEC_DATES.length] : undefined,
     status,
     payment_method: 'SPEI / Transferencia Bancaria',
     account_clabe: `01218000${String(1000000000 + idx * 13791).slice(0, 10)}`,

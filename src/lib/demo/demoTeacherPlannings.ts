@@ -162,7 +162,8 @@ export function buildDemoPlanningsForTeacher(teacher: UserProfile): DemoTeacherP
     const subjectName = subjects[i % subjects.length];
     const groupName = resolveGroupDisplay(groups[i % groups.length], campusName);
     const sessionsCount = 4 + ((seedOffset + i) % 5);
-    const dayNum = String(4 + ((i * 3) % 20)).padStart(2, '0');
+    const decDays = [2, 3, 4, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 21, 22, 23];
+    const dayNum = String(decDays[(seedOffset + i * 5) % decDays.length]).padStart(2, '0');
 
     list.push({
       id: `plan-demo-${teacher.id}-${i + 1}`,
@@ -176,7 +177,7 @@ export function buildDemoPlanningsForTeacher(teacher: UserProfile): DemoTeacherP
       pdaOficial: bankItem.pda,
       duration: `${sessionsCount} sesiones de 50 min`,
       sessionsCount,
-      updatedAt: `2026-03-${dayNum}`,
+      updatedAt: `2026-12-${dayNum}`,
       vaultStatus: 'Sincronizada en Bóveda Curricular',
       proposito: `Que las y los estudiantes de ${groupName} consoliden los aprendizajes de ${subjectName} mediante la metodología de proyecto formativo: ${bankItem.topic.toLowerCase()}.`,
       inicio: `00–15 min · Activación de saberes previos mediante pregunta detonadora contextualizada al entorno de ${campusName}. Socialización en plenaria del propósito de la sesión y recuperación de conceptos clave de ${subjectName}.`,

@@ -187,7 +187,7 @@ export class MagicLinkService {
         invoice_number: memRecord.metadata?.invoiceNumber || 'COL-2026-00452',
         concept: memRecord.metadata?.concept || 'Colegiatura Escolar',
         total_amount: Number(memRecord.metadata?.amount) || 3450.00,
-        due_date: memRecord.metadata?.dueDate || '10 de Septiembre de 2026',
+        due_date: memRecord.metadata?.dueDate || '14 de Diciembre de 2026',
         status: 'pending'
       };
     }
@@ -245,7 +245,7 @@ export class MagicLinkService {
               invoice_number: payload.m?.invoiceNumber || 'COL-2026-00452',
               concept: payload.m?.concept || 'Colegiatura Escolar',
               total_amount: Number(payload.m?.amount) || 3450.00,
-              due_date: payload.m?.dueDate || '10 de Septiembre de 2026',
+              due_date: payload.m?.dueDate || '14 de Diciembre de 2026',
               status: 'pending'
             };
             // Almacenar en Global Store para próximas consultas rápidas

@@ -35,7 +35,7 @@ export const IBIME_CAMPUSES: Campus[] = [
     grades: ['1º Semestre', '2º Semestre', '3º Semestre', '4º Semestre', '5º Semestre', '6º Semestre'],
     address: 'Av. Central Carlos Hank González #100, Col. Montes, C.P. 55000, Ecatepec de Morelos, Edo. Méx.',
     phone: '(55) 5770-1234',
-    created_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-01T08:15:00.000Z'
   },
   {
     id: 'cmp-ibime-lagos',
@@ -45,7 +45,7 @@ export const IBIME_CAMPUSES: Campus[] = [
     grades: ['1º', '2º', '3º', '4º', '5º', '6º'],
     address: 'Circuito Lago de Chapala #45, Col. Jardines de Morelos, C.P. 55070, Ecatepec de Morelos, Edo. Méx.',
     phone: '(55) 5837-9876',
-    created_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-02T09:10:00.000Z'
   },
   {
     id: 'cmp-ibime-sancristobal',
@@ -55,7 +55,7 @@ export const IBIME_CAMPUSES: Campus[] = [
     grades: ['1º', '2º', '3º'],
     address: 'Av. Juárez Sur #28, Centro Histórico San Cristóbal, C.P. 55000, Ecatepec de Morelos, Edo. Méx.',
     phone: '(55) 5787-4321',
-    created_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-03T10:05:00.000Z'
   },
   {
     id: 'cmp-ibime-coacalco',
@@ -65,7 +65,7 @@ export const IBIME_CAMPUSES: Campus[] = [
     grades: ['1º Semestre', '2º Semestre', '3º Semestre', '4º Semestre', '5º Semestre', '6º Semestre'],
     address: 'Vía José López Portillo #320, Ex-Hacienda San Felipe, C.P. 55700, San Francisco Coacalco, Edo. Méx.',
     phone: '(55) 5898-6543',
-    created_at: '2026-01-10T08:00:00.000Z'
+    created_at: '2026-12-04T11:20:00.000Z'
   }
 ];
 
@@ -105,11 +105,11 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     teacher_notes: [
       {
         id: 'tn-ibime-1',
-        date: '2026-06-02',
+        date: '2026-12-08',
         teacher_name: 'Prof. Patricia Sandoval Morales',
         note: 'Iker ha demostrado un dominio sobresaliente en el diseño del brazo hidráulico y la formulación del principio de Pascal. Felicitaciones por su liderazgo en el equipo de robótica STEAM de Campus Montes.',
         parent_reply: 'Muchas gracias Profesora Patricia, en casa estamos reforzando los modelos tridimensionales con Iker y está muy motivado.',
-        replied_at: '2026-06-03T09:30:00.000Z'
+        replied_at: '2026-12-09T09:30:00.000Z'
       }
     ]
   },
@@ -270,7 +270,7 @@ export const IBIME_STUDENTS: DetailedStudent[] = [
     scholarship_type: 'ninguna',
     average_grade: 9.3,
     status: 'activo',
-    pending_payments: ['Colegiatura de Agosto 2026 (Extemporánea) - $4,680.00 MXN (Vencida)'],
+    pending_payments: ['Colegiatura de Diciembre 2026 (Extemporánea · Vence 04 Dic) - $4,680.00 MXN (Vencida)'],
     subject_grades: [
       { subject_name: 'Taller de Robótica STEAM IBIME', grade: 9.6 },
       { subject_name: 'Matemáticas I Secundaria', grade: 9.1 },
@@ -290,8 +290,8 @@ export const IBIME_TEACHERS: UserProfile[] = [
     school_id: 'sch-ibime',
     campus_id: 'cmp-ibime-montes',
     campus_name: 'Campus Montes (Sede Matriz & CCH)',
-    created_at: '2026-01-01T08:00:00.000Z',
-    updated_at: '2026-01-01T08:00:00.000Z'
+    created_at: '2026-12-01T08:30:00.000Z',
+    updated_at: '2026-12-10T12:15:00.000Z'
   },
   {
     id: 'usr-ibime-prof-gaby',
@@ -302,8 +302,8 @@ export const IBIME_TEACHERS: UserProfile[] = [
     school_id: 'sch-ibime',
     campus_id: 'cmp-ibime-montes',
     campus_name: 'Campus Montes (Sede Matriz & CCH)',
-    created_at: '2026-01-05T08:00:00.000Z',
-    updated_at: '2026-01-05T08:00:00.000Z'
+    created_at: '2026-12-02T09:00:00.000Z',
+    updated_at: '2026-12-11T14:20:00.000Z'
   },
   {
     id: 'usr-ibime-prof-carlos',
@@ -314,8 +314,8 @@ export const IBIME_TEACHERS: UserProfile[] = [
     school_id: 'sch-ibime',
     campus_id: 'cmp-ibime-sancristobal',
     campus_name: 'Campus San Cristóbal (Ecatepec Centro)',
-    created_at: '2026-01-05T08:00:00.000Z',
-    updated_at: '2026-01-05T08:00:00.000Z'
+    created_at: '2026-12-03T09:40:00.000Z',
+    updated_at: '2026-12-14T11:30:00.000Z'
   },
   {
     id: 'usr-ibime-prof-marco',
@@ -326,8 +326,8 @@ export const IBIME_TEACHERS: UserProfile[] = [
     school_id: 'sch-ibime',
     campus_id: 'cmp-ibime-coacalco',
     campus_name: 'Campus Coacalco (Metropolitano)',
-    created_at: '2026-01-05T08:00:00.000Z',
-    updated_at: '2026-01-05T08:00:00.000Z'
+    created_at: '2026-12-04T10:15:00.000Z',
+    updated_at: '2026-12-15T15:45:00.000Z'
   },
   {
     id: 'usr-ibime-prof-daniela',
@@ -338,8 +338,8 @@ export const IBIME_TEACHERS: UserProfile[] = [
     school_id: 'sch-ibime',
     campus_id: 'cmp-ibime-lagos',
     campus_name: 'Campus Lagos (Fundador 2004)',
-    created_at: '2026-01-05T08:00:00.000Z',
-    updated_at: '2026-01-05T08:00:00.000Z'
+    created_at: '2026-12-07T08:50:00.000Z',
+    updated_at: '2026-12-16T13:10:00.000Z'
   }
 ];
 
@@ -365,11 +365,11 @@ export const IBIME_SUBJECTS: Subject[] = [
 ];
 
 export const IBIME_PAYROLL: IbimePayrollRecord[] = [
-  { id: 'pay-ib-01', school_id: 'sch-ibime', employee_name: 'Lic. Patricia Sandoval Morales', role: 'director', position_title: 'Dirección General IBIME Campus Montes & CCH', campus_name: 'Campus Montes (Sede Matriz & CCH)', base_salary: 38000, net_salary: 32000, biweekly_amount: 32000, status: 'pagado', period: 'Quincena 1 - Octubre 2026' },
-  { id: 'pay-ib-02', school_id: 'sch-ibime', employee_name: 'Prof. Gabriela Morales', role: 'teacher', position_title: 'Coordinación Bilingüe Cambridge', campus_name: 'Campus Montes', base_salary: 22000, net_salary: 18500, biweekly_amount: 18500, status: 'pagado', period: 'Quincena 1 - Octubre 2026' },
-  { id: 'pay-ib-03', school_id: 'sch-ibime', employee_name: 'Prof. Carlos Mendoza', role: 'teacher', position_title: 'Docente Ciencias & Robótica STEAM', campus_name: 'Campus San Cristóbal', base_salary: 19000, net_salary: 16000, biweekly_amount: 16000, status: 'pagado', period: 'Quincena 1 - Octubre 2026' },
-  { id: 'pay-ib-04', school_id: 'sch-ibime', employee_name: 'Lic. Marco Antonio Ruiz Peralta', role: 'teacher', position_title: 'Docente CCH UNAM Humanidades', campus_name: 'Campus Coacalco', base_salary: 20500, net_salary: 17200, biweekly_amount: 17200, status: 'pagado', period: 'Quincena 1 - Octubre 2026' },
-  { id: 'pay-ib-05', school_id: 'sch-ibime', employee_name: 'Mtra. Daniela Romero Flores', role: 'teacher', position_title: 'Docente Primaria Bilingüe', campus_name: 'Campus Lagos', base_salary: 18500, net_salary: 15500, biweekly_amount: 15500, status: 'pagado', period: 'Quincena 1 - Octubre 2026' }
+  { id: 'pay-ib-01', school_id: 'sch-ibime', employee_name: 'Lic. Patricia Sandoval Morales', role: 'director', position_title: 'Dirección General IBIME Campus Montes & CCH', campus_name: 'Campus Montes (Sede Matriz & CCH)', base_salary: 38000, net_salary: 32000, biweekly_amount: 32000, status: 'pagado', period: 'Quincena 1 - Diciembre 2026 (04 Dic)' },
+  { id: 'pay-ib-02', school_id: 'sch-ibime', employee_name: 'Prof. Gabriela Morales', role: 'teacher', position_title: 'Coordinación Bilingüe Cambridge', campus_name: 'Campus Montes', base_salary: 22000, net_salary: 18500, biweekly_amount: 18500, status: 'pagado', period: 'Quincena 1 - Diciembre 2026 (07 Dic)' },
+  { id: 'pay-ib-03', school_id: 'sch-ibime', employee_name: 'Prof. Carlos Mendoza', role: 'teacher', position_title: 'Docente Ciencias & Robótica STEAM', campus_name: 'Campus San Cristóbal', base_salary: 19000, net_salary: 16000, biweekly_amount: 16000, status: 'pagado', period: 'Quincena 1 - Diciembre 2026 (10 Dic)' },
+  { id: 'pay-ib-04', school_id: 'sch-ibime', employee_name: 'Lic. Marco Antonio Ruiz Peralta', role: 'teacher', position_title: 'Docente CCH UNAM Humanidades', campus_name: 'Campus Coacalco', base_salary: 20500, net_salary: 17200, biweekly_amount: 17200, status: 'pagado', period: 'Quincena 1 - Diciembre 2026 (14 Dic)' },
+  { id: 'pay-ib-05', school_id: 'sch-ibime', employee_name: 'Mtra. Daniela Romero Flores', role: 'teacher', position_title: 'Docente Primaria Bilingüe', campus_name: 'Campus Lagos', base_salary: 18500, net_salary: 15500, biweekly_amount: 15500, status: 'pagado', period: 'Quincena 1 - Diciembre 2026 (15 Dic)' }
 ];
 
 export class IbimeCatalogService {

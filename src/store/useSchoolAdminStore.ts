@@ -730,8 +730,8 @@ export const INITIAL_DELETION_AUDIT_LOGS_SEED: StudentDeletionAuditLog[] = [
     campus_name: 'Primaria Jardines',
     level: 'primaria',
     grade: '4º',
-    deleted_at: '2026-09-02T14:32:10.000Z',
-    deleted_at_formatted: 'miércoles, 2 de septiembre de 2026, 08:32:10 a. m.',
+    deleted_at: '2026-12-04T14:32:10.000Z',
+    deleted_at_formatted: 'viernes, 4 de diciembre de 2026, 08:32:10 a. m.',
     deleted_by_id: 'usr-dir-1',
     deleted_by_name: 'Dirección Pedagógica ISkool',
     deleted_by_role: 'director',
@@ -1363,10 +1363,12 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           status: studentData.status || 'activo',
           is_blocked: studentData.is_blocked || false,
           photo_url: studentData.photo_url || '/images/students/default.webp',
-          pending_payments: ['Colegiatura de Septiembre 2026']
+          pending_payments: ['Colegiatura de Diciembre 2026']
         };
 
         // Generar folio de cobro en el portal de finanzas institucional
+        const decDueDays = ['11', '14', '15', '16', '17', '18', '21'];
+        const chosenDueDay = decDueDays[(get().billingRecords?.length || 0) % decDueDays.length];
         const newBillingRecord: FamilyBillingRecord = {
           id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
           school_id: activeSchool,
@@ -1379,13 +1381,13 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           level: newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria',
           grade: newStudent.grade,
           group: (newStudent.group_id || 'A').toUpperCase().includes('B') ? 'B' : 'A',
-          concept: `Colegiatura de Septiembre 2026 - ${newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria'} ${newStudent.grade}`,
+          concept: `Colegiatura de Diciembre 2026 - ${newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria'} ${newStudent.grade}`,
           baseAmount: baseFee,
           scholarshipPercentage: newStudent.scholarship_percentage || 0,
           scholarshipType: newStudent.scholarship_type || 'ninguna',
           discountAmount: discount,
           amount: finalAmount,
-          dueDate: '10 Septiembre 2026',
+          dueDate: `${chosenDueDay} Diciembre 2026`,
           status: 'pending',
           autoInvoice: true
         };
@@ -1481,14 +1483,15 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             phone: st.phone || '55-0000-0000',
             address: st.address || 'Ciudad de México',
             photo_url: '/images/students/default.webp',
-            pending_payments: ['Colegiatura de Septiembre 2026'],
+            pending_payments: ['Colegiatura de Diciembre 2026'],
             behavior_reports: [],
             teacher_notes: []
           };
 
           createdList.push(newStudent);
 
-          // Generar registro de cobro
+          // Generar registro de cobro con fecha límite variada en Diciembre 2026
+          const bulkDueDays = ['11', '14', '15', '16', '17', '18', '21', '22'];
           createdBilling.push({
             id: `inv-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
             invoiceNumber: `COL-2026-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -1500,13 +1503,13 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             level: newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria',
             grade: newStudent.grade,
             group: (newStudent.group_id || 'A').toUpperCase().includes('B') ? 'B' : 'A',
-            concept: `Colegiatura de Septiembre 2026 - ${newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria'} ${newStudent.grade}`,
+            concept: `Colegiatura de Diciembre 2026 - ${newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria'} ${newStudent.grade}`,
             baseAmount: baseFee,
             scholarshipPercentage: newStudent.scholarship_percentage || 0,
             scholarshipType: newStudent.scholarship_type || 'ninguna',
             discountAmount: discount,
             amount: finalAmount,
-            dueDate: '10 Septiembre 2026',
+            dueDate: `${bulkDueDays[idx % bulkDueDays.length]} Diciembre 2026`,
             status: 'pending',
             autoInvoice: true
           });
@@ -2673,11 +2676,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const existingStaffIds = new Set(currentStaff.map(s => s.id));
           const missingStaff = STAFF_USERS_SEED.filter(s => !existingStaffIds.has(s.id));
 
-          // Reconciliar nómina (50 registros pay-cdemo-*)
+          // Reconciliar nómina (50 registros pay-cdemo-* + refresco automático a Diciembre 2026)
           const demoPayrollSeed = STAFF_PAYROLL_SEED.filter(p => p.school_id === demoId);
           let currentPayroll = state.staffPayroll || [];
           const demoPayrollIds = new Set(currentPayroll.filter(p => p.school_id === demoId).map(p => p.id));
-          if (!demoPayrollIds.has('pay-cdemo-050') || demoPayrollIds.size < demoPayrollSeed.length) {
+          const hasStaleDemoPayroll = currentPayroll.some(
+            p => p.school_id === demoId && /Marzo 2026|2026-03/i.test(`${p.payment_period || ''} ${p.payment_date || ''}`)
+          );
+          if (!demoPayrollIds.has('pay-cdemo-050') || demoPayrollIds.size < demoPayrollSeed.length || hasStaleDemoPayroll) {
             currentPayroll = [
               ...currentPayroll.filter(p => p.school_id !== demoId),
               ...demoPayrollSeed
@@ -2686,13 +2692,16 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const existingPayrollIds = new Set(currentPayroll.map(p => p.id));
           const missingPayroll = STAFF_PAYROLL_SEED.filter(p => !existingPayrollIds.has(p.id));
 
-          // Reconciliar registros de cobro (36 folios inv-demo-001..036)
+          // Reconciliar registros de cobro (36 folios inv-demo-001..036 + refresco automático a Diciembre 2026)
           const demoBillingSeed = BILLING_RECORDS_SEED.filter(b => b.school_id === demoId);
           let currentBilling = (state.billingRecords || []).filter(
             b => !legacyDemoIds.has(b.school_id || '')
           );
           const demoBillingIds = new Set(currentBilling.filter(b => b.school_id === demoId).map(b => b.id));
-          if (!demoBillingIds.has('inv-demo-036') || demoBillingIds.size < demoBillingSeed.length) {
+          const hasStaleDemoBilling = currentBilling.some(
+            b => b.school_id === demoId && /Marzo 2026|Febrero 2026|2026-01|2026-02|2026-03/i.test(`${b.concept || ''} ${b.dueDate || ''}`)
+          );
+          if (!demoBillingIds.has('inv-demo-036') || demoBillingIds.size < demoBillingSeed.length || hasStaleDemoBilling) {
             currentBilling = [
               ...currentBilling.filter(b => b.school_id !== demoId),
               ...demoBillingSeed
@@ -2715,7 +2724,10 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
           const demoAttendanceSeed = ATTENDANCE_SEED.filter(a => a.school_id === demoId);
           let currentAttendance = state.attendanceList || [];
-          if (currentAttendance.filter(a => a.school_id === demoId).length < demoAttendanceSeed.length) {
+          const hasStaleDemoAttendance = currentAttendance.some(
+            a => a.school_id === demoId && /^2026-03-/.test(a.date || '')
+          );
+          if (currentAttendance.filter(a => a.school_id === demoId).length < demoAttendanceSeed.length || hasStaleDemoAttendance) {
             currentAttendance = [
               ...currentAttendance.filter(a => a.school_id !== demoId),
               ...demoAttendanceSeed
@@ -2769,12 +2781,13 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
     }),
     {
       name: 'iskool_school_admin_store',
-      version: 6,
+      version: 7,
       storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any, version: number) => {
         if (persistedState) {
           const demoId = 'sch-demo-0001';
-          const forceUpgradeDemoV6 = version < 6;
+          const forceUpgradeDemoV6 = version < 7;
+          const forceUpgradeSeedsDec2026 = version < 7;
 
           const legacyIds = new Set<string>();
           if (Array.isArray(persistedState.institutionsList)) {
@@ -2892,9 +2905,10 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           }
 
           if (Array.isArray(persistedState.billingRecords)) {
-            if (forceUpgradeDemoV6) {
+            const seedBillingIds = new Set(BILLING_RECORDS_SEED.map(b => b.id));
+            if (forceUpgradeDemoV6 || forceUpgradeSeedsDec2026) {
               persistedState.billingRecords = persistedState.billingRecords.filter(
-                (b: any) => b?.school_id !== demoId && !legacyIds.has(b?.school_id)
+                (b: any) => b?.school_id !== demoId && !legacyIds.has(b?.school_id) && !seedBillingIds.has(b?.id)
               );
             }
             const existingBillingIds = new Set(persistedState.billingRecords.map((b: any) => b.id));
@@ -2902,6 +2916,22 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             if (missingBilling.length > 0) {
               persistedState.billingRecords = [...persistedState.billingRecords, ...missingBilling];
             }
+          }
+
+          if (Array.isArray(persistedState.attendanceList) && forceUpgradeSeedsDec2026) {
+            const seedAttIds = new Set(ATTENDANCE_SEED.map(a => a.id));
+            persistedState.attendanceList = [
+              ...persistedState.attendanceList.filter((a: any) => a?.school_id !== demoId && !seedAttIds.has(a?.id)),
+              ...ATTENDANCE_SEED,
+            ];
+          }
+
+          if (Array.isArray(persistedState.parentMessages) && forceUpgradeSeedsDec2026) {
+            const seedMsgIds = new Set(PARENT_MESSAGES_SEED.map(m => m.id));
+            persistedState.parentMessages = [
+              ...persistedState.parentMessages.filter((m: any) => !seedMsgIds.has(m?.id)),
+              ...PARENT_MESSAGES_SEED,
+            ];
           }
 
           if (Array.isArray(persistedState.staffUsers)) {
@@ -2918,8 +2948,11 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           }
 
           if (Array.isArray(persistedState.staffPayroll)) {
-            if (forceUpgradeDemoV6) {
-              persistedState.staffPayroll = persistedState.staffPayroll.filter((p: any) => p?.school_id !== demoId);
+            const seedPayrollIds = new Set(STAFF_PAYROLL_SEED.map(p => p.id));
+            if (forceUpgradeDemoV6 || forceUpgradeSeedsDec2026) {
+              persistedState.staffPayroll = persistedState.staffPayroll.filter(
+                (p: any) => p?.school_id !== demoId && !seedPayrollIds.has(p?.id)
+              );
             }
             const existingPayrollIds = new Set(persistedState.staffPayroll.map((p: any) => p.id));
             const missingPayroll = STAFF_PAYROLL_SEED.filter(p => !existingPayrollIds.has(p.id));

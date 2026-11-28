@@ -37,8 +37,8 @@ export const DROPOUT_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = [
   {
     id: 'TRACE-DES-001',
     flowKey: 'alerta-desercion',
-    timestamp: 'Hoy, 08:32:15 hrs',
-    isoTime: '2026-09-30T08:32:15',
+    timestamp: '03 Dic, 08:32:15 hrs',
+    isoTime: '2026-12-03T08:32:15',
     subjectName: 'Mateo Hernández Ruiz',
     subjectType: 'student',
     subjectId: 'ALU-2026-M401',
@@ -47,12 +47,12 @@ export const DROPOUT_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = [
     levelGradeGroup: '2° Secundaria A',
     guardianName: 'Ing. Roberto Hernández & Lic. Marcela Ruiz',
     guardianPhone: '+52 55 4192 8831',
-    triggerCause: '3 inasistencias consecutivas sin justificar (25, 26 y 29 de Sep) + Saldo vencido de colegiatura Septiembre ($4,200 MXN)',
+    triggerCause: '3 inasistencias consecutivas sin justificar (01, 02 y 03 de Dic) + Saldo vencido de colegiatura Diciembre ($4,200 MXN)',
     kpiImpact: 'Retención de Matrícula (Prevención de Deserción Escolar)',
     actionsTaken: [
       'Generación automática de Expediente 360 con cruce académico y financiero',
       'Notificación prioritaria despachada a Dirección de Plantel & Coordinación Psicopedagógica',
-      'Cita de mediación presencial agendada para el 1 de Octubre a las 10:00 hrs con tutor legal',
+      'Cita de mediación presencial agendada para el 10 de Diciembre a las 10:00 hrs con tutor legal',
       'Pre-aprobación en sistema de plan de beca rescate temporal (20%) para asegurar permanencia'
     ],
     channelDelivered: 'Comité de Dirección Escolar + Notificación Push Directiva + Llamada de Coordinación',
@@ -67,8 +67,8 @@ export const DROPOUT_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = [
   {
     id: 'TRACE-DES-002',
     flowKey: 'alerta-desercion',
-    timestamp: 'Hoy, 09:14:40 hrs',
-    isoTime: '2026-09-30T09:14:40',
+    timestamp: '07 Dic, 09:14:40 hrs',
+    isoTime: '2026-12-07T09:14:40',
     subjectName: 'Sofía Castillo Mora',
     subjectType: 'student',
     subjectId: 'ALU-2026-C188',
@@ -96,8 +96,8 @@ export const DROPOUT_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = [
   {
     id: 'TRACE-DES-003',
     flowKey: 'alerta-desercion',
-    timestamp: 'Hoy, 10:45:12 hrs',
-    isoTime: '2026-09-30T10:45:12',
+    timestamp: '10 Dic, 10:45:12 hrs',
+    isoTime: '2026-12-10T10:45:12',
     subjectName: 'Emiliano Vega Domínguez',
     subjectType: 'student',
     subjectId: 'ALU-2026-T092',
@@ -125,8 +125,8 @@ export const DROPOUT_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = [
   {
     id: 'TRACE-DES-004',
     flowKey: 'alerta-desercion',
-    timestamp: 'Hoy, 11:20:05 hrs',
-    isoTime: '2026-09-30T11:20:05',
+    timestamp: '14 Dic, 11:20:05 hrs',
+    isoTime: '2026-12-14T11:20:05',
     subjectName: 'Valeria Mendoza Solís',
     subjectType: 'student',
     subjectId: 'ALU-2026-L315',
@@ -176,13 +176,17 @@ export const COLLECTION_PREVENTIVE_TRACE_SEEDS: FlowExecutionTraceRecord[] = Arr
   const amount = 3800 + ((i * 150) % 2200);
   const hour = 7 + Math.floor(i / 10);
   const minute = (i * 7) % 60;
-  const timeStr = `Hoy, ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:22 hrs`;
+  const execDays = ['01', '02', '03', '04', '07', '08', '09', '10', '11', '14', '15', '16'];
+  const dueDays = [11, 14, 15, 16, 17, 18, 21, 22];
+  const execDay = execDays[(i * 5 + 2) % execDays.length];
+  const dueDay = dueDays[(i * 3 + 1) % dueDays.length];
+  const timeStr = `${execDay} Dic, ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:22 hrs`;
 
   return {
     id: `TRACE-COB-${(i + 1).toString().padStart(3, '0')}`,
     flowKey: 'cobranza-preventiva',
     timestamp: timeStr,
-    isoTime: `2026-09-30T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:22`,
+    isoTime: `2026-12-${execDay}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:22`,
     subjectName,
     subjectType: 'guardian',
     subjectId: `TUT-2026-${(1000 + i)}`,
@@ -190,7 +194,7 @@ export const COLLECTION_PREVENTIVE_TRACE_SEEDS: FlowExecutionTraceRecord[] = Arr
     campusName: campus.name,
     levelGradeGroup: grade,
     guardianName: `Tutor Legal de ${subjectName.split(' ')[0]}`,
-    triggerCause: `Vencimiento de colegiatura próximo en 5 días (Fecha límite: 5 de Octubre) - Colegiatura ordinaria $${amount.toLocaleString('es-MX')} MXN`,
+    triggerCause: `Vencimiento de colegiatura próximo en 5 días (Fecha límite: ${dueDay} de Diciembre 2026) - Colegiatura ordinaria $${amount.toLocaleString('es-MX')} MXN`,
     kpiImpact: 'Tasa de Cobranza Media (+4.2%) & Reducción de Cartera en Mora',
     actionsTaken: [
       'Generación de liga bancaria SPEI directa con CLABE interbancaria personalizada',
@@ -224,13 +228,15 @@ export const ATTENDANCE_ALERT_TRACE_SEEDS: FlowExecutionTraceRecord[] = Array.fr
   ];
   const subjectName = students[i % students.length];
   const min = 15 + (i * 2);
-  const timeStr = `Hoy, 08:${min.toString().padStart(2, '0')}:05 hrs`;
+  const attDays = ['01', '02', '03', '04', '07', '08', '09', '10', '11', '14', '15', '16', '17', '18'];
+  const attDay = attDays[(i * 3 + 1) % attDays.length];
+  const timeStr = `${attDay} Dic, 08:${min.toString().padStart(2, '0')}:05 hrs`;
 
   return {
     id: `TRACE-INA-${(i + 1).toString().padStart(3, '0')}`,
     flowKey: 'inasistencias-padres',
     timestamp: timeStr,
-    isoTime: `2026-09-30T08:${min.toString().padStart(2, '0')}:05`,
+    isoTime: `2026-12-${attDay}T08:${min.toString().padStart(2, '0')}:05`,
     subjectName,
     subjectType: 'student',
     subjectId: `ALU-INA-${(200 + i)}`,
@@ -267,13 +273,15 @@ export const CFDI_STAMPING_TRACE_SEEDS: FlowExecutionTraceRecord[] = Array.from(
   const amount = 4500 + ((i * 210) % 3500);
   const hour = 8 + Math.floor(i / 15);
   const minute = (i * 4) % 60;
-  const timeStr = `Hoy, ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:45 hrs`;
+  const cfdiDays = ['01', '02', '03', '04', '07', '08', '09', '10', '11', '14', '15', '16', '17', '18'];
+  const cfdiDay = cfdiDays[(i * 5 + 3) % cfdiDays.length];
+  const timeStr = `${cfdiDay} Dic, ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:45 hrs`;
 
   return {
     id: `TRACE-SAT-${(i + 1).toString().padStart(3, '0')}`,
     flowKey: 'timbrado-cfdi',
     timestamp: timeStr,
-    isoTime: `2026-09-30T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:45`,
+    isoTime: `2026-12-${cfdiDay}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:45`,
     subjectName: `Folio Fiscal CFDI #${40100 + i}`,
     subjectType: 'invoice',
     subjectId: `UUID-40100-${i}`,
@@ -314,13 +322,15 @@ export const CURRICULAR_AUDIT_TRACE_SEEDS: FlowExecutionTraceRecord[] = Array.fr
   ];
   const teacher = teachers[i % teachers.length];
   const phase = 3 + (i % 4);
-  const timeStr = `Hoy, 0${1 + Math.floor(i / 30)}:${(i * 3) % 60}:12 hrs`;
+  const nemDays = ['01', '02', '03', '04', '07', '08', '09', '10', '11', '14', '15', '16', '17', '18'];
+  const nemDay = nemDays[(i * 7 + 1) % nemDays.length];
+  const timeStr = `${nemDay} Dic, 0${1 + Math.floor(i / 30)}:${String((i * 3) % 60).padStart(2, '0')}:12 hrs`;
 
   return {
     id: `TRACE-NEM-${(i + 1).toString().padStart(3, '0')}`,
     flowKey: 'auditoria-nem',
     timestamp: timeStr,
-    isoTime: `2026-09-30T02:${(i * 3) % 60}:12`,
+    isoTime: `2026-12-${nemDay}T02:${String((i * 3) % 60).padStart(2, '0')}:12`,
     subjectName: `Planeación NEM #${i + 1} (${teacher.split(' (')[0]})`,
     subjectType: 'curriculum',
     subjectId: `NEM-DOC-${(500 + i)}`,

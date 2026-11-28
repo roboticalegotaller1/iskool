@@ -37,7 +37,7 @@ export class InstitutionalBrainService {
       {
         source_file: '01_Arquitectura/iSkool_IBIME_Integration_Contract.md',
         category: 'Académico y Evaluaciones',
-        content_excerpt: 'Entrega de boletas primer periodo: Tercera semana de noviembre. Coordinación Primaria: Prof. Israel López Ángeles.',
+        content_excerpt: 'Entrega de boletas y cierre de periodo: Tercera semana de diciembre 2026 (14 al 18 de diciembre). Coordinación Primaria: Prof. Israel López Ángeles.',
         confidence: 0.92
       }
     ];

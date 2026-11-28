@@ -193,8 +193,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       campus_id: 'cmp-demo-pri',
       campus_name: 'Presidencia & Dirección Ejecutiva (3 Planteles)',
       email: 'demo.ceo@iskool.mx',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-01T08:05:00.000Z',
+      updated_at: '2026-12-14T16:15:00.000Z',
     };
   }
   if (demoClean === 'demo.director@iskool.mx' || demoClean === 'usr-demo-director' || demoClean === 'usr-demo-dir-01') {
@@ -207,8 +207,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       campus_id: 'cmp-demo-pri',
       campus_name: 'Campus Central Primaria',
       email: 'demo.director@iskool.mx',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-02T08:30:00.000Z',
+      updated_at: '2026-12-15T12:40:00.000Z',
     };
   }
   if (demoClean === 'demo.docente@iskool.mx' || demoClean === 'usr-demo-teacher-1' || demoClean === 'usr-demo-teacher-01') {
@@ -223,8 +223,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       email: 'demo.docente@iskool.mx',
       assigned_subjects: ['Lenguajes (Español)', 'Saberes y Pensamiento Científico (Matemáticas)'],
       assigned_groups: ['5ºA'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-03T08:10:00.000Z',
+      updated_at: '2026-12-10T14:20:00.000Z',
     };
   }
   if (demoClean === 'demo.idiomas@iskool.mx' || demoClean === 'usr-demo-teacher-2' || demoClean === 'usr-demo-idiomas-01') {
@@ -239,8 +239,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       email: 'demo.idiomas@iskool.mx',
       assigned_subjects: ['Lengua Extranjera (Inglés)', 'Francés Multilingüe'],
       assigned_groups: ['5ºA', '1ºA'],
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-04T09:15:00.000Z',
+      updated_at: '2026-12-11T11:30:00.000Z',
     };
   }
   if (demoClean === 'demo.familia@iskool.mx' || demoClean === 'usr-demo-parent-01') {
@@ -253,8 +253,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       campus_id: 'cmp-demo-pri',
       campus_name: 'Campus Central Primaria',
       email: 'demo.familia@iskool.mx',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-07T08:45:00.000Z',
+      updated_at: '2026-12-16T10:20:00.000Z',
     };
   }
   if (demoClean === 'demo.alumno@iskool.mx' || demoClean === 'demo.alumna@iskool.mx' || demoClean === 'std-demo-01') {
@@ -267,8 +267,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       campus_id: 'cmp-demo-pri',
       campus_name: 'Campus Central Primaria',
       email: 'demo.alumno@iskool.mx',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-08T09:00:00.000Z',
+      updated_at: '2026-12-17T15:10:00.000Z',
     };
   }
   if (demoClean === 'demo.control@iskool.mx' || demoClean === 'demo.staff@iskool.mx' || demoClean === 'usr-demo-staff-1' || demoClean === 'usr-demo-billing-01') {
@@ -281,8 +281,8 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       campus_id: 'cmp-demo-pri',
       campus_name: 'Campus Central Primaria',
       email: 'demo.control@iskool.mx',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-09T08:50:00.000Z',
+      updated_at: '2026-12-18T13:30:00.000Z',
     };
   }
   const matchedDemoStaff = DEMO_STAFF_USERS.find(
@@ -309,7 +309,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       last_name: 'Docente IBIME',
       role: 'teacher' as UserRole,
       email: 'alejandro.mendoza@ibime.edu.mx',
-      created_at: '2026-01-01T08:00:00.000Z',
+      created_at: '2026-12-03T08:00:00.000Z',
       updated_at: new Date().toISOString()
     };
   }
@@ -326,7 +326,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       last_name: 'Morales Peña',
       role: 'parent' as UserRole,
       email: 'familia.morales@ibime.edu.mx',
-      created_at: '2026-01-01T08:00:00.000Z',
+      created_at: '2026-12-01T08:00:00.000Z',
       updated_at: new Date().toISOString()
     };
   }
@@ -343,7 +343,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
         first_name: 'Dirección',
         last_name: 'General ISkool',
         email: 'admin@iskool.edu.mx',
-        created_at: '2026-01-01T08:00:00.000Z'
+        created_at: '2026-12-08T08:00:00.000Z'
       }),
       role: 'superadmin' as UserRole,
       updated_at: new Date().toISOString()
@@ -358,7 +358,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       last_name: 'Estudiante IBIME',
       role: 'student' as UserRole,
       email: 'lucas.alumno@ibime.edu.mx',
-      created_at: '2026-01-01T08:00:00.000Z',
+      created_at: '2026-12-04T08:00:00.000Z',
       updated_at: new Date().toISOString()
     };
   }
@@ -398,7 +398,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       last_name: nameParts.slice(1).join(' ') || 'IBIME',
       role: matchedIbime.role as UserRole,
       email: matchedIbime.email,
-      created_at: '2026-01-01T08:00:00.000Z',
+      created_at: '2026-12-02T08:00:00.000Z',
       updated_at: new Date().toISOString()
     };
   }
@@ -421,7 +421,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
       last_name: 'Gómez (Dirección General ISkool)',
       role: 'director' as UserRole,
       email: 'director@iskool.edu.mx',
-      created_at: '2026-01-01T08:00:00.000Z',
+      created_at: '2026-12-09T08:00:00.000Z',
       updated_at: new Date().toISOString()
     };
   }

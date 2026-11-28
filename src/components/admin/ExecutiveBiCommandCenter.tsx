@@ -200,7 +200,7 @@ export default function ExecutiveBiCommandCenter({
   const horizonData = useMemo(() => {
     if (timeHorizon === 'mtd') {
       // -------------------------------------------------------------
-      // ESTE MES (SEPTIEMBRE 2026 - CIERRE ACTIVO)
+      // ESTE MES (DICIEMBRE 2026 - CIERRE ACTIVO)
       // -------------------------------------------------------------
       const rev = Math.round(5000000 * campusScale);
       const ebitda = Math.round(1540000 * campusScale);
@@ -214,18 +214,18 @@ export default function ExecutiveBiCommandCenter({
       return {
         horizon: 'mtd' as TimeHorizon,
         horizonLabel: 'Este Mes',
-        horizonPeriod: 'Septiembre 2026 (Cierre Activo)',
-        badgeText: 'Mes Actual · Cierre Activo Sep 2026',
+        horizonPeriod: 'Diciembre 2026 (Cierre Activo)',
+        badgeText: 'Mes Actual · Cierre Activo Dic 2026',
         ebitdaValue: ebitda,
         ebitdaMarginPct: margin,
         ebitdaDeltaText: '+2.4% vs meta mensual',
         ebitdaMarginTrend: `+${margin.toFixed(1)}%`,
         ebitdaBarPct: 77,
-        revenueTitle: 'Facturación Total (Septiembre 2026)',
+        revenueTitle: 'Facturación Total (Diciembre 2026)',
         totalRevenue: rev,
         revenueMetaPct: 97.2,
-        revenueDeltaText: '+6.8% vs Sep 2025',
-        revenueConceptSubtitle: 'Colegiaturas + Cuotas de Septiembre',
+        revenueDeltaText: '+6.8% vs Dic 2025',
+        revenueConceptSubtitle: 'Colegiaturas + Cuotas de Diciembre',
         revenueBarPct: 97.2,
         collectionEfficiencyPct: 95.4,
         collectionTargetPct: 95.0,
@@ -242,7 +242,7 @@ export default function ExecutiveBiCommandCenter({
         capacityDeltaText: `${occ.toFixed(1)}% Cupo`,
         capacityBarPct: occ,
         cashflowChart: {
-          title: 'Flujo de Caja - Detalle Semanal de Septiembre 2026',
+          title: 'Flujo de Caja - Detalle Semanal de Diciembre 2026',
           subtitle: 'Evolución semanal de recaudo de colegiaturas vs egresos y dispersión quincenal de nómina',
           yLabels: ['$2.0M', '$1.5M', '$1.0M', '$0.5M'],
           points: [
@@ -250,28 +250,28 @@ export default function ExecutiveBiCommandCenter({
             { label: 'Sem 2 (8-14)', x: 250, tuitionY: 110, payrollY: 200, tuitionVal: '$1.40M', payrollVal: '$0.40M' },
             { label: 'Sem 3 (15-21)', x: 400, tuitionY: 155, payrollY: 120, tuitionVal: '$0.85M', payrollVal: '$1.35M' },
             { label: 'Sem 4 (22-28)', x: 550, tuitionY: 180, payrollY: 205, tuitionVal: '$0.55M', payrollVal: '$0.35M' },
-            { label: 'Cierre 30 Sep', x: 700, tuitionY: 205, payrollY: 155, tuitionVal: '$0.25M', payrollVal: '$0.91M' }
+            { label: 'Cierre 31 Dic', x: 700, tuitionY: 205, payrollY: 155, tuitionVal: '$0.25M', payrollVal: '$0.91M' }
           ],
           tuitionPath: 'M 100 70 Q 175 90, 250 110 T 400 155 T 550 180 T 700 205',
           tuitionArea: 'M 100 70 Q 175 90, 250 110 T 400 155 T 550 180 T 700 205 L 700 240 L 100 240 Z',
           payrollPath: 'M 100 195 Q 175 200, 250 200 T 400 120 T 550 205 T 700 155',
           payrollArea: 'M 100 195 Q 175 200, 250 200 T 400 120 T 550 205 T 700 155 L 700 240 L 100 240 Z',
           forecastPath: undefined,
-          footerNote: 'Concentración de cobro en Sem 1 ($1.95M) · Quincenas docentes liquidadas en Sem 3 y fin de mes',
+          footerNote: 'Concentración de cobro en Sem 1 ($1.95M) · Quincenas docentes liquidadas en Sem 3 y cierre de diciembre',
           coverageRatio: '1.45x Cobertura Mensual'
         },
         campusBenchmarks: [
-          { campusId: 'montes', shortName: 'Campus Montes', currentEnrollment: 1620, capacityTotal: 1720, revenue: 2180000, revenueLabel: 'Facturación Sep', targetPct: 99.1, retentionPct: 96.4, ebitdaMarginPct: 32.4, occupancyRate: 94.2 },
-          { campusId: 'coacalco', shortName: 'Campus Coacalco', currentEnrollment: 980, capacityTotal: 1100, revenue: 1320000, revenueLabel: 'Facturación Sep', targetPct: 94.3, retentionPct: 94.8, ebitdaMarginPct: 28.6, occupancyRate: 89.1 },
-          { campusId: 'central', shortName: 'Campus Central', currentEnrollment: 720, capacityTotal: 850, revenue: 960000, revenueLabel: 'Facturación Sep', targetPct: 91.4, retentionPct: 93.1, ebitdaMarginPct: 26.2, occupancyRate: 84.7 },
-          { campusId: 'torres', shortName: 'Campus Torres', currentEnrollment: 420, capacityTotal: 550, revenue: 540000, revenueLabel: 'Facturación Sep', targetPct: 87.1, retentionPct: 91.5, ebitdaMarginPct: 21.8, occupancyRate: 76.4 }
+          { campusId: 'montes', shortName: 'Campus Montes', currentEnrollment: 1620, capacityTotal: 1720, revenue: 2180000, revenueLabel: 'Facturación Dic', targetPct: 99.1, retentionPct: 96.4, ebitdaMarginPct: 32.4, occupancyRate: 94.2 },
+          { campusId: 'coacalco', shortName: 'Campus Coacalco', currentEnrollment: 980, capacityTotal: 1100, revenue: 1320000, revenueLabel: 'Facturación Dic', targetPct: 94.3, retentionPct: 94.8, ebitdaMarginPct: 28.6, occupancyRate: 89.1 },
+          { campusId: 'central', shortName: 'Campus Central', currentEnrollment: 720, capacityTotal: 850, revenue: 960000, revenueLabel: 'Facturación Dic', targetPct: 91.4, retentionPct: 93.1, ebitdaMarginPct: 26.2, occupancyRate: 84.7 },
+          { campusId: 'torres', shortName: 'Campus Torres', currentEnrollment: 420, capacityTotal: 550, revenue: 540000, revenueLabel: 'Facturación Dic', targetPct: 87.1, retentionPct: 91.5, ebitdaMarginPct: 21.8, occupancyRate: 76.4 }
         ],
-        campusBenchmarkHeader: 'Benchmark de 4 Planteles (Septiembre 2026)',
-        campusBenchmarkSubtitle: 'Rendimiento comparativo mensual y recaudación neta de Septiembre',
+        campusBenchmarkHeader: 'Benchmark de 4 Planteles (Diciembre 2026)',
+        campusBenchmarkSubtitle: 'Rendimiento comparativo mensual y recaudación neta de Diciembre',
         campusLeaderNote: 'Sede líder en EBITDA: Campus Montes (32.4% margen · $2.18M MXN)',
         agingTotalAmount: 39100,
-        agingBadgeText: 'Total Sep: $39,100 MXN',
-        agingSubtitle: 'Saldos corrientes y cartera en mora al corte de Septiembre 2026',
+        agingBadgeText: 'Total Dic: $39,100 MXN',
+        agingSubtitle: 'Saldos corrientes y cartera en mora al corte de Diciembre 2026',
         agingTranches: {
           '0-30': { amount: 19800, count: 6, risk: 'Bajo' },
           '31-60': { amount: 14200, count: 4, risk: 'Medio' },
@@ -287,10 +287,10 @@ export default function ExecutiveBiCommandCenter({
         cacMxn: 1290,
         ltvMxn: 108000,
         ltvCacRatio: '83.7x (Excelente)',
-        funnelSubtitle: 'Admisiones e inscripciones de último corte mensual (Septiembre 2026)',
+        funnelSubtitle: 'Admisiones e inscripciones de último corte mensual (Diciembre 2026)',
         cashflowTableRows: [HOLDING_CASHFLOW_12M_SEED[11], HOLDING_CASHFLOW_12M_SEED[10]],
         cashflowTableSummaryRow: {
-          label: 'Total Septiembre 2026',
+          label: 'Total Diciembre 2026',
           tuitionRevenues: 4420000,
           enrollmentRevenues: 220000,
           extracurricularRevenues: 360000,

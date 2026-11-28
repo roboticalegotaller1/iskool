@@ -890,7 +890,7 @@ export default function CoordinatorBillingDashboardPage() {
                             onClick={() => setViewReceiptRecord({
                               record: item,
                               receiptNumber: `REC-${new Date().getFullYear()}-${item.id.replace('inv-', '00')}`,
-                              paidAt: item.paidAt || '24 Agosto 2026',
+                              paidAt: item.paidAt || '04 Diciembre 2026',
                               paymentMethod: 'Conciliación Directa / Caja',
                               reference: item.invoiceNumber
                             })}

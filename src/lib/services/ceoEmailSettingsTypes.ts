@@ -88,7 +88,7 @@ export function getDefaultVipRules(tenantId: string): VipEmailRule[] {
       organization: 'Supervisión de Zona 14 SEP',
       reason: 'Asuntos regulatorios, inspecciones oficiales y requerimientos normativos SEP',
       enabled: true,
-      createdAt: '2026-10-01T08:00:00.000Z'
+      createdAt: '2026-12-01T08:15:00.000Z'
     },
     {
       id: `vip-presidencia-${tenantId}`,
@@ -97,7 +97,7 @@ export function getDefaultVipRules(tenantId: string): VipEmailRule[] {
       organization: 'Consejo Directivo y Patronato',
       reason: 'Gobernanza institucional, acuerdos de consejo y decisiones estratégicas',
       enabled: true,
-      createdAt: '2026-10-01T08:00:00.000Z'
+      createdAt: '2026-12-04T09:30:00.000Z'
     },
     {
       id: `vip-juridico-${tenantId}`,
@@ -106,7 +106,7 @@ export function getDefaultVipRules(tenantId: string): VipEmailRule[] {
       organization: 'Dirección Jurídica Externa',
       reason: 'Consultas legales críticas, contratos de concesión y salvaguarda escolar',
       enabled: true,
-      createdAt: '2026-10-01T08:00:00.000Z'
+      createdAt: '2026-12-08T10:45:00.000Z'
     }
   ];
 }

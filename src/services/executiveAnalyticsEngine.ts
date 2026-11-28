@@ -2929,7 +2929,7 @@ export const executeAnalyticQuery = (
   if (domain === 'FACULTY_DIRECTORY') {
     const rawTeachers = (sources.teachersList && sources.teachersList.length > 0) ? sources.teachersList : TEACHERS_LIST_SEED;
     const teachers = getSchoolTeachers(rawTeachers, effectiveSchoolId, scopedCampuses);
-    const refDate = new Date(2026, 8, 9); // 9 de Septiembre de 2026
+    const refDate = new Date(2026, 11, 15); // 15 de Diciembre de 2026
 
     const enrichedTeachers = teachers.map((t, idx) => {
       let age = t.age || 38;
@@ -3143,7 +3143,7 @@ export const executeAnalyticQuery = (
         tutorName: tutor,
         teacherName: m.teacher_name,
         subjectName: m.subject_name || 'Aviso Escolar',
-        sentDate: m.sent_at ? m.sent_at.substring(0, 10) : '2026-06-01',
+        sentDate: m.sent_at ? m.sent_at.substring(0, 10) : '2026-12-05',
         noteContent: m.message,
         parentReply: m.parent_reply,
         repliedAt: m.replied_at ? m.replied_at.substring(0, 10) : undefined,
@@ -3604,7 +3604,7 @@ export const executeAnalyticQuery = (
   // ==========================================================================
   if (domain === 'BIRTHDAYS_CALENDAR') {
     const parsedQuery = parseBirthdayQuery(rawQuery);
-    const refDate = new Date(2026, 8, 9); // 9 de Septiembre de 2026
+    const refDate = new Date(2026, 11, 15); // 15 de Diciembre de 2026
 
     // Mapeo exhaustivo de todos los alumnos de la institución activa
     const enrichedStudents = scopedStudents.map((s, idx) => {
@@ -4635,13 +4635,13 @@ export const executeAnalyticQuery = (
   // CASO 2: COMPARATIVA FINANCIERA ENTRE MESES (INGRESOS VS EGRESOS)
   // ==========================================================================
   if (domain === 'MONTHLY_COMPARISON' || domain === 'FINANCIAL_SUMMARY') {
-    // Calculamos ingresos y nómina para meses representativos
+    // Calculamos ingresos y nómina para meses representativos (cierre Diciembre 2026)
     const months = [
-      { key: '2026-05', label: 'Mayo 2026' },
-      { key: '2026-06', label: 'Junio 2026' },
-      { key: '2026-07', label: 'Julio 2026' },
       { key: '2026-08', label: 'Agosto 2026' },
-      { key: '2026-09', label: 'Septiembre 2026' }
+      { key: '2026-09', label: 'Septiembre 2026' },
+      { key: '2026-10', label: 'Octubre 2026' },
+      { key: '2026-11', label: 'Noviembre 2026' },
+      { key: '2026-12', label: 'Diciembre 2026' }
     ];
 
     // Nómina fija actual de referencia del colegio
@@ -4653,14 +4653,14 @@ export const executeAnalyticQuery = (
         .filter(b => (b.dueDate && b.dueDate.toLowerCase().includes(m.label.split(' ')[0].toLowerCase())) || (b.concept && b.concept.toLowerCase().includes(m.label.split(' ')[0].toLowerCase())))
         .reduce((sum, b) => sum + (b.status === 'paid' ? Number(b.amount) : 0), 0);
 
-      // Si es el mes vigente (Septiembre 2026) usamos datos en tiempo real
+      // Si es el mes vigente (Diciembre 2026) usamos datos en tiempo real
       let income = monthIncomes;
-      if (m.key === '2026-09' && income === 0) {
-        // Ingreso en curso de Septiembre
+      if (m.key === '2026-12' && income === 0) {
+        // Ingreso en curso de Diciembre
         income = scopedBilling.filter(b => b.status === 'paid').reduce((acc, b) => acc + Number(b.amount), 0);
       } else if (income === 0) {
         // En meses previos si no hay recibos explícitos, usar factor de recaudación histórica
-        income = m.key === '2026-08' ? basePayrollCost * 1.15 : basePayrollCost * 1.18;
+        income = m.key === '2026-11' ? basePayrollCost * 1.15 : basePayrollCost * 1.18;
       }
 
       const expense = basePayrollCost;
@@ -4717,18 +4717,18 @@ export const executeAnalyticQuery = (
         ],
         filtersApplied: [
           `Filtro multi-colegio: "${schoolName}"`,
-          'Periodos contables comprendidos: Mayo 2026 a Septiembre 2026',
+          'Periodos contables comprendidos: Agosto 2026 a Diciembre 2026',
           'Consolidación de percepciones salariales menos retenciones de ley'
         ],
         visualizationDescription: 'Se presenta un gráfico de líneas comparativas y una tabla de balance mensual con indicadores de superávit o atención contable.',
-        followUpPrompt: '¿Deseas profundizar en el desglose de sueldos por colaborador o proyectar los ingresos esperados de Octubre?'
+        followUpPrompt: '¿Deseas profundizar en el desglose de sueldos por colaborador o proyectar los ingresos esperados de Enero 2027?'
       },
       kpis: [
         {
           id: 'kpi-total-income',
           label: 'Ingresos Acumulados',
           value: formatMXN(totalIncome),
-          subtext: 'Periodos Mayo - Septiembre 2026',
+          subtext: 'Periodos Agosto - Diciembre 2026',
           color: 'emerald',
           trend: { direction: 'up', value: 'Recaudación general' }
         },
@@ -4751,7 +4751,7 @@ export const executeAnalyticQuery = (
           id: 'kpi-payroll-current',
           label: 'Nómina Vigente (1ª Quincena)',
           value: formatMXN(basePayrollCost),
-          subtext: 'Septiembre 2026',
+          subtext: 'Diciembre 2026',
           color: 'purple'
         }
       ],
@@ -4801,7 +4801,7 @@ export const executeAnalyticQuery = (
   if (domain === 'STUDENT_LOOKUP') {
     const criteria = extractExpedienteSearchCriteria(rawQuery);
     const searchTarget = (targetStudentName || criteria.target || rawQuery).toLowerCase().trim();
-    const refDate = new Date(2026, 8, 9); // ciclo escolar septiembre 2026
+    const refDate = new Date(2026, 11, 15); // ciclo escolar diciembre 2026
 
     // 1. Enriquecer catálogo completo de alumnos con edad exacta calculada y fecha formal
     const enrichStudent = (s: typeof detailedStudents[0]) => {
@@ -5448,7 +5448,7 @@ export const executeAnalyticQuery = (
             id: 'kpi-israel-tutee-debt',
             label: 'Adeudo Tutorado',
             value: formatMXN(diegoDebt),
-            subtext: 'Colegiatura de Septiembre 2026',
+            subtext: 'Colegiatura de Diciembre 2026',
             color: diegoDebt > 0 ? 'rose' : 'emerald'
           }
         ],
@@ -6962,7 +6962,7 @@ export const executeAnalyticQuery = (
     // Agrupar por fecha para gráfica cronológica
     const byDate: Record<string, { pres: number; abs: number }> = {};
     scopedAttendance.forEach(a => {
-      const d = a.date || '2026-08-04';
+      const d = a.date || '2026-12-04';
       if (!byDate[d]) byDate[d] = { pres: 0, abs: 0 };
       if (a.status === 'presente') byDate[d].pres += 1;
       else byDate[d].abs += 1;
@@ -7189,7 +7189,7 @@ export const executeAnalyticQuery = (
         ],
         filtersApplied: [
           `Filtro institucional: "${schoolName}"`,
-          'Periodo activo: 1ª Quincena de Septiembre 2026'
+          'Periodo activo: 1ª Quincena de Diciembre 2026'
         ],
         visualizationDescription: 'Se presenta la distribución de masa salarial por departamento y la nómina detallada.',
         followUpPrompt: isCorporateTarget

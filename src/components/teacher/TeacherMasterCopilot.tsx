@@ -751,14 +751,14 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
   //      Y TRAZABILIDAD DE SELLOS POR FECHA Y PERIODO (DAYLIGHT STUDIO PRO)
   // =========================================================================
   const [stampsSubView, setStampsSubView] = useState<'attendance_calendar' | 'stamps_calendar' | 'live_board'>('live_board');
-  const [periodStartDate, setPeriodStartDate] = useState<string>('2026-10-16');
-  const [periodEndDate, setPeriodEndDate] = useState<string>('2026-11-02');
-  const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>('2026-11-02');
+  const [periodStartDate, setPeriodStartDate] = useState<string>('2026-12-09');
+  const [periodEndDate, setPeriodEndDate] = useState<string>('2026-12-23');
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>('2026-12-23');
   const [compendiumSearch, setCompendiumSearch] = useState<string>('');
   const [compendiumQuickFilter, setCompendiumQuickFilter] = useState<'all' | 'attendance_alert' | 'pending_stamps'>('all');
   const [countRetardoAsAttendance, setCountRetardoAsAttendance] = useState<boolean>(true);
   const [showAddStampDateModal, setShowAddStampDateModal] = useState<boolean>(false);
-  const [newSessionDateInput, setNewSessionDateInput] = useState<string>('2026-11-04');
+  const [newSessionDateInput, setNewSessionDateInput] = useState<string>('2026-12-28');
   const [newSessionPageInput, setNewSessionPageInput] = useState<string>('Pág. 50');
   const [newSessionWorkInput, setNewSessionWorkInput] = useState<string>('Cuadro Analítico de Garantías');
   const [newSessionTopicInput, setNewSessionTopicInput] = useState<string>('Consumación de la Independencia (1821)');
@@ -773,23 +773,23 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
     bloomTag: string;
   }>>([]);
 
-  // Catálogo cronológico de días en que el grupo tuvo clase y qué sello se asignó cada día
+  // Catálogo cronológico de días en que el grupo tuvo clase y qué sello se asignó cada día (Diciembre 2026)
   const groupClassSessions = useMemo(() => {
     const activeTodayShortPage = todayStampPage.split(' - ')[0] || 'Pág. 48';
     const activeTodayWork = todayStampPage.includes(' - ') ? todayStampPage.split(' - ')[1] : 'Ecuaciones y Cronología 1810';
     const baseSessions = [
       {
-        date: '2026-10-05',
-        dayShort: 'Lun 05 Oct',
-        weekday: 'Lunes',
+        date: '2026-12-01',
+        dayShort: 'Mar 01 Dic',
+        weekday: 'Martes',
         stampPage: 'Pág. 28',
         stampWorkTitle: 'Mapa de Intendencias Virreinales',
         topicTitle: 'Reformas Borbónicas y Organización Territorial',
         bloomTag: '2. Comprender'
       },
       {
-        date: '2026-10-07',
-        dayShort: 'Mié 07 Oct',
+        date: '2026-12-02',
+        dayShort: 'Mié 02 Dic',
         weekday: 'Miércoles',
         stampPage: 'Pág. 30',
         stampWorkTitle: 'Cuadro Comparativo del Criollismo',
@@ -797,8 +797,8 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
         bloomTag: '3. Aplicar'
       },
       {
-        date: '2026-10-09',
-        dayShort: 'Vie 09 Oct',
+        date: '2026-12-04',
+        dayShort: 'Vie 04 Dic',
         weekday: 'Viernes',
         stampPage: 'Pág. 32',
         stampWorkTitle: 'Línea del Tiempo Crisis de 1808',
@@ -806,8 +806,8 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
         bloomTag: '4. Analizar'
       },
       {
-        date: '2026-10-12',
-        dayShort: 'Lun 12 Oct',
+        date: '2026-12-07',
+        dayShort: 'Lun 07 Dic',
         weekday: 'Lunes',
         stampPage: 'Pág. 34',
         stampWorkTitle: 'Esquema Conjura de Valladolid',
@@ -815,81 +815,81 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
         bloomTag: '3. Aplicar'
       },
       {
-        date: '2026-10-14',
-        dayShort: 'Mié 14 Oct',
-        weekday: 'Miércoles',
+        date: '2026-12-08',
+        dayShort: 'Mar 08 Dic',
+        weekday: 'Martes',
         stampPage: 'Pág. 36',
         stampWorkTitle: 'Red de Actores de Querétaro',
         topicTitle: 'La Conspiración de Querétaro y Doña Josefa Ortiz',
         bloomTag: '4. Analizar'
       },
       {
-        date: '2026-10-16',
-        dayShort: 'Vie 16 Oct',
-        weekday: 'Viernes',
+        date: '2026-12-09',
+        dayShort: 'Mié 09 Dic',
+        weekday: 'Miércoles',
         stampPage: 'Pág. 38',
         stampWorkTitle: 'Análisis de Fuentes Primarias 1810',
         topicTitle: 'El Estallido Insurgente en Dolores',
         bloomTag: '4. Analizar'
       },
       {
-        date: '2026-10-19',
-        dayShort: 'Lun 19 Oct',
-        weekday: 'Lunes',
+        date: '2026-12-11',
+        dayShort: 'Vie 11 Dic',
+        weekday: 'Viernes',
         stampPage: 'Pág. 40',
         stampWorkTitle: 'Croquis de la Ruta de Hidalgo',
         topicTitle: 'Marcha Insurgente y Toma de la Alhóndiga',
         bloomTag: '3. Aplicar'
       },
       {
-        date: '2026-10-21',
-        dayShort: 'Mié 21 Oct',
-        weekday: 'Miércoles',
+        date: '2026-12-14',
+        dayShort: 'Lun 14 Dic',
+        weekday: 'Lunes',
         stampPage: 'Pág. 41',
         stampWorkTitle: 'Bando de Abolición en Guadalajara',
         topicTitle: 'Decretos Sociales de Miguel Hidalgo',
         bloomTag: '5. Evaluar'
       },
       {
-        date: '2026-10-23',
-        dayShort: 'Vie 23 Oct',
-        weekday: 'Viernes',
+        date: '2026-12-15',
+        dayShort: 'Mar 15 Dic',
+        weekday: 'Martes',
         stampPage: 'Pág. 42',
         stampWorkTitle: 'Fracciones Equivalentes & Estadística Insurgente',
         topicTitle: 'Proporción Demográfica del Ejército Insurgente',
         bloomTag: '3. Aplicar'
       },
       {
-        date: '2026-10-26',
-        dayShort: 'Lun 26 Oct',
-        weekday: 'Lunes',
+        date: '2026-12-16',
+        dayShort: 'Mié 16 Dic',
+        weekday: 'Miércoles',
         stampPage: 'Pág. 44',
         stampWorkTitle: 'Síntesis Sentimientos de la Nación',
         topicTitle: 'José María Morelos y los 23 Puntos de Chilpancingo',
         bloomTag: '5. Evaluar'
       },
       {
-        date: '2026-10-28',
-        dayShort: 'Mié 28 Oct',
-        weekday: 'Miércoles',
+        date: '2026-12-18',
+        dayShort: 'Vie 18 Dic',
+        weekday: 'Viernes',
         stampPage: 'Pág. 45',
         stampWorkTitle: 'Sistema de Coordenadas y Campañas del Sur',
         topicTitle: 'Geometría Cartográfica de las Campañas de Morelos',
         bloomTag: '4. Analizar'
       },
       {
-        date: '2026-10-30',
-        dayShort: 'Vie 30 Oct',
-        weekday: 'Viernes',
+        date: '2026-12-21',
+        dayShort: 'Lun 21 Dic',
+        weekday: 'Lunes',
         stampPage: 'Pág. 47',
         stampWorkTitle: 'Mapa Conceptual Constitución de Apatzingán',
         topicTitle: 'División de Poderes en el Decreto de 1814',
         bloomTag: '6. Crear'
       },
       {
-        date: '2026-11-02',
-        dayShort: 'Lun 02 Nov (Hoy)',
-        weekday: 'Lunes',
+        date: '2026-12-23',
+        dayShort: 'Mié 23 Dic (Hoy)',
+        weekday: 'Miércoles',
         stampPage: activeTodayShortPage,
         stampWorkTitle: activeTodayWork,
         topicTitle: activePreparedClass?.topicTitle || 'Proclama de Dolores & Fuentes Primarias de 1810',
@@ -913,7 +913,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
   // Función determinista + overrides en vivo para obtener la asistencia de un alumno en cualquier fecha de clase
   const getStudentAttendanceOnDate = React.useCallback(
     (studentId: string, studentIdx: number, dateStr: string): 'present' | 'late' | 'absent' | 'excused' => {
-      if (dateStr === '2026-11-02') {
+      if (dateStr === '2026-12-23') {
         return attendanceMap[studentId] || 'present';
       }
       const override = historicalAttendanceOverrides[dateStr]?.[studentId];
@@ -922,8 +922,8 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
       // Patrón determinista realista por alumno y fecha
       const dateSeed = dateStr.split('-').reduce((acc, part) => acc + parseInt(part, 10), 0);
       const combined = (studentIdx * 7 + dateSeed * 3) % 29;
-      if (studentIdx === 6 && (dateStr === '2026-10-23' || dateStr === '2026-10-30')) return 'absent';
-      if (studentIdx === 4 && dateStr === '2026-10-21') return 'absent';
+      if (studentIdx === 6 && (dateStr === '2026-12-16' || dateStr === '2026-12-21')) return 'absent';
+      if (studentIdx === 4 && dateStr === '2026-12-14') return 'absent';
       if (combined === 0) return 'absent';
       if (combined === 1 || combined === 14) return 'late';
       return 'present';
@@ -934,7 +934,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
   // Función determinista + overrides en vivo para saber si un alumno obtuvo el sello de una fecha específica
   const getStudentStampOnDate = React.useCallback(
     (studentId: string, studentIdx: number, dateStr: string): boolean => {
-      if (dateStr === '2026-11-02') {
+      if (dateStr === '2026-12-23') {
         return !!stampedMap[studentId]?.stamped;
       }
       const override = historicalStampOverrides[dateStr]?.[studentId];
@@ -945,7 +945,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
 
       const dateSeed = dateStr.split('-').reduce((acc, part) => acc + parseInt(part, 10), 0);
       const combined = (studentIdx * 11 + dateSeed * 5) % 23;
-      if ((studentIdx === 4 || studentIdx === 8) && (dateStr === '2026-10-23' || dateStr === '2026-10-30')) {
+      if ((studentIdx === 4 || studentIdx === 8) && (dateStr === '2026-12-16' || dateStr === '2026-12-21')) {
         return false;
       }
       return combined !== 0;
@@ -959,7 +959,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
     studentId: string,
     status: 'present' | 'late' | 'absent' | 'excused'
   ) => {
-    if (dateStr === '2026-11-02') {
+    if (dateStr === '2026-12-23') {
       toggleAttendanceStatus(studentId, status);
       return;
     }
@@ -974,7 +974,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
 
   // Alternar el sello de un alumno en cualquier fecha del calendario (hoy o histórica)
   const toggleStudentStampForDate = (dateStr: string, studentId: string, studentIdx: number) => {
-    if (dateStr === '2026-11-02') {
+    if (dateStr === '2026-12-23') {
       toggleStudentStamp(studentId);
       return;
     }
@@ -995,7 +995,7 @@ export const TeacherMasterCopilot: React.FC<TeacherMasterCopilotProps> = ({
 
   // Sellar a todos los presentes de la fecha seleccionada en el calendario
   const handleStampAllPresentOnDate = (dateStr: string) => {
-    if (dateStr === '2026-11-02') {
+    if (dateStr === '2026-12-23') {
       handleStampAllPresent();
       return;
     }
@@ -2884,7 +2884,7 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                   >
                     <Stamp className="w-3.5 h-3.5" />
                     <span>
-                      Sellar Presentes ({activeCalendarSession.date === '2026-11-02' ? 'Hoy' : activeCalendarSession.dayShort}: {periodGroupSummary.selectedDayPresent})
+                      Sellar Presentes ({activeCalendarSession.date === '2026-12-23' ? 'Hoy' : activeCalendarSession.dayShort}: {periodGroupSummary.selectedDayPresent})
                     </span>
                   </button>
 
@@ -3064,9 +3064,9 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className={`text-[10px] font-black uppercase ${themeClasses.subtext} mr-1`}>Periodos Rápidos:</span>
                   <button
-                    onClick={() => { setPeriodStartDate('2026-10-26'); setPeriodEndDate('2026-11-02'); }}
+                    onClick={() => { setPeriodStartDate('2026-12-16'); setPeriodEndDate('2026-12-23'); }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-black cursor-pointer transition-all border ${
-                      periodStartDate === '2026-10-26' && periodEndDate === '2026-11-02'
+                      periodStartDate === '2026-12-16' && periodEndDate === '2026-12-23'
                         ? `${themeClasses.accentBg} border-transparent`
                         : `${themeClasses.btnSecondary}`
                     }`}
@@ -3074,9 +3074,9 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                     Última Semana (4 Clases / 4 Sellos)
                   </button>
                   <button
-                    onClick={() => { setPeriodStartDate('2026-10-19'); setPeriodEndDate('2026-11-02'); }}
+                    onClick={() => { setPeriodStartDate('2026-12-11'); setPeriodEndDate('2026-12-23'); }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-black cursor-pointer transition-all border ${
-                      periodStartDate === '2026-10-19' && periodEndDate === '2026-11-02'
+                      periodStartDate === '2026-12-11' && periodEndDate === '2026-12-23'
                         ? `${themeClasses.accentBg} border-transparent`
                         : `${themeClasses.btnSecondary}`
                     }`}
@@ -3084,9 +3084,9 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                     Quincena (7 Clases / 7 Sellos)
                   </button>
                   <button
-                    onClick={() => { setPeriodStartDate('2026-10-16'); setPeriodEndDate('2026-11-02'); }}
+                    onClick={() => { setPeriodStartDate('2026-12-09'); setPeriodEndDate('2026-12-23'); }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-black cursor-pointer transition-all border ${
-                      periodStartDate === '2026-10-16' && periodEndDate === '2026-11-02'
+                      periodStartDate === '2026-12-09' && periodEndDate === '2026-12-23'
                         ? `${themeClasses.accentBg} border-transparent`
                         : `${themeClasses.btnSecondary}`
                     }`}
@@ -3094,9 +3094,9 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                     8 Sesiones SEP (8 Clases / 8 Sellos)
                   </button>
                   <button
-                    onClick={() => { setPeriodStartDate('2026-10-05'); setPeriodEndDate('2026-11-02'); }}
+                    onClick={() => { setPeriodStartDate('2026-12-01'); setPeriodEndDate('2026-12-23'); }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-black cursor-pointer transition-all border ${
-                      periodStartDate === '2026-10-05' && periodEndDate === '2026-11-02'
+                      periodStartDate === '2026-12-01' && periodEndDate === '2026-12-23'
                         ? `${themeClasses.accentBg} border-transparent`
                         : `${themeClasses.btnSecondary}`
                     }`}
@@ -3209,11 +3209,11 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
                       </p>
                     </div>
                     <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-sky-500/15 text-sky-800 shrink-0">
-                      Oct – Nov 2026
+                      Diciembre 2026
                     </span>
                   </div>
 
-                  {/* Cuadrícula Visual de Calendario de Octubre / Noviembre 2026 */}
+                  {/* Cuadrícula Visual de Calendario de Diciembre 2026 (Lunes 30 Nov a Domingo 03 Ene) */}
                   <div className="space-y-2">
                     <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-500 pb-1">
                       <span>Lun</span>
@@ -3227,41 +3227,41 @@ _Reporte oficial emitido con sello criptográfico desde ISkool._`;
 
                     <div className="grid grid-cols-7 gap-1.5">
                       {[
-                        { date: '2026-10-05', dayNum: '05', monthLabel: 'Oct' },
-                        { date: '2026-10-06', dayNum: '06', monthLabel: 'Oct' },
-                        { date: '2026-10-07', dayNum: '07', monthLabel: 'Oct' },
-                        { date: '2026-10-08', dayNum: '08', monthLabel: 'Oct' },
-                        { date: '2026-10-09', dayNum: '09', monthLabel: 'Oct' },
-                        { date: '2026-10-10', dayNum: '10', monthLabel: 'Oct' },
-                        { date: '2026-10-11', dayNum: '11', monthLabel: 'Oct' },
-                        { date: '2026-10-12', dayNum: '12', monthLabel: 'Oct' },
-                        { date: '2026-10-13', dayNum: '13', monthLabel: 'Oct' },
-                        { date: '2026-10-14', dayNum: '14', monthLabel: 'Oct' },
-                        { date: '2026-10-15', dayNum: '15', monthLabel: 'Oct' },
-                        { date: '2026-10-16', dayNum: '16', monthLabel: 'Oct' },
-                        { date: '2026-10-17', dayNum: '17', monthLabel: 'Oct' },
-                        { date: '2026-10-18', dayNum: '18', monthLabel: 'Oct' },
-                        { date: '2026-10-19', dayNum: '19', monthLabel: 'Oct' },
-                        { date: '2026-10-20', dayNum: '20', monthLabel: 'Oct' },
-                        { date: '2026-10-21', dayNum: '21', monthLabel: 'Oct' },
-                        { date: '2026-10-22', dayNum: '22', monthLabel: 'Oct' },
-                        { date: '2026-10-23', dayNum: '23', monthLabel: 'Oct' },
-                        { date: '2026-10-24', dayNum: '24', monthLabel: 'Oct' },
-                        { date: '2026-10-25', dayNum: '25', monthLabel: 'Oct' },
-                        { date: '2026-10-26', dayNum: '26', monthLabel: 'Oct' },
-                        { date: '2026-10-27', dayNum: '27', monthLabel: 'Oct' },
-                        { date: '2026-10-28', dayNum: '28', monthLabel: 'Oct' },
-                        { date: '2026-10-29', dayNum: '29', monthLabel: 'Oct' },
-                        { date: '2026-10-30', dayNum: '30', monthLabel: 'Oct' },
-                        { date: '2026-10-31', dayNum: '31', monthLabel: 'Oct' },
-                        { date: '2026-11-01', dayNum: '01', monthLabel: 'Nov' },
-                        { date: '2026-11-02', dayNum: '02', monthLabel: 'Nov' },
-                        { date: '2026-11-03', dayNum: '03', monthLabel: 'Nov' },
-                        { date: '2026-11-04', dayNum: '04', monthLabel: 'Nov' },
-                        { date: '2026-11-05', dayNum: '05', monthLabel: 'Nov' },
-                        { date: '2026-11-06', dayNum: '06', monthLabel: 'Nov' },
-                        { date: '2026-11-07', dayNum: '07', monthLabel: 'Nov' },
-                        { date: '2026-11-08', dayNum: '08', monthLabel: 'Nov' }
+                        { date: '2026-11-30', dayNum: '30', monthLabel: 'Nov' },
+                        { date: '2026-12-01', dayNum: '01', monthLabel: 'Dic' },
+                        { date: '2026-12-02', dayNum: '02', monthLabel: 'Dic' },
+                        { date: '2026-12-03', dayNum: '03', monthLabel: 'Dic' },
+                        { date: '2026-12-04', dayNum: '04', monthLabel: 'Dic' },
+                        { date: '2026-12-05', dayNum: '05', monthLabel: 'Dic' },
+                        { date: '2026-12-06', dayNum: '06', monthLabel: 'Dic' },
+                        { date: '2026-12-07', dayNum: '07', monthLabel: 'Dic' },
+                        { date: '2026-12-08', dayNum: '08', monthLabel: 'Dic' },
+                        { date: '2026-12-09', dayNum: '09', monthLabel: 'Dic' },
+                        { date: '2026-12-10', dayNum: '10', monthLabel: 'Dic' },
+                        { date: '2026-12-11', dayNum: '11', monthLabel: 'Dic' },
+                        { date: '2026-12-12', dayNum: '12', monthLabel: 'Dic' },
+                        { date: '2026-12-13', dayNum: '13', monthLabel: 'Dic' },
+                        { date: '2026-12-14', dayNum: '14', monthLabel: 'Dic' },
+                        { date: '2026-12-15', dayNum: '15', monthLabel: 'Dic' },
+                        { date: '2026-12-16', dayNum: '16', monthLabel: 'Dic' },
+                        { date: '2026-12-17', dayNum: '17', monthLabel: 'Dic' },
+                        { date: '2026-12-18', dayNum: '18', monthLabel: 'Dic' },
+                        { date: '2026-12-19', dayNum: '19', monthLabel: 'Dic' },
+                        { date: '2026-12-20', dayNum: '20', monthLabel: 'Dic' },
+                        { date: '2026-12-21', dayNum: '21', monthLabel: 'Dic' },
+                        { date: '2026-12-22', dayNum: '22', monthLabel: 'Dic' },
+                        { date: '2026-12-23', dayNum: '23', monthLabel: 'Dic' },
+                        { date: '2026-12-24', dayNum: '24', monthLabel: 'Dic' },
+                        { date: '2026-12-25', dayNum: '25', monthLabel: 'Dic' },
+                        { date: '2026-12-26', dayNum: '26', monthLabel: 'Dic' },
+                        { date: '2026-12-27', dayNum: '27', monthLabel: 'Dic' },
+                        { date: '2026-12-28', dayNum: '28', monthLabel: 'Dic' },
+                        { date: '2026-12-29', dayNum: '29', monthLabel: 'Dic' },
+                        { date: '2026-12-30', dayNum: '30', monthLabel: 'Dic' },
+                        { date: '2026-12-31', dayNum: '31', monthLabel: 'Dic' },
+                        { date: '2027-01-01', dayNum: '01', monthLabel: 'Ene' },
+                        { date: '2027-01-02', dayNum: '02', monthLabel: 'Ene' },
+                        { date: '2027-01-03', dayNum: '03', monthLabel: 'Ene' }
                       ].map(cell => {
                         const classSession = groupClassSessions.find(s => s.date === cell.date);
                         const isInPeriod = cell.date >= periodStartDate && cell.date <= periodEndDate;

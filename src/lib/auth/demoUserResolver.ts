@@ -603,8 +603,8 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'ceo',
       email: 'demo.ceo@iskool.mx',
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-01T08:05:00.000Z',
+      updated_at: '2026-12-14T16:15:00.000Z',
     };
   }
   if (
@@ -622,8 +622,8 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'director',
       email: 'demo.director@iskool.mx',
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-02T08:30:00.000Z',
+      updated_at: '2026-12-15T12:40:00.000Z',
     };
   }
   if (
@@ -646,8 +646,8 @@ export const getDemoUser = (email: string): UserProfile => {
       ],
       assigned_groups: ['5ºA'],
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-03T08:10:00.000Z',
+      updated_at: '2026-12-10T14:20:00.000Z',
     };
   }
   if (
@@ -667,8 +667,8 @@ export const getDemoUser = (email: string): UserProfile => {
       assigned_subjects: ['Lengua Extranjera (Inglés)', 'Francés Multilingüe'],
       assigned_groups: ['5ºA', '1ºA'],
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-04T09:15:00.000Z',
+      updated_at: '2026-12-11T11:30:00.000Z',
     };
   }
   if (emailLower === 'demo.familia@iskool.mx' || emailLower === 'usr-demo-parent-01') {
@@ -682,8 +682,8 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'parent',
       email: 'demo.familia@iskool.mx',
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-07T08:45:00.000Z',
+      updated_at: '2026-12-16T10:20:00.000Z',
     };
   }
   if (
@@ -701,8 +701,8 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'student',
       email: 'demo.alumno@iskool.mx',
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-08T09:00:00.000Z',
+      updated_at: '2026-12-17T15:10:00.000Z',
     };
   }
   if (
@@ -721,8 +721,8 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'billing',
       email: 'demo.control@iskool.mx',
       temporary_password: 'DemoISkool2026!',
-      created_at: '2026-03-10T08:00:00.000Z',
-      updated_at: '2026-03-10T08:00:00.000Z',
+      created_at: '2026-12-09T08:50:00.000Z',
+      updated_at: '2026-12-18T13:30:00.000Z',
     };
   }
   const matchedDemoStaff = DEMO_STAFF_USERS.find(

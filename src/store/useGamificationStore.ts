@@ -210,26 +210,26 @@ export const useGamificationStore = create<GamificationStoreState>()(
     (set, get) => ({
       missionsList: MISSIONS_SEED,
       questAttempts: [
-        { id: 'qa-ibime-1', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-steam-1', is_completed: true, score: 100, attempts_count: 1, created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString() },
-        { id: 'qa-ibime-2', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 95, attempts_count: 1, created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString() },
-        { id: 'qa-ibime-3', student_id: 'std-ibime-lagos-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 90, attempts_count: 1, created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString() },
-        { id: 'qa-ibime-4', student_id: 'std-ibime-san-01', quest_id: 'q-ibime-nem-1', is_completed: true, score: 100, attempts_count: 1, created_at: new Date(Date.now() - 20 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 20 * 3600 * 1000).toISOString() },
-        { id: 'qa-ibime-5', student_id: 'std-ibime-coac-01', quest_id: 'q-ibime-cch-1', is_completed: true, score: 98, attempts_count: 1, created_at: new Date(Date.now() - 30 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 30 * 3600 * 1000).toISOString() }
+        { id: 'qa-ibime-1', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-steam-1', is_completed: true, score: 100, attempts_count: 1, created_at: '2026-12-02T15:10:00.000Z', updated_at: '2026-12-02T15:10:00.000Z' },
+        { id: 'qa-ibime-2', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 95, attempts_count: 1, created_at: '2026-12-05T16:40:00.000Z', updated_at: '2026-12-05T16:40:00.000Z' },
+        { id: 'qa-ibime-3', student_id: 'std-ibime-lagos-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 90, attempts_count: 1, created_at: '2026-12-08T14:25:00.000Z', updated_at: '2026-12-08T14:25:00.000Z' },
+        { id: 'qa-ibime-4', student_id: 'std-ibime-san-01', quest_id: 'q-ibime-nem-1', is_completed: true, score: 100, attempts_count: 1, created_at: '2026-12-10T17:05:00.000Z', updated_at: '2026-12-10T17:05:00.000Z' },
+        { id: 'qa-ibime-5', student_id: 'std-ibime-coac-01', quest_id: 'q-ibime-cch-1', is_completed: true, score: 98, attempts_count: 1, created_at: '2026-12-14T18:20:00.000Z', updated_at: '2026-12-14T18:20:00.000Z' }
       ],
       studentBadges: [
-        { student_id: 'std-pa', badge_id: 'badge-1', earned_at: new Date().toISOString() },
-        { student_id: 'std-sec', badge_id: 'badge-3', earned_at: new Date().toISOString() },
+        { student_id: 'std-pa', badge_id: 'badge-1', earned_at: '2026-12-01T14:15:00.000Z' },
+        { student_id: 'std-sec', badge_id: 'badge-3', earned_at: '2026-12-03T16:30:00.000Z' },
         // Medallas Oficiales Alumnos IBIME
-        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-steam', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-cambridge', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-montes-01', badge_id: 'badge-6', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-montes-01', badge_id: 'badge-1', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-ibime-cambridge', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-3', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-san-01', badge_id: 'badge-ibime-comunitario', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-san-01', badge_id: 'badge-1', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-cch', earned_at: new Date().toISOString() },
-        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-steam', earned_at: new Date().toISOString() }
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-steam', earned_at: '2026-12-02T15:20:00.000Z' },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-cambridge', earned_at: '2026-12-04T17:00:00.000Z' },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-6', earned_at: '2026-12-07T13:45:00.000Z' },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-1', earned_at: '2026-12-09T15:10:00.000Z' },
+        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-ibime-cambridge', earned_at: '2026-12-08T14:40:00.000Z' },
+        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-3', earned_at: '2026-12-11T16:15:00.000Z' },
+        { student_id: 'std-ibime-san-01', badge_id: 'badge-ibime-comunitario', earned_at: '2026-12-10T17:20:00.000Z' },
+        { student_id: 'std-ibime-san-01', badge_id: 'badge-1', earned_at: '2026-12-12T12:30:00.000Z' },
+        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-cch', earned_at: '2026-12-14T18:35:00.000Z' },
+        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-steam', earned_at: '2026-12-16T15:50:00.000Z' }
       ],
   guildBoss: { id: '', name: 'Cargando Jefe...', hp_max: 1, hp_actual: 1, xp_reward: 0 },
   guildSubmissions: [],
@@ -1435,16 +1435,28 @@ export const useGamificationStore = create<GamificationStoreState>()(
 }),
     {
       name: 'iskool_gamification_store',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => createSafeLocalStorage()),
       migrate: (persistedState: any, version: number) => {
-        if (version < 2 || !persistedState?.shopArtifacts?.some((a: any) => a.id === 'art-hp-potion')) {
-          return {
-            ...persistedState,
-            shopArtifacts: DEFAULT_ARTIFACTS_SEED
-          };
+        const nextState = { ...(persistedState || {}) };
+        if (version < 2 || !nextState?.shopArtifacts?.some((a: any) => a.id === 'art-hp-potion')) {
+          nextState.shopArtifacts = DEFAULT_ARTIFACTS_SEED;
         }
-        return persistedState;
+        if (version < 3) {
+          const seedAttemptIds = new Set(['qa-ibime-1', 'qa-ibime-2', 'qa-ibime-3', 'qa-ibime-4', 'qa-ibime-5']);
+          const freshSeedAttempts = [
+            { id: 'qa-ibime-1', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-steam-1', is_completed: true, score: 100, attempts_count: 1, created_at: '2026-12-02T15:10:00.000Z', updated_at: '2026-12-02T15:10:00.000Z' },
+            { id: 'qa-ibime-2', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 95, attempts_count: 1, created_at: '2026-12-05T16:40:00.000Z', updated_at: '2026-12-05T16:40:00.000Z' },
+            { id: 'qa-ibime-3', student_id: 'std-ibime-lagos-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 90, attempts_count: 1, created_at: '2026-12-08T14:25:00.000Z', updated_at: '2026-12-08T14:25:00.000Z' },
+            { id: 'qa-ibime-4', student_id: 'std-ibime-san-01', quest_id: 'q-ibime-nem-1', is_completed: true, score: 100, attempts_count: 1, created_at: '2026-12-10T17:05:00.000Z', updated_at: '2026-12-10T17:05:00.000Z' },
+            { id: 'qa-ibime-5', student_id: 'std-ibime-coac-01', quest_id: 'q-ibime-cch-1', is_completed: true, score: 98, attempts_count: 1, created_at: '2026-12-14T18:20:00.000Z', updated_at: '2026-12-14T18:20:00.000Z' }
+          ];
+          nextState.questAttempts = [
+            ...freshSeedAttempts,
+            ...((nextState.questAttempts || []).filter((a: any) => !seedAttemptIds.has(a?.id)))
+          ];
+        }
+        return nextState;
       },
       partialize: (state) => ({
         missionsList: state.missionsList,

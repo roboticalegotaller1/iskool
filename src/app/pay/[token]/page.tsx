@@ -64,7 +64,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
   // Datos estructurados del cargo
   const invoiceData = {
     invoiceNumber: resolvedCharge.invoiceNumber || 'COL-2026-00452',
-    concept: resolvedCharge.concept || 'Colegiatura de Septiembre 2026',
+    concept: resolvedCharge.concept || 'Colegiatura de Diciembre 2026',
     schoolName: resolvedCharge.schoolName || 'Colegio ISkool México',
     studentName: resolvedCharge.studentName || 'Mateo López Mendoza',
     studentGrade: resolvedCharge.studentGrade || '3º de Secundaria — Grupo A',
@@ -73,7 +73,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
     discount: resolvedCharge.total ? 0.00 : 150.00,
     surcharge: 0.00,
     total: resolvedCharge.total ?? 3450.00,
-    dueDate: resolvedCharge.dueDate || '10 de Septiembre de 2026',
+    dueDate: resolvedCharge.dueDate || '14 de Diciembre de 2026',
     speiClabe: '710969000145829103',
     speiBank: 'Sistema de Pagos Interbancarios (SPEI)',
     storeReference: '9845 2301 9842 1094'

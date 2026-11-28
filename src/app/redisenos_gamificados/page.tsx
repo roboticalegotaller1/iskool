@@ -868,12 +868,12 @@ export default function RedisenosGamificadosPage() {
                     </p>
                   </div>
                   <span className="text-xs font-bold px-3 py-1 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Semana 9 en Curso (Octubre 2026)
+                    Semana 15 en Curso (Diciembre 2026)
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-9 gap-2">
-                  {SEP_ANNUAL_PLAN_2026.slice(0, 9).map(w => (
+                  {SEP_ANNUAL_PLAN_2026.slice(-9).map(w => (
                     <div
                       key={w.week}
                       className={`p-2.5 rounded-xl border text-xs flex flex-col justify-between ${

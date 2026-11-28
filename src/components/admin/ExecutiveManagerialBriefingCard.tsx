@@ -982,7 +982,7 @@ export const ExecutiveManagerialBriefingCard: React.FC<ExecutiveManagerialBriefi
                 <strong className="text-slate-900">Blindaje Financiero de Planteles:</strong> Autorizar calendario de regularización escalonada para los $8,424.00 de cartera vencida antes de aprobar dispersiones extraordinarias.
               </li>
               <li>
-                <strong className="text-slate-900">Pacto de Homologación Curricular:</strong> Establecer fecha límite no negociable (15 de octubre) para el sellado de rúbricas oficiales en la Bóveda Curricular.
+                <strong className="text-slate-900">Pacto de Homologación Curricular:</strong> Establecer fecha límite no negociable (18 de diciembre) para el sellado de rúbricas oficiales en la Bóveda Curricular.
               </li>
               <li>
                 <strong className="text-slate-900">Priorización Estratégica de Producto:</strong> Congelar peticiones de funciones secundarias y enfocar al equipo técnico en la telemetría del Teacher Social Loop.

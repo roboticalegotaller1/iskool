@@ -88,9 +88,9 @@ export default function CoordinatorFiscalPage() {
       curp: 'AAAA000101HDFZNS01',
       educationLevel: 'Secundaria',
       rvoe: 'SEP-RVOE-2024-SEC-098',
-      concept: 'Colegiatura de Septiembre 2026',
+      concept: 'Colegiatura de Diciembre 2026',
       amount: 3450.00,
-      stampedAt: '2026-08-25T10:14:22',
+      stampedAt: '2026-12-02T10:14:22',
       statusSat: 'Vigente'
     },
     {
@@ -102,9 +102,9 @@ export default function CoordinatorFiscalPage() {
       curp: 'MERS110304MDFRZN02',
       educationLevel: 'Secundaria',
       rvoe: 'SEP-RVOE-2024-SEC-098',
-      concept: 'Colegiatura de Septiembre 2026',
+      concept: 'Colegiatura de Diciembre 2026',
       amount: 3200.00,
-      stampedAt: '2026-08-24T16:30:11',
+      stampedAt: '2026-12-09T16:30:11',
       statusSat: 'Vigente'
     },
     {
@@ -118,7 +118,7 @@ export default function CoordinatorFiscalPage() {
       rvoe: 'SEP-RVOE-2024-SEC-098',
       concept: 'Inscripción Ciclo Escolar 2026-2027',
       amount: 4800.00,
-      stampedAt: '2026-08-20T09:12:00',
+      stampedAt: '2026-12-14T09:12:00',
       statusSat: 'Cancelado',
       cancellationMotivo: '02'
     }
@@ -141,7 +141,7 @@ export default function CoordinatorFiscalPage() {
     curp: 'AAAA000101HDFZNS01',
     educationLevel: 'Secundaria',
     rvoe: 'SEP-RVOE-2024-SEC-098',
-    concept: 'Colegiatura Mensual Septiembre 2026',
+    concept: 'Colegiatura Mensual Diciembre 2026',
     amount: 3450.00,
     formaPago: '03'
   });

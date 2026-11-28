@@ -31,7 +31,7 @@ export default async function MagicLinkPage({ params }: MagicLinkPageProps) {
     const student = encodeURIComponent(validation.magicLink?.metadata?.studentName || 'Alumno');
     const parent = encodeURIComponent(validation.magicLink?.metadata?.parentName || 'Tutor');
     const invoiceNum = encodeURIComponent(validation.invoice?.invoice_number || validation.magicLink?.metadata?.invoiceNumber || 'COL-2026-00452');
-    const dueDate = encodeURIComponent(validation.invoice?.due_date || validation.magicLink?.metadata?.dueDate || '10 de Septiembre de 2026');
+    const dueDate = encodeURIComponent(validation.invoice?.due_date || validation.magicLink?.metadata?.dueDate || '14 de Diciembre de 2026');
 
     redirect(`/checkout/${invoiceId}?auth_token=${validation.temporaryPaymentToken}&source=magic_link&amount=${amount}&concept=${concept}&student=${student}&parent=${parent}&invoiceNumber=${invoiceNum}&dueDate=${dueDate}`);
   }

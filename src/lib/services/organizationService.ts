@@ -1215,7 +1215,7 @@ export function isStaleDemoOrgGraph(graph?: SchoolOrganizationGraph | null): boo
 }
 
 export function createDemoSchoolOrganizationGraph(): SchoolOrganizationGraph {
-  const createdAt = '2026-03-10T08:00:00.000Z';
+  const createdAt = '2026-12-02T08:30:00.000Z';
   const salt = 'demo_iskool_salt_v1';
   const passwordHash = hashOrgPassword('DemoISkool2026!', salt);
 

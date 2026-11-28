@@ -185,7 +185,7 @@ export function AttendanceCompendiumModal({
       setStartDate(formatDateStr(startPrev));
       setEndDate(formatDateStr(endPrev));
     } else if (type === 'all') {
-      setStartDate('2026-08-01');
+      setStartDate('2026-12-01');
       setEndDate(formatDateStr(now));
     }
   };
